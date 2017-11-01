@@ -1,0 +1,66 @@
+/*
+    Application styles
+*/
+
+.App {
+  text-align: center;
+}
+
+.App-container {
+    display: flex;
+}
+
+.App-header {
+  background-color: #222;
+  height: 9em;
+  padding: 1.2em;
+  color: white;
+}
+
+.App-title {
+  font-size: 4em;
+  font-style: oblique;
+  font-weight: 900;
+}
+
+.App-menu-panel-title {
+    font-size: 4em;
+    font-weight: 400;
+}
+
+/*
+    Utilities
+*/
+
+/** Cause this to be centered at the max width. */
+.App-wide-container {
+    margin: 1em auto 1em;
+    width: 92em;
+}
+
+/** Make this box a flex container with a .flex-split-left and .flex-split-right */
+.flex-split-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+/** Align the left side of the flex-split-container */
+.flex-split-container > .flex-split-left {
+    flex-basis: auto;
+    align-self: flex-start;
+}
+
+/** Align the right side of the flex-split-container */
+.flex-split-container > .flex-split-right {
+    flex-basis: auto;
+    align-self: flex-end;
+}
+
+.numeric-input {
+    width: 3.2em !important;
+    min: 0;
+}
+
+.count-hits-record-full {
+    font-size: 1.25em;
+}

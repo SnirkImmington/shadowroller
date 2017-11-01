@@ -1,0 +1,24 @@
+{
+  "name": "shadowroller",
+  "version": "0.1.0",
+  "homepage": "https://snirkimmington.github.io/shadowroller",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "flow-bin": "^0.57.3",
+    "flow-typed": "^2.2.1",
+    "gh-pages": "^1.0.0",
+    "react": "^16.0.0",
+    "react-bootstrap": "^0.31.5",
+    "react-dom": "^16.0.0",
+    "react-scripts": "1.0.14"
+  },
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "flow": "flow"
+  }
+}

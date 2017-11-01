@@ -1,0 +1,90 @@
+/*
+    Containers
+*/
+
+.roll-input-panel {
+    justify-content: space-between;
+}
+
+.roll-input-panel-form
+
+.roll-input-panel-form {
+}
+
+.roll-list-container {
+    padding-top: 20px;
+}
+
+/*
+    Buttons
+*/
+
+#roll-input-mode {
+    margin-right: 15px;
+}
+
+.roll-input-mode-item {
+    font-size: 1.2em;
+}
+
+#roll-mode-input-title {
+}
+
+.roll-mode-input-glyph {
+    margin-left: 0.5em;
+}
+
+#roll-submit {
+    /*align-self: flex-end;
+    margin-left: auto;
+    margin-right: 10px;*/
+    margin-left: 15px;
+}
+
+.roll-menu-label {
+    font-size: 1.5em;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.roll-loading-label {
+    padding-right: 10px;
+}
+
+.sorted-dice-list {
+    font-family: monospace;
+}
+
+.roll-record-message {
+    font-size: 1.4em !important;
+}
+
+.roll-record-label {
+    margin-right: 0.5em;
+    padding-top: 0.4em !important;
+    font-size: 1.15em !important;
+}
+
+/*
+    Animations
+*/
+
+.dice-roll-icon { /* HTML symbols */
+    font-size: 1.5em;
+    font-weight: 800;
+    padding-right: 0.4em;
+}
+
+.dice-roll-icon::after {
+    content: '';
+    animation: rolling 4s linear infinite;
+}
+
+@keyframes rolling {
+  0% {content:'\2680';}
+  20% {content:'\2681';}
+  40% {content:'\2682';}
+  60% {content:'\2683';}
+  80% {content:'\2684';}
+  100% {content:'\2685';}
+}
