@@ -1,31 +1,20 @@
 // @flow
 
 import React, { Component } from 'react';
-import { FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
+import { FormGroup, ControlLabel } from 'react-bootstrap';
+import NumericInput from '../../numeric-input';
 
-type TestForProps = {
+type Props = {
     onChange: (?number) => void;
     value: ?number
 }
 
-export default function TestForRollOptions(props: TestForProps) {
-    function handleTestForChange(event: SyntheticInputEvent<HTMLInputElement>) {
-        if (!isNaN(parseInt(event.target.value, 10))) {
-            const testFor: number = parseInt(event.target.value, 10);
-            if (testFor > 0) {
-                props.onChange(testFor);
-                return;
-            }
-        }
-        props.onChange(null);
-    }
+export default function TestForRollOptions(props: Props) {
     return (
-        <FormGroup controlId="roll-input-test-for">
-            <FormControl className="numeric-input"
-                          type="input"
-                          bsSize="large"
-                          value={props.value || ''}
-                          onChange={handleTestForChange} />
+        <FormGroup controlId="roll-input-test-for"
+                   className="roll-input-options">
+            <NumericInput value={props.value || ''} min={0}
+                          onSelect={props.onChange} />
             <ControlLabel className="roll-menu-label">
                 hits
             </ControlLabel>
