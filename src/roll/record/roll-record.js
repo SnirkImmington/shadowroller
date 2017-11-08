@@ -44,18 +44,18 @@ export default class RollRecord extends Component<RollRecordProps> {
             </Popover>
         );
         return (
-            <Alert className="roll-record-panel flex-split-container"
+            <Alert className="roll-record-panel"
                    bsStyle={this.props.mode}>
-                <span class="roll-record-left flex-split-left">
+                <div class="roll-record-left">
                     <Label className="roll-record-label"
                            bsStyle="info">
                         {this.props.label}
                     </Label>
                     {this.props.message}
-                </span>
-                <span class="roll-record-right flex-split-right">
+                </div>
+                <div class="roll-record-right">
                     <ButtonGroup>
-                    <OverlayTrigger trigger='hover'
+                    <OverlayTrigger trigger={['hover', 'focus']}
                                     placement='left'
                                     overlay={infoOverlay}>
                         <Button className='roll-record-info'
@@ -69,7 +69,7 @@ export default class RollRecord extends Component<RollRecordProps> {
                         <Glyphicon glyph='remove' />
                     </Button>
                     </ButtonGroup>
-                </span>
+                </div>
             </Alert>
         );
     }
