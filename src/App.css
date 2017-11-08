@@ -24,7 +24,7 @@
 }
 
 /* Most screens: larger title */
-@media all and (min-width: 450px) {
+@media all and (min-width: 576px) {
     .App-title {
         font-size: 4em;
     }
@@ -50,7 +50,6 @@
 
 @media all and (min-width: 576px) {
     .App-wide-container {
-        margin: 1em auto 1em;
         max-width: 98%;
     }
 }
@@ -72,25 +71,6 @@
     .App-wide-container {
         max-width: 92em;
     }
-}
-
-
-/** Make this box a flex container with a .flex-split-left and .flex-split-right */
-.flex-split-container {
-    display: flex;
-    justify-content: space-between;
-}
-
-/** Align the left side of the flex-split-container */
-.flex-split-container > .flex-split-left {
-    flex-basis: auto;
-    align-self: flex-start;
-}
-
-/** Align the right side of the flex-split-container */
-.flex-split-container > .flex-split-right {
-    flex-basis: auto;
-    align-self: flex-end;
 }
 
 .numeric-input {
