@@ -3,7 +3,7 @@
 */
 
 .roll-input-panel {
-    justify-content: space-between;
+    /*justify-content: space-between;*/
 }
 
 .roll-input-panel-form
@@ -43,8 +43,8 @@
 
 .roll-menu-label {
     font-size: 1.5em;
-    padding-right: 10px;
     padding-left: 10px;
+    padding-right: 10px;
 }
 
 .roll-loading-label {
@@ -60,7 +60,6 @@
 }
 
 .roll-record-label {
-    margin-right: 0.5em;
     padding-top: 0.4em !important;
     font-size: 1.15em !important;
 }
