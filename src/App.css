@@ -10,17 +10,28 @@
     display: flex;
 }
 
+/* Default:  half size title. */
 .App-header {
   background-color: #222;
-  height: 9em;
-  padding: 1.2em;
+  height: 5.5em;
+  padding: 0.4em;
   color: white;
 }
-
 .App-title {
-  font-size: 4em;
+  font-size: 2.5em;
   font-style: oblique;
   font-weight: 900;
+}
+
+/* Most screens: larger title */
+@media all and (min-width: 576px) {
+    .App-title {
+        font-size: 4em;
+    }
+    .App-header {
+        height: 8em;
+        padding: 1.2em;
+    }
 }
 
 .App-menu-panel-title {
@@ -32,28 +43,34 @@
     Utilities
 */
 
-/** Cause this to be centered at the max width. */
 .App-wide-container {
     margin: 1em auto 1em;
-    width: 92em;
+    width: 98%;
 }
 
-/** Make this box a flex container with a .flex-split-left and .flex-split-right */
-.flex-split-container {
-    display: flex;
-    justify-content: space-between;
+@media all and (min-width: 576px) {
+    .App-wide-container {
+        max-width: 98%;
+    }
 }
 
-/** Align the left side of the flex-split-container */
-.flex-split-container > .flex-split-left {
-    flex-basis: auto;
-    align-self: flex-start;
+@media all and (min-width: 768px) {
+    /** Cause this to be centered at the max width. */
+    .App-wide-container {
+        max-width: 50em;
+    }
 }
 
-/** Align the right side of the flex-split-container */
-.flex-split-container > .flex-split-right {
-    flex-basis: auto;
-    align-self: flex-end;
+@media all and (min-width: 992px) {
+    .App-wide-container {
+        max-width: 80%;
+    }
+}
+
+@media all and (min-width: 1300px) {
+    .App-wide-container {
+        max-width: 92em;
+    }
 }
 
 .numeric-input {

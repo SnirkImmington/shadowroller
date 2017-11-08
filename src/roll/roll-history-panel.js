@@ -50,10 +50,10 @@ export default class RollHistoryPanel extends Component<Props, State> {
         if (this.props.outcomes.length === 0) {
             return <span id='roll-history-panel' />
         }
-        
+
         const entries = this.props.outcomes.entries();
         const header = (
-            <span class="roll-history-panel-header">
+            <span className="roll-history-panel-header">
                 <b>Roll results</b> (
                 {
                     this.state.hidden ?

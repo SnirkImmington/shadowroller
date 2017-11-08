@@ -1,36 +1,23 @@
 // @flow
 
 import React, { Component } from 'react';
-import { FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
+import { FormGroup, ControlLabel } from 'react-bootstrap';
+import NumericInput from '../../numeric-input';
 
-type RollAgainstProps = {
+type Props = {
     onChange: (?number) => void;
     value: ?number
 };
 
-function RollAgainstRollOptions(props: RollAgainstProps) {
-    function handleRollAgainstChange(event: SyntheticInputEvent<HTMLInputElement>) {
-        if (!isNaN(parseInt(event.target.value, 10))) {
-            const rollAgainst: number = parseInt(event.target.value, 10);
-            if (rollAgainst > 0) {
-                props.onChange(rollAgainst);
-                return;
-            }
-        }
-        props.onChange(null);
-    }
+export default function RollAgainstRollOptions(props: Props) {
     return (
-        <FormGroup controlId="roll-input-roll-against">
-            <FormControl className="numeric-input"
-                         type="input"
-                         bsSize="large"
-                         value={props.value || ''}
-                         onChange={handleRollAgainstChange} />
+        <FormGroup controlId="roll-input-roll-against"
+                   className="roll-input-options">
+            <NumericInput value={props.value || ''} min={0}
+                          onSelect={props.onChange} />
             <ControlLabel className="roll-menu-label">
                 dice
             </ControlLabel>
         </FormGroup>
     );
 }
-
-export default RollAgainstRollOptions;

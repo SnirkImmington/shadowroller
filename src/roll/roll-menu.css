@@ -2,17 +2,102 @@
     Containers
 */
 
-.roll-input-panel {
-    justify-content: space-between;
+#roll-input-panel-form {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: space-around;
 }
 
-.roll-input-panel-form
+@media all and (min-width: 768px) {
+    #roll-input-panel-form {
+        flex-direction: row;
+        align-items: baseline;
+        flex-wrap: wrap;
+    }
+}
 
-.roll-input-panel-form {
+#roll-input-dice-group {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media all and (min-width: 768px) {
+    #roll-input-dice-group {
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-bottom: 0px;
+    }
+}
+
+#roll-input-mode-group {
+    margin-bottom: 15px;
+}
+
+@media all and (min-width: 992px) {
+    #roll-input-mode-group {
+        margin-bottom: 0px;
+    }
+}
+
+.roll-input-options {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: baseline;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media all and (min-width: 768px) {
+    .roll-input-options {
+        margin-left: 15px;
+        margin-right: 0px;
+        margin-bottom: 0px !important;
+    }
+}
+
+#roll-input-submit-group {
+    margin-bottom: 0px;
+}
+
+@media all and (min-width: 768px) {
+    #roll-input-submit-group {
+        align-self: flex-end;
+        margin-left: auto;
+    }
 }
 
 .roll-list-container {
     padding-top: 20px;
+}
+
+/*
+    Results
+*/
+
+.roll-record-panel {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+@media all and (min-width: 768px) {
+    /* Don't need to undo any mobile stuff. */
+}
+
+.roll-record-message {
+    margin-left: 10px;
+}
+
+.roll-record-right {
+    align-self: flex-end;
+    margin-left: auto;
 }
 
 /*
@@ -43,8 +128,8 @@
 
 .roll-menu-label {
     font-size: 1.5em;
-    padding-right: 10px;
     padding-left: 10px;
+    padding-right: 10px;
 }
 
 .roll-loading-label {
@@ -60,7 +145,6 @@
 }
 
 .roll-record-label {
-    margin-right: 0.5em;
     padding-top: 0.4em !important;
     font-size: 1.15em !important;
 }

@@ -44,7 +44,7 @@ export default class RandomBuffer {
         return result;
     }
 
-    checkForLimit(count: number): boolean {
+    ensureLimit(count: number): boolean {
         if (this.fillRequired(count)) {
             this.fillBuffer();
             return true;
