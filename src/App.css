@@ -45,7 +45,7 @@
 
 .App-wide-container {
     margin: 1em auto 1em;
-    width: 98%;
+    max-width: 98%;
 }
 
 @media all and (min-width: 576px) {
