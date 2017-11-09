@@ -18,7 +18,7 @@ export default class App extends Component<{}> {
                 <header className="App-header">
                     <h1 className="App-title">Shadowroller</h1>
                 </header>
-                <div className="App-container">
+                <div className="App-wide-container">
                     <RollMenu />
                 </div>
             </div>
