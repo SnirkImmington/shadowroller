@@ -219,8 +219,7 @@ export default class RollInputPanel extends Component<Props, State> {
         console.log("Rendering with", this.state);
         return (
             <Panel id="roll-input-panel" header={title} bsStyle="primary">
-                <form 
-                      id="roll-input-panel-form"
+                <form id="roll-input-panel-form"
                       onSubmit={this.handleRollSubmit}>
                     <FormGroup id='roll-input-dice-group'
                                controlId="roll-input-dice">

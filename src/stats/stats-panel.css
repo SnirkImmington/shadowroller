@@ -1,0 +1,25 @@
+/*
+    Containers
+*/
+
+/*
+Contains the StatTypePicker,
+*/
+#stats-panel {
+
+}
+
+/*
+Selected StatsType stat block panel.
+
+Large screens:
+- stat block on left, atribute list on right
+*/
+#stats-block-attributes {
+
+}
+
+#stat-type-picker {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

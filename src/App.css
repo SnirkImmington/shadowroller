@@ -39,6 +39,26 @@
     font-weight: 400;
 }
 
+#App-window-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+@media all and (min-width: 768px) {
+    #App-window-container {
+        flex-direction: row;
+    }
+}
+
+#App-window-combat {
+    flex-grow: 4;
+}
+
+#attribute-panel {
+    flex-grow: 1;
+}
+
 /*
     Utilities
 */
@@ -48,8 +68,15 @@
     max-width: 98%;
 }
 
+.App-wide {
+    max-width: 98%;
+}
+
 @media all and (min-width: 576px) {
     .App-wide-container {
+        max-width: 98%;
+    }
+    .App-wide {
         max-width: 98%;
     }
 }
@@ -59,16 +86,25 @@
     .App-wide-container {
         max-width: 50em;
     }
+    .App-wide {
+        max-width: 50em;
+    }
 }
 
 @media all and (min-width: 992px) {
     .App-wide-container {
         max-width: 80%;
     }
+    .App-wide {
+        max-width: 80%;
+    }
 }
 
 @media all and (min-width: 1300px) {
     .App-wide-container {
+        max-width: 92em;
+    }
+    .App-wide {
         max-width: 92em;
     }
 }
