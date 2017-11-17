@@ -1,9 +1,11 @@
 // @flow
 
+import './random-loading-label.css';
+
 import React, { Component } from 'react';
 import { ControlLabel } from 'react-bootstrap';
 
-import pickRandom from '../util/pick-random';
+import pickRandom from '../../util/pick-random';
 
 const loadingFlavorText: string[] = [
     "Getting all the best rolls",
@@ -15,8 +17,9 @@ const loadingFlavorText: string[] = [
     "Using non-heat-based randomess",
     "Setting up the horse races",
     "Not fixing the horse races",
+    "Don't get your locks melted off",
+    "Fetching b0ss a critical glitch",
 
-    "Fetching legit rolls",
     "Preconfiguring the glitches",
     "Asking the dragons for rolls",
 
@@ -24,10 +27,8 @@ const loadingFlavorText: string[] = [
     "Place your bets, chummer",
 
     "Fetching your ediquitte checks",
-    "Fetching chances of drek hitting the fan",
     "Fetching the most critical of glitches",
     "Fetching a few misses",
-    "Fetching a hit or two",
 
     "Maybe you'll get some hits this time",
     "You may as well turn back now",
@@ -39,11 +40,8 @@ const loadedFlavorText: string[] = [
     "Rolls from random.org",
     "Rolls from random.org",
     "Rolls from random.org",
-    "Rolls from random.org",
-    "Rolls from random.org",
 
     "Randomness from random.org",
-    "Nondeterminism from random.org",
     "Fairness from random.org",
 
     "Misses from random.org",
@@ -57,12 +55,9 @@ const loadedFlavorText: string[] = [
 type LoadingProps = { isLoading: boolean };
 
 export default class RandomLoadingLabel extends Component<LoadingProps> {
-    constructor(props: LoadingProps) {
-        super(props);
-    }
 
     shouldComponentUpdate(nextProps: LoadingProps) {
-        return nextProps.isLoading != this.props.isLoading;
+        return nextProps.isLoading !== this.props.isLoading;
     }
 
     render() {

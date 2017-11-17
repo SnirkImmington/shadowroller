@@ -1,0 +1,143 @@
+// @flow
+
+import '../../App.css';
+import './roll-input-panel.css';
+
+import React, { Component } from 'react';
+import {
+    Panel,
+    FormGroup,
+    ControlLabel,
+    Button
+} from 'react-bootstrap';
+import { connect } from 'react-redux';
+
+import NumericInput from '../../components/numeric-input';
+import RandomLoadingLabel from '../components/random-loading-label';
+
+import RollModeSelector from './options/roll-mode-selector';
+import TestForOptions from './options/test-for';
+import RollAgainstOptions from './options/roll-against';
+
+import type {
+    RollMode,
+} from '../index';
+
+import { DEFAULT_ROLL_STATE } from '../../state';
+import type { RollState } from '../state';
+import { propertiesSet, diceAvailable } from '../state';
+import type {
+    AppState, DispatchFn,
+} from '../../state';
+import * as rollActions from '../actions';
+
+type Props = {
+    dispatch: DispatchFn,
+    state: RollState, // Given by `mapStateToProps`.
+};
+
+/** Base class for roll options input. */
+class RollInputPanel extends Component<Props> {
+    handleRollSubmit = (event: SyntheticInputEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        this.props.dispatch(rollActions.performRoll());
+    }
+
+    componentDidMount() {
+        this.props.dispatch(rollActions.fetchBuffer());
+    }
+
+    handleDiceChange = (dice: ?number) => {
+        this.props.dispatch(rollActions.setDiceCount(dice));
+    }
+
+    handleRollModeSelect = (mode: RollMode) => {
+        this.props.dispatch(rollActions.setRollMode(mode));
+    }
+
+    handleTestForSelect = (testFor: ?number) => {
+        this.props.dispatch(rollActions.setTestFor(testFor));
+    }
+
+    handleRollAgainstSelect = (rollAgainst: ?number) => {
+        this.props.dispatch(rollActions.setRollAgainst(rollAgainst));
+    }
+
+    getRollOptions = (mode: RollMode) => {
+        const state = this.props.state;
+        if (mode === 'count-hits') {
+            return <div />;
+        }
+        else if (mode === "test-for") {
+            return <TestForOptions value={state.testForDice}
+                                   onChange={this.handleTestForSelect} />;
+        }
+        else if (mode === "roll-against") {
+            return <RollAgainstOptions value={state.rollAgainstDice}
+                                       onChange={this.handleRollAgainstSelect} />;
+        }
+        else {
+            return <div />;
+        }
+    }
+
+    render = () => {
+        const title = (
+            <span className='App-menu-panel-title'>
+                <b>Roll dice</b>
+            </span>
+        );
+
+        const state = this.props.state;
+
+        let isReady = !state.bufferIsLoading && propertiesSet(state);
+        if (isReady && !diceAvailable(state)) {
+            isReady = false;
+            this.props.dispatch(rollActions.fetchBuffer());
+        }
+
+        const options = this.getRollOptions(state.selectedRollMode);
+
+        return (
+            <Panel id="roll-input-panel" header={title} bsStyle="primary">
+                <form id="roll-input-panel-form"
+                      onSubmit={this.handleRollSubmit}>
+                    <FormGroup id='roll-input-dice-group'
+                               controlId="roll-input-dice">
+                        <ControlLabel className="menu-label">
+                            Roll
+                        </ControlLabel>
+                        <NumericInput min={0} max={99}
+                                      value={state.rollDice || ''}
+                                      onSelect={this.handleDiceChange} />
+                        <ControlLabel className="menu-label">
+                            dice
+                        </ControlLabel>
+                    </FormGroup>
+                    <RollModeSelector selected={state.selectedRollMode}
+                                      onSelect={this.handleRollModeSelect} />
+                    {options}
+                    <FormGroup id='roll-input-submit-group'
+                               controlId='roll-submit'>
+                        <RandomLoadingLabel
+                                    isLoading={state.bufferIsLoading} />
+                        <Button id='roll-button-submit'
+                                bsStyle="primary"
+                                disabled={!isReady}
+                                onClick={isReady ? this.handleRollSubmit : null}>
+                            Roll dice
+                        </Button>
+                    </FormGroup>
+                </form>
+            </Panel>
+        );
+    }
+}
+
+function mapStateToProps(state: AppState) {
+    return {
+        state: state.roll || DEFAULT_ROLL_STATE,
+    };
+}
+
+export default connect(mapStateToProps)(RollInputPanel);
