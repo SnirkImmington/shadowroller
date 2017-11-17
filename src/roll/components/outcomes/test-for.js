@@ -1,17 +1,17 @@
 // @flow
 
-import React, { Component } from 'react';
+import './roll-record.css';
+
+import React from 'react';
 
 import RollRecord from './roll-record';
 import SortedDiceList from './sorted-dice-list'
 
-import '../roll-menu.css';
-
-import TestForResult from '../result/test-for';
-import pluralize from '../../util/pluralize'
+import TestForResult from '../../result/test-for';
+import pluralize from '../../../util/pluralize';
 
 type TestForRecordProps = {
-    recordKey: any,
+    recordKey: number,
     outcome: TestForResult,
     onClose: (number) => void;
 };
@@ -29,24 +29,34 @@ export default function TestForRecord(props: TestForRecordProps) {
     else if (hitDiff < 0) {
         alertStyle = "danger";
     }
+    else if (hitDiff === 0) {
+        alertStyle = "info";
+    }
 
-    const hits = (hitDiff === 1 ? "hit" : "hits");
+    const hits = pluralize(hitDiff, "hit");
     let message;
-    if (hitDiff >= 0) {
+    if (hitDiff > 0) {
         message = (
             <span className="roll-record-message">
                 <b>{status + "! "}</b>
-                <b>{hitDiff}</b>{" net" + pluralize(hitDiff, " hit") + "."}
+                <b>{hitDiff}</b>{" net " + hits + "."}
             </span>
         );
     }
-    else {
+    else if (hitDiff < 0) {
         message = (
             <span className="roll-record-message">
                 <b>{"Failure! "}</b>
                 <b>{-hitDiff}</b>{pluralize(-hitDiff, " hit")+" below."}
             </span>
         );
+    }
+    else /* hitDiff === 0 */ {
+        message = (
+            <span className="roll-record-message">
+                <b>No net hits</b>, chummer.
+            </span>
+        )
     }
 
     const rolls = [];

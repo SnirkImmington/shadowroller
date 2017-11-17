@@ -1,17 +1,18 @@
 // @flow
 
+import './roll-record.css';
+
 import React from 'react';
 
 import RollRecord from './roll-record';
 import SortedDiceList from './sorted-dice-list';
 
-import '../roll-menu.css';
+import RollAgainstResult from '../../result/roll-against';
 
-import RollResult from '../result/roll-result';
-import RollAgainstResult from '../result/roll-against';
+import pluralize from '../../../util/pluralize';
 
 type RollAgainstProps = {
-    recordKey: any,
+    recordKey: number,
     outcome: RollAgainstResult,
     onClose: (number) => void;
 }
@@ -31,24 +32,34 @@ export default function RollAgainstRecord(props: RollAgainstProps) {
         alertStyle = "warning";
     }
 
-    const status = (outcome.successful() ? "Success" : "Failure");
+    //const status = (outcome.successful() ? "Success" : "Failure");
     const hitDiff = outcome.netHits();
 
+    const hits = pluralize(Math.abs(hitDiff), "hit")
+
     let message;
-    if (outcome.successful()) {
+    if (outcome.successful() && hitDiff > 0) {
         message = (
             <span className="roll-record-message">
                 <b>{"Success!"}</b>
-                <b>{" " + hitDiff}</b>{" net hits."}
+                <b>{" " + hitDiff}</b>{` net ${hits}.`}
             </span>
         );
+    }
+    else if (hitDiff === 0) {
+        alertStyle = "info";
+        message = (
+            <span className="roll-record-message">
+                <b>No net hits</b>, chummer.
+            </span>
+        )
     }
     else {
         message = (
             <span className="roll-record-message">
                 <b>{"Failure! "}</b>
                 behind by
-                <b>{" " + -hitDiff}</b>{" net hits."}
+                <b>{" " + -hitDiff}</b>{` net ${hits}.`}
             </span>
         );
     }

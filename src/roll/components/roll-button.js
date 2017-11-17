@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from 'react';
+import React from 'react';
 import { Button } from 'react-bootstrap';
 
 type RollButtonProps = {
@@ -11,8 +11,8 @@ type RollButtonProps = {
 /** Renders the "Roll dice" button */
 function RollButton(props: RollButtonProps) {
     return (
-        <Button bsStyle="primary"
-                bsSize='large'
+        <Button id='roll-button-submit'
+                bsStyle="primary"
                 disabled={props.isLoading}
                 onClick={!props.isLoading ? props.onClick : null}>
             Roll dice

@@ -1,8 +1,11 @@
 // @flow
 
-import React, { Component } from 'react';
+import '../../../App.css';
+import '../roll-input-panel.css';
+
+import React from 'react';
 import { FormGroup, ControlLabel } from 'react-bootstrap';
-import NumericInput from '../../numeric-input';
+import NumericInput from '../../../components/numeric-input';
 
 type Props = {
     onChange: (?number) => void;
@@ -13,9 +16,10 @@ export default function TestForRollOptions(props: Props) {
     return (
         <FormGroup controlId="roll-input-test-for"
                    className="roll-input-options">
-            <NumericInput value={props.value || ''} min={0}
+            <NumericInput min={0} max={99}
+                          value={props.value || ''}
                           onSelect={props.onChange} />
-            <ControlLabel className="roll-menu-label">
+            <ControlLabel className="menu-label">
                 hits
             </ControlLabel>
         </FormGroup>

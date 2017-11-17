@@ -1,23 +1,24 @@
 // @flow
 
-export type CountHitsParams = {|
-    mode: "count-hits",
-|};
+export type CountHitsParams = {
+    type: "count-hits",
+};
 
-export type TestForParams = {|
+export type TestForParams = {
     mode: "test-for",
     testFor: number
-|}
+};
 
-export type RollAgainstParams = {|
+export type RollAgainstParams = {
     mode: "roll-against",
     rollAgainst: number
-|}
+};
 
 export type RollParams =
 | CountHitsParams
 | TestForParams
-| RollAgainstParams;
+| RollAgainstParams
+;
 
 export const RollModes = {
     "count-hits": {

@@ -1,14 +1,14 @@
 // @flow
 
+import './roll-record.css';
+
 import React from 'react';
 
 import RollRecord from './roll-record';
 import SortedDiceList from './sorted-dice-list';
 
-import '../roll-menu.css';
-
-import CountHitsResult from '../result/count-hits';
-import pluralize from '../../util/pluralize';
+import CountHitsResult from '../../result/count-hits';
+import pluralize from '../../../util/pluralize';
 
 type CountHitsRecordProps = {
     recordKey: number;
@@ -24,12 +24,25 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
     if (result.isGlitched()) {
         alertStyle = (result.isCrit() ? "danger" : "warning");
     }
-    let message = (
-        <span className="roll-record-message">
-            <b>{result.status + "! "}</b>
-            <b>{result.hits}</b>{pluralize(result.hits, " hit")}.
-        </span>
-    );
+    else if (result.hits === 0) {
+        alertStyle = "info";
+    }
+    let message;
+    if (result.isGlitched() || result.hits > 0) {
+        message = (
+            <span className="roll-record-message">
+                <b>{result.status + "! "}</b>
+                <b>{result.hits}</b>{pluralize(result.hits, " hit")}.
+            </span>
+        );
+    }
+    else /* result.hits === 0 */ {
+        message = (
+            <span className="roll-record-message">
+                <b>No hits</b>, chummer.
+            </span>
+        )
+    }
 
     // Deep copy of result's rolls
     const rolls: number[] = [];

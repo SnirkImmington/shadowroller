@@ -1,13 +1,15 @@
 // @flow
 
-import React, { Component } from 'react';
+import './roll-mode-selector.css';
+
+import React from 'react';
 import {
     FormGroup,
     DropdownButton, MenuItem, Glyphicon
  } from 'react-bootstrap';
 
-import type { RollMode } from '../types';
-import { RollModes } from '../types';
+import type { RollMode } from '../../index';
+import { RollModes } from '../../index';
 
 type Props = {
     selected: RollMode;
@@ -23,7 +25,6 @@ const rollSelections = Object.keys(RollModes).map(option =>
 );
 
 export default function RollModeSelector(props: Props) {
-    console.log("RollModeSelector", props);
     function handleSelect(mode: RollMode, event: SyntheticInputEvent<DropdownButton>) {
         props.onSelect(mode);
     }
@@ -35,17 +36,17 @@ export default function RollModeSelector(props: Props) {
                        glyph="menu-down" />
         </span>
     );
+    
     return (
         <FormGroup id='roll-input-mode-group'
                    controlId="roll-input-mode">
-            <DropdownButton bsSize="large"
-                            noCaret
+            <DropdownButton noCaret
                             id='roll-mode-selector-drop-down'
                             key={props.selected}
                             title={dropdownTitle}
                             onSelect={handleSelect}>
-            {rollSelections}
-        </DropdownButton>
+                {rollSelections}
+            </DropdownButton>
         </FormGroup>
     );
 }

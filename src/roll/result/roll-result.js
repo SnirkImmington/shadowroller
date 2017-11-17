@@ -19,8 +19,8 @@ export default class RollResult {
         this.misses = 0;
         // Count the number of hits and misses.
         for (let die of dice) {
-            if (typeof(die) != 'number') {
-                die = parseInt(die);
+            if (typeof(die) !== 'number') {
+                die = parseInt(die, 10);
             }
             if (die >= 5) {
                 this.hits += 1;
@@ -79,7 +79,7 @@ export default class RollResult {
         else {
             result = "Hit!" + this.hits + " hits";
         }
-        result += " (dice: " + (this.dice: any) + ")";
+        result += `dice: (${this.dice.toString()})`;
         return result;
     }
 }

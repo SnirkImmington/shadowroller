@@ -1,5 +1,7 @@
 // @flow
 
+import './roll-record.css';
+
 import React, { Component } from 'react';
 import {
     Alert,
@@ -9,12 +11,7 @@ import {
     Popover,
     OverlayTrigger,
     Glyphicon,
-    Panel,
 } from 'react-bootstrap';
-
-import '../roll-menu.css';
-
-import typeof RollOutcome from '../result/roll-outcome';
 
 type RollRecordProps = {
     recordKey: number;
@@ -25,15 +22,12 @@ type RollRecordProps = {
     tooltip: any;
 }
 
+function mutedOnClick(event: SyntheticInputEvent<HTMLButtonElement>) {
+    event.preventDefault();
+}
+
 export default class RollRecord extends Component<RollRecordProps> {
-    handleCloseButton: Function;
-
-    constructor(props: RollRecordProps) {
-        super(props);
-        this.handleCloseButton = this.handleCloseButton.bind(this);
-    }
-
-    handleCloseButton() {
+    handleCloseButton = () => {
         this.props.onClose(this.props.recordKey);
     }
 
@@ -46,19 +40,19 @@ export default class RollRecord extends Component<RollRecordProps> {
         return (
             <Alert className="roll-record-panel"
                    bsStyle={this.props.mode}>
-                <div class="roll-record-left">
+                <div class="roll-record-info">
                     <Label className="roll-record-label"
                            bsStyle="info">
                         {this.props.label}
                     </Label>
                     {this.props.message}
                 </div>
-                <div class="roll-record-right">
-                    <ButtonGroup>
+                <ButtonGroup className='roll-record-buttons'>
                     <OverlayTrigger trigger={['hover', 'focus']}
                                     placement='left'
                                     overlay={infoOverlay}>
                         <Button className='roll-record-info'
+                                onClick={mutedOnClick}
                                 bsStyle='info'>
                             <Glyphicon glyph='info-sign' />
                         </Button>
@@ -68,8 +62,7 @@ export default class RollRecord extends Component<RollRecordProps> {
                             onClick={this.handleCloseButton}>
                         <Glyphicon glyph='remove' />
                     </Button>
-                    </ButtonGroup>
-                </div>
+                </ButtonGroup>
             </Alert>
         );
     }

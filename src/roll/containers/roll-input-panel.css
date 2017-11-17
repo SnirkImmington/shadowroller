@@ -1,0 +1,69 @@
+#roll-input-panel-form {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: space-around;
+}
+
+@media all and (min-width: 768px) {
+    #roll-input-panel-form {
+        flex-direction: row;
+        align-items: baseline;
+        flex-wrap: wrap;
+    }
+}
+
+#roll-input-dice-group {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media all and (min-width: 768px) {
+    #roll-input-dice-group {
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-bottom: 0px;
+    }
+}
+
+#roll-input-mode-group {
+    margin-bottom: 15px;
+}
+
+@media all and (min-width: 992px) {
+    #roll-input-mode-group {
+        margin-bottom: 0px;
+    }
+}
+
+.roll-input-options {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: baseline;
+    margin-bottom: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media all and (min-width: 768px) {
+    .roll-input-options {
+        margin-left: 15px;
+        margin-right: 0px;
+        margin-bottom: 0px !important;
+    }
+}
+
+#roll-input-submit-group {
+    margin-bottom: 0px;
+}
+
+@media all and (min-width: 768px) {
+    #roll-input-submit-group {
+        align-self: flex-end;
+        margin-left: auto;
+    }
+}

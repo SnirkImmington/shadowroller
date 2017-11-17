@@ -62,13 +62,13 @@ export default class RollAgainstResult {
                 result += (this.userRoll.isCrit() ?
                     "critial glitched with " : " glitched with ");
                 result += this.userRoll.misses;
-                result += this.userRoll.misses == 1 ? " miss" : " misses";
+                result += this.userRoll.misses === 1 ? " miss" : " misses";
                 if (this.foeRoll.isGlitched()) {
                     result += ", and the foe ";
                     result += (this.foeRoll.isCrit() ?
                         "critical glitched with " : "glitched with ");
                     result += this.foeRoll.misses;
-                    result += (this.foeRoll.misses == 1 ? " miss" : " misses");
+                    result += (this.foeRoll.misses === 1 ? " miss" : " misses");
                 }
             }
             else if (this.foeRoll.isGlitched()) {
@@ -76,7 +76,7 @@ export default class RollAgainstResult {
                 result += (this.foeRoll.isCrit() ?
                     "critical glitched with " : "glitched with ");
                 result += this.foeRoll.misses;
-                result += (this.foeRoll.misses == 1 ? " miss" : " misses");
+                result += (this.foeRoll.misses === 1 ? " miss" : " misses");
             }
         }
 

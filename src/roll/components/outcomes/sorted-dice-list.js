@@ -1,7 +1,8 @@
 // @flow
 
-import React, { Component } from 'react';
-import '../roll-menu.css';
+import './roll-record.css';
+
+import React from 'react';
 
 export default function SortedDiceList(props: { rolls: number[] }) {
         props.rolls.sort((a, b) => b - a);

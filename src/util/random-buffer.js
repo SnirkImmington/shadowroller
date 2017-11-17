@@ -1,8 +1,7 @@
 // @flow
 
+const RANDOM_ORG_URL = '';
 const FETCH_BUFFER = 200;
-
-const RANDOM_ORG_URL = "https://www.random.org/integers/?num=" + FETCH_BUFFER + "&min=1&max=6&col=1&base=10&format=plain&rnd=new";
 
 function parseRandomOrgReply(text: string): number[] {
     const result: number[] = text.split(/\s/, FETCH_BUFFER)
@@ -17,7 +16,7 @@ export default class RandomBuffer {
     buffer: number[];
 
     constructor(onFillRequired: () => void, onFillCompleted: () => void) {
-        this.buffer = new Array(FETCH_BUFFER);
+        this.buffer = [];
         this.onFillRequired = onFillRequired;
         this.onFillCompleted = onFillCompleted;
     }
@@ -58,8 +57,8 @@ export default class RandomBuffer {
         const request = new XMLHttpRequest();
         const _this = this;
         request.onreadystatechange = function() {
-            if (this.readyState === 4 && this.status === 200) {
-                const new_numbers: number[] = parseRandomOrgReply(this.responseText);
+            if (request.readyState === 4 && request.status === 200) {
+                const new_numbers: number[] = parseRandomOrgReply(request.responseText);
                 _this.buffer.push(...new_numbers);
                 _this.onFillCompleted();
             }
