@@ -22,7 +22,7 @@ import DisplayOptions from './options/display';
 
 import type { RollMode, DisplayMode } from '../index';
 
-import { DEFAULT_ROLL_STATE } from '../../state';
+import { DEFAULT_ROLL_STATE } from '../state';
 import type { RollState } from '../state';
 import { propertiesSet, diceAvailable } from '../state';
 import type {
@@ -99,7 +99,7 @@ class RollInputPanel extends React.Component<Props> {
     render = () => {
         const title = (
             <span className='App-menu-panel-title'>
-                <b>Roll dice</b>
+                <b>Do your thing</b>
             </span>
         );
 

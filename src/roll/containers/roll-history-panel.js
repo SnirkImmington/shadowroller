@@ -16,7 +16,7 @@ import TestForResult from '../result/test-for'; //eslint-disable-line no-unused-
 import RollAgainstResult from '../result/roll-against'; //eslint-disable-line no-unused-vars
 import typeof RollOutcome from '../result';
 
-import { DEFAULT_ROLL_STATE } from '../../state';
+import { DEFAULT_ROLL_STATE } from '../state';
 import type { AppState, DispatchFn } from '../../state';
 import * as rollActions from '../actions';
 
@@ -60,9 +60,9 @@ class RollHistoryPanel extends React.Component<Props, State> {
                 <b>Roll results</b> (
                 {
                     this.state.hidden ?
-                    <a href="#chummer" onClick={this.handleShow}>show</a>
+                    <a href="#" onClick={this.handleShow}>show</a>
                     :
-                    <a href="#chummer-chum-chum" onClick={this.handleHide}>hide</a>
+                    <a href="#roll-history-panel" onClick={this.handleHide}>hide</a>
                 })
             </span>
         );
