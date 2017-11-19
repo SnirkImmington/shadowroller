@@ -1,6 +1,11 @@
 // @flow
 
+import { Attributes } from './character/attributes';
+import type { AttributesState } from './character/attributes/state';
+import type { AttributeAction } from './character/attributes/actions';
+
 import type { RollState } from './roll/state';
+import { DEFAULT_ROLL_STATE } from './roll/state';
 import type { RollAction } from './roll/actions';
 
 /**
@@ -26,19 +31,7 @@ export type DispatchFn = (action: Action | Array<Action> | Promise<Action> | Thu
 /** Thunk action. */
 export type ThunkAction = (dipatch: DispatchFn, getState: GetStateFn) => mixed;
 
-
-export const DEFAULT_ROLL_STATE: RollState = {
-    buffer: [],
-    bufferLoadState: "loading",
-    bufferIsLocal: false,
-    selectedRollMode: "count-hits",
-    rollDice: null,
-    rollAgainstDice: null,
-    testForDice: null,
-    displayMode: "max",
-    outcomes: [],
-};
-
+/** Default state of the app. */
 export const DEFAULT_STATE: AppState = {
     roll: DEFAULT_ROLL_STATE,
 };

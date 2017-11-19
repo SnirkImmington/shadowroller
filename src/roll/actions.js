@@ -1,4 +1,9 @@
 // @flow
+
+/* eslint no-use-before-define: "off" */
+// ^ I want to assert all the functions return the generic AttributeAction
+// even though it's defined at the end.
+
 import fetch from 'isomorphic-fetch';
 
 import type { RollOutcome } from './result';
@@ -58,7 +63,7 @@ export function fetchBuffer(): ThunkAction {
 export type BufferFetchStartingAction = {
     +type: "roll.buffer_fetch_starting",
 };
-export function bufferFetchStarting(): BufferFetchStartingAction {
+export function bufferFetchStarting(): RollAction {
     return { type: "roll.buffer_fetch_starting" };
 }
 
@@ -69,7 +74,7 @@ export type BufferFetchCompleteAction = {
     +type: "roll.buffer_fetch_complete",
     +newValues: Array<number>,
 };
-export function bufferFetchComplete(newValues: number[]): BufferFetchCompleteAction {
+export function bufferFetchComplete(newValues: number[]): RollAction {
     return { type: "roll.buffer_fetch_complete", newValues };
 }
 
@@ -105,7 +110,7 @@ export type SetDiceCountAction = {
     +type: "roll.set_dice_count",
     +dice: ?number,
 };
-export function setDiceCount(dice: ?number): SetDiceCountAction {
+export function setDiceCount(dice: ?number): RollAction {
     return { type: "roll.set_dice_count", dice };
 }
 
@@ -114,7 +119,7 @@ export type SetRollModeAction = {
     +type: "roll.set_roll_mode",
     +mode: RollMode,
 };
-export function setRollMode(mode: RollMode): SetRollModeAction {
+export function setRollMode(mode: RollMode): RollAction {
     return { type: "roll.set_roll_mode", mode };
 }
 
@@ -123,7 +128,7 @@ export type SetRollAgainstAction = {
     +type: "roll.set_roll_against",
     +rollAgainst: ?number,
 };
-export function setRollAgainst(rollAgainst: ?number): SetRollAgainstAction {
+export function setRollAgainst(rollAgainst: ?number): RollAction {
     return { type: "roll.set_roll_against", rollAgainst };
 }
 
@@ -132,7 +137,7 @@ export type SetTestForAction = {
     +type: "roll.set_test_for",
     +testFor: ?number,
 };
-export function setTestFor(testFor: ?number): SetTestForAction {
+export function setTestFor(testFor: ?number): RollAction {
     return { type: "roll.set_test_for", testFor };
 }
 
@@ -157,7 +162,7 @@ export type RemoveBufferAction = {
     +type: "roll.remove_buffer",
     +dice: number
 };
-export function removeBuffer(dice: number): RemoveBufferAction {
+export function removeBuffer(dice: number): RollAction {
     return { type: "roll.remove_buffer", dice };
 }
 
@@ -175,7 +180,7 @@ export type DeleteOutcomeAction = {
     +type: "roll.delete_outcome",
     +index: number
 };
-export function deleteOutcome(index: number): DeleteOutcomeAction {
+export function deleteOutcome(index: number): RollAction {
     return { type: "roll.delete_outcome", index };
 }
 

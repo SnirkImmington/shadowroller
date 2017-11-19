@@ -17,6 +17,18 @@ export type RollState = {
     +outcomes: Array<RollOutcome>
 };
 
+export const DEFAULT_ROLL_STATE: RollState = {
+    buffer: [],
+    bufferIsLoading: true,
+    bufferIsLocal: false,
+    selectedRollMode: "count-hits",
+    rollDice: null,
+    rollAgainstDice: null,
+    testForDice: null,
+    displayMode: "max",
+    outcomes: [],
+};
+
 /** Whether the needed properties of the state are set to perform the roll. */
 export function propertiesSet(state: RollState): boolean {
     if (state.rollDice == null) { return false; }
