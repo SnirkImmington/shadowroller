@@ -1,6 +1,6 @@
 {
   "name": "shadowroller",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "homepage": "https://snirkimmington.github.io/shadowroller",
   "dependencies": {
     "bootstrap": "^3.3.7",
