@@ -1,0 +1,37 @@
+/*
+    Attribute Panel
+
+The form should be a flexbox that initially groups items line by line.
+On larger screen sizes we can mess with grouping them together.
+*/
+#attribute-panel-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+@media all and (min-width: 768px) {
+    #attribute-panel {
+        margin-left: 10px;
+        min-width: 16em;
+        max-width: 16em;
+    }
+    #attribute-panel-form {
+    }
+}
+
+.attribute-panel-group {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+}
+/*
+.attribute-panel-name {
+    flex-grow: 2;
+}
+
+.attribute-panel-input {
+    flex-grow: 1.1;
+}
+*/
