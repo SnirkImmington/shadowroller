@@ -32,14 +32,14 @@ export default function RollModeSelector(props: Props) {
         <span id="roll-mode-input-title">
             {RollModes[props.selected].title}
             <Glyphicon className="roll-mode-input-glyph"
-                       glyph="menu-down" />
+                       glyph="menu-up" />
         </span>
     );
 
     return (
         <FormGroup id='roll-input-mode-group'
                    controlId="roll-input-mode">
-            <DropdownButton noCaret
+            <DropdownButton noCaret dropup
                             id='roll-mode-selector-drop-down'
                             key={props.selected}
                             title={dropdownTitle}
