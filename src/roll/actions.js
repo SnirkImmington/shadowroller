@@ -2,7 +2,7 @@
 import fetch from 'isomorphic-fetch';
 
 import type { RollOutcome } from './result';
-import type { RollMode } from './index';
+import type { RollMode, DisplayMode } from './index';
 import type { ThunkAction, DispatchFn, GetStateFn } from '../state';
 import { propertiesSet, diceAvailable } from './state';
 
@@ -10,6 +10,7 @@ import RollResult from './result/roll-result';
 import RollAgainstResult from './result/roll-against';
 import TestForResult from './result/test-for';
 import CountHitsResult from './result/count-hits';
+import DisplayResult from './result/display';
 
 const FETCH_BUFFER = 200;
 
@@ -94,6 +95,14 @@ export function setTestFor(testFor: ?number): SetTestForAction {
     return { type: "roll.set_test_for", testFor };
 }
 
+export type SetDisplayModeAction = {
+    +type: "roll.set_display_mode",
+    +mode: DisplayMode
+};
+export function setDisplayMode(mode: DisplayMode): SetDisplayModeAction {
+    return { type: "roll.set_display_mode", mode };
+}
+
 /** Dice have been rolled, remove from buffer. */
 export type RemoveBufferAction = {
     +type: "roll.remove_buffer",
@@ -168,6 +177,15 @@ export function performRoll(): ThunkAction {
                 dispatch(appendOutcome(outcome));
                 return true;
             }
+            case 'display': {
+                const toRoll = rollDice;
+                const pool = state.buffer.slice(bufferLength - toRoll);
+                dispatch(removeBuffer(toRoll));
+                const outcome: RollOutcome =
+                    new DisplayResult(pool, state.displayMode);
+                dispatch(appendOutcome(outcome));
+                return true;
+            }
             default:
                 return false;
         }
@@ -182,6 +200,7 @@ export type RollAction =
 | SetRollModeAction
 | SetRollAgainstAction
 | SetTestForAction
+| SetDisplayModeAction
 | RemoveBufferAction
 | AppendOutcomeAction
 | DeleteOutcomeAction

@@ -18,7 +18,6 @@ type Props = {
 
 const rollSelections = Object.keys(RollModes).map(option =>
     <MenuItem eventKey={option} key={option}
-              disabled={RollModes[option].disabled}
               className="roll-input-mode-item">
         {RollModes[option].title}
     </MenuItem>
@@ -36,7 +35,7 @@ export default function RollModeSelector(props: Props) {
                        glyph="menu-down" />
         </span>
     );
-    
+
     return (
         <FormGroup id='roll-input-mode-group'
                    controlId="roll-input-mode">

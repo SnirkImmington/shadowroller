@@ -3,7 +3,7 @@
 import '../../App.css';
 import './roll-input-panel.css';
 
-import React, { Component } from 'react';
+import * as React from 'react';
 import {
     Panel,
     FormGroup,
@@ -18,10 +18,9 @@ import RandomLoadingLabel from '../components/random-loading-label';
 import RollModeSelector from './options/roll-mode-selector';
 import TestForOptions from './options/test-for';
 import RollAgainstOptions from './options/roll-against';
+import DisplayOptions from './options/display';
 
-import type {
-    RollMode,
-} from '../index';
+import type { RollMode, DisplayMode } from '../index';
 
 import { DEFAULT_ROLL_STATE } from '../../state';
 import type { RollState } from '../state';
@@ -37,7 +36,7 @@ type Props = {
 };
 
 /** Base class for roll options input. */
-class RollInputPanel extends Component<Props> {
+class RollInputPanel extends React.Component<Props> {
     handleRollSubmit = (event: SyntheticInputEvent<HTMLButtonElement>) => {
         event.preventDefault();
         this.props.dispatch(rollActions.performRoll());
@@ -63,7 +62,11 @@ class RollInputPanel extends Component<Props> {
         this.props.dispatch(rollActions.setRollAgainst(rollAgainst));
     }
 
-    getRollOptions = (mode: RollMode) => {
+    handleDisplayModeSelect = (mode: DisplayMode) => {
+        this.props.dispatch(rollActions.setDisplayMode(mode));
+    }
+
+    getRollOptions = (mode: RollMode): React.Node => {
         const state = this.props.state;
         if (mode === 'count-hits') {
             return <div />;
@@ -75,6 +78,10 @@ class RollInputPanel extends Component<Props> {
         else if (mode === "roll-against") {
             return <RollAgainstOptions value={state.rollAgainstDice}
                                        onChange={this.handleRollAgainstSelect} />;
+        }
+        else if (mode === "display") {
+            return <DisplayOptions mode={state.displayMode}
+                                   onChange={this.handleDisplayModeSelect} />;
         }
         else {
             return <div />;

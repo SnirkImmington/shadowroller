@@ -2,7 +2,7 @@
 
 import './roll-record.css';
 
-import React, { Component } from 'react';
+import * as React from 'react';
 import {
     Alert,
     Label,
@@ -18,22 +18,22 @@ type RollRecordProps = {
     mode: string;
     label: string;
     onClose: (number) => void;
-    message: any;
-    tooltip: any;
+    message: React.Node;
+    tooltip: React.Node;
 }
 
 function mutedOnClick(event: SyntheticInputEvent<HTMLButtonElement>) {
     event.preventDefault();
 }
 
-export default class RollRecord extends Component<RollRecordProps> {
+export default class RollRecord extends React.Component<RollRecordProps> {
     handleCloseButton = () => {
         this.props.onClose(this.props.recordKey);
     }
 
     render() {
         const infoOverlay = (
-            <Popover title="Info">
+            <Popover title="Rolls (sorted)">
                 {this.props.tooltip}
             </Popover>
         );

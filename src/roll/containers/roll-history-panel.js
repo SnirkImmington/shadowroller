@@ -1,12 +1,13 @@
 // @flow
 
-import React, { Component } from 'react';
+import * as React from 'react';
 import { Panel } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
 import CountHitsRecord from '../components/outcomes/count-hits';
 import RollAgainstRecord from '../components/outcomes/roll-against';
 import TestForRecord from '../components/outcomes/test-for';
+import DisplayRecord from '../components/outcomes/display';
 
 // These imports are used in Flow asserts.
 import RollResult from '../result/roll-result'; //eslint-disable-line no-unused-vars
@@ -28,7 +29,7 @@ type State = {
 };
 
 /** Displays the given rolls. */
-class RollHistoryPanel extends Component<Props, State> {
+class RollHistoryPanel extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
@@ -71,12 +72,12 @@ class RollHistoryPanel extends Component<Props, State> {
                           bsStyle="info" />
         }
 
-        const result: Array<any> = [];
+        const result: Array<React.Node> = [];
         for (const entry of entries) {
             const index: number = entry[0];
+            const outcome: any = entry[1];
 
-            if (entry[1].mode === 'count-hits') {
-                const outcome: any = entry[1];
+            if (outcome.mode === 'count-hits') {
                 result.push(
                     <CountHitsRecord key={index}
                                      recordKey={index}
@@ -84,8 +85,7 @@ class RollHistoryPanel extends Component<Props, State> {
                                      outcome={outcome} />
                 );
             }
-            else if (entry[1].mode === 'roll-against') {
-                const outcome: any = entry[1];
+            else if (outcome.mode === 'roll-against') {
                 result.push(
                     <RollAgainstRecord key={index}
                                        recordKey={index}
@@ -93,13 +93,20 @@ class RollHistoryPanel extends Component<Props, State> {
                                        outcome={outcome} />
                 );
             }
-            else if (entry[1].mode === 'test-for') {
-                const outcome: any = entry[1];
+            else if (outcome.mode === 'test-for') {
                 result.push(
                     <TestForRecord key={index}
                                    recordKey={index}
                                    onClose={this.onRecordClosed}
                                    outcome={outcome} />
+                );
+            }
+            else if (outcome.mode === 'display') {
+                result.push(
+                    <DisplayRecord key={index}
+                                     recordKey={index}
+                                     onClose={this.onRecordClosed}
+                                     outcome={outcome} />
                 );
             }
         }

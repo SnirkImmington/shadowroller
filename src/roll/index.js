@@ -1,7 +1,9 @@
 // @flow
 
+export type DisplayMode = "min" | "max" | "all";
+
 export type CountHitsParams = {
-    type: "count-hits",
+    mode: "count-hits",
 };
 
 export type TestForParams = {
@@ -14,29 +16,35 @@ export type RollAgainstParams = {
     rollAgainst: number
 };
 
+export type DisplayParams = {
+    mode: "display",
+    showMax: DisplayMode,
+};
+
 export type RollParams =
 | CountHitsParams
 | TestForParams
 | RollAgainstParams
+| DisplayParams
 ;
 
 export const RollModes = {
     "count-hits": {
         title: "counting hits",
-        disabled: false
+        description: "Count 5s and 6s",
     },
     "test-for": {
         title: "testing for",
-        disabled: false
+        description: "Test for a certain number of hits",
     },
     "roll-against": {
         title: "against",
-        disabled: false
+        description: "Roll against another dice pool",
     },
-    "extended": {
-        title: "extended",
-        disabled: true
-    }
+    "display": {
+        title: "display",
+        description: "Show all dice/highest/lowest roll",
+    },
 }
 
 export type RollMode = $Keys<typeof RollModes>;

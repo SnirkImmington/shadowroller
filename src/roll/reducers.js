@@ -1,7 +1,7 @@
 // @flow
 import { combineReducers } from 'redux';
 
-import type { RollMode } from './index';
+import type { RollMode, DisplayMode } from './index';
 import type { RollAction } from './actions';
 import type { RollState } from './state';
 import type { Action } from '../state';
@@ -85,6 +85,16 @@ function setTestForReducer(testFor: ?number = null,
     }
 }
 
+function setDisplayModeReducer(mode: DisplayMode = "max",
+                                    action: RollAction): DisplayMode {
+    if (action.type === 'roll.set_display_mode') {
+        return action.mode;
+    }
+    else {
+        return mode;
+    }
+}
+
 /**
     roll.outcomes
 
@@ -113,6 +123,7 @@ const rollReducers = {
     selectedRollMode: setRollModeReducer,
     rollDice: setDiceCountReducer,
     rollAgainstDice: setRollAgainstReducer,
+    displayMode: setDisplayModeReducer,
     testForDice: setTestForReducer,
 };
 
