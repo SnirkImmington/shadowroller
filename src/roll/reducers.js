@@ -85,7 +85,7 @@ function setTestForReducer(testFor: ?number = null,
     }
 }
 
-function setDisplayMaximumReducer(mode: DisplayMode = "max",
+function setDisplayModeReducer(mode: DisplayMode = "max",
                                     action: RollAction): DisplayMode {
     if (action.type === 'roll.set_display_mode') {
         return action.mode;
@@ -123,7 +123,7 @@ const rollReducers = {
     selectedRollMode: setRollModeReducer,
     rollDice: setDiceCountReducer,
     rollAgainstDice: setRollAgainstReducer,
-    displayMode: setDisplayMaximumReducer,
+    displayMode: setDisplayModeReducer,
     testForDice: setTestForReducer,
 };
 
