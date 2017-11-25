@@ -1,7 +1,7 @@
 // @flow
 import { combineReducers } from 'redux';
 
-import type { RollMode } from './index';
+import type { RollMode, DisplayMode } from './index';
 import type { RollAction } from './actions';
 import type { RollState } from './state';
 import type { Action } from '../state';
@@ -85,13 +85,13 @@ function setTestForReducer(testFor: ?number = null,
     }
 }
 
-function setHighlightMaximumReducer(maximum: boolean = true,
-                                    action: RollAction): boolean {
-    if (action.type === 'roll.set_highlight') {
-        return action.maximum;
+function setDisplayMaximumReducer(mode: DisplayMode = "max",
+                                    action: RollAction): DisplayMode {
+    if (action.type === 'roll.set_display_mode') {
+        return action.mode;
     }
     else {
-        return maximum;
+        return mode;
     }
 }
 
@@ -123,7 +123,7 @@ const rollReducers = {
     selectedRollMode: setRollModeReducer,
     rollDice: setDiceCountReducer,
     rollAgainstDice: setRollAgainstReducer,
-    highlightMaximum: setHighlightMaximumReducer,
+    displayMode: setDisplayMaximumReducer,
     testForDice: setTestForReducer,
 };
 

@@ -2,7 +2,7 @@
 import fetch from 'isomorphic-fetch';
 
 import type { RollOutcome } from './result';
-import type { RollMode } from './index';
+import type { RollMode, DisplayMode } from './index';
 import type { ThunkAction, DispatchFn, GetStateFn } from '../state';
 import { propertiesSet, diceAvailable } from './state';
 
@@ -95,12 +95,12 @@ export function setTestFor(testFor: ?number): SetTestForAction {
     return { type: "roll.set_test_for", testFor };
 }
 
-export type SetHighlightMaximumAction = {
-    +type: "roll.set_highlight",
-    +maximum: boolean
+export type SetDisplayModeAction = {
+    +type: "roll.set_display_mode",
+    +mode: DisplayMode
 };
-export function setHighlightMaximum(maximum: boolean): SetHighlightMaximumAction {
-    return { type: "roll.set_highlight", maximum };
+export function setDisplayMode(mode: DisplayMode): SetDisplayModeAction {
+    return { type: "roll.set_display_mode", mode };
 }
 
 /** Dice have been rolled, remove from buffer. */
@@ -177,12 +177,12 @@ export function performRoll(): ThunkAction {
                 dispatch(appendOutcome(outcome));
                 return true;
             }
-            case 'highlight': {
+            case 'display': {
                 const toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
                 dispatch(removeBuffer(toRoll));
                 const outcome: RollOutcome =
-                    new HighlightResult(pool, state.highlightMaximum || true);
+                    new HighlightResult(pool, state.displayMode);
                 dispatch(appendOutcome(outcome));
                 return true;
             }
@@ -200,7 +200,7 @@ export type RollAction =
 | SetRollModeAction
 | SetRollAgainstAction
 | SetTestForAction
-| SetHighlightMaximumAction
+| SetDisplayModeAction
 | RemoveBufferAction
 | AppendOutcomeAction
 | DeleteOutcomeAction
