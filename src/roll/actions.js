@@ -10,7 +10,7 @@ import RollResult from './result/roll-result';
 import RollAgainstResult from './result/roll-against';
 import TestForResult from './result/test-for';
 import CountHitsResult from './result/count-hits';
-import HighlightResult from './result/highlight';
+import DisplayResult from './result/display';
 
 const FETCH_BUFFER = 200;
 
@@ -182,7 +182,7 @@ export function performRoll(): ThunkAction {
                 const pool = state.buffer.slice(bufferLength - toRoll);
                 dispatch(removeBuffer(toRoll));
                 const outcome: RollOutcome =
-                    new HighlightResult(pool, state.displayMode);
+                    new DisplayResult(pool, state.displayMode);
                 dispatch(appendOutcome(outcome));
                 return true;
             }
