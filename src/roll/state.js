@@ -3,9 +3,12 @@
 import type { RollMode, DisplayMode } from './index';
 import type { RollOutcome } from './result';
 
+export type LoadingState = "loading" | "complete" | "failed";
+
 export type RollState = {
     +buffer: Array<number>,
-    +bufferIsLoading: boolean,
+    +bufferLoadState: LoadingState,
+    +bufferIsLocal: ?boolean,
     +selectedRollMode: RollMode,
     +rollDice: ?number,
     +rollAgainstDice: ?number,

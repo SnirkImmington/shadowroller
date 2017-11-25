@@ -17,16 +17,23 @@ const FETCH_BUFFER = 200;
 const RANDOM_ORG_URL =
 `https://www.random.org/integers/?num=${FETCH_BUFFER}&min=1&max=6&col=1&base=10&format=plain&rnd=new`;
 
-/** A buffer fetch is required now.
-    `state.roll.bufferIsLoading` should be true. */
-export type FetchBufferAction = {
-    +type: "roll.fetch_buffer",
-};
+/** Fetch new numbers from random.org. */
 export function fetchBuffer(): ThunkAction {
     return function(dispatch: DispatchFn, getState: GetStateFn) {
         dispatch(bufferFetchStarting());
-        return fetch(RANDOM_ORG_URL)
-            .then(response => response.text())
+        if (getState().roll.bufferIsLocal) {
+            const newNumbers: number[] = [];
+            for (let i = 0; i < FETCH_BUFFER; i++) {
+                const num = Math.floor(Math.random() * 6) + 1;
+                newNumbers.push(num);
+            }
+            return dispatch(bufferFetchComplete(newNumbers));
+        }
+        else {
+            return fetch(RANDOM_ORG_URL)
+            .then(function(response) {
+                return response.text();
+            })
             .then(function(text: string) {
                 const textMatches: string[] = text.split(/\s/, FETCH_BUFFER);
                 const newNumbers: number[] = [];
@@ -37,10 +44,17 @@ export function fetchBuffer(): ThunkAction {
                     }
                 }
                 dispatch(bufferFetchComplete(newNumbers));
+            })
+            .catch(function(error: Error) {
+                dispatch(bufferFetchFailed());
             });
+        }
     };
 }
 
+/** The buffer fetch is starting.
+    `state.roll.bufferState === "loading"`
+*/
 export type BufferFetchStartingAction = {
     +type: "roll.buffer_fetch_starting",
 };
@@ -49,7 +63,7 @@ export function bufferFetchStarting(): BufferFetchStartingAction {
 }
 
 /** The buffer fetch is complete.
-    `state.roll.bufferIsLoading` should be false.
+    `state.roll.bufferState === "complete"`
 */
 export type BufferFetchCompleteAction = {
     +type: "roll.buffer_fetch_complete",
@@ -57,6 +71,33 @@ export type BufferFetchCompleteAction = {
 };
 export function bufferFetchComplete(newValues: number[]): BufferFetchCompleteAction {
     return { type: "roll.buffer_fetch_complete", newValues };
+}
+
+/** The buffer fetch failed.
+    `state.roll.bufferState === "failed"`
+*/
+export type BufferFetchFailedAction = {
+    +type: "roll.buffer_fetch_failed",
+};
+export function bufferFetchFailed(): BufferFetchFailedAction {
+    return { type: "roll.buffer_fetch_failed" };
+}
+
+/** The buffer needs to be cleared in order to transition to being online. */
+export type ClearBufferAction = {
+    +type: "roll.clear_buffer",
+};
+export function clearBuffer(): ClearBufferAction {
+    return { type: "roll.clear_buffer" };
+}
+
+/** The buffer is being set to local/not local. */
+export type BufferSetLocalAction = {
+    +type: "roll.buffer_set_local_status",
+    +local: boolean,
+};
+export function bufferSetLocal(local: boolean): BufferSetLocalAction {
+    return { type: "roll.buffer_set_local_status", local };
 }
 
 /** Set the number of dice to roll. */
@@ -103,6 +144,14 @@ export function setDisplayMode(mode: DisplayMode): SetDisplayModeAction {
     return { type: "roll.set_display_mode", mode };
 }
 
+export type SetBufferAction = {
+    +type: "roll.set_buffer",
+    +buffer: number[]
+};
+export function setBuffer(buffer: number[]): SetBufferAction {
+    return { type: "roll.set_buffer", buffer };
+}
+
 /** Dice have been rolled, remove from buffer. */
 export type RemoveBufferAction = {
     +type: "roll.remove_buffer",
@@ -135,7 +184,7 @@ export function performRoll(): ThunkAction {
     return function(dispatch: DispatchFn, getState: GetStateFn) {
         const state = getState().roll;
 
-        let isReady = !state.bufferIsLoading && propertiesSet(state);
+        let isReady = (state.bufferLoadState !== "loading") && propertiesSet(state);
         if (isReady && !diceAvailable(state)) {
             isReady = false;
             dispatch(fetchBuffer());
@@ -146,56 +195,63 @@ export function performRoll(): ThunkAction {
 
         let rollDice = state.rollDice || 0;
         const bufferLength = state.buffer.length;
+        let toRoll: number = 0
+        let outcome: ?RollOutcome = null;
 
         switch (state.selectedRollMode) {
             case 'count-hits': {
-                const toRoll = rollDice;
+                toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
-                dispatch(removeBuffer(toRoll));
-                const outcome: RollOutcome =
-                    new CountHitsResult(new RollResult(pool));
-                dispatch(appendOutcome(outcome));
-                return true;
+                if (pool.length === toRoll) {
+                    outcome = new CountHitsResult(new RollResult(pool));
+                }
+                break;
             }
             case 'test-for': {
-                const toRoll = rollDice;
+                toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
-                dispatch(removeBuffer(toRoll));
-                const outcome: RollOutcome =
-                    new TestForResult(new RollResult(pool), state.testForDice || 0);
-                dispatch(appendOutcome(outcome));
-                return true;
+                if (pool.length === toRoll) {
+                    outcome = new TestForResult(new RollResult(pool), state.testForDice || 0);
+                }
+                break;
             }
             case 'roll-against': {
                 const userRoll = rollDice;
                 const foeRoll = state.rollAgainstDice || 0;
+                toRoll = userRoll + foeRoll;
                 const userPool = state.buffer.slice(bufferLength - userRoll);
                 const foePool = state.buffer.slice(bufferLength - userRoll - foeRoll, bufferLength - userRoll);
-                dispatch(removeBuffer(userRoll + foeRoll));
-                const outcome: RollOutcome =
-                    new RollAgainstResult(new RollResult(userPool), new RollResult(foePool));
-                dispatch(appendOutcome(outcome));
-                return true;
+                if (userPool.length + foePool.length === toRoll) {
+                    outcome = new RollAgainstResult(new RollResult(userPool), new RollResult(foePool));
+                }
+                break;
             }
             case 'display': {
                 const toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
-                dispatch(removeBuffer(toRoll));
-                const outcome: RollOutcome =
-                    new DisplayResult(pool, state.displayMode);
-                dispatch(appendOutcome(outcome));
-                return true;
+                if (pool.length === toRoll) {
+                    outcome = new DisplayResult(pool, state.displayMode);
+                }
             }
-            default:
-                return false;
+            break;
+            default: break;
         }
+
+        if (outcome != null) {
+            dispatch(removeBuffer(toRoll));
+            dispatch(appendOutcome(outcome));
+            return true;
+        }
+        return false;
     }
 }
 
 export type RollAction =
-| FetchBufferAction
 | BufferFetchStartingAction
 | BufferFetchCompleteAction
+| BufferFetchFailedAction
+| BufferSetLocalAction
+| ClearBufferAction
 | SetDiceCountAction
 | SetRollModeAction
 | SetRollAgainstAction

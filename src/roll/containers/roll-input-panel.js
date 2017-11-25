@@ -43,6 +43,7 @@ class RollInputPanel extends React.Component<Props> {
     }
 
     componentDidMount() {
+        // First try at fetching from remote buffer.
         this.props.dispatch(rollActions.fetchBuffer());
     }
 
@@ -88,6 +89,13 @@ class RollInputPanel extends React.Component<Props> {
         }
     }
 
+    componentWillUpdate = (nextProps: Props) => {
+        let isReady = (nextProps.state.bufferLoadState === "complete") && propertiesSet(nextProps.state);
+        if (isReady && !diceAvailable(nextProps.state)) {
+            nextProps.dispatch(rollActions.fetchBuffer());
+        }
+    }
+
     render = () => {
         const title = (
             <span className='App-menu-panel-title'>
@@ -96,11 +104,9 @@ class RollInputPanel extends React.Component<Props> {
         );
 
         const state = this.props.state;
-
-        let isReady = !state.bufferIsLoading && propertiesSet(state);
+        let isReady = (state.bufferLoadState !== "loading") && propertiesSet(state);
         if (isReady && !diceAvailable(state)) {
             isReady = false;
-            this.props.dispatch(rollActions.fetchBuffer());
         }
 
         const options = this.getRollOptions(state.selectedRollMode);
@@ -126,8 +132,7 @@ class RollInputPanel extends React.Component<Props> {
                     {options}
                     <FormGroup id='roll-input-submit-group'
                                controlId='roll-submit'>
-                        <RandomLoadingLabel
-                                    isLoading={state.bufferIsLoading} />
+                        <RandomLoadingLabel />
                         <Button id='roll-button-submit'
                                 bsStyle="primary"
                                 disabled={!isReady}
