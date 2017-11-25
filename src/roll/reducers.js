@@ -3,29 +3,38 @@ import { combineReducers } from 'redux';
 
 import type { RollMode, DisplayMode } from './index';
 import type { RollAction } from './actions';
-import type { RollState } from './state';
-import type { Action } from '../state';
+import type { RollState, LoadingState } from './state';
+import type { Action, ThunkAction } from '../state';
 import { DEFAULT_ROLL_STATE } from '../state';
 
 /**
     roll.buffer
 
     - BufferFetchCompleteAction: append action's buffer
-    - RemoveBufferAction: remove action's
+    - RemoveBufferAction: remove action's dice from the end
+    - ClearBufferAction: clear the first part of a buffer.
 */
 function bufferReducer(buffer: Array<number> = [],
                        action: RollAction): Array<number> {
+    let newBuffer: number[];
     switch (action.type) {
         case 'roll.buffer_fetch_complete':
-            return [...action.newValues, ...buffer];
+            newBuffer = [...action.newValues, ...buffer];
+            break;
         case 'roll.remove_buffer':
-            return [
-                ...buffer.slice(0,
-                        buffer.length - action.dice),
-            ];
+            // Set the buffer to the first ones.
+            newBuffer = buffer.slice(0, buffer.length - action.dice);
+            break;
+        case 'roll.clear_buffer':
+            console.log("Clearing the buffer");
+            newBuffer = [];
+            break;
         default:
-            return buffer;
+            newBuffer = buffer;
+            break;
     }
+    //console.log("Buffer: ", newBuffer); // Let's not do this in production.
+    return newBuffer
 }
 
 /**
@@ -34,14 +43,25 @@ function bufferReducer(buffer: Array<number> = [],
     - BufferFetchStartingAction: return true
     - bufferFetchCompleteAction: return false
 */
-function isLoadingReducer(isLoading: boolean = true, action: RollAction): boolean {
+function bufferLoadingStateReducer(state: LoadingState = "loading", action: RollAction): LoadingState {
     switch (action.type) {
         case 'roll.buffer_fetch_starting':
-            return true;
+            return "loading";
         case 'roll.buffer_fetch_complete':
-            return false;
+            return "complete";
+        case 'roll.buffer_fetch_failed':
+            return "failed";
         default:
-            return isLoading;
+            return state;
+    }
+}
+
+function bufferSetLocalReducer(local: boolean = false, action: RollAction): boolean {
+    if (action.type === 'roll.buffer_set_local_status') {
+        return action.local;
+    }
+    else {
+        return local;
     }
 }
 
@@ -116,9 +136,10 @@ function outcomesReducer(outcomes: typeof (DEFAULT_ROLL_STATE.outcomes) = DEFAUL
     }
 }
 
-const rollReducers = {
+const rollReducers: { [$Keys<RollState>]: (any, Action) => any } = {
     buffer: bufferReducer,
-    bufferIsLoading: isLoadingReducer,
+    bufferLoadState: bufferLoadingStateReducer,
+    bufferIsLocal: bufferSetLocalReducer,
     outcomes: outcomesReducer,
     selectedRollMode: setRollModeReducer,
     rollDice: setDiceCountReducer,
@@ -127,6 +148,6 @@ const rollReducers = {
     testForDice: setTestForReducer,
 };
 
-const rollReducer: (RollState, Action) => RollState = combineReducers(rollReducers);
+const rollReducer: (RollState, Action | ThunkAction) => RollState = combineReducers(rollReducers);
 
 export default rollReducer;

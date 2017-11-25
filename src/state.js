@@ -1,6 +1,6 @@
 // @flow
 
-import type { RollState } from './roll/state';
+import type { RollState, LoadingState } from './roll/state';
 import type { RollAction } from './roll/actions';
 
 /**
@@ -14,7 +14,6 @@ export type AppState = {
 
 export type Action =
 // Cyclic definition, must be used here.
-| ThunkAction // eslint-disable-line no-use-before-define
 | RollAction
 ;
 
@@ -22,15 +21,16 @@ export type Action =
 export type GetStateFn = () => AppState;
 
 /** Thunk action arg that dispatches an action. */
-export type DispatchFn = (Action) => void;
+export type DispatchFn = (action: Action | Array<Action> | Promise<Action> | ThunkAction) => mixed;
 
 /** Thunk action. */
-export type ThunkAction = (dipatch: DispatchFn, getState: GetStateFn) => any;
+export type ThunkAction = (dipatch: DispatchFn, getState: GetStateFn) => mixed;
 
 
 export const DEFAULT_ROLL_STATE: RollState = {
     buffer: [],
-    bufferIsLoading: true,
+    bufferLoadState: "loading",
+    bufferIsLocal: false,
     selectedRollMode: "count-hits",
     rollDice: null,
     rollAgainstDice: null,
