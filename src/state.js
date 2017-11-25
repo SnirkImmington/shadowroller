@@ -1,12 +1,12 @@
 // @flow
 
-import { Attributes } from './character/attributes';
-import type { AttributesState } from './character/attributes/state';
-import type { AttributeAction } from './character/attributes/actions';
-
 import type { RollState } from './roll/state';
 import { DEFAULT_ROLL_STATE } from './roll/state';
 import type { RollAction } from './roll/actions';
+
+import type { CharacterState } from './character/state';
+import { DEFAULT_CHARACTER_STATE } from './character/state';
+import type { CharacterAction } from './character/actions';
 
 /**
     Redux state for the app.
@@ -15,11 +15,13 @@ import type { RollAction } from './roll/actions';
 */
 export type AppState = {
     +roll: RollState,
+    +character: CharacterState,
 };
 
 export type Action =
 // Cyclic definition, must be used here.
 | RollAction
+| CharacterAction
 ;
 
 /** Thunk action arg that gets the state. */
@@ -34,4 +36,5 @@ export type ThunkAction = (dipatch: DispatchFn, getState: GetStateFn) => mixed;
 /** Default state of the app. */
 export const DEFAULT_STATE: AppState = {
     roll: DEFAULT_ROLL_STATE,
+    character: DEFAULT_CHARACTER_STATE,
 };

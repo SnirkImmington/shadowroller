@@ -13,11 +13,12 @@ import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 
 import rollReducer from './roll/reducers';
+import characterReducer from './character/reducers';
 
-const appReducers: { [$Keys<AppState>]: (any) => any } = {
-    roll: rollReducer
-};
-const appReducer = combineReducers(appReducers);
+const appReducer: (any) => any = combineReducers({
+    roll: rollReducer,
+    attributes: characterReducer,
+});
 
 const middleware: any[] = [ thunk ];
 if (process.env.NODE_ENV !== "production") {
@@ -28,7 +29,6 @@ const store = createStore(
     appReducer,
     applyMiddleware(...middleware)
 );
-
 
 ReactDOM.render(
     <Provider store={store}>
