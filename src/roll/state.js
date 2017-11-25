@@ -10,6 +10,7 @@ export type RollState = {
     +rollDice: ?number,
     +rollAgainstDice: ?number,
     +testForDice: ?number,
+    +highlightMaximum: boolean,
     +outcomes: Array<RollOutcome>
 };
 
@@ -20,6 +21,7 @@ export function propertiesSet(state: RollState): boolean {
         case 'count-hits': return true;
         case 'test-for': return state.testForDice != null;
         case 'roll-against': return state.rollAgainstDice != null;
+        case 'highlight': return true;
         default: return true;
     }
 }
@@ -37,6 +39,8 @@ export function diceAvailable(state: RollState): boolean {
             return (state.rollDice || 0)
                 + (state.testForDice || 0)
                 <= state.buffer.length;
+        case 'highlight':
+            return (state.rollDice || 0) <= state.buffer.length;
         default:
             // Should not happen?
             return true;

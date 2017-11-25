@@ -10,6 +10,7 @@ import RollResult from './result/roll-result';
 import RollAgainstResult from './result/roll-against';
 import TestForResult from './result/test-for';
 import CountHitsResult from './result/count-hits';
+import HighlightResult from './result/highlight';
 
 const FETCH_BUFFER = 200;
 
@@ -94,6 +95,14 @@ export function setTestFor(testFor: ?number): SetTestForAction {
     return { type: "roll.set_test_for", testFor };
 }
 
+export type SetHighlightMaximumAction = {
+    +type: "roll.set_highlight",
+    +maximum: boolean
+};
+export function setHighlightMaximum(maximum: boolean): SetHighlightMaximumAction {
+    return { type: "roll.set_highlight", maximum };
+}
+
 /** Dice have been rolled, remove from buffer. */
 export type RemoveBufferAction = {
     +type: "roll.remove_buffer",
@@ -168,6 +177,15 @@ export function performRoll(): ThunkAction {
                 dispatch(appendOutcome(outcome));
                 return true;
             }
+            case 'highlight': {
+                const toRoll = rollDice;
+                const pool = state.buffer.slice(bufferLength - toRoll);
+                dispatch(removeBuffer(toRoll));
+                const outcome: RollOutcome =
+                    new HighlightResult(pool, state.highlightMaximum || true);
+                dispatch(appendOutcome(outcome));
+                return true;
+            }
             default:
                 return false;
         }
@@ -182,6 +200,7 @@ export type RollAction =
 | SetRollModeAction
 | SetRollAgainstAction
 | SetTestForAction
+| SetHighlightMaximumAction
 | RemoveBufferAction
 | AppendOutcomeAction
 | DeleteOutcomeAction

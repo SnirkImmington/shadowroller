@@ -85,6 +85,16 @@ function setTestForReducer(testFor: ?number = null,
     }
 }
 
+function setHighlightMaximumReducer(maximum: boolean = true,
+                                    action: RollAction): boolean {
+    if (action.type === 'roll.set_highlight') {
+        return action.maximum;
+    }
+    else {
+        return maximum;
+    }
+}
+
 /**
     roll.outcomes
 
@@ -113,6 +123,7 @@ const rollReducers = {
     selectedRollMode: setRollModeReducer,
     rollDice: setDiceCountReducer,
     rollAgainstDice: setRollAgainstReducer,
+    highlightMaximum: setHighlightMaximumReducer,
     testForDice: setTestForReducer,
 };
 
