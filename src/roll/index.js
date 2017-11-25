@@ -29,21 +29,21 @@ export type RollParams =
 ;
 
 export const RollModes = {
-    "count-hits": {
-        title: "counting hits",
-        description: "Count 5s and 6s",
-    },
-    "test-for": {
-        title: "testing for",
-        description: "Test for a certain number of hits",
+    "display": {
+        title: "display",
+        description: "Show all dice/highest/lowest roll",
     },
     "roll-against": {
         title: "against",
         description: "Roll against another dice pool",
     },
-    "display": {
-        title: "display",
-        description: "Show all dice/highest/lowest roll",
+    "test-for": {
+        title: "testing for",
+        description: "Test for a certain number of hits",
+    },
+    "count-hits": {
+        title: "counting hits",
+        description: "Count 5s and 6s",
     },
 }
 
