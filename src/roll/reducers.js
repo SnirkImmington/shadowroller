@@ -26,15 +26,13 @@ function bufferReducer(buffer: Array<number> = [],
             newBuffer = buffer.slice(0, buffer.length - action.dice);
             break;
         case 'roll.clear_buffer':
-            console.log("Clearing the buffer");
             newBuffer = [];
             break;
         default:
             newBuffer = buffer;
             break;
     }
-    //console.log("Buffer: ", newBuffer); // Let's not do this in production.
-    return newBuffer
+    return newBuffer;
 }
 
 /**
@@ -136,7 +134,7 @@ function outcomesReducer(outcomes: typeof (DEFAULT_ROLL_STATE.outcomes) = DEFAUL
     }
 }
 
-const rollReducers: { [$Keys<RollState>]: (any, Action) => any } = {
+const rollReducers: { [$Keys<RollState>]: (any, RollAction) => any } = {
     buffer: bufferReducer,
     bufferLoadState: bufferLoadingStateReducer,
     bufferIsLocal: bufferSetLocalReducer,
