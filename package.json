@@ -2,6 +2,9 @@
   "name": "shadowroller",
   "version": "0.3.2",
   "homepage": "https://snirkimmington.github.io/shadowroller",
+  "devDependencies": {
+      "redux-logger": "^3.0.6"
+  },
   "dependencies": {
     "bootstrap": "^3.3.7",
     "flow-bin": "^0.57.3",

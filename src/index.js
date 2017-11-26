@@ -9,16 +9,20 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 
 import { applyMiddleware, createStore, combineReducers } from 'redux';
+import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 
 import rollReducer from './roll/reducers';
 
-const appReducers = {
+const appReducers: { [$Keys<AppState>]: (any) => any } = {
     roll: rollReducer
 };
 const appReducer = combineReducers(appReducers);
 
-const middleware = [ thunk ];
+const middleware: any[] = [ thunk ];
+if (process.env.NODE_ENV !== "production") {
+    middleware.push(createLogger());
+}
 
 const store = createStore(
     appReducer,
