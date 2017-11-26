@@ -3,7 +3,7 @@
 import './random-loading-label.css';
 
 import React, { Component } from 'react';
-import { ControlLabel, Button } from 'react-bootstrap';
+import { ControlLabel } from 'react-bootstrap';
 
 import { connect } from 'react-redux';
 

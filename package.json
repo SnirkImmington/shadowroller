@@ -1,7 +1,20 @@
 {
   "name": "shadowroller",
-  "version": "0.3.2",
+  "description": "Roll dice from random.org",
+  "version": "0.3.3",
+  "author": "Snirk Immington",
   "homepage": "https://snirkimmington.github.io/shadowroller",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/snirkimmington/shadowroller.git"
+  },
+  "keywords": [ "dice", "rolling" ],
+  "bugs": {
+      "url": "https://github.com/snirkimmington/shadowroller/issues"
+  },
+  "devDependencies": {
+      "redux-logger": "^3.0.6"
+  },
   "dependencies": {
     "bootstrap": "^3.3.7",
     "flow-bin": "^0.57.3",

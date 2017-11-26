@@ -1,6 +1,6 @@
 // @flow
 
-import type { RollState, LoadingState } from './roll/state';
+import type { RollState } from './roll/state';
 import type { RollAction } from './roll/actions';
 
 /**
@@ -20,7 +20,7 @@ export type Action =
 /** Thunk action arg that gets the state. */
 export type GetStateFn = () => AppState;
 
-/** Thunk action arg that dispatches an action. */
+/** Thunk action arg that dispatches an action. */ // eslint-disable-next-line no-use-before-define
 export type DispatchFn = (action: Action | Array<Action> | Promise<Action> | ThunkAction) => mixed;
 
 /** Thunk action. */

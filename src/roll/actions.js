@@ -167,7 +167,6 @@ export type AppendOutcomeAction = {
     +outcome: RollOutcome,
 };
 export function appendOutcome(outcome: RollOutcome): AppendOutcomeAction {
-    console.log("Asked to append an outcome: ", outcome);
     return { type: "roll.append_outcome", outcome };
 }
 
@@ -227,13 +226,13 @@ export function performRoll(): ThunkAction {
                 break;
             }
             case 'display': {
-                const toRoll = rollDice;
+                toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
                 if (pool.length === toRoll) {
                     outcome = new DisplayResult(pool, state.displayMode);
                 }
+                break;
             }
-            break;
             default: break;
         }
 
