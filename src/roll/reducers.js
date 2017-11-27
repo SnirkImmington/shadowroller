@@ -3,10 +3,10 @@ import { combineReducers } from 'redux';
 
 import type { RollMode, DisplayMode } from './index';
 import type { RollAction } from './actions';
-import type { RollState } from './state';
+import type { RollState, LoadingState } from './state';
 
 import { DEFAULT_ROLL_STATE } from './state';
-import type { Action } from '../state';
+import type { Action, ThunkAction } from '../state';
 
 /**
     roll.buffer
@@ -147,11 +147,6 @@ const rollReducers: { [$Keys<RollState>]: (any, RollAction) => any } = {
     testForDice: setTestForReducer,
 };
 
-<<<<<<< HEAD
 const rollReducer: (RollState, Action | ThunkAction) => RollState = combineReducers(rollReducers);
-=======
-const rollReducer: (RollState, Action) => RollState
-    = combineReducers(rollReducers);
->>>>>>> Move DEFAULT_ROLL_STATE to roll/state
 
 export default rollReducer;

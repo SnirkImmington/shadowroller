@@ -19,7 +19,7 @@ export type RollState = {
 
 export const DEFAULT_ROLL_STATE: RollState = {
     buffer: [],
-    bufferIsLoading: true,
+    bufferLoadState: "loading",
     bufferIsLocal: false,
     selectedRollMode: "count-hits",
     rollDice: null,

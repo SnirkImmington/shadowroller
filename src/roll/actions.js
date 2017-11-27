@@ -84,7 +84,7 @@ export function bufferFetchComplete(newValues: number[]): RollAction {
 export type BufferFetchFailedAction = {
     +type: "roll.buffer_fetch_failed",
 };
-export function bufferFetchFailed(): BufferFetchFailedAction {
+export function bufferFetchFailed(): RollAction {
     return { type: "roll.buffer_fetch_failed" };
 }
 
@@ -92,7 +92,7 @@ export function bufferFetchFailed(): BufferFetchFailedAction {
 export type ClearBufferAction = {
     +type: "roll.clear_buffer",
 };
-export function clearBuffer(): ClearBufferAction {
+export function clearBuffer(): RollAction {
     return { type: "roll.clear_buffer" };
 }
 
@@ -101,7 +101,7 @@ export type BufferSetLocalAction = {
     +type: "roll.buffer_set_local_status",
     +local: boolean,
 };
-export function bufferSetLocal(local: boolean): BufferSetLocalAction {
+export function bufferSetLocal(local: boolean): RollAction {
     return { type: "roll.buffer_set_local_status", local };
 }
 
@@ -145,16 +145,8 @@ export type SetDisplayModeAction = {
     +type: "roll.set_display_mode",
     +mode: DisplayMode
 };
-export function setDisplayMode(mode: DisplayMode): SetDisplayModeAction {
+export function setDisplayMode(mode: DisplayMode): RollAction {
     return { type: "roll.set_display_mode", mode };
-}
-
-export type SetBufferAction = {
-    +type: "roll.set_buffer",
-    +buffer: number[]
-};
-export function setBuffer(buffer: number[]): SetBufferAction {
-    return { type: "roll.set_buffer", buffer };
 }
 
 /** Dice have been rolled, remove from buffer. */
@@ -171,7 +163,7 @@ export type AppendOutcomeAction = {
     +type: "roll.append_outcome",
     +outcome: RollOutcome,
 };
-export function appendOutcome(outcome: RollOutcome): AppendOutcomeAction {
+export function appendOutcome(outcome: RollOutcome): RollAction {
     return { type: "roll.append_outcome", outcome };
 }
 
