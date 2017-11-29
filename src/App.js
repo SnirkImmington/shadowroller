@@ -53,7 +53,8 @@ export default function App(props: {}) {
                         <Button>Ouch</Button>
                     </span>
                     <span className="health-bar-item">
-                        Stun: 2 -1 <Button>Oof</Button>
+                        Stun: <DamageTrack max={8} damage={4} />
+                        <Button>Oof</Button>
                     </span>
                     </div>
                 </Panel>
