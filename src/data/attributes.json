@@ -1,0 +1,32 @@
+{
+	"body": {
+        "default": 1
+    },
+	"agility": {
+        "default": 1
+    },
+	"reaction": {
+        "default": 1
+    },
+	"strength": {
+        "default": 1
+    },
+	"willpower": {
+        "default": 1
+    },
+	"logic": {
+        "default": 1
+    },
+	"intuition": {
+        "default": 1
+    },
+    "charisma": {
+        "default": 1
+    },
+    "magic": {
+        "default": 0
+    },
+    "resonance": {
+        "default": 0
+    }
+}

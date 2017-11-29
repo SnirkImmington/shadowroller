@@ -1,0 +1,73 @@
+{
+    "acting": {
+        "skills": [
+            "con", "impersonation", "performance"
+        ]
+    },
+    "athletics": {
+        "skills": [
+            "gymnastics", "running", "swimming"
+        ]
+    },
+    "biotech": {
+        "skills": [
+            "cybertech", "first-aid", "medicine"
+        ]
+    },
+    "conjuring": {
+        "skills": [
+            "binding", "banishing", "summoning"
+        ]
+    },
+    "cracking": {
+        "skills": [
+            "cybercombat", "electronic-warfare", "hacking"
+        ]
+    },
+    "electronics": {
+        "skills": [
+            "computer", "hardware", "software"
+        ]
+    },
+    "enchanting": {
+        "skills": [
+            "alchemy", "artificing", "disenchanting"
+        ]
+    },
+    "engineering": {
+        "skills": [
+            "aeronautics", "automotive", "industrial", "nautical"
+        ]
+    },
+    "firearms": {
+        "skills": [
+            "automatics", "longarms", "pistols"
+        ]
+    },
+    "influence": {
+        "skills": [
+            "etiquitte", "leadership", "negotiation"
+        ]
+    },
+    "outdoors": {
+        "skills": [
+            "navigation", "survival", "tracking"
+        ]
+    },
+    "sorcery": {
+        "skills": [
+            "counterspelling", "ritual-spellcasting", "spellcasting"
+        ]
+    },
+    "stealth": {
+        "name": "Stealth",
+        "skills": [
+            "disguise", "palming", "sneaking"
+        ]
+    },
+    "tasking": {
+        "skills": [
+            "compiling", "decompiling", "registering"
+        ]
+    }
+}

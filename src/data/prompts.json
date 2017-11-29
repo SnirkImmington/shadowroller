@@ -1,0 +1,72 @@
+{
+    "perception-notes-cyberware": {
+        "type": "notes",
+        "targets": [
+            "action perception"
+        ],
+        "flavortext": [
+            "Don't forget your cyberware, chummer."
+        ]
+    },
+    "perception-notes-visibility": {
+        "type": "notes",
+        "targets": [
+            "action perception"
+        ],
+        "flavortext": [
+            "Don't forget environmental factors"
+        ]
+    },
+    "perception-test-modifiers": {
+        "name": "Perception modifiers",
+        "type": "prompt",
+        "requirements": [
+            { "type": "passive" }
+        ],
+        "targets": [
+            "action perception"
+        ],
+        "promptEntries": {
+            "concentration": {
+                "perceiver-distracted": {
+                    "name": "Perceiver distracted",
+                    "roll": {
+                        "dice": [ -2 ]
+                    }
+                },
+                "perceiver-focused": {
+                    "name": "Perceiver focused",
+                    "roll": {
+                        "dice": [ 3 ]
+                    }
+                },
+                "interference": {
+                    "name": "Interfering sound/odor",
+                    "roll": {
+                        "dice": [ -2 ]
+                    }
+                },
+                "object-distinct": {
+                    "name": "Object is distinct",
+                    "roll": {
+                        "dice": [ 2 ]
+                    }
+                }
+            },
+            "distance": {
+                "target-not-close": {
+                    "name": "Target not in immediate vicinity",
+                    "roll": {
+                        "dice": [ -2 ]
+                    }
+                },
+                "target-far": {
+                    "name": "Target far away",
+                    "roll": {
+                        "dice": [ -3 ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "composure": {
+        "roll": {
+            "dice": [ "attribute willpower", "attribute charisma" ]
+        }
+    },
+    "judge-intentions": {
+        "roll": {
+            "dice": [ "attribute charisma", "attribute intuition" ]
+        }
+    },
+    "lifting-carrying": {
+        "roll": {
+            "dice": [ "attribute body", "attribute strength" ]
+        }
+    },
+    "memory": {
+        "roll": {
+            "dice": [ "attribute logic", "attribute willpower" ]
+        }
+    }
+}

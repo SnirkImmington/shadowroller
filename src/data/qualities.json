@@ -1,0 +1,53 @@
+{
+    "analytical-mind": {
+        "type": "quality",
+        "opt-in": true,
+        "bonuses": [
+            {
+                "type": "attributeModifier",
+                "attribute": "logic",
+                "modifier": 5
+            }
+        ]
+    },
+    "codeslinger-hack-on-the-fly": {
+        "name": "Codeslinger (Hack on the Fly)",
+        "type": "quality",
+        "bonuses": [
+            {
+                "type": "matrixActionModifier",
+                "matrixAction": "edit",
+                "roll": {
+                    "dice": 2
+                }
+            }
+        ]
+    },
+    "double-jointed": {
+        "name": "Double-jointed",
+        "type": "quality",
+        "bonuses": [
+            {
+                "type": "actionModifier",
+                "action": "escape-artist",
+                "roll": {
+                    "dice": 2
+                }
+            }
+        ]
+    },
+    "first-impression": {
+        "type": "quality",
+        "opt-in": true,
+        "bonuses": [
+            {
+                "type": "actionModifier",
+                "skillGroup": "acting",
+                "roll": {
+                    "dice": 2
+                }
+            }
+        ]
+    }
+
+}

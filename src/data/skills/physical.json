@@ -1,0 +1,89 @@
+{
+    "assensing": {
+        "type": "physical",
+        "name": "Assense",
+        "group": null,
+        "default": false,
+        "baseAttribute": "intuition",
+        "baseLimit": "mental",
+        "note": "Only available to elligible Magic users!"
+    },
+    "diving": {
+        "type": "physical",
+        "group": null,
+        "default": true,
+        "baseAttribute": "body",
+        "baseLimit": "physical"
+    },
+    "escape-artist": {
+        "type": "physical",
+        "group": null,
+        "default": true,
+        "baseAttribute": "agility",
+        "baseLimit": "physical"
+    },
+    "free-fall": {
+        "type": "physical",
+        "name": "Free-fall",
+        "group": null,
+        "default": true,
+        "baseAttribute": "body",
+        "baseLimit": "physical"
+    },
+    "gunnery": {
+        "type": "physical",
+        "group": null,
+        "default": true,
+        "baseAttribute": "agility",
+        "baseLimit": "mental"
+    },
+    "gymnastics": {
+        "type": "physical",
+        "group": "athletics",
+        "default": true,
+        "baseAttribute": "agility",
+        "baseLimit": "physical"
+    },
+    "perception": {
+        "type": "physical",
+        "group": null,
+        "default": true,
+        "baseAttribute": "intuition",
+        "baseLimit": "mental"
+    },
+    "running": {
+        "type": "physical",
+        "group": "athletics",
+        "default": true,
+        "baseAttribute": "strength",
+        "baseLimit": "physical"
+    },
+    "sneaking": {
+        "type": "physical",
+        "default": true,
+        "group": "stealth",
+        "baseAttribute": "agility",
+        "baseLimit": "physical"
+    },
+    "survival": {
+        "type": "physical",
+        "default": true,
+        "group": "outdoors",
+        "baseAttribute": "willpower",
+        "baseLimit": "physical"
+    },
+    "swimming": {
+        "type": "physical",
+        "default": true,
+        "group": "athletics",
+        "baseAttribute": "strength",
+        "baseLimit": "physical"
+    },
+    "tracking": {
+        "type": "physical",
+        "default": true,
+        "group": "outdoors",
+        "baseAttribute": "intuition",
+        "baseLimit": "mental"
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "con": {
+        "type": "social",
+        "group": "acting",
+        "default": true
+    },
+    "etiquitte": {
+        "type": "social",
+        "group": "acting",
+        "default": true
+    },
+    "impersonation": {
+        "type": "social",
+        "group": "acting",
+        "default": true
+    },
+    "instruction": {
+        "type": "social",
+        "group": null,
+        "default": true
+    },
+    "intimidation": {
+        "type": "social",
+        "group": null,
+        "default": true
+    },
+    "leadership": {
+        "type": "social",
+        "group": "influence",
+        "default": true
+    },
+    "negotiation": {
+        "type": "social",
+        "group": "influence",
+        "default": true
+    },
+    "performance": {
+        "type": "social",
+        "group": "acting",
+        "default": true
+    }
+}

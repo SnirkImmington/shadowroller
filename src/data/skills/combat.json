@@ -1,0 +1,52 @@
+{
+    "archery": {
+        "type": "combat",
+        "group": null,
+        "default": true
+    },
+    "automatics": {
+        "type": "combat",
+        "group": "firearms",
+        "default": true
+    },
+    "blades": {
+        "type": "combat",
+        "group": "close-combat",
+        "default": true
+    },
+    "clubs": {
+        "type": "combat",
+        "group": "close-combat",
+        "default": true
+    },
+    "exotic-ranged-weapon": {
+        "type": "combat",
+        "group": null,
+        "default": false
+    },
+    "heavy-weapons": {
+        "type": "combat",
+        "group": null,
+        "default": true
+    },
+    "longarms": {
+        "type": "combat",
+        "group": "firearms",
+        "default": true
+    },
+    "pistols": {
+        "type": "combat",
+        "group": "firearms",
+        "default": true
+    },
+    "throwing-weapons": {
+        "type": "combat",
+        "group": null,
+        "default": true
+    },
+    "unarmed-combat": {
+        "type": "combat",
+        "group": "close-combat",
+        "default": true
+    }
+}

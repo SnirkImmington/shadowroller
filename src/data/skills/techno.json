@@ -1,0 +1,17 @@
+{
+    "compiling": {
+        "type": "resonance",
+        "group": "tasking",
+        "default": false
+    },
+    "decompiling": {
+        "type": "resonance",
+        "group": "tasking",
+        "default": false
+    },
+    "registering": {
+        "type": "resonance",
+        "group": "tasking",
+        "default": true
+    }
+}

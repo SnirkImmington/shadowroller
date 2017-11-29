@@ -1,0 +1,204 @@
+{
+    "brute-force": {
+        "name": "Brute Force (for 1 hit)",
+        "ref": { "from": "SR5", "page": 238 },
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill cybercombat",
+                "attribute logic"
+            ],
+            "limit": [ "matrix-attribute attack" ],
+            "opposed": "Willpower + Firewall"
+        }
+    },
+    "change-icon": {
+        "actionType": "simple",
+        "note": "Changing your own icon doesn't require anything."
+    },
+    "check-overwatch-score": {
+        "actionType": "simple",
+        "roll": {
+            "dice": [
+                "skill electronic-warfare",
+                "attribute logic"
+            ],
+            "limit": [ "matrix-attribute sleaze" ],
+            "opposed": "6 dice"
+        }
+    },
+    "control-device": {
+        "note": "Depends on what action is being performed, chummer."
+    },
+    "crack-file": {
+        "note": "No need to remove protection from an unprotected file",
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill hacking",
+                "attribute logic"
+            ],
+            "limit": [ "matrix-attribute logic" ],
+            "opposed": "protection rating * 2"
+        }
+    },
+    "crash-program": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill cybercombat",
+                "attribute logic"
+            ],
+            "limit": [ "matrix-attribute attack" ],
+            "opposed": "Intuition + Firewall"
+        }
+    },
+    "data-spike": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill cybercombat",
+                "attribute logic"
+            ],
+            "limit": [ "matrix-attribute attack" ],
+            "opposed": "Intuition + Firewall"
+        }
+    },
+    "disarm-data-bomb": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill software",
+                "attribute intuition"
+            ],
+            "limit": [ "matrix-attribute firewall" ],
+            "opposed": "Data bomb rating + 2"
+        }
+    },
+    "edit-file": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute logic" ],
+            "limit": [ "matrix-attribute data-processing" ],
+            "opposed": "induition + firewall"
+        }
+    },
+    "enter-host": {
+        "actionType": "complex",
+        "note": "Need a mark to enter a host, chummer"
+    },
+    "erase-mark": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute logic" ],
+            "limit": [ "matrix-attribute attack" ],
+            "opposed": "willpower + firewall"
+        }
+    },
+    "erase-matrix-signature": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute resonance" ],
+            "limit": [ "matrix-attribute attack" ],
+            "opposed": "signature rating * 2"
+        },
+        "note": "Need to be a technomancer"
+    },
+    "format-device": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute logic" ],
+            "limit": [ "matrix-attribute sleaze" ],
+            "opposed": "willpower + firewall"
+        }
+    },
+    "hack-on-the-fly": {
+        "name": "Hack on the fly (for one hit)",
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill hacking",
+                "attribute logic"
+            ],
+            "limit": [ "matrix-attribute sleaze" ]
+        }
+    },
+    "hide": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [
+                "skill electronic-warfare",
+                "attribute intuition"
+            ],
+            "limit": [ "matrix-attribute sleaze" ],
+            "opposed": "intuition + data proc"
+        }
+    },
+    "jack-out": {
+        "actionType": "simple",
+        "roll": {
+            "dice": [
+                "skill hardware", "attribute willpower"
+            ],
+            "limit": [ "matrix-attribute firewall" ]
+        }
+    },
+    "jam-signals": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill electronic-warfare", "attribute logic" ],
+            "limit": [ "matrix-attribute attack" ]
+        }
+    },
+    "matrix-perception": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute intuition" ],
+            "limit": [ "matrix-attribute data-processing" ],
+            "opposed": "logic + sleaze"
+        }
+    },
+    "matrix-search": {
+        "actionType": "extended",
+        "roll": {
+            "dice": [ "skill computer", "attribute intuition" ],
+            "limit": [ "matrix-attribute data-processing" ]
+        }
+    },
+    "reboot-device": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute logic" ],
+            "limit": [ "matrix-attribute data-processing" ],
+            "opposed": "willpower + firewall"
+        }
+    },
+    "set-data-bomb": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill software", "attribute logic" ],
+            "limit": [ "matrix-attribute sleaze" ],
+            "opposed": "device rating * 2"
+        }
+    },
+    "snoop": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill electronic-warfare", "attribute intuition" ],
+            "limit": [ "matrix-attribute sleaze" ],
+            "opposed": "logic + firewall"
+        }
+    },
+    "spoof-command": {
+        "actionType": "complex",
+        "note": "Look it up, chummer"
+    },
+    "trace-icon": {
+        "actionType": "complex",
+        "roll": {
+            "dice": [ "skill computer", "attribute intuition" ],
+            "limit": [ "matrix-attribute data-processing" ],
+            "opposed": "willpower + sleaze"
+        }
+    }
+}

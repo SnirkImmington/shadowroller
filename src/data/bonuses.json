@@ -1,0 +1,130 @@
+{
+    "browse-program": {
+        "type": "program",
+        "targets": [
+            "matrix-action matrix-search"
+        ],
+        "note": "Matrix search time cut in half"
+    },
+    "edit-program": {
+        "type": "program",
+        "targets": [
+            "matrix-action edit"
+        ],
+        "bonus": {
+            "roll": {
+                "limit": [ 2 ]
+            }
+        }
+    },
+    "encryption-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "matrixAttribute",
+                "matrixAtribute": "firewall",
+                "modifier": 1
+            }
+        ]
+    },
+    "signal-scrub-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "matrixAttribute",
+                "matrixAttribute": "noise-reduction",
+                "modifier": 2
+            }
+        ]
+    },
+    "toolbox-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "matrixAttribute",
+                "matrixAttribute": "data-processing",
+                "modifier": 1
+            }
+        ]
+    },
+    "armor-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "resistance",
+                "damageType": [ "matrix" ],
+                "roll": {
+                    "dice": 2
+                }
+            }
+        ]
+    },
+    "biofeedback-filter-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "resistance",
+                "damageType": [ "biofeedback" ],
+                "roll": {
+                    "dice": 2
+                }
+            }
+        ]
+    },
+    "decryption-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "matrixAttribute",
+                "matrixAttribute": "attack",
+                "modifier": 1
+            }
+        ]
+    },
+    "defuse-program": {
+        "type": "program",
+        "opt-in": true,
+        "bonuses": [
+            {
+                "type": "resistance",
+                "damageType": [ "matrix" ],
+                "modifier": 4
+            }
+        ],
+        "note": "Only applies to Data Bomb damage"
+    },
+    "exploit-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "matrixActionModification",
+                "matrixAction": "hack-on-the-fly",
+                "roll": {
+                    "dice": 2
+                }
+            }
+        ]
+    },
+    "shell-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "resistance",
+                "sources": [ "matrix", "biofeedback" ],
+                "roll": {
+                    "dice": 1
+                }
+            }
+        ]
+    },
+    "stealth-program": {
+        "type": "program",
+        "bonuses": [
+            {
+                "type": "matrixAttribute",
+                "matrixAttribute": "sleaze",
+                "modifier": 1
+            }
+        ]
+    }
+}
