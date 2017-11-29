@@ -10,6 +10,7 @@ import NumericInput from '../../../components/numeric-input';
 
 import { ATTRIBUTES } from '../index';
 import type { Attribute } from '../index';
+import * as util from '../../../util';
 
 type Props = {
     attr: Attribute,
@@ -42,7 +43,7 @@ export default function AttributeRow(props: Props) {
             <FormGroup controlId={"attribute-row-" + props.attr}
                        className="attribute-panel-group">
                 <ControlLabel classname="attribute-row menu-label">
-                        {ATTRIBUTES[props.attr].full}
+                        {util.format(props.attr, 'title')}
                 </ControlLabel>
                 <FormControl disabled type="text"
                              className="numeric-input-disabled"
