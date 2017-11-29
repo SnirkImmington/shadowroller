@@ -1,19 +1,5 @@
 // @flow
 
-const MATRIX_SEARCH_PROGRAM_EFFECT: FixedSkillModifier = {
-    type: "ability",
-    filter: {
-        type: "by-id",
-        abilityId: "matrix-search"
-    },
-    dicePoolMod: {
-        type: "fixed",
-        modifier: +2,
-    },
-};
-
-// Lost of flavortext!
-
 const RANGED_WEAPON_FLAVORTEXT = {
     good: [
         "Bang bang",
