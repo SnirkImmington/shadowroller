@@ -37,6 +37,7 @@ export const DEFAULT_ROLL_STATE: RollState = {
     testForDice: null,
     displayMode: "max",
     outcomes: [],
+    outcomePage: 1,
 };
 
 export const DEFAULT_STATE: AppState = {
