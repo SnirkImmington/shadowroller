@@ -25,7 +25,7 @@ const PAGE_LENGTH: number = 5;
 
 const DO_SOME_ROLLS_FAVORTEXT: string[] = [
     "Roll some glitches.",
-    
+
     "Roll some dice, chummer.",
     "Do some rolls, chummer.",
     "Have at em, chummer.",
@@ -49,7 +49,6 @@ class RollHistoryPanel extends React.Component<Props> {
     }
 
     handlePageSelect = (page: number) => {
-        console.log("Selected page", page);
         this.props.dispatch(rollActions.selectPage(page));
     }
 
