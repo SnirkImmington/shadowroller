@@ -80,7 +80,7 @@ export default function HighlightRecord(props: Props) {
     );
     return (
         <RollRecord className="highlight-record"
-                    label="Display"
+                    label={`Display (${outcome.dice.length})`}
                     recordKey={props.recordKey}
                     mode={alertStyle}
                     onClose={props.onClose}
