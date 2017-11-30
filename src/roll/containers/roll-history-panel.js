@@ -24,12 +24,12 @@ import * as rollActions from '../actions';
 const PAGE_LENGTH: number = 5;
 
 const DO_SOME_ROLLS_FAVORTEXT: string[] = [
-    "Roll some dice!",
-    "Do some rolls!",
-
+    "Roll some glitches.",
+    
+    "Roll some dice, chummer.",
+    "Do some rolls, chummer.",
     "Have at em, chummer.",
     "You have to press the roll dice button, chummer.",
-    "Roll some glitches.",
 ];
 
 type Props = {
