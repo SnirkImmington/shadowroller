@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Panel, Pagination } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import { FavorText } from '../../components';
 
 import CountHitsRecord from '../components/outcomes/count-hits';
 import RollAgainstRecord from '../components/outcomes/roll-against';
@@ -23,7 +24,12 @@ import * as rollActions from '../actions';
 const PAGE_LENGTH: number = 5;
 
 const DO_SOME_ROLLS_FAVORTEXT: string[] = [
+    "Roll some dice!",
+    "Do some rolls!",
 
+    "Have at em, chummer.",
+    "You have to press the roll dice button, chummer.",
+    "Roll some glitches.",
 ];
 
 type Props = {
@@ -35,7 +41,16 @@ type Props = {
 /** Displays the given rolls. */
 class RollHistoryPanel extends React.Component<Props> {
     onRecordClosed = (index: number) => {
+        const newMaxPage = Math.ceil((this.props.outcomes.length - 1) / PAGE_LENGTH);
         this.props.dispatch(rollActions.deleteOutcome(index));
+        if (newMaxPage > this.props.outcomePage) {
+            this.props.dispatch(rollActions.selectPage(newMaxPage));
+        }
+    }
+
+    handlePageSelect = (page: number) => {
+        console.log("Selected page", page);
+        this.props.dispatch(rollActions.selectPage(page));
     }
 
     render() {
@@ -46,11 +61,9 @@ class RollHistoryPanel extends React.Component<Props> {
         if (outcomesLength <= PAGE_LENGTH) {
             outcomes = this.props.outcomes;
         }
-        else if (this.props.outcomePage === maxPages) {
-            outcomes = this.props.outcomes.slice(-PAGE_LENGTH);
-        }
         else {
-            outcomes = this.props.outcomes.slice(PAGE_LENGTH * -2, -PAGE_LENGTH);
+            const start = (this.props.outcomePage - 1) * PAGE_LENGTH;
+            outcomes = this.props.outcomes.slice(start, start + PAGE_LENGTH);
         }
 
         const entries = outcomes.entries();
@@ -105,11 +118,15 @@ class RollHistoryPanel extends React.Component<Props> {
                    bsStyle="info">
                 {result}
                 {outcomesLength === 0 ?
-                    "Roll some dice!" : outcomesLength > PAGE_LENGTH ?
+                    <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
+                : outcomesLength > PAGE_LENGTH ?
                     <Pagination id="roll-history-pagination"
+                            first prev next
+                            maxButtons={5}
                             items={maxPages}
-                            activePage={this.state.page}
-                            onSelect={this.handlePageSelect} /> : ""}
+                            activePage={this.props.outcomePage}
+                            onSelect={this.handlePageSelect} />
+                : ""}
             </Panel>
         )
     }
