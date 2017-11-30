@@ -1,7 +1,7 @@
 // @flow
 
 import * as React from 'react';
-import { Panel } from 'react-bootstrap';
+import { Panel, Pagination } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
 import CountHitsRecord from '../components/outcomes/count-hits';
@@ -20,57 +20,45 @@ import { DEFAULT_ROLL_STATE } from '../../state';
 import type { AppState, DispatchFn } from '../../state';
 import * as rollActions from '../actions';
 
+const PAGE_LENGTH: number = 5;
+
+const DO_SOME_ROLLS_FAVORTEXT: string[] = [
+
+];
+
 type Props = {
     dispatch: DispatchFn,
-    outcomes: Array<RollOutcome>;
-};
-type State = {
-    hidden: boolean
+    outcomes: Array<RollOutcome>,
+    outcomePage: number
 };
 
 /** Displays the given rolls. */
-class RollHistoryPanel extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            hidden: false
-        };
-    }
-
-    handleHide = () => {
-        this.setState({ hidden: true });
-    }
-    handleShow = () => {
-        this.setState({ hidden: false });
-    }
-
+class RollHistoryPanel extends React.Component<Props> {
     onRecordClosed = (index: number) => {
         this.props.dispatch(rollActions.deleteOutcome(index));
     }
 
     render() {
-        if (this.props.outcomes.length === 0) {
-            return <span id='roll-history-panel' />
+        const outcomesLength = this.props.outcomes.length;
+        const maxPages = Math.ceil(outcomesLength / PAGE_LENGTH);
+        let outcomes: Array<RollOutcome>;
+
+        if (outcomesLength <= PAGE_LENGTH) {
+            outcomes = this.props.outcomes;
+        }
+        else if (this.props.outcomePage === maxPages) {
+            outcomes = this.props.outcomes.slice(-PAGE_LENGTH);
+        }
+        else {
+            outcomes = this.props.outcomes.slice(PAGE_LENGTH * -2, -PAGE_LENGTH);
         }
 
-        const entries = this.props.outcomes.entries();
+        const entries = outcomes.entries();
         const header = (
             <span className="roll-history-panel-header">
-                <b>Roll results</b> (
-                {
-                    this.state.hidden ?
-                    <a href="#chummer" onClick={this.handleShow}>show</a>
-                    :
-                    <a href="#chummer-chum-chum" onClick={this.handleHide}>hide</a>
-                })
+                <b>Roll results</b>
             </span>
         );
-        if (this.state.hidden) {
-            return <Panel id="roll-history-panel"
-                          header={header}
-                          bsStyle="info" />
-        }
 
         const result: Array<React.Node> = [];
         for (const entry of entries) {
@@ -116,6 +104,12 @@ class RollHistoryPanel extends React.Component<Props, State> {
                    header={header}
                    bsStyle="info">
                 {result}
+                {outcomesLength === 0 ?
+                    "Roll some dice!" : outcomesLength > PAGE_LENGTH ?
+                    <Pagination id="roll-history-pagination"
+                            items={maxPages}
+                            activePage={this.state.page}
+                            onSelect={this.handlePageSelect} /> : ""}
             </Panel>
         )
     }
@@ -123,7 +117,8 @@ class RollHistoryPanel extends React.Component<Props, State> {
 
 function mapStateToProps(state: AppState) {
     return {
-        outcomes: state.roll.outcomes || DEFAULT_ROLL_STATE.outcomes
+        outcomes: state.roll.outcomes || DEFAULT_ROLL_STATE.outcomes,
+        outcomePage: state.roll.outcomePage || 1
     };
 }
 
