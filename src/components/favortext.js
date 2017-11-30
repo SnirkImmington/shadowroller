@@ -18,7 +18,7 @@ The list MUST be a single-reference const (do not construct lists on the fly).
 */
 export default class FavorText extends React.Component<Props> {
     shouldComponentUpdate(nextProps: Props) {
-        // So we could just give a flat "NO" but this is cheaper.
+        // Don't construct lists on the fly.
         return nextProps.from !== this.props.from;
     }
 
