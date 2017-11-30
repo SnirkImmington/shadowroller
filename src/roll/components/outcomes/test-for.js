@@ -72,7 +72,7 @@ export default function TestForRecord(props: TestForRecordProps) {
 
     return (
         <RollRecord className="try-for-record"
-                    label="Threshold"
+                    label={`Roll ${result.dice.length} threshold ${outcome.threshold}`}
                     recordKey={props.recordKey}
                     mode={alertStyle}
                     onClose={props.onClose}

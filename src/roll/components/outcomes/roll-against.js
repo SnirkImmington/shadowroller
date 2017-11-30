@@ -80,7 +80,7 @@ export default function RollAgainstRecord(props: RollAgainstProps) {
 
     return (
         <RollRecord className="roll-against-record"
-                    label="Opposed"
+                    label={`Opposed (${userRolls.length} v. ${foeRolls.length})`}
                     recordKey={props.recordKey}
                     mode={alertStyle}
                     onClose={props.onClose}

@@ -57,7 +57,7 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
 
     return (
         <RollRecord className="roll-hits-record"
-                    label="Count hits"
+                    label={`Count hits (${outcome.result.dice.length})`}
                     recordKey={props.recordKey}
                     mode={alertStyle}
                     onClose={props.onClose}
