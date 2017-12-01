@@ -1,8 +1,9 @@
 // @flow
 
 import * as React from 'react';
-import { Panel } from 'react-bootstrap';
+import { Panel, Pagination } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import { FavorText } from '../../components';
 
 import CountHitsRecord from '../components/outcomes/count-hits';
 import RollAgainstRecord from '../components/outcomes/roll-against';
@@ -20,57 +21,56 @@ import { DEFAULT_ROLL_STATE } from '../state';
 import type { AppState, DispatchFn } from '../../state';
 import * as rollActions from '../actions';
 
+const PAGE_LENGTH: number = 5;
+
+const DO_SOME_ROLLS_FAVORTEXT: string[] = [
+    "Roll some glitches.",
+
+    "Roll some dice, chummer.",
+    "Do some rolls, chummer.",
+    "Have at em, chummer.",
+    "You have to press the roll dice button, chummer.",
+];
+
 type Props = {
     dispatch: DispatchFn,
-    outcomes: Array<RollOutcome>;
-};
-type State = {
-    hidden: boolean
+    outcomes: Array<RollOutcome>,
+    outcomePage: number
 };
 
 /** Displays the given rolls. */
-class RollHistoryPanel extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            hidden: false
-        };
-    }
-
-    handleHide = () => {
-        this.setState({ hidden: true });
-    }
-    handleShow = () => {
-        this.setState({ hidden: false });
-    }
-
+class RollHistoryPanel extends React.Component<Props> {
     onRecordClosed = (index: number) => {
+        const newMaxPage = Math.ceil((this.props.outcomes.length - 1) / PAGE_LENGTH);
         this.props.dispatch(rollActions.deleteOutcome(index));
+        if (newMaxPage > this.props.outcomePage) {
+            this.props.dispatch(rollActions.selectPage(newMaxPage));
+        }
+    }
+
+    handlePageSelect = (page: number) => {
+        this.props.dispatch(rollActions.selectPage(page));
     }
 
     render() {
-        if (this.props.outcomes.length === 0) {
-            return <span id='roll-history-panel' />
+        const outcomesLength = this.props.outcomes.length;
+        const maxPages = Math.ceil(outcomesLength / PAGE_LENGTH);
+        let outcomes: Array<RollOutcome>;
+
+        if (outcomesLength <= PAGE_LENGTH) {
+            outcomes = this.props.outcomes;
+        }
+        else {
+            const start = (this.props.outcomePage - 1) * PAGE_LENGTH;
+            outcomes = this.props.outcomes.slice(start, start + PAGE_LENGTH);
         }
 
-        const entries = this.props.outcomes.entries();
+        const entries = outcomes.entries();
         const header = (
             <span className="roll-history-panel-header">
-                <b>Roll results</b> (
-                {
-                    this.state.hidden ?
-                    <a href="#" onClick={this.handleShow}>show</a>
-                    :
-                    <a href="#roll-history-panel" onClick={this.handleHide}>hide</a>
-                })
+                <b>Roll results</b>
             </span>
         );
-        if (this.state.hidden) {
-            return <Panel id="roll-history-panel"
-                          header={header}
-                          bsStyle="info" />
-        }
 
         const result: Array<React.Node> = [];
         for (const entry of entries) {
@@ -116,6 +116,16 @@ class RollHistoryPanel extends React.Component<Props, State> {
                    header={header}
                    bsStyle="info">
                 {result}
+                {outcomesLength === 0 ?
+                    <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
+                : outcomesLength > PAGE_LENGTH ?
+                    <Pagination id="roll-history-pagination"
+                            first prev next
+                            maxButtons={5}
+                            items={maxPages}
+                            activePage={this.props.outcomePage}
+                            onSelect={this.handlePageSelect} />
+                : ""}
             </Panel>
         )
     }
@@ -123,7 +133,8 @@ class RollHistoryPanel extends React.Component<Props, State> {
 
 function mapStateToProps(state: AppState) {
     return {
-        outcomes: state.roll.outcomes || DEFAULT_ROLL_STATE.outcomes
+        outcomes: state.roll.outcomes || DEFAULT_ROLL_STATE.outcomes,
+        outcomePage: state.roll.outcomePage || 1
     };
 }
 

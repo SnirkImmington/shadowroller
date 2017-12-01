@@ -6,14 +6,14 @@ import * as React from 'react';
 import { Nav, Navbar, NavItem } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
-import type { Action, DispatchFn } from '../../state';
+import type { Action, DispatchFn } from '../state';
 
 type Props = {
     dispatch: DispatchFn,
 }
 
 class AppNav extends React.Component<Props> {
-    handleSelect = (key: Navkey) => {
+    handleSelect = (key: string) => {
 
     }
 

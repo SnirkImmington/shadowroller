@@ -1,11 +1,11 @@
 // @flow
 
-import React, { Component } from 'react';
+import * as React from 'react';
 
 import pickRandom from '../util/pick-random';
 
 type Props = {
-    from: string[]
+    from: React.Node[]
 };
 
 /**
@@ -13,17 +13,18 @@ Picks some flavor text from a list.
 
 More importantly, doesn't change flavor text every time React goes to
 re-render it.
+
+The list MUST be a single-reference const (do not construct lists on the fly).
 */
-export default class FavorText extends Component<Props> {
+export default class FavorText extends React.Component<Props> {
     shouldComponentUpdate(nextProps: Props) {
-        // So we could just give a flat "NO" but this is cheaper.
-        // Also accounts for RandomLoadingLabel.
-        return nextProps.from.length !== this.props.from.length;
+        // Don't construct lists on the fly.
+        return nextProps.from !== this.props.from;
     }
 
     render() {
         const text = pickRandom(this.props.from);
 
-        return <p className="flavortext">{text}</p>;
+        return <span className="favortext">{text}</span>;
     }
 }

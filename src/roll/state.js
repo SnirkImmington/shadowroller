@@ -14,7 +14,8 @@ export type RollState = {
     +rollAgainstDice: ?number,
     +testForDice: ?number,
     +displayMode: DisplayMode,
-    +outcomes: Array<RollOutcome>
+    +outcomes: Array<RollOutcome>,
+    +outcomePage: number
 };
 
 export const DEFAULT_ROLL_STATE: RollState = {
@@ -27,6 +28,7 @@ export const DEFAULT_ROLL_STATE: RollState = {
     testForDice: null,
     displayMode: "max",
     outcomes: [],
+    outcomePage: 1,
 };
 
 /** Whether the needed properties of the state are set to perform the roll. */

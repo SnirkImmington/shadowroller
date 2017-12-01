@@ -135,6 +135,15 @@ function outcomesReducer(outcomes: typeof (DEFAULT_ROLL_STATE.outcomes) = DEFAUL
     }
 }
 
+function outcomePageReducer(page: number = 1, action: RollAction): number {
+    if (action.type === "roll.select_page") {
+        return action.page;
+    }
+    else {
+        return page;
+    }
+}
+
 const rollReducers: { [$Keys<RollState>]: (any, RollAction) => any } = {
     buffer: bufferReducer,
     bufferLoadState: bufferLoadingStateReducer,
@@ -144,6 +153,7 @@ const rollReducers: { [$Keys<RollState>]: (any, RollAction) => any } = {
     rollDice: setDiceCountReducer,
     rollAgainstDice: setRollAgainstReducer,
     displayMode: setDisplayModeReducer,
+    outcomePage: outcomePageReducer,
     testForDice: setTestForReducer,
 };
 

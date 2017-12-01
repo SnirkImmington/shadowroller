@@ -33,7 +33,7 @@ export default class RollRecord extends React.Component<RollRecordProps> {
 
     render() {
         const infoOverlay = (
-            <Popover title="Rolls (sorted)"
+            <Popover title="Dice (sorted)"
                      id={"sorted-dice-for-result-" + this.props.recordKey}>
                 {this.props.tooltip}
             </Popover>

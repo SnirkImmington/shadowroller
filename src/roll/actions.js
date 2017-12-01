@@ -176,6 +176,15 @@ export function deleteOutcome(index: number): RollAction {
     return { type: "roll.delete_outcome", index };
 }
 
+/** Set the given page (via user input, or when action is added) */
+export type SelectPageAction = {
+    +type: "roll.select_page",
+    +page: number
+};
+export function selectPage(page: number): SelectPageAction {
+    return { type: "roll.select_page", page };
+}
+
 export function performRoll(): ThunkAction {
     return function(dispatch: DispatchFn, getState: GetStateFn) {
         const state = getState().roll;
@@ -236,6 +245,7 @@ export function performRoll(): ThunkAction {
         if (outcome != null) {
             dispatch(removeBuffer(toRoll));
             dispatch(appendOutcome(outcome));
+            dispatch(selectPage(1));
             return true;
         }
         return false;
@@ -256,4 +266,5 @@ export type RollAction =
 | RemoveBufferAction
 | AppendOutcomeAction
 | DeleteOutcomeAction
+| SelectPageAction
 ;
