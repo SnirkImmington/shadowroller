@@ -1,13 +1,8 @@
 /*
     Application styles
 */
-
 .App {
   text-align: center;
-}
-
-.App-container {
-    display: flex;
 }
 
 /* Default:  half size title. */
@@ -43,32 +38,32 @@
     Utilities
 */
 
-.App-wide-container {
+.App-main {
     margin: 10px auto 0px;
     max-width: 98%;
 }
 
 @media all and (min-width: 576px) {
-    .App-wide-container {
+    .App-main {
         max-width: 98%;
     }
 }
 
 @media all and (min-width: 768px) {
     /** Cause this to be centered at the max width. */
-    .App-wide-container {
+    .App-main {
         max-width: 50em;
     }
 }
 
 @media all and (min-width: 992px) {
-    .App-wide-container {
+    .App-main {
         max-width: 80%;
     }
 }
 
 @media all and (min-width: 1300px) {
-    .App-wide-container {
+    .App-main {
         max-width: 92em;
     }
 }

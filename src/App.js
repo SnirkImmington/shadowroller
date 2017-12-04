@@ -7,6 +7,8 @@ import {
     Nav, Navbar, Panel, PanelGroup, NavItem, Tabs, Tab, Button, ListGroup, ListGroupItem, Label,
 } from 'react-bootstrap';
 
+import AppNav from './navigation/components/app-nav';
+
 import DamageTrack from './components/damage-track';
 
 import RollInputPanel from './roll/containers/roll-input-panel';
@@ -20,32 +22,8 @@ export default function App(props: {}) {
             <header className="App-header">
                 <h1 className="App-title">Shadowroller</h1>
             </header>
-            <div className="App-wide-container">
-                <Navbar collapseOnSelect className="app-navbar"
-                        onSelect={() => {}}>
-                    <Navbar.Header>
-                        <Navbar.Brand>
-                            <b>Sombra</b>
-                        </Navbar.Brand>
-                        <Navbar.Toggle />
-                    </Navbar.Header>
-                    <Navbar.Collapse>
-                        <Nav>
-                            <NavItem eventKey="actions">Actions</NavItem>
-                            <NavItem eventKey="effects">Modifiers</NavItem>
-                        </Nav>
-                        <Nav pullRight>
-                            <Navbar.Text>
-                                Edit:
-                            </Navbar.Text>
-                            <NavItem eventKey="modifiers">Modifiers</NavItem>
-                            <NavItem eventKey="character">Stats</NavItem>
-                            <NavItem eventKey="skills">Skills</NavItem>
-                            <NavItem eventKey="gear">Gear</NavItem>
-                            <NavItem eventKey="export" disabled>Export</NavItem>
-                        </Nav>
-                    </Navbar.Collapse>
-                </Navbar>
+            <div className="App-main">
+                <AppNav />
                 <Panel id="health-bar-panel">
                     <div className="health-bar">
                     <span className="health-bar-item">
@@ -68,7 +46,7 @@ export default function App(props: {}) {
                         </Tab>
                         <Tab disabled eventKey="rigging" title="Rigging">
                         </Tab>
-                        <Tab eventKey="active" title="Skills">
+                        <Tab eventKey="active" title="Active">
                             <Panel>
                                 Actions related to specific skills, like
                                 stealth or perception.

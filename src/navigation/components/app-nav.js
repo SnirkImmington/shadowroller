@@ -4,13 +4,22 @@ import './app-nav.css';
 
 import * as React from 'react';
 import { Nav, Navbar, NavItem } from 'react-bootstrap';
+import FavorText from '../../components/favortext';
 import { connect } from 'react-redux';
 
-import type { Action, DispatchFn } from '../state';
+import type { DispatchFn, AppState } from '../../state';
+
+const ACTIONS_FLAVORTEXT: React.Node[] = [
+    "Actions",
+    "Actions",
+    "Actions",
+    <span><i>Do</i>{" stuff"}</span>
+];
 
 type Props = {
     dispatch: DispatchFn,
-}
+    characterName: string
+};
 
 class AppNav extends React.Component<Props> {
     handleSelect = (key: string) => {
@@ -19,23 +28,25 @@ class AppNav extends React.Component<Props> {
 
     render() {
         return (
-            <Navbar collapseOnSelect
+            <Navbar collapseOnSelect id="app-navbar"
                     onSelect={this.handleSelect}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                    <b>Sombra</b>
+                        <b>Shadowroller</b>
                     </Navbar.Brand>
                     <Navbar.Toggle />
                 </Navbar.Header>
                 <Navbar.Collapse>
                     <Nav>
-                        <NavItem eventKey="actions">Actions</NavItem>
-                        <NavItem eventkey="effects">Effects</NavItem>
+                        <NavItem eventKey="pick-actions">
+                            <FavorText from={ACTIONS_FLAVORTEXT} />
+                        </NavItem>
                     </Nav>
                     <Nav pullRight>
-                        <NavItem eventKey="character">Stats</NavItem>
-                        <NavItem eventKey="skills">Skills</NavItem>
-                        <NavItem eventKey="gear">Gear</NavItem>
+                        <NavItem eventKey="edit-modifiers">Modifiers</NavItem>
+                        <NavItem eventKey="edit-stats">Stats</NavItem>
+                        <NavItem eventKey="edit-skills">Skills</NavItem>
+                        <NavItem eventKey="edit-gear" disabled>Gear</NavItem>
                         <NavItem eventKey="export" disabled>Export</NavItem>
                     </Nav>
                 </Navbar.Collapse>
@@ -44,4 +55,10 @@ class AppNav extends React.Component<Props> {
     }
 }
 
-export default connect()(AppNav);
+function mapStateToProps(state: AppState) {
+    return {
+        characterName: state.name || "Sombra",
+    };
+}
+
+export default connect(mapStateToProps)(AppNav);

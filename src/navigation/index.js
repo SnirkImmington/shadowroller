@@ -2,9 +2,11 @@
 
 /** Current menu selections. */
 export type MenuMode =
-| "actions"
-| "effects"
-| "stats"
-| "skills"
-| "gear"
+| "pick-actions"
+| "view-modifiers"
+| "edit-modifiers"
+| "edit-stats"
+| "edit-skills"
+| "edit-gear"
+| "export"
 ;
