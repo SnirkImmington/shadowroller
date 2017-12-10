@@ -16,9 +16,8 @@ export default function RollAgainstRollOptions(props: Props) {
     return (
         <FormGroup controlId="roll-input-roll-against"
                    className="roll-input-options">
-            <NumericInput min={0} max={99}
-                          value={props.value || ''}
-                          onSelect={props.onChange} />
+            <NumericInput controlId="roll-input-roll-against"
+                onSelect={props.onChange} />
             <ControlLabel className="menu-label">
                 dice
             </ControlLabel>
