@@ -3,9 +3,8 @@
     padding-right: 4px !important;
 }
 
-.numeric-input-group {
-    display: inline;
-    align-self: center !important;
+.form-group {
+    margin-bottom: 0px !important;
 }
 
 .numeric-input-calculator {
