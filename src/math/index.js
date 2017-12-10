@@ -57,3 +57,38 @@ export function powerOf(symbol: string): BindingPower {
             return (0: MinPower);
     }
 }
+
+export function evaluate(expr: Expression): number {
+    switch (expr.type) {
+        case 'number':
+            return expr.value;
+        case 'unaryOp':
+            switch (expr.op) {
+                case '+':
+                    return evaluate(expr.expr);
+                case '-':
+                    return -1 * evaluate(expr.expr);
+                default:
+                    return NaN;
+            }
+        case 'binOp':
+            switch (expr.op) {
+                case '+':
+                    return evaluate(expr.left) + evaluate(expr.right);
+                case '-':
+                    return evaluate(expr.left) - evaluate(expr.right);
+                case '*':
+                    return evaluate(expr.left) * evaluate(expr.right);
+                case '/':
+                    return evaluate(expr.left) / evaluate(expr.right);
+                case '^':
+                    return Math.pow(evaluate(expr.left), evaluate(expr.right));
+                default:
+                    return NaN;
+            }
+        default:
+            return NaN;
+    }
+}
+
+export {  Parser } from './parse';

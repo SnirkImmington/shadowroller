@@ -12,6 +12,7 @@ type PrefixParser = (parser: Parser, current: Token) => ?Expression;
 
 const PREFIX_PARSERS: { [string]: PrefixParser } = {
     '(': (parser: Parser, current: Token) => {
+        console.log("Parsing (");
         // Grab expression within parens.
         const inner = parser.expression();
         if (inner == null) { return null };
@@ -23,6 +24,7 @@ const PREFIX_PARSERS: { [string]: PrefixParser } = {
         else if (ending.value !== ')') {
             return null;
         }
+        console.log("Infix parsed: ", inner);
         return inner;
     },
     '-': (parser: Parser, current: Token) => {
@@ -50,10 +52,13 @@ function isInfixChar(char: string): boolean {
 }
 
 function parseInfix(parser: Parser, left: Expression, symbol: string): ?Expression {
+    console.log("Parsing infix: left=", left, "right=", symbol);
     switch (symbol) {
         // Treat an infix left paren as a multiplication expression.
         case '(': {
+            console.log("Parsing inner");
             const inner = parser.expression();
+            console.log("Done with inner");
             if (inner == null) { return null; }
             const close = parser.token();
             if (close == null || close.type !== "symbol" || close.value !== ')') {
@@ -78,7 +83,7 @@ function parseInfix(parser: Parser, left: Expression, symbol: string): ?Expressi
     }
 }
 
-class Parser {
+export class Parser {
     tokenizer: Tokenizer;
     lookahead: ?Token;
 
@@ -110,31 +115,50 @@ class Parser {
     expression = (power: BindingPower = 0): ?Expression => {
         let current = this.token();
         // If we're asking for an expression when we're done, we have a problem.
-        if (current == null || current.type === 'done') { return null; }
+        if (current == null || current.type === 'done') {
+            console.log("No more expressions");
+            return null;
+        }
+        let left: Expression;
         // If we got a number, return a number.
         if (current.type === 'number') {
-            return { type: 'number', value: current.value };
+            console.log("Left is number");
+            left =  { type: 'number', value: current.value };
         }
-        // Otherwise, look up the prefix parser we need.
-        const prefixParser = PREFIX_PARSERS[current.value];
-        if (prefixParser == null) { return null; }
-        // Grab the prefix expression. If null, we have a problem.
-        let left = prefixParser(this, current);
-        if (left == null) { return null; }
-        while (power <= this.currentPower()) {
-            // We might have an infix char after this prefix expr.
-            const infixToken = this.token();
-            // If we can't get a token now, we have a problem.
-            if (infixToken == null || infixToken.type === 'number') { return null; }
-            // If we've reached the end, then it was just that expression we parsed.
-            if (infixToken.type === 'done') { return left; }
-            // If it's not an infix char, don't use it.
-            if (!isInfixChar(infixToken.value)) {
+        else {
+            // Otherwise, look up the prefix parser we need.
+            const prefixParser = PREFIX_PARSERS[current.value];
+            if (prefixParser == null) {
+                console.log("No prefix parser found");
                 return null;
             }
-            left = parseInfix(this, left, infixToken.value);
-            if (left == null) { return null; }
+            // Grab the prefix expression. If null, we have a problem.
+            const parsedLeft = prefixParser(this, current);
+            if (parsedLeft == null) { return null; }
+            console.log("Prefix-parsed left: ", parsedLeft);
+            left = parsedLeft;
         }
+        while (power <= this.currentPower()) {
+            console.log("Preparing infix");
+            // We might have an infix char after this prefix expr.
+            const infixToken = this.peek();
+            // If we've reached the end, then it was just that expression we parsed.
+            if (infixToken == null || infixToken.type === 'done') { return left; }
+            // If we can't get a token now, we have a problem.
+            else if (infixToken.type === 'number') { return null; }
+            // If it's not an infix char, don't use it.
+            if (!isInfixChar(infixToken.value)) {
+                console.log("Found a not infix token ", infixToken);
+                break;
+            }
+            // Confirm taking the token.
+            this.token();
+            const parsed = parseInfix(this, left, infixToken.value);
+            if (parsed == null) { return null; }
+            console.log("Parsed infix: ", parsed);
+            left = parsed;
+        }
+        return left;
     }
 
     currentPower = (): BindingPower => {
@@ -146,5 +170,9 @@ class Parser {
         else {
             return powerOf(nextToken.value);
         }
+    }
+
+    position = (): number => {
+        return this.tokenizer.position;
     }
 }
