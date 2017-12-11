@@ -6,10 +6,6 @@
   text-align: center;
 }
 
-.App-container {
-    display: flex;
-}
-
 /* Default:  half size title. */
 .App-header {
   background-color: #222;
@@ -73,13 +69,9 @@
     }
 }
 
-.numeric-input {
-    width: 4.5em !important;
-    padding-right: 4px !important;
-}
-
 .menu-label {
     font-size: 1.2em;
+    margin-bottom: 0px;
     padding-left: 10px;
     padding-right: 10px;
 }
