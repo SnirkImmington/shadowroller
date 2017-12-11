@@ -1,18 +1,15 @@
 // @flow
-
-import type {
-    Expression, BinOp, UnaryOp,
-    BindingPower, MinPower
-} from '.';
+import type { Expression, BindingPower, MinPower } from '.';
 import { powerOf } from '.';
 import type { Token } from './tokenize';
 import Tokenizer from './tokenize';
 
+// eslint-disable-next-line no-use-before-define
 type PrefixParser = (parser: Parser, current: Token) => ?Expression;
 
 const PREFIX_PARSERS: { [string]: PrefixParser } = {
+    // eslint-disable-next-line no-use-before-define
     '(': (parser: Parser, current: Token) => {
-        console.log("Parsing (");
         // Grab expression within parens.
         const inner = parser.expression();
         if (inner == null) { return null };
@@ -24,14 +21,15 @@ const PREFIX_PARSERS: { [string]: PrefixParser } = {
         else if (ending.value !== ')') {
             return null;
         }
-        console.log("Infix parsed: ", inner);
         return inner;
     },
+    // eslint-disable-next-line no-use-before-define
     '-': (parser: Parser, current: Token) => {
         const inner = parser.expression();
         if (inner == null) { return null; }
         return { type: "unaryOp", op: "-", expr: inner };
     },
+    // eslint-disable-next-line no-use-before-define
     '+': (parser: Parser, current: Token) => {
         const inner = parser.expression();
         if (inner == null) { return null; }
@@ -51,14 +49,12 @@ function isInfixChar(char: string): boolean {
     }
 }
 
+// eslint-disable-next-line no-use-before-define
 function parseInfix(parser: Parser, left: Expression, symbol: string): ?Expression {
-    console.log("Parsing infix: left=", left, "right=", symbol);
     switch (symbol) {
         // Treat an infix left paren as a multiplication expression.
         case '(': {
-            console.log("Parsing inner");
             const inner = parser.expression();
-            console.log("Done with inner");
             if (inner == null) { return null; }
             const close = parser.token();
             if (close == null || close.type !== "symbol" || close.value !== ')') {
@@ -116,30 +112,25 @@ export class Parser {
         let current = this.token();
         // If we're asking for an expression when we're done, we have a problem.
         if (current == null || current.type === 'done') {
-            console.log("No more expressions");
             return null;
         }
         let left: Expression;
         // If we got a number, return a number.
         if (current.type === 'number') {
-            console.log("Left is number");
             left =  { type: 'number', value: current.value };
         }
         else {
             // Otherwise, look up the prefix parser we need.
             const prefixParser = PREFIX_PARSERS[current.value];
             if (prefixParser == null) {
-                console.log("No prefix parser found");
                 return null;
             }
             // Grab the prefix expression. If null, we have a problem.
             const parsedLeft = prefixParser(this, current);
             if (parsedLeft == null) { return null; }
-            console.log("Prefix-parsed left: ", parsedLeft);
             left = parsedLeft;
         }
         while (power <= this.currentPower()) {
-            console.log("Preparing infix");
             // We might have an infix char after this prefix expr.
             const infixToken = this.peek();
             // If we've reached the end, then it was just that expression we parsed.
@@ -148,14 +139,12 @@ export class Parser {
             else if (infixToken.type === 'number') { return null; }
             // If it's not an infix char, don't use it.
             if (!isInfixChar(infixToken.value)) {
-                console.log("Found a not infix token ", infixToken);
                 break;
             }
             // Confirm taking the token.
             this.token();
             const parsed = parseInfix(this, left, infixToken.value);
             if (parsed == null) { return null; }
-            console.log("Parsed infix: ", parsed);
             left = parsed;
         }
         return left;

@@ -17,7 +17,6 @@ export default class Tokenizer {
 
     next = (): ?Token => {
         if (this.position >= this.text.length) {
-            console.log("Done parsing");
             return { type: "done" };
         }
         let nextChar: string = this.text[this.position];
@@ -29,7 +28,6 @@ export default class Tokenizer {
         }
         // It's a number.
         if (!isNaN(nextChar)) {
-            console.log("Parsing a number");
             const numberChars: string[] = [nextChar];
             // Keep taking number characters until we hit a non-
             // number or EOF.
@@ -56,7 +54,6 @@ export default class Tokenizer {
             const numberText: string = numberChars.join("");
             const numberValue = parseFloat(numberText);
             if (!isNaN(numberValue)) {
-                console.log("Parsed number ", numberValue);
                 return { type: "number", value: numberValue };
             }
             else {
@@ -68,7 +65,6 @@ export default class Tokenizer {
             case '+': case '-':
             case '*': case '/':
             case '^':
-                console.log("Parsing a symbol: ", nextChar);
                 return { type: "symbol", value: nextChar };
             default:
                 return null;
