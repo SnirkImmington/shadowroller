@@ -14,6 +14,8 @@ import { Parser, evaluate } from '../math';
 type Props = {
     controlId: string;
     onSelect: (?number) => void;
+    min?: number;
+    max?: number;
 };
 
 type RoundingMode = "up" | "down";
@@ -40,10 +42,8 @@ export default class NumericInput extends React.Component<Props, State> {
         };
     }
     handleInputEvent = (event: SyntheticInputEvent<HTMLInputElement>) => {
-        console.log("Input event: ", event.target);
         // Evaluate the text.
         if (event.target.value == null) {
-            console.log("It's null???");
             this.props.onSelect(null);
             this.setState({
                 text: "",
@@ -54,7 +54,6 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         const parser = new Parser(event.target.value);
         const expr = parser.expression();
-        console.log("Parsed expression: ", expr);
         if (expr == null) {
             const errorPos = parser.position();
             this.props.onSelect(null);
@@ -67,7 +66,6 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         else {
             const value = evaluate(expr);
-            console.log("Eval'd expression:", value);
             if (isNaN(value)) {
                 const errorPos = parser.position();
                 this.props.onSelect(null);
@@ -81,7 +79,7 @@ export default class NumericInput extends React.Component<Props, State> {
             else {
                 // If it's not exact, dispatch the rounded.
                 if (!Number.isInteger(value)) {
-                    const rounded = this.state.roroundingMode === 'up' ?
+                    const rounded = this.state.roundingMode === 'up' ?
                         Math.ceil(value) : Math.floor(value);
                     this.props.onSelect(rounded);
                 }
@@ -100,32 +98,41 @@ export default class NumericInput extends React.Component<Props, State> {
     }
 
     handleRoundModeChange = (event: SyntheticInputEvent<HTMLButtonElement>) => {
+        const newMode = this.state.roundingMode === 'up' ? "down" : "up";
+        if (this.state.value != null) {
+            const selectedValue = newMode === 'up' ?
+            Math.ceil(this.state.value) : Math.floor(this.state.value);
+            this.props.onSelect(selectedValue);
+        }
         this.setState({
-            roundingMode: this.state.roundingMode === 'up' ?
-                "down" : "up"
+            roundingMode: newMode
         });
     }
 
     render() {
-        console.log("Rendering text ", this.state.text);
-        console.log("Rendering value ", this.state.value);
         const value = this.state.value;
+        let rounded = value;
+        if (value != null && !Number.isInteger(value)) {
+            rounded = this.state.roundingMode === "up" ?
+                Math.ceil(value) : Math.floor(value);
+        }
 
         // If we have a typo'd expression.
         const invalid = this.state.isExpression && value == null;
 
         let validationState: ?string = null;
-        let suffix: React.Node = "";
-        let extra: React.Node = "";
+        let result: React.Node = "";
+        let error: React.Node = "";
+        let warning: React.Node = "";
 
         if (invalid) {
             validationState = "error";
-            suffix = (
+            result = (
                 <InputGroup.Addon className="numeric-input-suffix">
                     --
                 </InputGroup.Addon>
             );
-            extra = (
+            error = (
                 <InputGroup.Addon>
                     <abbr title="Typo location">
                         @{this.state.errorPos || "?"}
@@ -134,28 +141,44 @@ export default class NumericInput extends React.Component<Props, State> {
             );
         }
         else if (value != null && this.state.isExpression) {
-            suffix = (
+            result = (
                 <InputGroup.Addon className="numeric-input-suffix">
                     {value}
                 </InputGroup.Addon>
             );
-            if (!Number.isInteger(value)) {
-                const icon = this.state.roundmroundingMode === "up" ?
-                    "arrow-up" : "arrow-down";
-                const rounded = this.state.roundingMode === 'up' ?
-                    Math.ceil(value) : Math.floor(value);
-                suffix = (
+        }
+        if (rounded !== value) {
+            const icon = this.state.roundingMode === "up" ?
+                "arrow-up" : "arrow-down";
+            result = (
+                <InputGroup.Addon className="numeric-input-suffix">
+                    {rounded}
+                </InputGroup.Addon>
+            );
+            error = (
+                <InputGroup.Button>
+                    <Button onClick={this.handleRoundModeChange}>
+                        <Glyphicon glyph={icon} />
+                    </Button>
+                </InputGroup.Button>
+            );
+        }
+        if (rounded != null) {
+            if (this.props.min != null && rounded < this.props.min) {
+                validationState = "warning";
+                warning = (
                     <InputGroup.Addon className="numeric-input-suffix">
-                        {rounded}
+                        {`< ${this.props.min}`}
                     </InputGroup.Addon>
                 );
-                extra = (
-                    <InputGroup.Button>
-                        <Button onClick={this.handleRoundModeChange}>
-                            <Glyphicon icon={icon} />
-                        </Button>
-                    </InputGroup.Button>
-                )
+            }
+            if (this.props.max != null && rounded > this.props.max) {
+                validationState = "warning";
+                warning = (
+                    <InputGroup.Addon className="numeric-input-suffix">
+                        {`> ${this.props.max}`}
+                    </InputGroup.Addon>
+                );
             }
         }
 
@@ -172,41 +195,11 @@ export default class NumericInput extends React.Component<Props, State> {
                                  inputMode="numeric"
                                  value={this.state.text}
                                  onChange={this.handleInputEvent} />
-                    {suffix}
-                    {extra}
+                    {result}
+                    {error}
+                    {warning}
                 </InputGroup>
             </FormGroup>
         );
     }
-}
-
-/** Number-oriented input. */
-export function NsumericInput(props: Props) {
-    function handleInputEvent(event: SyntheticInputEvent<HTMLInputElement>) {
-        const value: number = parseInt(event.target.value, 10);
-        if (isNaN(value)) {
-            props.onSelect(null);
-        }
-        else {
-            props.onSelect(value);
-        }
-    }
-
-    let value = "";
-    if (props.value != null) {
-        value = props.value;
-    }
-
-    return (
-        <InputGroup className="numeric-input-group">
-            <InputGroup.Addon className="numeric-input-calculator">
-                {CALCULATOR}
-            </InputGroup.Addon>
-            <FormControl className="numeric-input"
-                         type="number"
-                         value={value}
-                         onChange={handleInputEvent} />
-            {""}
-        </InputGroup>
-    );
 }
