@@ -126,6 +126,7 @@ class RollInputPanel extends React.Component<Props> {
                             Roll
                         </ControlLabel>
                         <NumericInput controlId="roll-input-dice"
+                                      min={1} max={100}
                                       onSelect={this.handleDiceChange} />
                         <ControlLabel className="menu-label">
                             dice
