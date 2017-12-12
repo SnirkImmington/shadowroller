@@ -1,5 +1,6 @@
 .numeric-input {
     width: 9em !important;
+    max-width: 9em !important;
     padding-right: 4px !important;
 }
 

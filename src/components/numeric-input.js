@@ -187,9 +187,6 @@ export default class NumericInput extends React.Component<Props, State> {
                        validationState={validationState}
                        className="numeric-input-form-group">
                 <InputGroup className="numeric-input-group">
-                    <InputGroup.Addon className="numeric-input-caluclator">
-                        {CALCULATOR}
-                    </InputGroup.Addon>
                     <FormControl className="numeric-input"
                                  type="text"
                                  inputMode="numeric"
