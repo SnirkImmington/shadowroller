@@ -2,7 +2,7 @@
 
 import './random-loading-label.css';
 
-import * as React from 'react';
+import React, { Component } from 'react';
 import { ControlLabel } from 'react-bootstrap';
 
 import { connect } from 'react-redux';
@@ -12,16 +12,10 @@ import type { AppState, DispatchFn, GetStateFn } from '../../state';
 import * as rollActions from '../actions';
 import pickRandom from '../../util/pick-random';
 
-const loadingFlavorText: React.Node[] = [
+const loadingFlavorText: string[] = [
     "Getting all the best rolls",
 
-    <span>
-        Monkey tacos! I'm{" "}
-        <span className="monospace">
-            so
-        </span>{" "}
-        random
-    </span>,
+    "Monkey tacos! I'm so random",
     "Something something randomizing",
     "Potato potato shadow run stuff",
 
@@ -29,15 +23,7 @@ const loadingFlavorText: React.Node[] = [
     "Setting up the horse races",
     "Not fixing the horse races",
     "Don't get your locks melted off",
-    <span>
-        Fetching{" "}
-        <span className="monospace">
-            b0ss
-        </span>{" "}
-        a critical glitch
-    </span>,
-    "Getting roll data from some guy on JackPoint",
-    "Escorting an Aztech package full of rolls",
+    "Fetching b0ss a critical glitch",
 
     "Preconfiguring the glitches",
     "Asking the dragons for rolls",
@@ -54,7 +40,7 @@ const loadingFlavorText: React.Node[] = [
     "Here, have some glitches",
 ];
 
-const loadedFlavorText: React.Node[] = [
+const loadedFlavorText: string[] = [
     "Rolls from random.org",
     "Rolls from random.org",
     "Rolls from random.org",
@@ -71,33 +57,30 @@ const loadedFlavorText: React.Node[] = [
     "Go get 'em, chummer",
 ];
 
-const localRequiredFlavorText: React.Node[] = [
+const localRequiredFlavorText: string[] = [
     "Can't access random.org",
     "random.org is offline",
     "Can't find random.org on the Matrix",
     "Too much noise to access random.org",
-    "Unable to find random.org's Host",
+    "Unable to find random.org's host",
 ];
 
-const localLoadingFlavorText: React.Node[] = [
+const localLoadingFlavorText: string[] = [
     "Getting randoness from your browser",
     "Hope your browser has good RNG",
     "Your browser better be random enough, chummer",
 ];
 
-const localLoadedFlavorText: React.Node[] = [
-    <span>
-        Rolls from{" "}
-        <span className="monospace">
-            Random.next()
-        </span>
-    </span>,
+const localLoadedFlavorText: string[] = [
+    "Rolls from Random.next()",
     "Rolls from your browser",
+    "Pseudorandom rolls from your browser",
+    "Pseudorandom rolls from your browser",
     "Pseudorandom rolls from your browser",
     "Possibly-compromised rolls from your browser",
 
     "Rolling in offline mode",
-    "Rolling without Wireless bonus",
+    "Rolling without wireless bonus",
 ];
 
 type Props = {|
@@ -108,7 +91,7 @@ type Props = {|
     isLocal: boolean,
 |};
 
-class RandomLoadingLabel extends React.Component<Props> {
+class RandomLoadingLabel extends Component<Props> {
     shouldComponentUpdate(nextProps: Props) {
         return nextProps.bufferLoadState !== this.props.bufferLoadState
             || nextProps.isLocal !== this.props.isLocal;
