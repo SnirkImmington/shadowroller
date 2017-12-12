@@ -48,12 +48,7 @@ class RollInputPanel extends React.Component<Props> {
     }
 
     handleDiceChange = (dice: ?number) => {
-        if (dice != null && dice < 99 && dice > 0) {
-            this.props.dispatch(rollActions.setDiceCount(dice));
-        }
-        else {
-            this.props.dispatch(rollActions.setDiceCount(null));
-        }
+        this.props.dispatch(rollActions.setDiceCount(dice));
     }
 
     handleRollModeSelect = (mode: RollMode) => {
@@ -125,8 +120,8 @@ class RollInputPanel extends React.Component<Props> {
                         <ControlLabel className="menu-label">
                             Roll
                         </ControlLabel>
-                        <NumericInput controlId="roll-input-dice"
-                                      min={1} max={100}
+                        <NumericInput min={0} max={99}
+                                      value={state.rollDice || ''}
                                       onSelect={this.handleDiceChange} />
                         <ControlLabel className="menu-label">
                             dice
