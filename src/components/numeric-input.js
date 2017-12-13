@@ -28,8 +28,6 @@ type State = {
     roundingMode: RoundingMode;
 }
 
-const CALCULATOR = "🖩";
-
 export default class NumericInput extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
@@ -188,7 +186,7 @@ export default class NumericInput extends React.Component<Props, State> {
                        className="numeric-input-form-group">
                 <InputGroup className="numeric-input-group">
                     <FormControl className="numeric-input"
-                                 type="text"
+                                 type="nunmber"
                                  inputMode="numeric"
                                  value={this.state.text}
                                  onChange={this.handleInputEvent} />
