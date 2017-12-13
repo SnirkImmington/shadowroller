@@ -27,7 +27,7 @@ export default class Tokenizer {
             this.position++;
         }
         // It's a number.
-        if (!isNaN(nextChar)) {
+        if (!isNaN(nextChar) || nextChar === '.') {
             const numberChars: string[] = [nextChar];
             // Keep taking number characters until we hit a non-
             // number or EOF.
