@@ -123,20 +123,8 @@ export default class NumericInput extends React.Component<Props, State> {
         let error: React.Node = "";
         let warning: React.Node = "";
 
-        if (invalid) {
+        if (invalid && this.state.text !== "") {
             validationState = "error";
-            result = (
-                <InputGroup.Addon className="numeric-input-suffix">
-                    --
-                </InputGroup.Addon>
-            );
-            error = (
-                <InputGroup.Addon>
-                    <abbr title="Typo location">
-                        @{this.state.errorPos || "?"}
-                    </abbr>
-                </InputGroup.Addon>
-            );
         }
         else if (value != null && this.state.isExpression) {
             result = (
