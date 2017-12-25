@@ -68,7 +68,9 @@ class RollInputPanel extends React.Component<Props> {
         if (rollAgainst != null && rollAgainst < 100 && rollAgainst > 0) {
             this.props.dispatch(rollActions.setRollAgainst(rollAgainst));
         }
-        this.props.dispatch(rollActions.setRollAgainst(null));
+        else {
+            this.props.dispatch(rollActions.setRollAgainst(null));
+        }
     }
 
     handleDisplayModeSelect = (mode: DisplayMode) => {
@@ -114,6 +116,7 @@ class RollInputPanel extends React.Component<Props> {
         const state = this.props.state;
         let isReady = (state.bufferLoadState !== "loading") && propertiesSet(state);
         if (isReady && !diceAvailable(state)) {
+            console.log("Dice not ready!");
             isReady = false;
         }
 
