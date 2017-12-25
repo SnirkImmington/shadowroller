@@ -5,6 +5,10 @@
     padding-right: 4px !important;
 }
 
+.numeric-input-group {
+    width: min-content;
+}
+
 .numeric-input-suffix {
     font-family: monospace;
 }
