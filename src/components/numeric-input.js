@@ -6,7 +6,7 @@ import * as React from 'react';
 
 import {
     FormGroup, InputGroup,
-    FormControl, Button, Glyphicon
+    FormControl, Button
 } from 'react-bootstrap';
 
 import { Parser, evaluate } from '../math';

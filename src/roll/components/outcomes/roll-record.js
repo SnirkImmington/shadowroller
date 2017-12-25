@@ -4,13 +4,9 @@ import './roll-record.css';
 
 import * as React from 'react';
 import {
-    Alert,
-    Label,
-    Button,
-    ButtonGroup,
-    Popover,
-    OverlayTrigger,
-    Glyphicon,
+    Alert, Label,
+    Button, ButtonGroup,
+    Popover, OverlayTrigger,
 } from 'react-bootstrap';
 
 type RollRecordProps = {
