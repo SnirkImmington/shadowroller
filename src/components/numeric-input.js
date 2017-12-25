@@ -135,7 +135,7 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         if (rounded !== value) {
             const icon = this.state.roundingMode === "up" ?
-                "arrow-up" : "arrow-down";
+                "fa fa-arrow-up" : "fa fa-arrow-down";
             result = (
                 <InputGroup.Addon className="numeric-input-suffix">
                     {rounded}
@@ -144,7 +144,7 @@ export default class NumericInput extends React.Component<Props, State> {
             error = (
                 <InputGroup.Button>
                     <Button onClick={this.handleRoundModeChange}>
-                        <Glyphicon glyph={icon} />
+                        <i className={icon}></i>
                     </Button>
                 </InputGroup.Button>
             );
@@ -173,6 +173,9 @@ export default class NumericInput extends React.Component<Props, State> {
                        validationState={validationState}
                        className="numeric-input-form-group">
                 <InputGroup className="numeric-input-group">
+                    <InputGroup.Addon>
+                        <i className="fa fa-calculator" aria-hidden="true"></i>
+                    </InputGroup.Addon>
                     <FormControl className="numeric-input"
                                  type="nunmber"
                                  inputMode="numeric"
