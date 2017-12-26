@@ -15,7 +15,7 @@ type Props = {
 export default function RollAgainstRollOptions(props: Props) {
     return (
         <FormGroup controlId="roll-input-roll-against"
-                   className="roll-input-options">
+                   className="roll-input-options roll-option-offset">
             <NumericInput controlId="roll-input-roll-against"
                 min={1} max={100}
                 onSelect={props.onChange} />

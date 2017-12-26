@@ -28,13 +28,15 @@ export type Expression =
 ;
 
 export type MinPower = 0;
-export type AddSubPower = 1;
-export type MulDivPower = 2;
-export type ExpPower = 3;
-export type ParensPower = 4;
+export type NegatePower = 1;
+export type AddSubPower = 2;
+export type MulDivPower = 3;
+export type ExpPower = 4;
+export type ParensPower = 5;
 
 export type BindingPower =
 | MinPower
+| NegatePower
 | AddSubPower
 | MulDivPower
 | ExpPower
@@ -43,16 +45,17 @@ export type BindingPower =
 
 export const CALCULATOR_CHAR = "🖩";
 
-export function powerOf(symbol: string): BindingPower {
+export function powerOf(symbol: string, prefix: boolean): BindingPower {
     switch (symbol) {
-        case '+': case '-':
-            return (1: AddSubPower);
+        case '+':
+        case '-':
+            return prefix ? (1: NegatePower) : (2: AddSubPower);
         case '*': case '/':
-            return (2: MulDivPower);
+            return (3: MulDivPower);
         case '^':
-            return (3: ExpPower);
+            return (4: ExpPower);
         case '(': case ')':
-            return (4: ParensPower);
+            return (5: ParensPower);
         default:
             return (0: MinPower);
     }

@@ -63,13 +63,13 @@ function parseInfix(parser: Parser, left: Expression, symbol: string): ?Expressi
             return { type: "binOp", op: "*", left, right: inner };
         }
         case '+': case '-': case '*': case '/': {
-            const power = powerOf(symbol);
+            const power = powerOf(symbol, false);
             const right = parser.expression(power);
             if (right == null) { return null; }
             return { type: "binOp", op: symbol, left, right: right };
         }
         case '^': {
-            const power = powerOf(symbol);
+            const power = powerOf(symbol, false);
             const right = parser.expression(power);
             if (right == null) { return null; }
             return { type: "binOp", op: '^', left, right: right };
@@ -130,7 +130,7 @@ export class Parser {
             if (parsedLeft == null) { return null; }
             left = parsedLeft;
         }
-        while (power <= this.currentPower()) {
+        while (power <= this.currentPower(false)) {
             // We might have an infix char after this prefix expr.
             const infixToken = this.peek();
             // If we've reached the end, then it was just that expression we parsed.
@@ -150,14 +150,14 @@ export class Parser {
         return left;
     }
 
-    currentPower = (): BindingPower => {
+    currentPower = (prefix: boolean): BindingPower => {
         const nextToken = this.peek();
         if (nextToken == null ||
             nextToken.type !== 'symbol') {
             return (0: MinPower);
         }
         else {
-            return powerOf(nextToken.value);
+            return powerOf(nextToken.value, prefix);
         }
     }
 

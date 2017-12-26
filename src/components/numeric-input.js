@@ -6,7 +6,7 @@ import * as React from 'react';
 
 import {
     FormGroup, InputGroup,
-    FormControl, Button, Glyphicon
+    FormControl, Button
 } from 'react-bootstrap';
 
 import { Parser, evaluate } from '../math';
@@ -27,8 +27,6 @@ type State = {
     value: ?number;
     roundingMode: RoundingMode;
 }
-
-const CALCULATOR = "🖩";
 
 export default class NumericInput extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -125,20 +123,8 @@ export default class NumericInput extends React.Component<Props, State> {
         let error: React.Node = "";
         let warning: React.Node = "";
 
-        if (invalid) {
+        if (invalid && this.state.text !== "") {
             validationState = "error";
-            result = (
-                <InputGroup.Addon className="numeric-input-suffix">
-                    --
-                </InputGroup.Addon>
-            );
-            error = (
-                <InputGroup.Addon>
-                    <abbr title="Typo location">
-                        @{this.state.errorPos || "?"}
-                    </abbr>
-                </InputGroup.Addon>
-            );
         }
         else if (value != null && this.state.isExpression) {
             result = (
@@ -149,7 +135,7 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         if (rounded !== value) {
             const icon = this.state.roundingMode === "up" ?
-                "arrow-up" : "arrow-down";
+                "fa fa-arrow-up" : "fa fa-arrow-down";
             result = (
                 <InputGroup.Addon className="numeric-input-suffix">
                     {rounded}
@@ -158,7 +144,7 @@ export default class NumericInput extends React.Component<Props, State> {
             error = (
                 <InputGroup.Button>
                     <Button onClick={this.handleRoundModeChange}>
-                        <Glyphicon glyph={icon} />
+                        <i className={icon}></i>
                     </Button>
                 </InputGroup.Button>
             );
@@ -187,11 +173,11 @@ export default class NumericInput extends React.Component<Props, State> {
                        validationState={validationState}
                        className="numeric-input-form-group">
                 <InputGroup className="numeric-input-group">
-                    <InputGroup.Addon className="numeric-input-caluclator">
-                        {CALCULATOR}
+                    <InputGroup.Addon>
+                        <i className="fa fa-calculator" aria-hidden="true"></i>
                     </InputGroup.Addon>
                     <FormControl className="numeric-input"
-                                 type="text"
+                                 type="nunmber"
                                  inputMode="numeric"
                                  value={this.state.text}
                                  onChange={this.handleInputEvent} />

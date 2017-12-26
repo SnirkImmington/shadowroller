@@ -40,13 +40,9 @@ export function diceAvailable(state: RollState): boolean {
         case 'count-hits':
             return (state.rollDice || 0) <= state.buffer.length;
         case 'test-for':
-            return (state.rollDice || 0)
-                + (state.testForDice || 0)
-                <= state.buffer.length;
+            return (state.rollDice || 0) <= state.buffer.length;
         case 'roll-against':
-            return (state.rollDice || 0)
-                + (state.testForDice || 0)
-                <= state.buffer.length;
+            return (state.rollDice || 0) + (state.rollAgainstDice || 0) <= state.buffer.length;
         case 'display':
             return (state.rollDice || 0) <= state.buffer.length;
         default:

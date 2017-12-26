@@ -48,7 +48,7 @@ class RollInputPanel extends React.Component<Props> {
     }
 
     handleDiceChange = (dice: ?number) => {
-        if (dice != null && dice < 99 && dice > 0) {
+        if (dice != null && dice < 100 && dice > 0) {
             this.props.dispatch(rollActions.setDiceCount(dice));
         }
         else {
@@ -65,7 +65,12 @@ class RollInputPanel extends React.Component<Props> {
     }
 
     handleRollAgainstSelect = (rollAgainst: ?number) => {
-        this.props.dispatch(rollActions.setRollAgainst(rollAgainst));
+        if (rollAgainst != null && rollAgainst < 100 && rollAgainst > 0) {
+            this.props.dispatch(rollActions.setRollAgainst(rollAgainst));
+        }
+        else {
+            this.props.dispatch(rollActions.setRollAgainst(null));
+        }
     }
 
     handleDisplayModeSelect = (mode: DisplayMode) => {
@@ -111,6 +116,7 @@ class RollInputPanel extends React.Component<Props> {
         const state = this.props.state;
         let isReady = (state.bufferLoadState !== "loading") && propertiesSet(state);
         if (isReady && !diceAvailable(state)) {
+            console.log("Dice not ready!");
             isReady = false;
         }
 

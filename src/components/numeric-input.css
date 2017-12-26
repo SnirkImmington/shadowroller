@@ -1,20 +1,18 @@
 .numeric-input {
-    width: 9em !important;
+    width: 8em !important;
+    max-width: 8em !important;
+    min-width: 8em !important;
     padding-right: 4px !important;
 }
 
-.form-group {
-    margin-bottom: 0px !important;
-}
-
-.numeric-input-calculator {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 1.6em !important;
-    font-weight: 200 !important;
-    padding-bottom: 2px !important;
-    font-stretch: expanded !important;
+.numeric-input-group {
+    width: min-content;
 }
 
 .numeric-input-suffix {
     font-family: monospace;
+}
+
+.form-group {
+    margin-bottom: 0px !important;
 }
