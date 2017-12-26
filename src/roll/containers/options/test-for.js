@@ -16,9 +16,8 @@ export default function TestForRollOptions(props: Props) {
     return (
         <FormGroup controlId="roll-input-test-for"
                    className="roll-input-options">
-            <NumericInput min={0} max={99}
-                          value={props.value || ''}
-                          onSelect={props.onChange} />
+            <NumericInput controlId="roll-input-test-for"
+                onSelect={props.onChange} />
             <ControlLabel className="menu-label">
                 hits
             </ControlLabel>
