@@ -177,7 +177,7 @@ export default class NumericInput extends React.Component<Props, State> {
                         <i className="fa fa-calculator" aria-hidden="true"></i>
                     </InputGroup.Addon>
                     <FormControl className="numeric-input"
-                                 type="nunmber"
+                                 type="tel"
                                  inputMode="numeric"
                                  value={this.state.text}
                                  onChange={this.handleInputEvent} />
