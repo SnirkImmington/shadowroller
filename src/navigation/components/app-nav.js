@@ -9,13 +9,6 @@ import { connect } from 'react-redux';
 
 import type { DispatchFn, AppState } from '../../state';
 
-const ACTIONS_FLAVORTEXT: React.Node[] = [
-    "Actions",
-    "Actions",
-    "Actions",
-    <span><i>Do</i>{" stuff"}</span>
-];
-
 type Props = {
     dispatch: DispatchFn,
     characterName: string
@@ -32,22 +25,21 @@ class AppNav extends React.Component<Props> {
                     onSelect={this.handleSelect}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                        <b>Shadowroller</b>
+                        <b>Sombra</b>
                     </Navbar.Brand>
                     <Navbar.Toggle />
                 </Navbar.Header>
                 <Navbar.Collapse>
                     <Nav>
-                        <NavItem eventKey="pick-actions">
-                            <FavorText from={ACTIONS_FLAVORTEXT} />
-                        </NavItem>
+                        <NavItem eventKey="combat" disabled>Combat</NavItem>
+                        <NavItem eventKey="skills">Skills</NavItem>
+                        <NavItem eventKey="edit-stats">Attributes</NavItem>
+                        <NavItem eventKey="edit-gear" disabled>Gear</NavItem>
                     </Nav>
                     <Nav pullRight>
-                        <NavItem eventKey="edit-modifiers">Modifiers</NavItem>
-                        <NavItem eventKey="edit-stats">Stats</NavItem>
-                        <NavItem eventKey="edit-skills">Skills</NavItem>
-                        <NavItem eventKey="edit-gear" disabled>Gear</NavItem>
-                        <NavItem eventKey="export" disabled>Export</NavItem>
+                        <NavItem eventKey="edit" disabled>Edit</NavItem>
+                        <NavItem eventKey="export">Import</NavItem>
+                        <NavItem disabled eventKey="export">Export</NavItem>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>

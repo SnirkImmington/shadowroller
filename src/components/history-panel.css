@@ -1,0 +1,14 @@
+#history-panel {
+}
+
+@media all and (min-width: 768px) {
+    #history-panel {
+        margin-left: 10px;
+        min-width: 30em;
+        max-width: 30em;
+    }
+}
+
+#history-panel > .panel-body {
+    overflow-y: auto;
+}

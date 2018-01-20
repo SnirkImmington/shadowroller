@@ -46,6 +46,9 @@
 @media all and (min-width: 576px) {
     .App-main {
         max-width: 98%;
+        /*height: 84vh;
+        max-height: 84vh;*/
+        overflow: hidden;
     }
 }
 
@@ -58,13 +61,7 @@
 
 @media all and (min-width: 992px) {
     .App-main {
-        max-width: 80%;
-    }
-}
-
-@media all and (min-width: 1300px) {
-    .App-main {
-        max-width: 92em;
+        max-width: 120em;
     }
 }
 
@@ -106,6 +103,7 @@
 /* App navbar */
 #app-navbar {
     text-align: left;
+    margin-bottom: 0px;
 }
 
 /* Skills listing */
@@ -113,24 +111,37 @@
     text-align: left;
 }
 
-/* Health bar */
-.health-bar {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content:space-around;
+.status-bar-well {
+    padding: 14px;
 }
 
-.health-bar-item {
-    align-self: center;
+/* Health bar */
+.status-bar {
+    display: flex;
+    flex-direction: column;
+    flex-basis: center;
+    flex-wrap: wrap;
+}
+
+.status-label {
     margin-top: 10px;
+    padding-top: 0.4em !important;
+    font-size: 1.15em !important;
 }
 
 @media all and (min-width: 768px) {
-    .health-bar {
+    .status-bar {
         flex-direction: row;
     }
-    .health-bar-item {
+    .status-label {
         margin-top: 0px;
+        margin-right: 10px;
     }
+}
+
+.scroll-list {
+    max-height: inherit;
+    height: auto;
+    scroll-behavior: auto;
+    overflow: auto;
 }

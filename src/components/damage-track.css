@@ -5,3 +5,7 @@
 .damage-track-box-damaged {
     color: orange;
 }
+
+.damage-track {
+    font-size: 1.2em;
+}
