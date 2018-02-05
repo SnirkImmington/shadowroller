@@ -42,11 +42,6 @@ class RollInputPanel extends React.Component<Props> {
         this.props.dispatch(rollActions.performRoll());
     }
 
-    componentDidMount() {
-        // First try at fetching from remote buffer.
-        this.props.dispatch(rollActions.fetchBuffer());
-    }
-
     handleDiceChange = (dice: ?number) => {
         if (dice != null && dice < 100 && dice > 0) {
             this.props.dispatch(rollActions.setDiceCount(dice));

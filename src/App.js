@@ -2,7 +2,7 @@
 
 import './App.css';
 
-import React, { Component } from 'react';
+import * as React from 'react';
 import {
     Nav, Navbar,
     Panel, PanelGroup,
@@ -13,6 +13,7 @@ import {
     Label,
     Well,
 } from 'react-bootstrap';
+import { connect } from 'react-redux';
 
 import AppNav from './navigation/components/app-nav';
 
@@ -25,85 +26,73 @@ import AttributesPanel from './character/attributes/containers/attribute-panel';
 
 import SkillsTabs from './character/skills/containers/skills-tabs';
 
-//* Main page component. */
-export default function App(props: {}) {
-    function entry(name: string, attr: string, pool: number, canDefault: bool =  true) {
-        let message;
-        if (!canDefault && pool === 0) {
-            message = (
-                <span>
-                    Cannot default
-                </span>
-            );
-        }
-        else if (pool === 0) {
-            message = (
-                <span>
-                    Default on{` ${attr} (2)`}
-                </span>
-            );
-        }
-        else {
-            message = (
-                <span>
-                    {`Skill (${pool - 2}) + ${attr} (2)`}
-                </span>
-            );
-        }
+import type { AppState, DispatchFn } from './state';
+import * as rollActions from './roll/actions';
 
-        return (
-            <ListGroupItem header={name}
-                           disabled={!canDefault && pool === 0}
-                           onClick={() => {}}>
-                    {message}
-            </ListGroupItem>
-        )
+type Props = {
+    dispatch: DispatchFn
+};
+
+type State = { };
+
+//* Main page component. */
+class App extends React.Component<Props, State> {
+    componentDidMount() {
+        this.props.dispatch(rollActions.fetchBuffer());
     }
 
-    return (
-        <div className="App">
-            <header className="App-header">
-                <h1 className="App-title">Shadowroller</h1>
-            </header>
-            <div className="App-main">
-                <AppNav />
-                <Well className="status-bar-well">
-                    <div className="status-bar">
-                        <span className="status-condition">
-                            <span className='physical-condition'>
-                                <Label className='status-label'>Physical</Label>
-                                <DamageTrack max={11} damage={2} />
-                                <Button className='status-button'
-                                        bsStyle="danger" bsSize='small'>
-                                    Ouch
+    render() {
+        return (
+            <div className="App">
+                <header className="App-header">
+                    <h1 className="App-title">Shadowroller</h1>
+                </header>
+                <div className="App-main">
+                    <AppNav />
+                    <Well className="status-bar-well">
+                        <div className="status-bar">
+                            <span className="status-condition">
+                                <span className='physical-condition'>
+                                    <Label className='status-label'>Physical</Label>
+                                    <DamageTrack max={11} damage={2} />
+                                    <Button className='status-button'
+                                            bsStyle="danger" bsSize='small'>
+                                        Ouch
+                                    </Button>
+                                </span>
+                                <span className='stun-condition'>
+                                    <Label className="status-label">Stun</Label>
+                                    <DamageTrack max={12} damage={5} />
+                                    <Button className='status-button'
+                                            bsSize='small' bsStyle='warning'>
+                                        Oof
+                                    </Button>
+                                </span>
+                            </span>
+                            <span className='status-init'>
+                                <Button className='status-item'
+                                        bsStyle='primary' bsSize='small'>
+                                    Roll Initiative
                                 </Button>
                             </span>
-                            <span className='stun-condition'>
-                                <Label className="status-label">Stun</Label>
-                                <DamageTrack max={12} damage={5} />
-                                <Button className='status-button'
-                                        bsSize='small' bsStyle='warning'>
-                                    Oof
-                                </Button>
+                            <span className='modifiers'>
+                                <Label bsStyle='info' className='status-label'>AR hotsim</Label>
+                                <Label bsStyle='warning' className='status-label'>-3 condition</Label>
                             </span>
-                        </span>
-                        <span className='status-init'>
-                            <Button className='status-item'
-                                    bsStyle='primary' bsSize='small'>
-                                Roll Initiative
-                            </Button>
-                        </span>
-                        <span className='modifiers'>
-                            <Label bsStyle='info' className='status-label'>AR hotsim</Label>
-                            <Label bsStyle='warning' className='status-label'>-3 condition</Label>
-                        </span>
+                        </div>
+                    </Well>
+                    <div id="App-window-container">
+                        <SkillsTabs />
+                        <HistoryPanel />
                     </div>
-                </Well>
-                <div id="App-window-container">
-                    <SkillsTabs />
-                    <HistoryPanel />
                 </div>
             </div>
-        </div>
-    );
+        );
+    }
 }
+
+function mapStateToProps(state: AppState) {
+    return { };
+}
+
+export default connect(mapStateToProps)(App);
