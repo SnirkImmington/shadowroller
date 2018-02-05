@@ -9,3 +9,15 @@
 .roll-mode-input-glyph {
     margin-left: 0.5em;
 }
+
+.roll-input-wrapper {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+@media all and (min-width: 768px) {
+    .roll-input-wrapper {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+}

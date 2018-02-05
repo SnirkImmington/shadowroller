@@ -4,13 +4,9 @@ import './roll-record.css';
 
 import * as React from 'react';
 import {
-    Alert,
-    Label,
-    Button,
-    ButtonGroup,
-    Popover,
-    OverlayTrigger,
-    Glyphicon,
+    Alert, Label,
+    Button, ButtonGroup,
+    Popover, OverlayTrigger,
 } from 'react-bootstrap';
 
 type RollRecordProps = {
@@ -55,13 +51,13 @@ export default class RollRecord extends React.Component<RollRecordProps> {
                         <Button className='roll-record-info'
                                 onClick={mutedOnClick}
                                 bsStyle='info'>
-                            <Glyphicon glyph='info-sign' />
+                            <i className="fa fa-info-circle"></i>
                         </Button>
                     </OverlayTrigger>
                     <Button className="roll-record-close"
                             bsStyle="warning"
                             onClick={this.handleCloseButton}>
-                        <Glyphicon glyph='remove' />
+                        <i className="fa fa-times"></i>
                     </Button>
                 </ButtonGroup>
             </Alert>

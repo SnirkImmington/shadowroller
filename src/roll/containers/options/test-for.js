@@ -15,9 +15,9 @@ type Props = {
 export default function TestForRollOptions(props: Props) {
     return (
         <FormGroup controlId="roll-input-test-for"
-                   className="roll-input-options">
-            <NumericInput min={0} max={99}
-                          value={props.value || ''}
+                   className="roll-input-options roll-option-offset">
+            <NumericInput controlId="roll-input-test-for"
+                          min={0}
                           onSelect={props.onChange} />
             <ControlLabel className="menu-label">
                 hits

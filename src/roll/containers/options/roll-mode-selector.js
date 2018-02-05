@@ -37,15 +37,15 @@ export default function RollModeSelector(props: Props) {
     );
 
     return (
-        <FormGroup id='roll-input-mode-group'
-                   controlId="roll-input-mode">
-            <DropdownButton noCaret dropup
-                            id='roll-mode-selector-drop-down'
-                            key={props.selected}
-                            title={dropdownTitle}
-                            onSelect={handleSelect}>
-                {rollSelections}
-            </DropdownButton>
-        </FormGroup>
+        <div className="roll-input-wrapper">
+            <FormGroup controlId="roll-input-mode">
+                <DropdownButton noCaret
+                                key={props.selected}
+                                title={dropdownTitle}
+                                onSelect={handleSelect}>
+                    {rollSelections}
+                </DropdownButton>
+            </FormGroup>
+        </div>
     );
 }
