@@ -1,0 +1,25 @@
+.skill-item-name {
+    font-weight: bold;
+}
+
+.skill-item-name-invalid {
+    font-style: italic;
+}
+
+.skill-item-header {
+    display: flex;
+    align-items: center;
+    width: auto;
+    cursor: pointer;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.skill-item-indicator {
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.skill-item-description {
+    margin-left: 0.5em;
+}
