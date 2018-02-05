@@ -3,66 +3,68 @@
         "type": "magic",
         "group": "enchanting",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "arcana": {
         "type": "magic",
+        "attr": "logic",
         "group": null,
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "artificing": {
         "type": "magic",
+        "attr": "magic",
         "group": "enchanting",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "astral-combat": {
         "type": "magic",
         "group": null,
         "default": false,
-        "baseAttribute": "willpower"
+        "attr": "willpower"
     },
     "banishing": {
         "type": "magic",
         "group": "conjuring",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "binding": {
         "type": "magic",
         "group": "conjuring",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "counterspelling": {
         "type": "magic",
         "group": "sorcery",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "disenchanting": {
         "type": "magic",
         "group": "enchanting",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "ritual-spellcasting": {
         "type": "magic",
         "group": "magic",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "spellcasting": {
         "type": "magic",
         "group": "sorcery",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     },
     "summoning": {
         "type": "magic",
         "group": "conjuring",
         "default": false,
-        "baseAttribute": "magic"
+        "attr": "magic"
     }
 }

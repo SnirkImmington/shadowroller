@@ -1,141 +1,117 @@
 {
-    "aeronautics-mechanic": {
-        "type": "technical",
-        "group": "engineering",
-        "default": false,
-        "baseAttribute": "logic"
-    },
     "animal-handling": {
         "type": "technical",
         "group": null,
         "default": true,
-        "baseAttribute": "charisma"
+        "attr": "charisma"
     },
     "armorer": {
         "type": "technical",
         "group": null,
         "default": true,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "artisan": {
         "type": "technical",
         "group": null,
         "dfault": false,
-        "baseAttribute": "intuition"
-    },
-    "automotive-mechanic": {
-        "type": "technical",
-        "group": "engineering",
-        "default": false,
-        "baseAttribute": "logic"
+        "attr": "intuition"
     },
     "biotechnology": {
         "type": "technical",
         "group": null,
         "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "chemistry": {
         "type": "technical",
         "group": null,
         "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "computer": {
         "type": "technical",
         "group": "electronics",
         "default": true,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "cybercombat": {
         "type": "technical",
         "group": "cracking",
         "default": true,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "cybertechnology": {
         "type": "technical",
         "group": "biotech",
         "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "demolitions": {
         "type": "technical",
         "group": null,
         "default": true,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "disguise": {
         "type": "technical",
         "group": "acting",
         "default": true,
-        "baseAttribute": "intuition"
+        "attr": "intuition"
     },
     "electronic-warfare": {
         "type": "technical",
         "group": "cracking",
         "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "first-aid": {
         "type": "technical",
         "group": "biotech",
         "default": true,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "forgery": {
         "type": "technical",
         "group": null,
         "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "hacking": {
         "type": "technical",
         "group": "cracking",
         "default": true,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "hardware": {
         "type": "technical",
         "group": "electronics",
         "default": false,
-        "baseAttribute": "logic"
-    },
-    "industrial-mechanic": {
-        "type": "technical",
-        "group": "engineering",
-        "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "locksmith": {
         "type": "technical",
         "group": null,
         "default": false,
         "warning": true,
-        "baseAttribute": "agility"
+        "attr": "agility"
     },
     "medicine": {
         "type": "technical",
         "group": "biotech",
         "default": false,
-        "baseAttribute": "logic"
-    },
-    "nautical-mechanic": {
-        "type": "technical",
-        "group": "engineering",
-        "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     },
     "navigation": {
         "type": "technical",
         "group": "outdoors",
         "default": true,
-        "baseAttribute": "intuition"
+        "attr": "intuition"
     },
     "software": {
         "type": "technical",
         "group": "electronics",
         "default": false,
-        "baseAttribute": "logic"
+        "attr": "logic"
     }
 }

@@ -1,41 +1,49 @@
 {
     "con": {
         "type": "social",
+        "attr": "charisma",
         "group": "acting",
         "default": true
     },
     "etiquitte": {
         "type": "social",
+        "attr": "charisma",
         "group": "acting",
         "default": true
     },
     "impersonation": {
         "type": "social",
+        "attr": "charisma",
         "group": "acting",
         "default": true
     },
     "instruction": {
         "type": "social",
+        "attr": "charisma",
         "group": null,
         "default": true
     },
     "intimidation": {
         "type": "social",
+        "attr": "charisma",
         "group": null,
         "default": true
     },
     "leadership": {
         "type": "social",
+        "attr": "charisma",
         "group": "influence",
         "default": true
     },
     "negotiation": {
         "type": "social",
+        "attr": "charisma",
         "group": "influence",
         "default": true
     },
     "performance": {
         "type": "social",
+        "attr": "charisma",
         "group": "acting",
         "default": true
     }

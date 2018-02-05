@@ -1,51 +1,61 @@
 {
     "archery": {
         "type": "combat",
+        "attr": "agility",
         "group": null,
         "default": true
     },
     "automatics": {
         "type": "combat",
+        "attr": "agility",
         "group": "firearms",
         "default": true
     },
     "blades": {
         "type": "combat",
+        "attr": "agility",
         "group": "close-combat",
         "default": true
     },
     "clubs": {
         "type": "combat",
+        "attr": "agility",
         "group": "close-combat",
         "default": true
     },
     "exotic-ranged-weapon": {
         "type": "combat",
+        "attr": "agility",
         "group": null,
         "default": false
     },
     "heavy-weapons": {
         "type": "combat",
+        "attr": "agility",
         "group": null,
         "default": true
     },
     "longarms": {
         "type": "combat",
+        "attr": "agility",
         "group": "firearms",
         "default": true
     },
     "pistols": {
         "type": "combat",
+        "attr": "agility",
         "group": "firearms",
         "default": true
     },
     "throwing-weapons": {
         "type": "combat",
+        "attr": "agility",
         "group": null,
         "default": true
     },
     "unarmed-combat": {
         "type": "combat",
+        "attr": "agility",
         "group": "close-combat",
         "default": true
     }

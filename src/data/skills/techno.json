@@ -2,16 +2,19 @@
     "compiling": {
         "type": "resonance",
         "group": "tasking",
+        "attr": "resonance",
         "default": false
     },
     "decompiling": {
         "type": "resonance",
         "group": "tasking",
+        "attr": "resonance",
         "default": false
     },
     "registering": {
         "type": "resonance",
         "group": "tasking",
+        "attr": "resonance",
         "default": true
     }
 }

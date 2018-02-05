@@ -1,0 +1,56 @@
+{
+    "aeronautics-mechanic": {
+        "type": "vehicular",
+        "group": "engineering",
+        "default": false,
+        "attr": "logic"
+    },
+    "automotive-mechanic": {
+        "type": "vehicular",
+        "group": "engineering",
+        "default": false,
+        "attr": "logic"
+    },
+    "industrial-mechanic": {
+        "type": "vehicular",
+        "group": "engineering",
+        "default": false,
+        "attr": "logic"
+    },
+    "nautical-mechanic": {
+        "type": "vehicular",
+        "group": "engineering",
+        "default": false,
+        "attr": "logic"
+    },
+    "pilot-aerospace": {
+        "type": "vehicular",
+        "attr": "reaction",
+        "group": null,
+        "default": false
+    },
+    "pilot-aircraft": {
+        "type": "vehicular",
+        "attr": "reaction",
+        "group": null,
+        "default": false
+    },
+    "pilot-ground-craft": {
+        "type": "vehicular",
+        "attr": "reaction",
+        "group": null,
+        "default": true
+    },
+    "pilot-walker": {
+        "type": "vehicular",
+        "attr": "reaction",
+        "group": null,
+        "default": false
+    },
+    "pilot-watercraft": {
+        "type": "vehicular",
+        "attr": "reaction",
+        "group": null,
+        "default": true
+    }
+}

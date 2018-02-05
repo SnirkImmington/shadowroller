@@ -1,0 +1,88 @@
+{
+    "assensing": {
+        "type": "active",
+        "group": null,
+        "default": false,
+        "attr": "intuition",
+        "baseLimit": "mental",
+        "note": "Only available to elligible Magic users!"
+    },
+    "diving": {
+        "type": "active",
+        "group": null,
+        "default": true,
+        "attr": "body",
+        "baseLimit": "physical"
+    },
+    "escape-artist": {
+        "type": "active",
+        "group": null,
+        "default": true,
+        "attr": "agility",
+        "baseLimit": "physical"
+    },
+    "free-fall": {
+        "type": "active",
+        "name": "Free-fall",
+        "group": null,
+        "default": true,
+        "attr": "body",
+        "baseLimit": "physical"
+    },
+    "gunnery": {
+        "type": "active",
+        "group": null,
+        "default": true,
+        "attr": "agility",
+        "baseLimit": "mental"
+    },
+    "gymnastics": {
+        "type": "active",
+        "group": "athletics",
+        "default": true,
+        "attr": "agility",
+        "baseLimit": "physical"
+    },
+    "perception": {
+        "type": "active",
+        "group": null,
+        "default": true,
+        "attr": "intuition",
+        "baseLimit": "mental"
+    },
+    "running": {
+        "type": "active",
+        "group": "athletics",
+        "default": true,
+        "attr": "strength",
+        "baseLimit": "physical"
+    },
+    "sneaking": {
+        "type": "active",
+        "default": true,
+        "group": "stealth",
+        "attr": "agility",
+        "baseLimit": "physical"
+    },
+    "survival": {
+        "type": "active",
+        "default": true,
+        "group": "outdoors",
+        "attr": "willpower",
+        "baseLimit": "physical"
+    },
+    "swimming": {
+        "type": "active",
+        "default": true,
+        "group": "athletics",
+        "attr": "strength",
+        "baseLimit": "physical"
+    },
+    "tracking": {
+        "type": "active",
+        "default": true,
+        "group": "outdoors",
+        "attr": "intuition",
+        "baseLimit": "mental"
+    }
+}
