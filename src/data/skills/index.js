@@ -25,7 +25,6 @@ import { ALL_TECHNO_SKILLS } from './techno';
 import type { TechnoSkill } from './techno';
 
 import type { Ref } from '..';
-
 import type { Attribute } from '..';
 
 export type SkillType =
@@ -58,6 +57,26 @@ export type Skill =
 | TechnoSkill
 ;
 
+export type SkillMap = { [Skill]: SkillInfo };
+
+function appendSkills(base: SkillMap, additions: SkillMap[]) {
+    for (const map of additions) {
+        for (const skill of Object.keys(map)) {
+            base[skill] = map[skill];
+        }
+    }
+}
+
+let allSkills: SkillMap = {};
+appendSkills(allSkills, [
+    ALL_COMBAT_SKILLS, ALL_MAGIC_SKILLS,
+    ALL_ACTIVE_SKILLS, ALL_SOCIAL_SKILLS,
+    ALL_TECHNICAL_SKILLS, ALL_VEHICULAR_SKILLS,
+    ALL_TECHNICAL_SKILLS
+]);
+
+export const ALL_SKILLS: SkillMap = allSkills;
+
 export {
     ALL_SKILL_GROUPS,
     ALL_COMBAT_SKILLS,
@@ -68,6 +87,7 @@ export {
     ALL_VEHICULAR_SKILLS,
     ALL_TECHNO_SKILLS
 };
+
 export type {
     SkillGroup,
     CombatSkill,

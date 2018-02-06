@@ -3,26 +3,17 @@
 import type { AttributesState } from './attributes/state';
 import { DEFAULT_ATTRIBUTES_STATE } from './attributes/state';
 
+import type { SkillsState } from './skills/state';
+import { DEFAULT_SKILLS_STATE } from './skills/state';
+
 export type CharacterState = {
     +attributes: AttributesState,
     +name: string,
-    // gear
-    // skills
+    +skills: SkillsState,
 }
 
 export const DEFAULT_CHARACTER_STATE: CharacterState = {
     attributes: DEFAULT_ATTRIBUTES_STATE,
-    name: "Sombra"
-};
-
-type CharacterState2 = {
-    attributes: {
-        [Attribute]: number
-    },
-    skills: {
-        groups: { [SkillGroup]: number },
-        skills: { [Skill]: number }
-    },
-    gear: { [GearId]: Gear },
-    bonuses: { [BonusId]: bonus },
+    name: "Sombra",
+    skills: DEFAULT_SKILLS_STATE
 };

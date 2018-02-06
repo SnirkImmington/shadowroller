@@ -33,6 +33,7 @@ import * as rollActions from '../actions';
 type Props = {
     dispatch: DispatchFn,
     state: RollState, // Given by `mapStateToProps`.
+    title: String,
 };
 
 /** Base class for roll options input. */
@@ -104,7 +105,7 @@ class RollInputPanel extends React.Component<Props> {
     render = () => {
         const title = (
             <span className='App-menu-panel-title'>
-                <b>Do your thing</b>
+                <b>{this.props.title}</b>
             </span>
         );
 

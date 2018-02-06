@@ -54,7 +54,7 @@ export default class SkillItem extends React.Component<Props, State> {
                  onClick={canUse ? this.handleClick : null}>
                 <span className={headerStyle}>{skillName}</span>
                 <span className="skill-item-description">
-                    {`? + ${attrName} (?)`}
+                    {`Skill 0 + ${attrName} 0`}
                 </span>
                 <span className="skill-item-indicator">
                     <Glyphicon glyph={buttonStyle} />
@@ -65,7 +65,7 @@ export default class SkillItem extends React.Component<Props, State> {
         let body = "";
         if (this.state.active) {
             body = (
-                <RollInputPanel />
+                <RollInputPanel title={`Skill ${skillName}`} />
             );
         }
 
