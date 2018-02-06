@@ -1,0 +1,20 @@
+#edit-page {
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    flex-wrap: wrap;
+}
+
+@media all and (min-width: 768px) {
+    #edit-page {
+        flex-direction: row;
+    }
+
+    #edit-page > .edit-attributes-panel {
+        flex-grow: 1;
+    }
+
+    #edit-page > .edit-skills-panel {
+        flex-grow: 1;
+    }
+}

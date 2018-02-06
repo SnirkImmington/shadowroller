@@ -4,19 +4,19 @@
 The form should be a flexbox that initially groups items line by line.
 On larger screen sizes we can mess with grouping them together.
 */
-#attribute-panel-form {
+#edit-attributes-form {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
 }
 
 @media all and (min-width: 768px) {
-    #attribute-panel {
+    #edit-attributes-panel {
         margin-left: 10px;
-        min-width: 16em;
-        max-width: 16em;
+        min-width: 26em;
+        max-width: 26em;
     }
-    #attribute-panel-form {
+    #edit-attributes-form {
     }
 }
 
@@ -24,14 +24,15 @@ On larger screen sizes we can mess with grouping them together.
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
+    padding: 10px;
 }
 /*
-.attribute-panel-name {
+.edit-attributes-panel-name {
     flex-grow: 2;
 }
 
-.attribute-panel-input {
+.edit-attributes-panel-input {
     flex-grow: 1.1;
 }
 */

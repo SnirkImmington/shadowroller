@@ -6,7 +6,7 @@
 
 import type { ThunkAction, DispatchFn, GetStateFn } from '../../state';
 
-import type { Attribute } from '.';
+import type { Attribute } from '../../data/attributes';
 
 export type AttributeChangedAction = {
     +type: "character.attributes.attribute_changed",

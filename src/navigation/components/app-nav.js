@@ -37,7 +37,7 @@ class AppNav extends React.Component<Props> {
                         <NavItem eventKey="edit-gear" disabled>Gear</NavItem>
                     </Nav>
                     <Nav pullRight>
-                        <NavItem eventKey="edit" disabled>Edit</NavItem>
+                        <NavItem eventKey="edit">Edit</NavItem>
                         <NavItem eventKey="export">Import</NavItem>
                         <NavItem disabled eventKey="export">Export</NavItem>
                     </Nav>

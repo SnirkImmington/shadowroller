@@ -7,7 +7,7 @@ import { DEFAULT_ATTRIBUTES_STATE } from './state';
 
 /** Reduces all character.attribue actions. */
 function attributesReducer(attributes: AttributesState = DEFAULT_ATTRIBUTES_STATE,
-                                 action: AttributeAction): AttributesState {
+                           action: AttributeAction): AttributesState {
     switch (action.type) {
         case 'character.attributes.attribute_changed':
             return {

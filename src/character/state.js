@@ -17,3 +17,5 @@ export const DEFAULT_CHARACTER_STATE: CharacterState = {
     name: "Sombra",
     skills: DEFAULT_SKILLS_STATE
 };
+
+export type { SkillsState, AttributesState };

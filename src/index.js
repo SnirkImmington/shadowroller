@@ -17,7 +17,7 @@ import characterReducer from './character/reducers';
 
 const appReducer: (any) => any = combineReducers({
     roll: rollReducer,
-    attributes: characterReducer,
+    character: characterReducer,
 });
 
 const middleware: any[] = [ thunk ];
