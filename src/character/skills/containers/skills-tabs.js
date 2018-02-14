@@ -13,7 +13,9 @@ type Props = { };
 
 export default function SkillTabs(props: Props) {
     return (
-        <Tabs justified defaultActiveKey="combat" className="panel-text-left">
+        <Tabs justified defaultActiveKey="combat"
+                        className="panel-text-left"
+                        animation={false}>
             <Tab eventKey="combat" title="Combat">
                 <h4 className="skill-tab-header">
                     Skills for using weapons and fighting.
