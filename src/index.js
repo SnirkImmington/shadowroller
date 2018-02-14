@@ -14,10 +14,12 @@ import thunk from 'redux-thunk';
 
 import rollReducer from './roll/reducers';
 import characterReducer from './character/reducers';
+import navReducer from './navigation/reducers';
 
 const appReducer: (any) => any = combineReducers({
     roll: rollReducer,
     character: characterReducer,
+    nav: navReducer,
 });
 
 const middleware: any[] = [ thunk ];

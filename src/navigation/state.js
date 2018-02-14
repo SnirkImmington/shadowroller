@@ -1,8 +1,12 @@
 // @flow
 
-import type { MenuMode } from '.';
+import type { Page } from '.';
 
 /** Navigation state of the app. */
 export type NavigationState = {
-    +menu: MenuMode;
-}
+    +page: Page;
+};
+
+export const DEFAULT_NAV_STATE = {
+    page: "edit"
+};

@@ -8,6 +8,10 @@ import type { CharacterState } from './character/state';
 import { DEFAULT_CHARACTER_STATE } from './character/state';
 import type { CharacterAction } from './character/actions';
 
+import type { NavigationState } from './navigation/state';
+import { DEFAULT_NAV_STATE } from './navigation/state';
+import type { NavAction } from './navigation/actions';
+
 /**
     Redux state for the app.
 
@@ -16,12 +20,14 @@ import type { CharacterAction } from './character/actions';
 export type AppState = {
     +roll: RollState,
     +character: CharacterState,
+    +nav: NavigationState,
 };
 
 export type Action =
 // Cyclic definition, must be used here.
 | RollAction
 | CharacterAction
+| NavAction
 ;
 
 /** Thunk action arg that gets the state. */
@@ -37,4 +43,5 @@ export type ThunkAction = (dipatch: DispatchFn, getState: GetStateFn) => mixed;
 export const DEFAULT_STATE: AppState = {
     roll: DEFAULT_ROLL_STATE,
     character: DEFAULT_CHARACTER_STATE,
+    nav: DEFAULT_NAV_STATE
 };
