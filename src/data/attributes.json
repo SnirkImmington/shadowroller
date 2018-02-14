@@ -28,5 +28,9 @@
     },
     "resonance": {
         "default": 0
+    },
+    "essence": {
+        "default": 6,
+        "max": 6
     }
 }

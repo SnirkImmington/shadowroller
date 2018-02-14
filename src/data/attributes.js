@@ -1,10 +1,12 @@
 // @flow
 
+import * as ALL_ATTRIBUTES from './attributes.json';
+
 export type AttributeInfo = {
-    +default: number
+    +default: number,
+    +max?: number
 };
 
-export const ALL_ATTRIBUTES: { [Attribute]: AttributeInfo } =
-    import("./attributes.json");
-
 export type Attribute = $Keys<typeof ALL_ATTRIBUTES>;
+
+export { ALL_ATTRIBUTES };
