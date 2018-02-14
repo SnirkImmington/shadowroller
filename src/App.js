@@ -15,7 +15,7 @@ import {
 } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
-import AppNav from './navigation/components/app-nav';
+import { AppNav, Page } from './navigation/components';
 
 import DamageTrack from './components/damage-track';
 
@@ -23,9 +23,6 @@ import RollInputPanel from './roll/containers/roll-input-panel';
 import RollHistoryPanel from './roll/containers/roll-history-panel';
 import HistoryPanel from './components/history-panel';
 
-import SkillsTabs from './character/skills/containers/skills-tabs';
-
-import { EditPage } from './edit/containers';
 
 import type { AppState, DispatchFn } from './state';
 import * as rollActions from './roll/actions';
@@ -83,7 +80,7 @@ class App extends React.Component<Props, State> {
                         </div>
                     </Well>
                     <div id="App-window-container">
-                        <EditPage />
+                        <Page />
                         <HistoryPanel />
                     </div>
                 </div>

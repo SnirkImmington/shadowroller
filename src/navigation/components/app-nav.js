@@ -4,19 +4,42 @@ import './app-nav.css';
 
 import * as React from 'react';
 import { Nav, Navbar, NavItem } from 'react-bootstrap';
-import FavorText from '../../components/favortext';
 import { connect } from 'react-redux';
 
 import type { DispatchFn, AppState } from '../../state';
+import { ALL_PAGES } from '..';
+import type { Page } from '..';
+import * as navActions from '../actions';
+
+import * as utils from '../../util';
 
 type Props = {
     dispatch: DispatchFn,
-    characterName: string
+    state: AppState
 };
 
 class AppNav extends React.Component<Props> {
-    handleSelect = (key: string) => {
+    handleSelect = (key: Page) => {
+        this.props.dispatch(navActions.selectPage(key));
+    }
 
+    navItem(page: Page): React.Node {
+        if (page === this.props.state.nav.page) {
+            return (
+                <NavItem eventKey={page}
+                         disabled={ALL_PAGES[page].disabled}>
+                    <b>{utils.format(page, 'title')}</b>
+                </NavItem>
+            );
+        }
+        else {
+            return (
+                <NavItem eventKey={page}
+                         disabled={ALL_PAGES[page].disabled}>
+                    {utils.format(page, 'title')}
+                </NavItem>
+            );
+        }
     }
 
     render() {
@@ -25,21 +48,21 @@ class AppNav extends React.Component<Props> {
                     onSelect={this.handleSelect}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                        <b>Sombra</b>
+                        <b>{this.props.state.character.name}</b>
                     </Navbar.Brand>
                     <Navbar.Toggle />
                 </Navbar.Header>
                 <Navbar.Collapse>
                     <Nav>
-                        <NavItem eventKey="combat" disabled>Combat</NavItem>
-                        <NavItem eventKey="skills">Skills</NavItem>
-                        <NavItem eventKey="edit-stats">Attributes</NavItem>
-                        <NavItem eventKey="edit-gear" disabled>Gear</NavItem>
+                        {this.navItem("combat")}
+                        {this.navItem("skills")}
+                        {this.navItem("attributes")}
+                        {this.navItem("gear")}
                     </Nav>
                     <Nav pullRight>
-                        <NavItem eventKey="edit">Edit</NavItem>
-                        <NavItem eventKey="export">Import</NavItem>
-                        <NavItem disabled eventKey="export">Export</NavItem>
+                        {this.navItem("edit")}
+                        {this.navItem("import")}
+                        {this.navItem("export")}
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
@@ -48,9 +71,8 @@ class AppNav extends React.Component<Props> {
 }
 
 function mapStateToProps(state: AppState) {
-    return {
-        characterName: state.name || "Sombra",
-    };
+    console.log("Connecting app nav state:", state);
+    return { state };
 }
 
 export default connect(mapStateToProps)(AppNav);
