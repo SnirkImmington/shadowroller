@@ -8,6 +8,8 @@ import AttributeRow from './attribute-row';
 import { connect } from 'react-redux';
 import type { DispatchFn, AppState } from '../../state';
 
+import * as attrActions from '../../character/attributes/actions';
+
 import type { Attribute } from '../../data/attributes';
 import type { CharacterState, AttributesState } from '../../character/state';
 
@@ -19,8 +21,9 @@ type Props = {
 class EditAttributes extends React.Component<Props> {
     handleAttrChange = (attr: Attribute, newVal: ?number) => {
         if (newVal != null) {
-            //this.props.dispatch();
+            this.props.dispatch(attrActions.attributeChanged(attr, newVal));
         }
+
     }
 
     render() {

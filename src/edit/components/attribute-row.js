@@ -4,8 +4,7 @@ import './attribute-row.css';
 import './edit-attributes.css';
 
 import * as React from 'react';
-import { FormGroup, ControlLabel } from 'react-bootstrap';
-import NumericInput from '../../components/numeric-input';
+import { FormGroup, FormControl, ControlLabel } from 'react-bootstrap';
 
 import type { Attribute } from '../../data/attributes';
 import * as util from '../../util';
@@ -21,17 +20,22 @@ type Props = {
 export default function AttributeRow(props: Props) {
     const controlId = `attribute-row-${props.attr}`;
 
+    function handleChange(event: SyntheticInputEvent<HTMLInputElement>) {
+        console.log("Change event from attrRow:", event.target.value);
+        props.onChange(props.attr, event.target.valueAsNumber || 0);
+    }
+
     return (
         <FormGroup controlId={controlId}
                    className="attribute-panel-group">
             <ControlLabel className="attribute-row menu-label">
                 {util.format(props.attr, 'title')}
             </ControlLabel>
-            <NumericInput className='attribute-row-input'
+            <FormControl className='attribute-row-input'
+                          type="number"
                           controlId={controlId}
-                          value={props.value} min={0} max={14}
-                          onSelect={(val: ?number) =>
-                              props.onChange(props.attr, val)} />
+                          value={props.value} max={14}
+                          onChange={handleChange} />
         </FormGroup>
     );
 }
