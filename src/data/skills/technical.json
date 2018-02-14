@@ -5,6 +5,13 @@
         "default": true,
         "attr": "charisma"
     },
+    "arcana": {
+        "type": "technical",
+        "attr": "logic",
+        "group": null,
+        "default": false,
+        "attr": "magic"
+    },
     "armorer": {
         "type": "technical",
         "group": null,
@@ -33,7 +40,7 @@
         "type": "technical",
         "group": "electronics",
         "default": true,
-        "attr": "logic"
+        "attr": "intuition"
     },
     "cybercombat": {
         "type": "technical",

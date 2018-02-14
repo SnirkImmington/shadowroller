@@ -1,5 +1,6 @@
 // @flow
 /* eslint-disable no-use-before-define */
+import type { Skill } from './skills';
 
 export type Ref = {
     from: string, page: number
@@ -19,3 +20,5 @@ export const ALL_ATTRIBUTES: { [Attribute]: AttributeInfo } =
 export type Attribute = $Keys<typeof ALL_ATTRIBUTES>;
 
 export type BaseLimit = "mental" | "physical" | "social" ;
+
+export type { Skill };

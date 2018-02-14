@@ -5,19 +5,11 @@
         "default": false,
         "attr": "magic"
     },
-    "arcana": {
-        "type": "magic",
-        "attr": "logic",
-        "group": null,
-        "default": false,
-        "attr": "magic"
-    },
     "artificing": {
         "type": "magic",
         "attr": "magic",
         "group": "enchanting",
-        "default": false,
-        "attr": "magic"
+        "default": false
     },
     "astral-combat": {
         "type": "magic",
