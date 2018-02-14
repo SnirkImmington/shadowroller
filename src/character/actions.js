@@ -7,12 +7,12 @@ export type NameAction = {
     +type: 'character.name.changed',
     +name: string
 };
-
 export function nameChanged(name: string): CharacterAction {
     return { type: 'character.name.changed', name };
 }
 
 export type CharacterAction =
 | AttributeAction
+| SkillsAction
 | NameAction
 ;

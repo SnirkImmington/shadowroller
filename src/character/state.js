@@ -7,14 +7,14 @@ import type { SkillsState } from './skills/state';
 import { DEFAULT_SKILLS_STATE } from './skills/state';
 
 export type CharacterState = {
-    +attributes: AttributesState,
     +name: string,
+    +attributes: AttributesState,
     +skills: SkillsState,
 }
 
 export const DEFAULT_CHARACTER_STATE: CharacterState = {
-    attributes: DEFAULT_ATTRIBUTES_STATE,
     name: "Sombra",
+    attributes: DEFAULT_ATTRIBUTES_STATE,
     skills: DEFAULT_SKILLS_STATE
 };
 
