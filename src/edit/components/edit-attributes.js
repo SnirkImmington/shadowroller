@@ -23,7 +23,6 @@ class EditAttributes extends React.Component<Props> {
         if (newVal != null) {
             this.props.dispatch(attrActions.attributeChanged(attr, newVal));
         }
-
     }
 
     render() {
@@ -35,14 +34,14 @@ class EditAttributes extends React.Component<Props> {
             console.log(attr, ": ", attrs[attr]);
             const value = attrs[attr];
             rows.push(
-                <AttributeRow attr={attr} value={value || 1}
+                <AttributeRow attr={attr} value={value}
                               onChange={this.handleAttrChange} />
             );
         }
 
         return (
             <Panel header={header} id="edit-attributes-panel">
-                <form id="edit-attributes-form" onSubmit={() => {}}>
+                <form id="edit-attributes-form">
                     {rows}
                 </form>
             </Panel>

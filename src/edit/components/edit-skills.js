@@ -44,7 +44,7 @@ class EditSkills extends React.Component<Props> {
         const dispatch = this.props.dispatch;
         const state = this.props.state.character;
         return (
-            <Tabs justified defaultActiveKey="combat"
+            <Tabs defaultActiveKey="combat"
                   className="edit-skills-panel">
                 <Tab eventKey="combat" title="Combat">
                     {skillListing(skills.ALL_COMBAT_SKILLS, state, dispatch)}
