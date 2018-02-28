@@ -4,6 +4,7 @@ import './App.css';
 
 import React from 'react';
 
+import SavedPoolsPanel from './roll/containers/saved-pools-panel';
 import RollInputPanel from './roll/containers/roll-input-panel';
 import RollHistoryPanel from './roll/containers/roll-history-panel';
 
@@ -15,6 +16,7 @@ export default function App(props: {}) {
                 <h1 className="App-title">Shadowroller</h1>
             </header>
             <div className="App-wide-container">
+                <SavedPoolsPanel />
                 <RollInputPanel />
                 <RollHistoryPanel />
             </div>
