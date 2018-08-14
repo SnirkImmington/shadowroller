@@ -11,6 +11,7 @@ export const COMBAT_SKILLS: React.Node[] = [
     "Weapon-related skills.",
     "Knowledge of techniques for causing harm.",
     "Really the only skills a street samurai needs.",
+    "Them's fightin' skills.",
 ];
 
 export const ACTIVE_SKILLS: React.Node[] = [

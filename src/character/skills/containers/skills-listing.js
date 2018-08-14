@@ -28,7 +28,7 @@ class SkillList extends React.Component<Props> {
         });
 
         return (
-            <ListGroup className="scroll-list skills-listing">
+            <ListGroup collapsible className="scroll-list skills-listing">
                 {items}
             </ListGroup>
         );

@@ -5,7 +5,7 @@ import './Page.css';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import SkillsTabs from '../../character/skills/containers/skills-tabs';
+import SkillSelector from '../../character/skills/containers/skill-listing';
 import { EditPage } from '../../edit/containers';
 
 import type { NavigationState } from '../state';
@@ -25,7 +25,9 @@ class Page extends React.Component<Props> {
                 );
             case "skills":
                 return (
-                    <SkillsTabs />
+                    <div>
+                        <SkillSelector />
+                    </div>
                 );
             case "attributes":
                 return (

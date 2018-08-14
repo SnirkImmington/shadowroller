@@ -62,7 +62,6 @@ class AppNav extends React.Component<Props> {
                     <Nav pullRight>
                         {this.navItem("edit")}
                         {this.navItem("import")}
-                        {this.navItem("export")}
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>

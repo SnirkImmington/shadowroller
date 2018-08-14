@@ -3,6 +3,7 @@
 */
 .App {
   text-align: center;
+  max-height: 100%;
 }
 
 /* Default:  half size title. */
@@ -12,6 +13,48 @@
   padding: 0.4em;
   color: white;
 }
+
+.App-header2 {
+    background-color: #111;
+    height: 7em;
+    padding: 0.4em;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.app-header-content {
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+    margin-right: auto;
+    align-self: center;
+    margin-left: 10%;
+}
+
+.App-title2 {
+    font-weight: 900;
+    font-style: oblique;
+    font-size: 4em;
+    margin-right: 0.1em;
+}
+
+.App-subtitle {
+    text-align: left;
+    font-style: italic;
+    font-size: 1.9em;
+    margin-left: 4px;
+    color: #bbb
+}
+
+.App-link {
+    margin-top: auto;
+    padding: 0px 0.4em;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+    font-size: 1.7em;
+}
+
 .App-title {
   font-size: 2.5em;
   font-style: oblique;
@@ -48,7 +91,6 @@
         max-width: 98%;
         /*height: 84vh;
         max-height: 84vh;*/
-        overflow: hidden;
     }
 }
 
@@ -63,6 +105,10 @@
     .App-main {
         max-width: 120em;
     }
+}
+
+.App-main {
+
 }
 
 .numeric-input {

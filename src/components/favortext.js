@@ -25,6 +25,6 @@ export default class FavorText extends React.Component<Props> {
     render() {
         const text = pickRandom(this.props.from);
 
-        return <span className="favortext">{text}</span>;
+        return text;
     }
 }

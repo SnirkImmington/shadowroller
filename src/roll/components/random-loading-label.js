@@ -67,6 +67,7 @@ const loadedFlavorText: React.Node[] = [
     "Glitches from random.org",
     "Hits from random.org",
     "Curses and madness from random.org",
+    "Misses and glitches from random.org",
 
     "Go get 'em, chummer",
 ];
@@ -75,7 +76,7 @@ const localRequiredFlavorText: React.Node[] = [
     "Can't access random.org",
     "random.org is offline",
     "Can't find random.org on the Matrix",
-    "Too much noise to access random.org",
+    "Too much Noise to access random.org",
     "Unable to find random.org's Host",
 ];
 
@@ -94,7 +95,6 @@ const localLoadedFlavorText: React.Node[] = [
     </span>,
     "Rolls from your browser",
     "Pseudorandom rolls from your browser",
-    "Possibly-compromised rolls from your browser",
 
     "Rolling in offline mode",
     "Rolling without Wireless bonus",

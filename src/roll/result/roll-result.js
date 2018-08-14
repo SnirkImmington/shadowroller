@@ -73,7 +73,7 @@ export default class RollResult {
         if (this.critical) {
             result = "Critical glitch! " + this.misses + " misses";
         }
-        else if (this.glitch) {
+        else if (this.glitched) {
             result = "Glitch! " + this.hits + " hits"
         }
         else {

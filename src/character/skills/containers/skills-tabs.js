@@ -8,6 +8,8 @@ import { Tabs, Tab } from 'react-bootstrap';
 import SkillsListing from './skills-listing';
 
 import * as Skills from '../../../data/skills';
+import pickRandom from '../../../util/pick-random';
+import * as FAVOR from './skills-tabs-favortext';
 
 type Props = { };
 
@@ -19,13 +21,13 @@ export default function SkillTabs(props: Props) {
                         animation={false}>
             <Tab eventKey="combat" title="Combat">
                 <h4 className="skill-tab-header">
-                    Skills for using weapons and fighting.
+                    {pickRandom(FAVOR.COMBAT_SKILLS)}
                 </h4>
                 <SkillsListing skills={Skills.ALL_COMBAT_SKILLS} />
             </Tab>
             <Tab eventKey="active" title="Active">
                 <h4 className="skill-tab-header">
-                    Active skills for infiltrataion and survival.
+                    {pickRandom(FAVOR.ACTIVE_SKILLS)}
                 </h4>
                 <SkillsListing skills={Skills.ALL_ACTIVE_SKILLS} />
             </Tab>
