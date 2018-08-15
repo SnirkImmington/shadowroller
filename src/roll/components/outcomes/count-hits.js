@@ -20,7 +20,7 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
     const outcome = props.outcome;
     const result = outcome.result;
 
-    let alertStyle = "success";
+    let alertStyle = "dark";
     if (result.isGlitched()) {
         alertStyle = (result.isCrit() ? "danger" : "warning");
     }

@@ -1,7 +1,7 @@
 // @flow
 
 /** */
-type RollStatus = "Hit" | "Glitched" | "Critical";
+type RollStatus = "Success" | "Glitched" | "Critical";
 
 /** Represents the result of a dice roll. */
 export default class RollResult {
@@ -50,7 +50,7 @@ export default class RollResult {
             }
         }
         else {
-            this.status = "Hit";
+            this.status = "Success";
         }
     }
 
@@ -73,7 +73,7 @@ export default class RollResult {
         if (this.critical) {
             result = "Critical glitch! " + this.misses + " misses";
         }
-        else if (this.glitch) {
+        else if (this.glitched) {
             result = "Glitch! " + this.hits + " hits"
         }
         else {

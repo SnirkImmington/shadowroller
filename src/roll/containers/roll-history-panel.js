@@ -1,7 +1,7 @@
 // @flow
 
 import * as React from 'react';
-import { Panel, Pagination } from 'react-bootstrap';
+import { Pagination } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { FavorText } from '../../components';
 
@@ -21,7 +21,7 @@ import { DEFAULT_ROLL_STATE } from '../../state';
 import type { AppState, DispatchFn } from '../../state';
 import * as rollActions from '../actions';
 
-const PAGE_LENGTH: number = 5;
+const PAGE_LENGTH: number = 6;
 
 const DO_SOME_ROLLS_FAVORTEXT: string[] = [
     "Roll some glitches.",
@@ -29,7 +29,7 @@ const DO_SOME_ROLLS_FAVORTEXT: string[] = [
     "Roll some dice, chummer.",
     "Do some rolls, chummer.",
     "Have at em, chummer.",
-    "You have to press the roll dice button, chummer.",
+    "You have to press the roll dice button first, chummer.",
 ];
 
 type Props = {
@@ -66,12 +66,6 @@ class RollHistoryPanel extends React.Component<Props> {
         }
 
         const entries = outcomes.entries();
-        const header = (
-            <span className="roll-history-panel-header">
-                <b>Roll results</b>
-            </span>
-        );
-
         const result: Array<React.Node> = [];
         for (const entry of entries) {
             const index: number = entry[0];
@@ -112,21 +106,24 @@ class RollHistoryPanel extends React.Component<Props> {
         }
 
         return (
-            <Panel id="roll-history-panel"
-                   header={header}
-                   bsStyle="info">
-                {result}
-                {outcomesLength === 0 ?
-                    <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
-                : outcomesLength > PAGE_LENGTH ?
-                    <Pagination id="roll-history-pagination"
-                            first prev next
-                            maxButtons={5}
-                            items={maxPages}
-                            activePage={this.props.outcomePage}
-                            onSelect={this.handlePageSelect} />
-                : ""}
-            </Panel>
+            <div className="card mt-3" id="roll-history-panel">
+                <div className="card-header bg-secondary text-white">
+                    <b>Roll Results</b>
+                </div>
+                <div className="card-body">
+                    {result}
+                    {outcomesLength === 0 ?
+                        <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
+                    : outcomesLength > PAGE_LENGTH ?
+                        <Pagination id="roll-history-pagination"
+                                first prev next
+                                maxButtons={5}
+                                items={maxPages}
+                                activePage={this.props.outcomePage}
+                                onSelect={this.handlePageSelect} />
+                    : ""}
+                </div>
+            </div>
         )
     }
 }

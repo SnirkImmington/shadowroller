@@ -4,12 +4,6 @@ import '../../App.css';
 import './roll-input-panel.css';
 
 import * as React from 'react';
-import {
-    Panel,
-    FormGroup,
-    ControlLabel,
-    Button
-} from 'react-bootstrap';
 import { connect } from 'react-redux';
 
 import NumericInput from '../../components/numeric-input';
@@ -107,52 +101,48 @@ class RollInputPanel extends React.Component<Props> {
     }
 
     render = () => {
-        const title = (
-            <span className='App-menu-panel-title'>
-                <b>Roll dice</b>
-            </span>
-        );
-
         const state = this.props.state;
         let isReady = (state.bufferLoadState !== "loading") && propertiesSet(state);
         if (isReady && !diceAvailable(state)) {
-            console.log("Dice not ready!");
             isReady = false;
         }
 
         const options = this.getRollOptions(state.selectedRollMode);
 
         return (
-            <Panel id="roll-input-panel" header={title} bsStyle="primary">
+            <div className="card">
+                <div className="card-header bg-info text-white">
+                    <b>Roll dice</b>
+                </div>
+                <div className="card-body">
                 <form id="roll-input-panel-form"
                       onSubmit={this.handleRollSubmit}>
-                    <FormGroup id='roll-input-dice-group'
-                               controlId="roll-input-dice">
-                        <ControlLabel className="menu-label">
+                    <div className="form-group row">
+                        <label htmlFor="roll-input-dice">
                             Roll
-                        </ControlLabel>
+                        </label>
                         <NumericInput controlId="roll-input-dice"
                                       min={1} max={100}
                                       onSelect={this.handleDiceChange} />
-                        <ControlLabel className="menu-label">
+                        <label htmlFor="roll-input-dice">
                             dice
-                        </ControlLabel>
-                    </FormGroup>
+                        </label>
+                    </div>
                     <RollModeSelector selected={state.selectedRollMode}
                                       onSelect={this.handleRollModeSelect} />
                     {options}
-                    <FormGroup id='roll-input-submit-group'
-                               controlId='roll-submit'>
-                        <RandomLoadingLabel />
-                        <Button id='roll-button-submit'
-                                bsStyle="primary"
+                    <div className="form-group row">
+                        <RandomLoadingLabel htmlFor="roll-button-submit" />
+                        <button id="roll-button-submit"
+                                className="btn btn-secondary"
                                 disabled={!isReady}
                                 onClick={isReady ? this.handleRollSubmit : null}>
                             Roll dice
-                        </Button>
-                    </FormGroup>
+                        </button>
+                    </div>
                 </form>
-            </Panel>
+                </div>
+            </div>
         );
     }
 }

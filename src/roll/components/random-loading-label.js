@@ -130,10 +130,10 @@ class RandomLoadingLabel extends React.Component<Props> {
             const flavorText = pickRandom(localRequiredFlavorText);
             return (
                 <span className="loading-label-with-link roll-loading-label">
-                    <ControlLabel className="roll-menu-label"
+                    <div className="form-group roll-menu-label"
                                   controlId="roll-input-local-buffer">
                         {flavorText}
-                    </ControlLabel>
+                    </div>
                     {" ("}
                     <a href="#roll-input-panel"
                        onClick={this.handleFillLocal}>
@@ -146,10 +146,10 @@ class RandomLoadingLabel extends React.Component<Props> {
             const flavorText = this.props.isLocal ?
              pickRandom(localLoadingFlavorText) : pickRandom(loadingFlavorText);
             return (
-                <ControlLabel className="roll-loading-label roll-menu-label">
+                <div className="form-group roll-loading-label roll-menu-label">
                     <span className="dice-roll-icon roll-menu-icon" />
                     <i>{flavorText}...</i>
-                </ControlLabel>
+                </div>
             );
         }
         else {

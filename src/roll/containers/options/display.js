@@ -38,7 +38,7 @@ export default function DisplayOptions(props: Props) {
             <Radio inline name="all" title="All"
                 checked={props.mode === "all"}
                 onChange={onChange}>
-                <b className="menu-label">All</b>
+                <b className="menu-label">All dice</b>
             </Radio>
         </FormGroup>
     );

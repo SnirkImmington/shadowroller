@@ -3,11 +3,6 @@
 import './roll-record.css';
 
 import * as React from 'react';
-import {
-    Alert, Label,
-    Button, ButtonGroup,
-    Popover, OverlayTrigger,
-} from 'react-bootstrap';
 
 type RollRecordProps = {
     recordKey: number;
@@ -28,39 +23,33 @@ export default class RollRecord extends React.Component<RollRecordProps> {
     }
 
     render() {
-        const infoOverlay = (
-            <Popover title="Dice (sorted)"
-                     id={"sorted-dice-for-result-" + this.props.recordKey}>
-                {this.props.tooltip}
-            </Popover>
-        );
+        const alertClassName = "alert alert-" +
+            this.props.mode + " roll-record-panel";
+
         return (
-            <Alert className="roll-record-panel"
-                   bsStyle={this.props.mode}>
+            <div className={alertClassName}>
                 <div className="roll-record-info">
-                    <Label className="roll-record-label"
-                           bsStyle="info">
+                    <div className="badge badge-secondary roll-record-label">
                         {this.props.label}
-                    </Label>
+                    </div>
                     {this.props.message}
                 </div>
-                <ButtonGroup className='roll-record-buttons'>
-                    <OverlayTrigger trigger={['hover', 'focus']}
-                                    placement='left'
-                                    overlay={infoOverlay}>
-                        <Button className='roll-record-info'
+                <div className='btn-group roll-record-buttons'>
+                        <button className='btn roll-record-info'
                                 onClick={mutedOnClick}
-                                bsStyle='info'>
+                                data-container="body"
+                                data-toggle="tooltip"
+                                data-placement="left"
+                                data-html="true"
+                                data-content={this.props.tooltip}>
                             <i className="fa fa-info-circle"></i>
-                        </Button>
-                    </OverlayTrigger>
-                    <Button className="roll-record-close"
-                            bsStyle="warning"
+                        </button>
+                    <button className="btn roll-record-close"
                             onClick={this.handleCloseButton}>
                         <i className="fa fa-times"></i>
-                    </Button>
-                </ButtonGroup>
-            </Alert>
+                    </button>
+                </div>
+            </div>
         );
     }
 }
