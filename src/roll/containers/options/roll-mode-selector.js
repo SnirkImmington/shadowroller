@@ -30,7 +30,7 @@ export default function RollModeSelector(props: Props) {
     });
 
     return (
-        <div class="btn-group btn-group-toggle roll-input-wrapper"
+        <div class="btn-group btn-group-toggle mx-4"
              data-toggle="buttons">
             {labels}
         </div>

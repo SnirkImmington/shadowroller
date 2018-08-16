@@ -23,23 +23,40 @@ export default function DisplayOptions(props: Props) {
     }
 
     return (
-        <FormGroup controlId="roll-input-highlight-maximum"
-                   className="roll-input-options">
-            <Radio inline name="max" title="Maximum"
-                   checked={props.mode === "max"}
-                   onChange={onChange}>
-                <b className="menu-label">Maximum</b>
-            </Radio>
-            <Radio inline name="min" title="Minimum"
-                checked={props.mode === "min"}
-                onChange={onChange}>
-                <b className="menu-label">Minimum</b>
-            </Radio>
-            <Radio inline name="all" title="All"
-                checked={props.mode === "all"}
-                onChange={onChange}>
-                <b className="menu-label">All dice</b>
-            </Radio>
-        </FormGroup>
+        <div className="form-group">
+            <div className="form-check form-check-inline">
+                <input type="radio"
+                       id="display-type-max"
+                       name="max"
+                       class="form-check-input"
+                       checked={props.mode === "max"}
+                       onChange={onChange} />
+                <label className="form-check-label" htmlFor="dispay-type-max">
+                    <blink>Maximum</blink>
+                </label>
+            </div>
+            <div className="form-check form-check-inline">
+                <input type="radio"
+                       id="display-type-min"
+                       name="min"
+                       class="form-check-input"
+                       checked={props.mode === "min"}
+                       onChange={onChange} />
+                <label className="form-check-label" htmlFor="dispay-type-min">
+                    Minimum
+                </label>
+            </div>
+            <div className="form-check form-check-inline">
+                <input type="radio"
+                       id="display-type-all"
+                       name="all"
+                       class="form-check-input"
+                       checked={props.mode === "all"}
+                       onChange={onChange} />
+                <label className="form-check-label" htmlFor="dispay-type-all">
+                    All
+                </label>
+            </div>
+        </div>
     );
 }

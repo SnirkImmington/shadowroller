@@ -4,7 +4,6 @@ import '../../../App.css';
 import '../roll-input-panel.css';
 
 import React from 'react';
-import { FormGroup, ControlLabel } from 'react-bootstrap';
 import NumericInput from '../../../components/numeric-input';
 
 type Props = {
@@ -14,14 +13,13 @@ type Props = {
 
 export default function RollAgainstRollOptions(props: Props) {
     return (
-        <FormGroup controlId="roll-input-roll-against"
-                   className="roll-input-options roll-option-offset">
+        <div className="form-group">
             <NumericInput controlId="roll-input-roll-against"
-                min={1} max={100}
-                onSelect={props.onChange} />
-            <ControlLabel className="menu-label">
+                          min={1} max={100}
+                          onSelect={props.onChange} />
+            <label htmlFor="roll-input-roll-against">
                 dice
-            </ControlLabel>
-        </FormGroup>
+            </label>
+        </div>
     );
 }

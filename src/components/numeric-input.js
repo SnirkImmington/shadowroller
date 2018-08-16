@@ -4,11 +4,6 @@ import './numeric-input.css';
 
 import * as React from 'react';
 
-import {
-    FormGroup, InputGroup,
-    FormControl, Button
-} from 'react-bootstrap';
-
 import { Parser, evaluate } from '../math';
 
 type Props = {
@@ -128,64 +123,63 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         else if (value != null && this.state.isExpression) {
             result = (
-                <InputGroup.Addon className="numeric-input-suffix">
+                <div className="input-group-text numeric-input-suffix">
                     {value}
-                </InputGroup.Addon>
+                </div>
             );
         }
         if (rounded !== value) {
             const icon = this.state.roundingMode === "up" ?
                 "fa fa-arrow-up" : "fa fa-arrow-down";
             result = (
-                <InputGroup.Addon className="numeric-input-suffix">
+                <div className="input-group-text numeric-input-suffix">
                     {rounded}
-                </InputGroup.Addon>
+                </div>
             );
             error = (
-                <InputGroup.Button>
-                    <Button onClick={this.handleRoundModeChange}>
-                        <i className={icon}></i>
-                    </Button>
-                </InputGroup.Button>
+                <div className="input-group-text">
+                    <button onClick={this.handleRoundModeChange}>
+                        round<i className={icon}></i>
+                    </button>
+                </div>
             );
         }
         if (rounded != null) {
             if (this.props.min != null && rounded < this.props.min) {
                 validationState = "warning";
                 warning = (
-                    <InputGroup.Addon className="numeric-input-suffix">
+                    <div className="input-group-text bg-warning numeric-input-suffix">
                         {`< ${this.props.min}`}
-                    </InputGroup.Addon>
+                    </div>
                 );
             }
             if (this.props.max != null && rounded > this.props.max) {
                 validationState = "warning";
                 warning = (
-                    <InputGroup.Addon className="numeric-input-suffix">
+                    <div className="input-group-text bg-warning numeric-input-suffix">
                         {`> ${this.props.max}`}
-                    </InputGroup.Addon>
+                    </div>
                 );
             }
         }
 
         return (
-            <FormGroup controlId={this.props.controlId}
-                       validationState={validationState}
-                       className="numeric-input-form-group">
-                <InputGroup className="numeric-input-group">
-                    <InputGroup.Addon>
-                        <i className="fa fa-calculator" aria-hidden="true"></i>
-                    </InputGroup.Addon>
-                    <FormControl className="numeric-input"
-                                 type="tel"
-                                 inputMode="numeric"
-                                 value={this.state.text}
-                                 onChange={this.handleInputEvent} />
+                <div className="input-group mr-2 numeric-input-group">
+                    <div className="input-group-prepend">
+                        <span class="input-group-text" id="calculator-info">
+                        <i className="fa fa-calculator"
+                           aria-hidden="true"></i>
+                        </span>
+                    </div>
+                    <input className="numeric-input form-control"
+                           type="tel"
+                           inputMode="numeric"
+                           value={this.state.text}
+                           onChange={this.handleInputEvent} />
                     {result}
                     {error}
                     {warning}
-                </InputGroup>
-            </FormGroup>
+                </div>
         );
     }
 }
