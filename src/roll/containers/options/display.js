@@ -1,7 +1,6 @@
 // @flow
 
 import '../../../App.css';
-import '../roll-input-panel.css';
 
 import React from 'react';
 import { FormGroup, Radio } from 'react-bootstrap';

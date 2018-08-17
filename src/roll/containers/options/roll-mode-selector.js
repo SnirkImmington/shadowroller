@@ -1,7 +1,5 @@
 // @flow
 
-import './roll-mode-selector.css';
-
 import * as React from 'react';
 
 import type { RollMode } from '../../index';
