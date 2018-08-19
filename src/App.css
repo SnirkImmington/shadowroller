@@ -6,33 +6,23 @@
   text-align: center;
 }
 
+#roll-button-submit {
+    background-image: linear-gradient(180deg,#337ab7 0,#3688c8);
+    font-size: 1.05em;
+    font-weight: 500;
+}
+
 /* Default:  half size title. */
 .App-header {
   background-color: #222;
-  height: 5.5em;
-  padding: 0.4em;
+  height: 4em;
+  padding: 0.9em;
   color: white;
 }
 .App-title {
-  font-size: 2.5em;
+  font-size: 2em;
   font-style: oblique;
   font-weight: 900;
-}
-
-/* Most screens: larger title */
-@media all and (min-width: 576px) {
-    .App-title {
-        font-size: 4em;
-    }
-    .App-header {
-        height: 8em;
-        padding: 1.2em;
-    }
-}
-
-.App-menu-panel-title {
-    font-size: 4em;
-    font-weight: 400;
 }
 
 /*
