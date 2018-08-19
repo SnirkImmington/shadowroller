@@ -1,7 +1,6 @@
 // @flow
 
 import '../../App.css';
-import './roll-input-panel.css';
 
 import * as React from 'react';
 import { connect } from 'react-redux';
@@ -12,9 +11,8 @@ import RandomLoadingLabel from '../components/random-loading-label';
 import RollModeSelector from './options/roll-mode-selector';
 import TestForOptions from './options/test-for';
 import RollAgainstOptions from './options/roll-against';
-import DisplayOptions from './options/display';
 
-import type { RollMode, DisplayMode } from '../index';
+import type { RollMode } from '../index';
 
 import { DEFAULT_ROLL_STATE } from '../../state';
 import type { RollState } from '../state';
@@ -67,10 +65,6 @@ class RollInputPanel extends React.Component<Props> {
         }
     }
 
-    handleDisplayModeSelect = (mode: DisplayMode) => {
-        this.props.dispatch(rollActions.setDisplayMode(mode));
-    }
-
     getRollOptions = (mode: RollMode): React.Node => {
         const state = this.props.state;
         if (mode === 'count-hits') {
@@ -83,10 +77,6 @@ class RollInputPanel extends React.Component<Props> {
         else if (mode === "roll-against") {
             return <RollAgainstOptions value={state.rollAgainstDice}
                                        onChange={this.handleRollAgainstSelect} />;
-        }
-        else if (mode === "display") {
-            return <DisplayOptions mode={state.displayMode}
-                                   onChange={this.handleDisplayModeSelect} />;
         }
         else {
             return <div />;
@@ -109,38 +99,50 @@ class RollInputPanel extends React.Component<Props> {
 
         const options = this.getRollOptions(state.selectedRollMode);
 
+        const rollDiceControl = (
+            <div className="form-group ml-3">
+                <label htmlFor="roll-input-dice">
+                    Roll
+                </label>
+                <div className="mx-1"/>
+                <NumericInput controlId="roll-input-dice"
+                              min={1} max={100}
+                              onSelect={this.handleDiceChange} />
+                dice
+            </div>
+        );
+
+        const selector = (
+            <RollModeSelector selected={state.selectedRollMode}
+                              onSelect={this.handleRollModeSelect} />
+        );
+
+        const rollButton = (
+            <div className="form-group ml-auto">
+                <RandomLoadingLabel />
+                <button id="roll-button-submit"
+                        className="btn btn-primary ml-2"
+                        disabled={!isReady}
+                        onClick={isReady ? this.handleRollSubmit : null}>
+                    Roll dice
+                </button>
+            </div>
+        );
+
         return (
             <div className="card">
                 <div className="card-header bg-info text-white">
                     <b>Roll dice</b>
                 </div>
                 <div className="card-body">
-                <form id="roll-input-panel-form"
-                      onSubmit={this.handleRollSubmit}>
-                    <div className="form-group row">
-                        <label htmlFor="roll-input-dice">
-                            Roll
-                        </label>
-                        <NumericInput controlId="roll-input-dice"
-                                      min={1} max={100}
-                                      onSelect={this.handleDiceChange} />
-                        <label htmlFor="roll-input-dice">
-                            dice
-                        </label>
-                    </div>
-                    <RollModeSelector selected={state.selectedRollMode}
-                                      onSelect={this.handleRollModeSelect} />
-                    {options}
-                    <div className="form-group row">
-                        <RandomLoadingLabel htmlFor="roll-button-submit" />
-                        <button id="roll-button-submit"
-                                className="btn btn-secondary"
-                                disabled={!isReady}
-                                onClick={isReady ? this.handleRollSubmit : null}>
-                            Roll dice
-                        </button>
-                    </div>
-                </form>
+                    <form className="form-inline"
+                          id="roll-input-panel-form"
+                          onSubmit={this.handleRollSubmit}>
+                        {rollDiceControl}
+                        {selector}
+                        {options}
+                        {rollButton}
+                    </form>
                 </div>
             </div>
         );

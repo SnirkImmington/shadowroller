@@ -5,13 +5,11 @@
 }
 
 .roll-record-label {
-    padding-top: 0.4em !important;
-    font-size: 1.15em !important;
+    font-size: 1em !important;
 }
 
 .roll-record-info {
     margin-right: auto;
-    margin-bottom: 10px;
     text-align: left;
 }
 
@@ -36,8 +34,4 @@
     .roll-record-info {
         margin-bottom: 0px;
     }
-}
-
-.sorted-dice-list {
-    font-family: monospace;
 }

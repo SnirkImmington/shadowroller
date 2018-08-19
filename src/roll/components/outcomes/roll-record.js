@@ -27,14 +27,14 @@ export default class RollRecord extends React.Component<RollRecordProps> {
             this.props.mode + " roll-record-panel";
 
         return (
-            <div className={alertClassName}>
+            <div className="alert alert-secondary alert-dismissable fade show roll-record-panel">
                 <div className="roll-record-info">
                     <div className="badge badge-secondary roll-record-label">
                         {this.props.label}
                     </div>
                     {this.props.message}
                 </div>
-                <div className='btn-group roll-record-buttons'>
+                <div className='roll-record-buttons'>
                         <button className='btn roll-record-info'
                                 onClick={mutedOnClick}
                                 data-container="body"
@@ -44,9 +44,9 @@ export default class RollRecord extends React.Component<RollRecordProps> {
                                 data-content={this.props.tooltip}>
                             <i className="fa fa-info-circle"></i>
                         </button>
-                    <button className="btn roll-record-close"
+                    <button className="close"
                             onClick={this.handleCloseButton}>
-                        <i className="fa fa-times"></i>
+                        &times;
                     </button>
                 </div>
             </div>

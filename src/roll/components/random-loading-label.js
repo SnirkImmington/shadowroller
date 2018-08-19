@@ -3,7 +3,6 @@
 import './random-loading-label.css';
 
 import * as React from 'react';
-import { ControlLabel } from 'react-bootstrap';
 
 import { connect } from 'react-redux';
 
@@ -94,7 +93,6 @@ const localLoadedFlavorText: React.Node[] = [
     </span>,
     "Rolls from your browser",
     "Pseudorandom rolls from your browser",
-    "Possibly-compromised rolls from your browser",
 
     "Rolling in offline mode",
     "Rolling without Wireless bonus",
@@ -115,11 +113,13 @@ class RandomLoadingLabel extends React.Component<Props> {
     }
 
     handleFillLocal = (event: SyntheticInputEvent<HTMLButtonElement>) => {
+        event.preventDefault();
         this.props.dispatch(rollActions.bufferSetLocal(true));
         this.props.dispatch(rollActions.fetchBuffer());
     }
 
     handleGoWireless = (event: SyntheticInputEvent<HTMLButtonElement>) => {
+        event.preventDefault();
         this.props.dispatch(rollActions.clearBuffer());
         this.props.dispatch(rollActions.bufferSetLocal(false));
         this.props.dispatch(rollActions.fetchBuffer());
@@ -129,52 +129,48 @@ class RandomLoadingLabel extends React.Component<Props> {
         if (this.props.bufferLoadState === "failed") {
             const flavorText = pickRandom(localRequiredFlavorText);
             return (
-                <span className="loading-label-with-link roll-loading-label">
-                    <div className="form-group roll-menu-label"
-                                  controlId="roll-input-local-buffer">
+                <React.Fragment>
+                    <label htmlFor="roll-button-submit">
                         {flavorText}
-                    </div>
+                    </label>
                     {" ("}
-                    <a href="#roll-input-panel"
+                    <a href="/"
                        onClick={this.handleFillLocal}>
                         Use local RNG
                     </a>)
-                </span>
+                </React.Fragment>
             );
         }
         else if (this.props.bufferLoadState === "loading") {
             const flavorText = this.props.isLocal ?
              pickRandom(localLoadingFlavorText) : pickRandom(loadingFlavorText);
             return (
-                <div className="form-group roll-loading-label roll-menu-label">
+                <React.Fragment>
                     <span className="dice-roll-icon roll-menu-icon" />
                     <i>{flavorText}...</i>
-                </div>
+                </React.Fragment>
             );
         }
         else {
             if (this.props.isLocal) {
                 const flavorText = pickRandom(localLoadedFlavorText);
                 return (
-                    <span className="roll-loading-label">
-                        <ControlLabel className="roll-menu-label"
-                                      controlId="roll-input-random-buffer">
-                            {flavorText}
-                        </ControlLabel>
+                    <React.Fragment>
+                        {flavorText}
                         {" ("}
-                        <a href="#roll-input-panel"
+                        <a href="/"
                            onClick={this.handleGoWireless}>
                             Use random.org
                         </a>)
-                    </span>
-                )
+                    </React.Fragment>
+                );
             }
             else {
                 const flavorText = pickRandom(loadedFlavorText);
                 return (
-                    <ControlLabel className="roll-loading-label roll-menu-label">
+                    <label htmlFor="roll-button-submit">
                         {flavorText}
-                    </ControlLabel>
+                    </label>
                 );
             }
         }

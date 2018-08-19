@@ -8,7 +8,6 @@ import { FavorText } from '../../components';
 import CountHitsRecord from '../components/outcomes/count-hits';
 import RollAgainstRecord from '../components/outcomes/roll-against';
 import TestForRecord from '../components/outcomes/test-for';
-import DisplayRecord from '../components/outcomes/display';
 
 // These imports are used in Flow asserts.
 import RollResult from '../result/roll-result'; //eslint-disable-line no-unused-vars
@@ -93,14 +92,6 @@ class RollHistoryPanel extends React.Component<Props> {
                                    recordKey={index}
                                    onClose={this.onRecordClosed}
                                    outcome={outcome} />
-                );
-            }
-            else if (outcome.mode === 'display') {
-                result.push(
-                    <DisplayRecord key={index}
-                                     recordKey={index}
-                                     onClose={this.onRecordClosed}
-                                     outcome={outcome} />
                 );
             }
         }

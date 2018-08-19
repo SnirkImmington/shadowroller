@@ -16,16 +16,10 @@ export type RollAgainstParams = {
     rollAgainst: number
 };
 
-export type DisplayParams = {
-    mode: "display",
-    showMax: DisplayMode,
-};
-
 export type RollParams =
 | CountHitsParams
 | TestForParams
 | RollAgainstParams
-| DisplayParams
 ;
 
 export const RollModes = {
@@ -41,10 +35,6 @@ export const RollModes = {
         title: "against",
         description: "Roll against another dice pool",
     },
-    "display": {
-        title: "display",
-        description: "Show all dice/highest/lowest roll",
-    },
-}
+};
 
 export type RollMode = $Keys<typeof RollModes>;

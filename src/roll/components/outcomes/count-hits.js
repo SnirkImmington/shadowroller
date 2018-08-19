@@ -33,6 +33,7 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
             <span className="roll-record-message">
                 <b>{result.status + "! "}</b>
                 <b>{result.hits}</b>{pluralize(result.hits, " hit")}.
+                <SortedDiceList rolls={[...result.dice]} />
             </span>
         );
     }
