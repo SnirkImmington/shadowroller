@@ -98,13 +98,15 @@ class RollHistoryPanel extends React.Component<Props> {
 
         return (
             <div className="card mt-3" id="roll-history-panel">
-                <div className="card-header bg-secondary text-white">
+                <div className="card-header bg-secondary text-white text-center">
                     <b>Roll Results</b>
                 </div>
                 <div className="card-body">
                     {result}
                     {outcomesLength === 0 ?
-                        <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
+                        <div className="text-center">
+                            <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
+                        </div>
                     : outcomesLength > PAGE_LENGTH ?
                         <Pagination id="roll-history-pagination"
                                 first prev next
