@@ -1,5 +1,7 @@
 // @flow
 
+import './roll-mode-selector.css';
+
 import * as React from 'react';
 
 import type { RollMode } from '../../index';
@@ -13,7 +15,7 @@ type Props = {
 export default function RollModeSelector(props: Props) {
     const labels: React.Node[] = Object.keys(RollModes).map(rollMode => {
         const labelClass = rollMode === props.selected ?
-            "btn btn-light active" : "btn btn-light";
+            "btn btn-light rounded-0 active" : "btn rounded-0 btn-light";
         return (
             <label class={labelClass}>
                 <input type="radio"
@@ -28,7 +30,7 @@ export default function RollModeSelector(props: Props) {
     });
 
     return (
-        <div class="btn-group btn-group-toggle mx-4"
+        <div class="btn-group btn-group-toggle mx-4 flex-button-group rounded-0"
              data-toggle="buttons">
             {labels}
         </div>
