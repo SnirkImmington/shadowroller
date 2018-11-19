@@ -1,8 +1,5 @@
-.roll-loading-label {
-    padding-right: 10px;
-}
+/* Cycles through dice Unicode symbols. */
 
-/** Cycles through dice Unicode symbols. */
 .dice-roll-icon {
     font-size: 1.5em;
     font-weight: 800;
@@ -21,8 +18,4 @@
   60% {content:'\2683';}
   80% {content:'\2684';}
   100% {content:'\2685';}
-}
-
-.monospace {
-    font-family: monospace;
 }

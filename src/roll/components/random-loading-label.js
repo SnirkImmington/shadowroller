@@ -13,10 +13,11 @@ import pickRandom from '../../util/pick-random';
 
 const loadingFlavorText: React.Node[] = [
     "Getting all the best rolls",
+    "Retrieving critical glitches",
 
     <span>
         Monkey tacos! I'm{" "}
-        <span className="monospace">
+        <span className="text-monospace">
             so
         </span>{" "}
         random
@@ -30,7 +31,7 @@ const loadingFlavorText: React.Node[] = [
     "Don't get your locks melted off",
     <span>
         Fetching{" "}
-        <span className="monospace">
+        <span className="text-monospace">
             b0ss
         </span>{" "}
         a critical glitch
@@ -66,8 +67,6 @@ const loadedFlavorText: React.Node[] = [
     "Glitches from random.org",
     "Hits from random.org",
     "Curses and madness from random.org",
-
-    "Go get 'em, chummer",
 ];
 
 const localRequiredFlavorText: React.Node[] = [
@@ -82,17 +81,17 @@ const localLoadingFlavorText: React.Node[] = [
     "Getting randoness from your browser",
     "Hope your browser has good RNG",
     "Your browser better be random enough, chummer",
+    "I hope your browser is random enough",
 ];
 
 const localLoadedFlavorText: React.Node[] = [
     <span>
         Rolls from{" "}
-        <span className="monospace">
+        <span className="text-monospace">
             Random.next()
         </span>
     </span>,
     "Rolls from your browser",
-    "Pseudorandom rolls from your browser",
 
     "Rolling in offline mode",
     "Rolling without Wireless bonus",
@@ -133,11 +132,14 @@ class RandomLoadingLabel extends React.Component<Props> {
                     <label htmlFor="roll-button-submit">
                         {flavorText}
                     </label>
+                    <div className="col-sm d-lg-none"></div>
                     {" ("}
-                    <a href="/"
-                       onClick={this.handleFillLocal}>
+                    <button id="roll-use-local"
+                            class="btn btn-link mx-0 px-0"
+                            onClick={this.handleFillLocal}>
                         Use local RNG
-                    </a>)
+                    </button>
+                    )
                 </React.Fragment>
             );
         }
@@ -145,10 +147,12 @@ class RandomLoadingLabel extends React.Component<Props> {
             const flavorText = this.props.isLocal ?
              pickRandom(localLoadingFlavorText) : pickRandom(loadingFlavorText);
             return (
-                <React.Fragment>
-                    <span className="dice-roll-icon roll-menu-icon" />
-                    <i>{flavorText}...</i>
-                </React.Fragment>
+                <div className="row pr-lg-2 my-lg-auto justify-content-center">
+                    <span className="dice-roll-icon" />
+                    <i className="my-auto">
+                        {flavorText}...
+                    </i>
+                </div>
             );
         }
         else {
@@ -156,12 +160,15 @@ class RandomLoadingLabel extends React.Component<Props> {
                 const flavorText = pickRandom(localLoadedFlavorText);
                 return (
                     <React.Fragment>
-                        {flavorText}
+                        <label htmlFor="roll-use-random-dot-org">
+                            {flavorText}
+                        </label>
                         {" ("}
-                        <a href="/"
-                           onClick={this.handleGoWireless}>
+                        <button id="roll-use-random-dot-org"
+                                class="btn btn-link mx-0 px-0"
+                                onClick={this.handleGoWireless}>
                             Use random.org
-                        </a>)
+                        </button>)
                     </React.Fragment>
                 );
             }
