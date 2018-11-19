@@ -100,15 +100,19 @@ class RollInputPanel extends React.Component<Props> {
         const options = this.getRollOptions(state.selectedRollMode);
 
         const rollDiceControl = (
-            <div className="form-group ml-3">
-                <label htmlFor="roll-input-dice">
+            <div className="row">
+                <div className="col-12 col-lg-auto my-lg-auto pr-lg-0">
                     Roll
-                </label>
-                <div className="mx-1"/>
-                <NumericInput controlId="roll-input-dice"
-                              min={1} max={100}
-                              onSelect={this.handleDiceChange} />
-                dice
+                </div>
+                <div className="col-12 col-lg-auto my-2 my-lg-auto">
+                    <NumericInput controlId="roll-input-dice"
+                                  min={1} max={100}
+                                  onSelect={this.handleDiceChange} />
+                </div>
+                <div className="col-12 col-lg-auto my-lg-auto pl-lg-0">
+                    dice
+                </div>
+                <div className="col-lg"></div>
             </div>
         );
 
@@ -118,14 +122,20 @@ class RollInputPanel extends React.Component<Props> {
         );
 
         const rollButton = (
-            <div className="form-group ml-auto">
-                <RandomLoadingLabel />
-                <button id="roll-button-submit"
-                        className="btn btn-primary ml-2"
-                        disabled={!isReady}
-                        onClick={isReady ? this.handleRollSubmit : null}>
-                    Roll dice
-                </button>
+            <div className="row">
+                <div className="col-lg"></div>
+                <div className="col-12 col-lg-auto my-1 my-lg-auto p-0">
+                    <RandomLoadingLabel />
+                </div>
+                <div className="col-12 col-lg-auto">
+                    <button id="roll-button-submit"
+                            type="button"
+                            className="btn btn-primary"
+                            disabled={!isReady}
+                            onClick={isReady ? this.handleRollSubmit : null}>
+                        Roll dice
+                    </button>
+                </div>
             </div>
         );
 
@@ -134,14 +144,25 @@ class RollInputPanel extends React.Component<Props> {
                 <div className="card-header bg-info text-white text-center">
                     <b>Roll dice</b>
                 </div>
-                <div className="card-body">
-                    <form className="form-inline"
-                          id="roll-input-panel-form"
+                <div className="card-body text-center">
+                    <form id="roll-input-panel-form"
                           onSubmit={this.handleRollSubmit}>
-                        {rollDiceControl}
-                        {selector}
-                        {options}
-                        {rollButton}
+                        <div className="container-flex ">
+                        <div className="row justify-content-between">
+                            <div className="col-sm col-lg">
+                                {rollDiceControl}
+                            </div>
+                            <div className="col-sm col-lg-auto my-2 my-lg-auto">
+                                {selector}
+                            </div>
+                            <div className="col-sm col-lg-auto">
+                                {options}
+                            </div>
+                            <div className="col-sm col-lg-4">
+                                {rollButton}
+                            </div>
+                        </div>
+                        </div>
                     </form>
                 </div>
             </div>
