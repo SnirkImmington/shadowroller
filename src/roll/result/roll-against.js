@@ -2,11 +2,13 @@
 
 import RollResult from './roll-result';
 
+import type { RollMode } from '../../roll';
+
 export default class RollAgainstResult {
+    mode: RollMode = 'roll-against';
     userRoll: RollResult;
     foeRoll: RollResult;
     userNetHits: number;
-    mode: 'roll-against';
 
     constructor(userRoll: RollResult, foeRoll: RollResult) {
         this.mode = 'roll-against';

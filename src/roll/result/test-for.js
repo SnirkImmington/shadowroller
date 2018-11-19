@@ -2,13 +2,14 @@
 
 import RollResult from './roll-result';
 
+import type { RollMode } from '../../roll';
+
 export default class TestForResult {
+    mode: RollMode = 'test-for';
     result: RollResult;
     threshold: number;
-    mode: 'test-for';
 
     constructor(result: RollResult, threshold: number) {
-        this.mode = 'test-for';
         this.result = result;
         this.threshold = threshold;
     }
