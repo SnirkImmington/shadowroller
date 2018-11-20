@@ -9,6 +9,7 @@ import { Parser, evaluate } from '../math';
 type Props = {
     controlId: string;
     onSelect: (?number) => void;
+    value?: ?number;
     min?: number;
     max?: number;
 };
@@ -29,8 +30,8 @@ export default class NumericInput extends React.Component<Props, State> {
         this.state = {
             isExpression: false,
             errorPos: null,
-            text: "",
-            value: null,
+            text: props.value ? props.value.toString() : "",
+            value: props.value,
             roundingMode: "up",
         };
     }
@@ -123,63 +124,71 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         else if (value != null && this.state.isExpression) {
             result = (
-                <div className="input-group-text numeric-input-suffix">
+                <span className="input-group-text numeric-input-suffix">
                     {value}
-                </div>
+                </span>
             );
         }
         if (rounded !== value) {
             const icon = this.state.roundingMode === "up" ?
                 "fa fa-arrow-up" : "fa fa-arrow-down";
             result = (
-                <div className="input-group-text numeric-input-suffix">
+                <span className="input-group-text numeric-input-suffix">
                     {rounded}
-                </div>
+                </span>
             );
             error = (
-                <div className="input-group-text">
-                    <button onClick={this.handleRoundModeChange}>
-                        round<i className={icon}></i>
-                    </button>
-                </div>
+                <button className="btn btn-outline-secondary"
+                        type="button"
+                        aria-label={"Currently rounding " + this.state.roundingMode}
+                        onClick={this.handleRoundModeChange}>
+                    <i className={icon}></i>
+                </button>
             );
         }
         if (rounded != null) {
             if (this.props.min != null && rounded < this.props.min) {
                 validationState = "warning";
                 warning = (
-                    <div className="input-group-text bg-warning numeric-input-suffix">
+                    <span className="input-group-text bg-warning numeric-input-suffix">
                         {`< ${this.props.min}`}
-                    </div>
+                    </span>
                 );
             }
             if (this.props.max != null && rounded > this.props.max) {
                 validationState = "warning";
                 warning = (
-                    <div className="input-group-text bg-warning numeric-input-suffix">
+                    <span className="input-group-text bg-warning numeric-input-suffix">
                         {`> ${this.props.max}`}
-                    </div>
+                    </span>
                 );
             }
         }
 
+        const post: React.Node = result || error || warning ? (
+            <div className="input-group-append">
+                {result}
+                {error}
+                {warning}
+            </div>
+        ) : "";
+
         return (
-                <div className="input-group mr-2 numeric-input-group">
-                    <div className="input-group-prepend">
-                        <span class="input-group-text" id="calculator-info">
+            <div className="input-group mx-2 mx-lg-0">
+                <div className="input-group-prepend">
+                    <span className="input-group-text">
                         <i className="fa fa-calculator"
                            aria-hidden="true"></i>
-                        </span>
-                    </div>
-                    <input className="numeric-input form-control"
-                           type="tel"
-                           inputMode="numeric"
-                           value={this.state.text}
-                           onChange={this.handleInputEvent} />
-                    {result}
-                    {error}
-                    {warning}
+                    </span>
                 </div>
+                <input className="numeric-input form-control pr-0"
+                       type="tel"
+                       aria-label="Calculator"
+                       inputMode="numeric"
+                       value={this.state.text}
+                       onChange={this.handleInputEvent} />
+                {post}
+            </div>
         );
     }
 }

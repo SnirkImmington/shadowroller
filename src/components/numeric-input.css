@@ -1,5 +1,10 @@
 .numeric-input {
-    width: 8em !important;
-    max-width: 8em !important;
     font-family: monospace;
+}
+
+@media all and (min-width: 992px) {
+    .numeric-input {
+        width: 6m !important;
+        max-width: 6em !important;
+    }
 }
