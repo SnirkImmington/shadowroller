@@ -135,7 +135,8 @@ class RandomLoadingLabel extends React.Component<Props> {
                     <div className="col-sm d-lg-none"></div>
                     {" ("}
                     <button id="roll-use-local"
-                            class="btn btn-link mx-0 px-0"
+                            type="button"
+                            className="btn btn-link mx-0 px-0"
                             onClick={this.handleFillLocal}>
                         Use local RNG
                     </button>

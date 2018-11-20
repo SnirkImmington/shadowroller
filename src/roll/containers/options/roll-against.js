@@ -12,13 +12,15 @@ type Props = {
 
 export default function RollAgainstRollOptions(props: Props) {
     return (
-        <div className="form-group">
-            <NumericInput controlId="roll-input-roll-against"
-                          min={1} max={100}
-                          onSelect={props.onChange} />
-            <label htmlFor="roll-input-roll-against">
+        <div className="row">
+            <div className="col-12 col-lg-auto mx-lg-auto my-2 my-lg-auto">
+                <NumericInput controlId="roll-input-roll-against"
+                              min={1} max={100} value={props.value}
+                              onSelect={props.onChange} />
+            </div>
+            <div className="col-12 col-lg-auto my-lg-auto">
                 dice
-            </label>
+            </div>
         </div>
     );
 }

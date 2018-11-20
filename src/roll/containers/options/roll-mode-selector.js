@@ -17,20 +17,21 @@ export default function RollModeSelector(props: Props) {
         const labelClass = rollMode === props.selected ?
             "btn btn-light rounded-0 active" : "btn rounded-0 btn-light";
         return (
-            <label class={labelClass}>
+            <label className={labelClass} key={rollMode}>
                 <input type="radio"
                        name="roll-mode"
                        autocomplete="off"
                        id={"roll-mode" + rollMode}
                        checked={rollMode === props.selected}
-                       onChange={() => props.onSelect(rollMode)} />
+                       onChange={() => props.onSelect(rollMode)}
+                       key={rollMode} />
                 {RollModes[rollMode].title}
             </label>
         );
     });
 
     return (
-        <div class="btn-group btn-group-toggle mx-4 flex-button-group rounded-0"
+        <div className="btn-group btn-group-toggle flex-button-group rounded-0"
              data-toggle="buttons">
             {labels}
         </div>

@@ -53,7 +53,12 @@ class RollInputPanel extends React.Component<Props> {
     }
 
     handleTestForSelect = (testFor: ?number) => {
-        this.props.dispatch(rollActions.setTestFor(testFor));
+        if (testFor != null && testFor > 0) {
+            this.props.dispatch(rollActions.setTestFor(testFor));
+        }
+        else {
+            this.props.dispatch(rollActions.setTestFor(null));
+        }
     }
 
     handleRollAgainstSelect = (rollAgainst: ?number) => {
@@ -68,7 +73,7 @@ class RollInputPanel extends React.Component<Props> {
     getRollOptions = (mode: RollMode): React.Node => {
         const state = this.props.state;
         if (mode === 'count-hits') {
-            return <div />;
+            return "";
         }
         else if (mode === "test-for") {
             return <TestForOptions value={state.testForDice}
@@ -79,7 +84,7 @@ class RollInputPanel extends React.Component<Props> {
                                        onChange={this.handleRollAgainstSelect} />;
         }
         else {
-            return <div />;
+            return "";
         }
     }
 
@@ -124,7 +129,7 @@ class RollInputPanel extends React.Component<Props> {
         const rollButton = (
             <div className="row">
                 <div className="col-lg"></div>
-                <div className="col-12 col-lg-auto my-1 my-lg-auto p-0">
+                <div className="col-12 col-lg-auto my-1 my-lg-auto">
                     <RandomLoadingLabel />
                 </div>
                 <div className="col-12 col-lg-auto">
@@ -147,21 +152,22 @@ class RollInputPanel extends React.Component<Props> {
                 <div className="card-body text-center">
                     <form id="roll-input-panel-form"
                           onSubmit={this.handleRollSubmit}>
-                        <div className="container-flex ">
-                        <div className="row justify-content-between">
-                            <div className="col-sm col-lg">
-                                {rollDiceControl}
+                        <div className="container-flex">
+                            <div className="row justify-content-xl-between">
+                                <div className={options === "" ?
+                                    "col-12 col-xl-4" : "col-12 col-lg-auto"}>
+                                    {rollDiceControl}
+                                </div>
+                                <div className="col-12 col-lg-auto my-3 my-lg-auto">
+                                    {selector}
+                                </div>
+                                <div className="col-12 col-lg-auto">
+                                    {options}
+                                </div>
+                                <div className="col-12 col-lg-auto">
+                                    {rollButton}
+                                </div>
                             </div>
-                            <div className="col-sm col-lg-auto my-2 my-lg-auto">
-                                {selector}
-                            </div>
-                            <div className="col-sm col-lg-auto">
-                                {options}
-                            </div>
-                            <div className="col-sm col-lg-4">
-                                {rollButton}
-                            </div>
-                        </div>
                         </div>
                     </form>
                 </div>

@@ -28,7 +28,7 @@ export const RollModes = {
         description: "Count 5s and 6s",
     },
     "test-for": {
-        title: "testing for",
+        title: "threshold",
         description: "Test for a certain number of hits",
     },
     "roll-against": {
