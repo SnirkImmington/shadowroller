@@ -35,9 +35,8 @@ export const DEFAULT_ROLL_STATE: RollState = {
     rollDice: null,
     rollAgainstDice: null,
     testForDice: null,
-    displayMode: "max",
     outcomes: [],
-    outcomePage: 1,
+    nextOutcomeId: 1,
 };
 
 export const DEFAULT_STATE: AppState = {

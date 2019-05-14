@@ -13,12 +13,9 @@ export type RollState = {
     +rollDice: ?number,
     +rollAgainstDice: ?number,
     +testForDice: ?number,
-    +displayMode: DisplayMode,
+    +nextOutcomeId: number,
     +outcomes: Array<RollOutcome>,
-    +outcomePage: number
 };
-
-export const ROLL_BUFFER_PAGE_LENGTH: number = 5;
 
 /** Whether the needed properties of the state are set to perform the roll. */
 export function propertiesSet(state: RollState): boolean {

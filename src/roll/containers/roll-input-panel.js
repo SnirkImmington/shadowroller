@@ -145,7 +145,7 @@ class RollInputPanel extends React.Component<Props> {
         );
 
         return (
-            <div className="card">
+            <div className="card mt-3">
                 <div className="card-header bg-info text-white text-center">
                     <b>Roll dice</b>
                 </div>

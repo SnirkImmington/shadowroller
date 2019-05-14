@@ -20,20 +20,30 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
     const outcome = props.outcome;
     const result = outcome.result;
 
-    let alertStyle = "dark";
-    if (result.isGlitched()) {
-        alertStyle = (result.isCrit() ? "danger" : "warning");
-    }
-    else if (result.hits === 0) {
-        alertStyle = "info";
-    }
-    let message;
-    if (result.isGlitched() || result.hits > 0) {
+    let message = "";
+    if (result.isCrit()) {
         message = (
-            <span className="roll-record-message">
+            <div className="badge badge-error">
+                <b>Critical glitch!</b>
+            </div>
+        );
+    }
+    else if (result.isGlitched()) {
+        message = (
+            <React.Fragment>
+                <div className="badge badge-warning roll-record-label">
+                    Glitch
+                </div>
+                <b>{result.hits}</b>
+                {pluralize(result.hits, " hit")}
+            </React.Fragment>
+        );
+    }
+    else if (result.hits > 0) {
+        message = (
+            <span>
                 <b>{result.status + "! "}</b>
                 <b>{result.hits}</b>{pluralize(result.hits, " hit")}.
-                <SortedDiceList rolls={[...result.dice]} />
             </span>
         );
     }
@@ -49,20 +59,12 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
     const rolls: number[] = [];
     rolls.push(...result.dice);
 
-    const tooltip = (
-        <span>
-            <p>Rolling{" " + result.dice.length + " "}dice:</p>
-            <SortedDiceList rolls={rolls} />
-        </span>
-    );
-
     return (
-        <RollRecord className="roll-hits-record"
-                    label={`Count hits (${outcome.result.dice.length})`}
+        <RollRecord label={`Count hits (${outcome.result.dice.length})`}
                     recordKey={props.recordKey}
-                    mode={alertStyle}
                     onClose={props.onClose}
-                    message={message}
-                    tooltip={tooltip} />
+                    message={message}>
+            <SortedDiceList rolls={[...result.dice]} />
+        </RollRecord>
     );
 }

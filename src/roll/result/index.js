@@ -1,10 +1,7 @@
 // @flow
 
-import typeof CountHitsResult from './count-hits';
-import typeof RollAgainstResult from './roll-against';
-import typeof TestForResult from './test-for';
+import CountHitsResult from './count-hits';
+import RollAgainstResult from './roll-against';
+import TestForResult from './test-for';
 
-export type RollOutcome =
-| CountHitsResult
-| RollAgainstResult
-| TestForResult;
+export type RollOutcome = CountHitsResult | RollAgainstResult | TestForResult;

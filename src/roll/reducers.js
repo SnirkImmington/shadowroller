@@ -58,9 +58,7 @@ function bufferSetLocalReducer(local: boolean = false, action: RollAction): bool
     if (action.type === 'roll.buffer_set_local_status') {
         return action.local;
     }
-    else {
-        return local;
-    }
+    return local;
 }
 
 function setDiceCountReducer(diceCount: ?number = null,
@@ -68,9 +66,7 @@ function setDiceCountReducer(diceCount: ?number = null,
     if (action.type === 'roll.set_dice_count') {
         return action.dice;
     }
-    else {
-        return diceCount;
-    }
+    return diceCount;
 }
 
 function setRollModeReducer(rollMode: RollMode = DEFAULT_ROLL_STATE.selectedRollMode,
@@ -78,9 +74,7 @@ function setRollModeReducer(rollMode: RollMode = DEFAULT_ROLL_STATE.selectedRoll
     if (action.type === 'roll.set_roll_mode') {
         return action.mode;
     }
-    else {
-        return rollMode;
-    }
+    return rollMode;
 }
 
 function setRollAgainstReducer(rollAgainst: ?number = null,
@@ -88,9 +82,7 @@ function setRollAgainstReducer(rollAgainst: ?number = null,
     if (action.type === 'roll.set_roll_against') {
         return action.rollAgainst;
     }
-    else {
-        return rollAgainst;
-    }
+    return rollAgainst;
 }
 
 function setTestForReducer(testFor: ?number = null,
@@ -98,9 +90,7 @@ function setTestForReducer(testFor: ?number = null,
     if (action.type === 'roll.set_test_for') {
         return action.testFor;
     }
-    else {
-        return testFor;
-    }
+    return testFor;
 }
 
 /**
@@ -124,13 +114,12 @@ function outcomesReducer(outcomes: typeof (DEFAULT_ROLL_STATE.outcomes) = DEFAUL
     }
 }
 
-function outcomePageReducer(page: number = 1, action: RollAction): number {
-    if (action.type === "roll.select_page") {
-        return action.page;
+function nextOutcomeIdReducer(outcomeId: typeof(DEFAULT_ROLL_STATE.nextOutcomeId) = DEFAULT_ROLL_STATE.nextOutcomeId,
+                              action: RollAction): typeof(DEFAULT_ROLL_STATE.nextOutcomeId) {
+    if (action.type === 'roll.append_outcome') {
+        return outcomeId + 1;
     }
-    else {
-        return page;
-    }
+    return outcomeId;
 }
 
 const rollReducers: { [$Keys<RollState>]: (any, RollAction) => any } = {
@@ -141,7 +130,7 @@ const rollReducers: { [$Keys<RollState>]: (any, RollAction) => any } = {
     selectedRollMode: setRollModeReducer,
     rollDice: setDiceCountReducer,
     rollAgainstDice: setRollAgainstReducer,
-    outcomePage: outcomePageReducer,
+    nextOutcomeId: nextOutcomeIdReducer,
     testForDice: setTestForReducer,
 };
 

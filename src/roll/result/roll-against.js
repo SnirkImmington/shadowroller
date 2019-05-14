@@ -6,17 +6,18 @@ import type { RollMode } from '../../roll';
 
 export default class RollAgainstResult {
     mode: RollMode = 'roll-against';
+    id: number;
     userRoll: RollResult;
     foeRoll: RollResult;
     userNetHits: number;
 
-    constructor(userRoll: RollResult, foeRoll: RollResult) {
+    constructor(id: number, userRoll: RollResult, foeRoll: RollResult) {
+        this.id = id;
         this.mode = 'roll-against';
         this.userRoll = userRoll;
         this.foeRoll = foeRoll;
 
         this.userNetHits = userRoll.getHits() - foeRoll.getHits();
-
     }
 
     successful(): boolean {

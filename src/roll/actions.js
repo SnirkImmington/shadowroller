@@ -170,15 +170,6 @@ export function deleteOutcome(index: number): DeleteOutcomeAction {
     return { type: "roll.delete_outcome", index };
 }
 
-/** Set the given page (via user input, or when action is added) */
-export type SelectPageAction = {
-    +type: "roll.select_page",
-    +page: number
-};
-export function selectPage(page: number): SelectPageAction {
-    return { type: "roll.select_page", page };
-}
-
 export function performRoll(): ThunkAction {
     return function(dispatch: DispatchFn, getState: GetStateFn) {
         const state = getState().roll;
@@ -194,7 +185,8 @@ export function performRoll(): ThunkAction {
 
         let rollDice = state.rollDice || 0;
         const bufferLength = state.buffer.length;
-        let toRoll: number = 0
+        let toRoll: number = 0;
+        let rollId = state.nextOutcomeId;
         let outcome: ?RollOutcome = null;
 
         switch (state.selectedRollMode) {
@@ -202,7 +194,7 @@ export function performRoll(): ThunkAction {
                 toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
                 if (pool.length === toRoll) {
-                    outcome = new CountHitsResult(new RollResult(pool));
+                    outcome = new CountHitsResult(rollId, new RollResult(pool));
                 }
                 break;
             }
@@ -210,7 +202,7 @@ export function performRoll(): ThunkAction {
                 toRoll = rollDice;
                 const pool = state.buffer.slice(bufferLength - toRoll);
                 if (pool.length === toRoll) {
-                    outcome = new TestForResult(new RollResult(pool), state.testForDice || 0);
+                    outcome = new TestForResult(rollId, new RollResult(pool), state.testForDice || 0);
                 }
                 break;
             }
@@ -221,7 +213,7 @@ export function performRoll(): ThunkAction {
                 const userPool = state.buffer.slice(bufferLength - userRoll);
                 const foePool = state.buffer.slice(bufferLength - userRoll - foeRoll, bufferLength - userRoll);
                 if (userPool.length + foePool.length === toRoll) {
-                    outcome = new RollAgainstResult(new RollResult(userPool), new RollResult(foePool));
+                    outcome = new RollAgainstResult(rollId, new RollResult(userPool), new RollResult(foePool));
                 }
                 break;
             }
@@ -231,7 +223,6 @@ export function performRoll(): ThunkAction {
         if (outcome != null) {
             dispatch(removeBuffer(toRoll));
             dispatch(appendOutcome(outcome));
-            dispatch(selectPage(1));
             return true;
         }
         return false;

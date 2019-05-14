@@ -3,51 +3,43 @@
 import './roll-record.css';
 
 import * as React from 'react';
+import typeof RollOutcome from '../../result';
 
-type RollRecordProps = {
-    recordKey: number;
-    mode: string;
-    label: string;
-    onClose: (number) => void;
-    message: React.Node;
-    tooltip: React.Node;
+type RollOutcomeData = {
+    outcomes: Array<RollOutcome>;
+    handleCloseButton: (index: number) => void;
 }
 
-function mutedOnClick(event: SyntheticInputEvent<HTMLButtonElement>) {
-    event.preventDefault();
-}
+type Props = {
+    outcome: RollResult;
+    index: number;
+    onClose: (index: number) => void;
+};
 
-export default class RollRecord extends React.Component<RollRecordProps> {
-    handleCloseButton = () => {
-        this.props.onClose(this.props.recordKey);
-    }
-
+export default class RollRecord extends React.PureComponent<Props> {
     render() {
-        const alertClassName = "alert alert-" +
-            this.props.mode + " roll-record-panel";
+        console.log("Received props:", this.props);
+        const { outcome, index, onClose } = this.props;
 
         return (
-            <div className="alert alert-secondary alert-dismissable fade show roll-record-panel">
-                <div className="roll-record-info">
-                    <div className="badge badge-secondary roll-record-label">
-                        {this.props.label}
+            <div className="card mb-3 border-0 roll-record-entry">
+                <div className="card-header text-left roll-record-header">
+                    <div className="row justify-content-center align-content-center">
+                        <div className="col-auto mr-auto my-auto">
+                            {` ${index}`}Rolled {" " + outcome.result.toString()}
+                        </div>
+                        <div className="col-auto roll-record-buttons">
+                            <button className="btn btn-sm close"
+                                    onClick={() => onClose(index)}>
+                                &times;
+                            </button>
+                        </div>
                     </div>
-                    {this.props.message}
                 </div>
-                <div className='roll-record-buttons'>
-                        <button className='btn roll-record-info'
-                                onClick={mutedOnClick}
-                                data-container="body"
-                                data-toggle="tooltip"
-                                data-placement="left"
-                                data-html="true"
-                                data-content={this.props.tooltip}>
-                            <i className="fa fa-info-circle"></i>
-                        </button>
-                    <button className="close"
-                            onClick={this.handleCloseButton}>
-                        &times;
-                    </button>
+                <div className="card-body conatainer">
+                    <div className="row no-gutters">
+                        oOoOo
+                    </div>
                 </div>
             </div>
         );

@@ -1,120 +1,48 @@
 // @flow
 
 import * as React from 'react';
-import { Pagination } from 'react-bootstrap';
 import { connect } from 'react-redux';
+import { FixedSizeList } from 'react-window';
+
 import { FavorText } from '../../components';
+import RollResultList from './roll-result-list';
 
-import CountHitsRecord from '../components/outcomes/count-hits';
-import RollAgainstRecord from '../components/outcomes/roll-against';
-import TestForRecord from '../components/outcomes/test-for';
-
-// These imports are used in Flow asserts.
-import RollResult from '../result/roll-result'; //eslint-disable-line no-unused-vars
-import CountHitsResult from '../result/count-hits'; //eslint-disable-line no-unused-vars
-import TestForResult from '../result/test-for'; //eslint-disable-line no-unused-vars
-import RollAgainstResult from '../result/roll-against'; //eslint-disable-line no-unused-vars
 import typeof RollOutcome from '../result';
 
 import { DEFAULT_ROLL_STATE } from '../../state';
 import type { AppState, DispatchFn } from '../../state';
+import type { RollMode } from '..';
 import * as rollActions from '../actions';
 
 const PAGE_LENGTH: number = 6;
 
 const DO_SOME_ROLLS_FAVORTEXT: string[] = [
-    "Roll some glitches.",
-
-    "Roll some dice, chummer.",
-    "Do some rolls, chummer.",
-    "Have at em, chummer.",
     "You have to press the roll dice button first, chummer.",
+    "You gotta roll those dice first.",
+    "Hit that roll button and we'll show you the glitches.",
 ];
 
 type Props = {
     dispatch: DispatchFn,
     outcomes: Array<RollOutcome>,
-    outcomePage: number
 };
 
 /** Displays the given rolls. */
 class RollHistoryPanel extends React.Component<Props> {
-    onRecordClosed = (index: number) => {
-        const newMaxPage = Math.ceil((this.props.outcomes.length - 1) / PAGE_LENGTH);
-        this.props.dispatch(rollActions.deleteOutcome(index));
-        if (newMaxPage > this.props.outcomePage) {
-            this.props.dispatch(rollActions.selectPage(newMaxPage));
-        }
-    }
-
-    handlePageSelect = (page: number) => {
-        this.props.dispatch(rollActions.selectPage(page));
-    }
-
     render() {
-        const outcomesLength = this.props.outcomes.length;
-        const maxPages = Math.ceil(outcomesLength / PAGE_LENGTH);
-        let outcomes: Array<RollOutcome>;
-
-        if (outcomesLength <= PAGE_LENGTH) {
-            outcomes = this.props.outcomes;
-        }
-        else {
-            const start = (this.props.outcomePage - 1) * PAGE_LENGTH;
-            outcomes = this.props.outcomes.slice(start, start + PAGE_LENGTH);
-        }
-
-        const entries = outcomes.entries();
-        const result: Array<React.Node> = [];
-        for (const entry of entries) {
-            const index: number = entry[0];
-            const outcome: any = entry[1];
-
-            if (outcome.mode === 'count-hits') {
-                result.push(
-                    <CountHitsRecord key={index}
-                                     recordKey={index}
-                                     onClose={this.onRecordClosed}
-                                     outcome={outcome} />
-                );
-            }
-            else if (outcome.mode === 'roll-against') {
-                result.push(
-                    <RollAgainstRecord key={index}
-                                       recordKey={index}
-                                       onClose={this.onRecordClosed}
-                                       outcome={outcome} />
-                );
-            }
-            else if (outcome.mode === 'test-for') {
-                result.push(
-                    <TestForRecord key={index}
-                                   recordKey={index}
-                                   onClose={this.onRecordClosed}
-                                   outcome={outcome} />
-                );
-            }
-        }
-
         return (
-            <div className="card mt-3" id="roll-history-panel">
+            <div className="card mt-3">
                 <div className="card-header bg-secondary text-white text-center">
                     <b>Roll Results</b>
                 </div>
-                <div className="card-body">
-                    {result}
-                    {outcomesLength === 0 ?
+                <div className="card-body" style={{height: '400px'}}>
+                    {this.props.outcomes.length === 0 ?
                         <div className="text-center">
                             <FavorText from={DO_SOME_ROLLS_FAVORTEXT} />
                         </div>
-                    : outcomesLength > PAGE_LENGTH ?
-                        <Pagination id="roll-history-pagination"
-                                first prev next
-                                maxButtons={5}
-                                items={maxPages}
-                                activePage={this.props.outcomePage}
-                                onSelect={this.handlePageSelect} />
-                    : ""}
+                    :
+                        <RollResultList />
+                    }
                 </div>
             </div>
         )
@@ -124,7 +52,6 @@ class RollHistoryPanel extends React.Component<Props> {
 function mapStateToProps(state: AppState) {
     return {
         outcomes: state.roll.outcomes || DEFAULT_ROLL_STATE.outcomes,
-        outcomePage: state.roll.outcomePage || 1
     };
 }
 

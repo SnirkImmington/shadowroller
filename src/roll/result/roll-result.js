@@ -71,15 +71,15 @@ export default class RollResult {
     toString(): string {
         let result;
         if (this.critical) {
-            result = "Critical glitch! " + this.misses + " misses";
+            result = "Critical glitch!";
         }
         else if (this.glitched) {
             result = "Glitch! " + this.hits + " hits"
         }
         else {
-            result = "Hit!" + this.hits + " hits";
+            result = this.hits + " hits";
         }
-        result += `dice: (${this.dice.toString()})`;
+        result += ` on ${this.dice.toString()}`;
         return result;
     }
 }
