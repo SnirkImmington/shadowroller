@@ -79,7 +79,6 @@ export default class RollResult {
         else {
             result = this.hits + " hits";
         }
-        result += ` on ${this.dice.toString()}`;
         return result;
     }
 }

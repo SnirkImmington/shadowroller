@@ -6,10 +6,12 @@ import * as React from 'react';
 
 import { connect } from 'react-redux';
 
-import type { LoadingState } from '../state';
-import type { AppState, DispatchFn, GetStateFn } from '../../state';
-import * as rollActions from '../actions';
-import pickRandom from '../../util/pick-random';
+import type { LoadingState } from 'roll/componenents/state';
+import type { AppState, DispatchFn, GetStateFn } from 'roll/state';
+import * as rollActions from 'roll/actions';
+import pickRandom from 'util/pick-random';
+
+console.log('PickRandom: ', pickRandom);
 
 const loadingFlavorText: React.Node[] = [
     "Getting all the best rolls",

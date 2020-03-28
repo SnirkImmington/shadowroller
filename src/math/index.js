@@ -95,3 +95,4 @@ export function evaluate(expr: Expression): number {
 }
 
 export {  Parser } from './parse';
+export { Tokenizer } from './tokenize';

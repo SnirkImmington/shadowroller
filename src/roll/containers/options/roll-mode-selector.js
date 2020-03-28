@@ -20,7 +20,7 @@ export default function RollModeSelector(props: Props) {
             <label className={labelClass} key={rollMode}>
                 <input type="radio"
                        name="roll-mode"
-                       autocomplete="off"
+                       autoComplete="off"
                        id={"roll-mode" + rollMode}
                        checked={rollMode === props.selected}
                        onChange={() => props.onSelect(rollMode)}

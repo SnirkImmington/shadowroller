@@ -6,7 +6,7 @@ export type Token =
 | { type: "number", value: number }
 ;
 
-export default class Tokenizer {
+export class Tokenizer {
     text: string;
     position: number;
 

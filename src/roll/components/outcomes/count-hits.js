@@ -5,10 +5,10 @@ import './roll-record.css';
 import React from 'react';
 
 import RollRecord from './roll-record';
-import SortedDiceList from './sorted-dice-list';
+import RollingDice from '../dice-list';
 
-import CountHitsResult from '../../result/count-hits';
-import pluralize from '../../../util/pluralize';
+import CountHitsResult from 'roll/result/count-hits';
+import { pluralize } from 'util';
 
 type CountHitsRecordProps = {
     recordKey: number;
@@ -24,35 +24,23 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
     if (result.isCrit()) {
         message = (
             <div className="badge badge-error">
-                <b>Critical glitch!</b>
+                <b>Critical Glitch!</b>
             </div>
         );
     }
     else if (result.isGlitched()) {
         message = (
-            <React.Fragment>
-                <div className="badge badge-warning roll-record-label">
-                    Glitch
-                </div>
-                <b>{result.hits}</b>
-                {pluralize(result.hits, " hit")}
-            </React.Fragment>
+            <div className="badge badge-warning">
+                <b>Glitch!</b>
+            </div>
         );
     }
-    else if (result.hits > 0) {
+    else {
         message = (
             <span>
-                <b>{result.status + "! "}</b>
-                <b>{result.hits}</b>{pluralize(result.hits, " hit")}.
+                <b>{result.hits}</b> {pluralize(result.hits, " hit")}
             </span>
         );
-    }
-    else /* result.hits === 0 */ {
-        message = (
-            <span className="roll-record-message">
-                <b>No hits</b>, chummer.
-            </span>
-        )
     }
 
     // Deep copy of result's rolls
@@ -61,10 +49,10 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
 
     return (
         <RollRecord label={`Count hits (${outcome.result.dice.length})`}
-                    recordKey={props.recordKey}
                     onClose={props.onClose}
                     message={message}>
-            <SortedDiceList rolls={[...result.dice]} />
+            <RollingDice dice={result.dice} />
+            {message}
         </RollRecord>
     );
 }

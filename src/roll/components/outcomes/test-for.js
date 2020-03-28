@@ -7,8 +7,8 @@ import React from 'react';
 import RollRecord from './roll-record';
 import SortedDiceList from './sorted-dice-list'
 
-import TestForResult from '../../result/test-for';
-import pluralize from '../../../util/pluralize';
+import TestForResult from 'roll/result/test-for';
+import { pluralize } from 'util';
 
 type TestForRecordProps = {
     recordKey: number,

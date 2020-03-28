@@ -1,6 +1,6 @@
 // @flow
 
-import type { RollMode, DisplayMode } from './index';
+import type { RollMode } from './index';
 import type { RollOutcome } from './result';
 
 export type LoadingState = "loading" | "complete" | "failed";

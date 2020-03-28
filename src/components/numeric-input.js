@@ -114,13 +114,16 @@ export default class NumericInput extends React.Component<Props, State> {
         // If we have a typo'd expression.
         const invalid = this.state.isExpression && value == null;
 
-        let validationState: ?string = null;
         let result: React.Node = "";
         let error: React.Node = "";
         let warning: React.Node = "";
 
         if (invalid && this.state.text !== "") {
-            validationState = "error";
+            result = (
+                <span className="input-group-text numeric-input-suffix bg-danger">
+                    <b class="text-white">!</b>
+                </span>
+            )
         }
         else if (value != null && this.state.isExpression) {
             result = (
@@ -148,7 +151,7 @@ export default class NumericInput extends React.Component<Props, State> {
         }
         if (rounded != null) {
             if (this.props.min != null && rounded < this.props.min) {
-                validationState = "warning";
+                //validationState = "warning";
                 warning = (
                     <span className="input-group-text bg-warning numeric-input-suffix">
                         {`< ${this.props.min}`}
@@ -156,7 +159,7 @@ export default class NumericInput extends React.Component<Props, State> {
                 );
             }
             if (this.props.max != null && rounded > this.props.max) {
-                validationState = "warning";
+                //validationState = "warning";
                 warning = (
                     <span className="input-group-text bg-warning numeric-input-suffix">
                         {`> ${this.props.max}`}
