@@ -2,12 +2,15 @@
 
 import RollResult from './roll-result';
 
+import type { RollMode } from 'roll';
+
 export default class CountHitsResult {
-    mode: 'count-hits';
+    mode: RollMode = 'count-hits';
+    id: number;
     result: RollResult;
 
-    constructor(result: RollResult) {
-        this.mode = 'count-hits';
+    constructor(id: number, result: RollResult) {
+        this.id = id;
         this.result = result;
     }
 }

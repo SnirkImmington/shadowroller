@@ -2,31 +2,38 @@
   "name": "shadowroller",
   "description": "Roll dice from random.org",
   "version": "0.3.4",
-  "author": "Snirk Immington",
+  "author": "S. B. Immington",
   "homepage": "https://snirkimmington.github.io/shadowroller",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/snirkimmington/shadowroller.git"
+    "type": "git",
+    "url": "https://github.com/snirkimmington/shadowroller.git"
   },
-  "keywords": [ "dice", "rolling" ],
+  "keywords": [
+    "dice",
+    "rolling"
+  ],
   "bugs": {
-      "url": "https://github.com/snirkimmington/shadowroller/issues"
+    "url": "https://github.com/snirkimmington/shadowroller/issues"
   },
   "devDependencies": {
-      "redux-logger": "^3.0.6"
+      "redux-logger": "^3.0.6",
+      "gh-pages": "^1.0.0",
   },
   "dependencies": {
-    "bootstrap": "^3.3.7",
-    "flow-bin": "^0.57.3",
+    "bootstrap": "^4.3.1",
+    "es6-promise": "^4.2.6",
+    "flow-bin": "^0.78.0",
     "flow-typed": "^2.2.1",
-    "gh-pages": "^1.0.0",
-    "react": "^16.0.0",
-    "react-bootstrap": "^0.31.5",
-    "react-dom": "^16.0.0",
-    "react-redux": "^5.0.6",
-    "react-scripts": "1.0.14",
-    "redux": "^3.7.2",
-    "redux-thunk": "^2.2.0"
+    "isomorphic-fetch": "^2.2.1",
+    "react": "^16.8.6",
+    "react-bootstrap": "^0.32.4",
+    "react-dom": "^16.8.6",
+    "react-redux": "^5.1.1",
+    "react-scripts": "^3.0.1",
+    "react-virtualized-auto-sizer": "^1.0.2",
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.2.0",
+    "sass": "^1.20.1"
   },
   "scripts": {
     "predeploy": "npm run build",
@@ -36,5 +43,11 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "flow": "flow"
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

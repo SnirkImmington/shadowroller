@@ -2,46 +2,44 @@
     Application styles
 */
 
-.App {
+/* Global styles */
+
+.App * {
+    border-radius: 0 !important;
+}
+
+label {
+    margin-bottom: auto !important;
+}
+
+#roll-button-submit {
+    background-image: linear-gradient(180deg,#337ab7 0,#3688c8);
+    font-size: 1.05em;
+    font-weight: 500;
+}
+
+/* Header and title */
+
+.App-header {
+  background-color: #222;
+  height: 4em;
+  padding: 0.9em;
+  color: white;
+}
+
+.App-title {
+  font-size: 2em;
+  font-style: oblique;
+  font-weight: 900;
   text-align: center;
 }
 
-/* Default:  half size title. */
-.App-header {
-  background-color: #222;
-  height: 5.5em;
-  padding: 0.4em;
-  color: white;
-}
-.App-title {
-  font-size: 2.5em;
-  font-style: oblique;
-  font-weight: 900;
-}
-
-/* Most screens: larger title */
-@media all and (min-width: 576px) {
-    .App-title {
-        font-size: 4em;
-    }
-    .App-header {
-        height: 8em;
-        padding: 1.2em;
-    }
-}
-
-.App-menu-panel-title {
-    font-size: 4em;
-    font-weight: 400;
-}
-
-/*
-    Utilities
-*/
+/* Main panel width */
 
 .App-wide-container {
-    margin: 1em auto 1em;
-    max-width: 98%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 95%;
 }
 
 @media all and (min-width: 576px) {
@@ -50,28 +48,14 @@
     }
 }
 
-@media all and (min-width: 768px) {
-    /** Cause this to be centered at the max width. */
-    .App-wide-container {
-        max-width: 50em;
-    }
-}
-
 @media all and (min-width: 992px) {
     .App-wide-container {
-        max-width: 80%;
+        max-width: 90%;
     }
 }
 
 @media all and (min-width: 1300px) {
     .App-wide-container {
-        max-width: 92em;
+        max-width: 1500px;
     }
-}
-
-.menu-label {
-    font-size: 1.2em;
-    margin-bottom: 0px;
-    padding-left: 10px;
-    padding-right: 10px;
 }

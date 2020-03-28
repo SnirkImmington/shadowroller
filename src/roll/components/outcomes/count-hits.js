@@ -5,10 +5,10 @@ import './roll-record.css';
 import React from 'react';
 
 import RollRecord from './roll-record';
-import SortedDiceList from './sorted-dice-list';
+import RollingDice from '../dice-list';
 
-import CountHitsResult from '../../result/count-hits';
-import pluralize from '../../../util/pluralize';
+import CountHitsResult from 'roll/result/count-hits';
+import { pluralize } from 'util';
 
 type CountHitsRecordProps = {
     recordKey: number;
@@ -20,48 +20,39 @@ export default function CountHitsRecord(props: CountHitsRecordProps) {
     const outcome = props.outcome;
     const result = outcome.result;
 
-    let alertStyle = "success";
-    if (result.isGlitched()) {
-        alertStyle = (result.isCrit() ? "danger" : "warning");
-    }
-    else if (result.hits === 0) {
-        alertStyle = "info";
-    }
-    let message;
-    if (result.isGlitched() || result.hits > 0) {
+    let message = "";
+    if (result.isCrit()) {
         message = (
-            <span className="roll-record-message">
-                <b>{result.status + "! "}</b>
-                <b>{result.hits}</b>{pluralize(result.hits, " hit")}.
-            </span>
+            <div className="badge badge-error">
+                <b>Critical Glitch!</b>
+            </div>
         );
     }
-    else /* result.hits === 0 */ {
+    else if (result.isGlitched()) {
         message = (
-            <span className="roll-record-message">
-                <b>No hits</b>, chummer.
+            <div className="badge badge-warning">
+                <b>Glitch!</b>
+            </div>
+        );
+    }
+    else {
+        message = (
+            <span>
+                <b>{result.hits}</b> {pluralize(result.hits, " hit")}
             </span>
-        )
+        );
     }
 
     // Deep copy of result's rolls
     const rolls: number[] = [];
     rolls.push(...result.dice);
 
-    const tooltip = (
-        <span>
-            <p>Rolling{" " + result.dice.length + " "}dice:</p>
-            <SortedDiceList rolls={rolls} />
-        </span>
-    );
-
     return (
-        <RollRecord className="roll-hits-record"
-                    label={`Count hits (${outcome.result.dice.length})`}
-                    recordKey={props.recordKey}
-                    mode={alertStyle}
+        <RollRecord label={`Count hits (${outcome.result.dice.length})`}
                     onClose={props.onClose}
-                    message={message}
-                    tooltip={tooltip} />
+                    message={message}>
+            <RollingDice dice={result.dice} />
+            {message}
+        </RollRecord>
     );
 }

@@ -10,8 +10,8 @@ import RollHistoryPanel from './roll/containers/roll-history-panel';
 //* Main page component. */
 export default function App(props: {}) {
     return (
-        <div className="App">
-            <header className="App-header">
+        <div className="App rounded-0">
+            <header className="App-header mb-2">
                 <h1 className="App-title">Shadowroller</h1>
             </header>
             <div className="App-wide-container">

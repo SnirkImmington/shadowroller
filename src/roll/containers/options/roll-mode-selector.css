@@ -1,23 +1,28 @@
-#roll-input-mode {
-    margin-right: 10px;
+/* Extra small devices (portrait phones, less than 576px)
+* No media query for `xs` since this is the default in Bootstrap
+*/
+
+.flex-button-group {
+    flex-direction: column;
 }
 
-.roll-input-mode-item {
-    font-size: 1.1em;
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
 }
 
-.roll-mode-input-glyph {
-    margin-left: 0.5em;
-}
-
-.roll-input-wrapper {
-    padding-top: 15px;
-    padding-bottom: 15px;
-}
-
-@media all and (min-width: 768px) {
-    .roll-input-wrapper {
-        padding-top: 0px;
-        padding-bottom: 0px;
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+    .flex-button-group {
+        flex-direction: row;
     }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+
 }

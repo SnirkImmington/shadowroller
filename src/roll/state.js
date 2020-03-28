@@ -1,6 +1,6 @@
 // @flow
 
-import type { RollMode, DisplayMode } from './index';
+import type { RollMode } from './index';
 import type { RollOutcome } from './result';
 
 export type LoadingState = "loading" | "complete" | "failed";
@@ -13,12 +13,9 @@ export type RollState = {
     +rollDice: ?number,
     +rollAgainstDice: ?number,
     +testForDice: ?number,
-    +displayMode: DisplayMode,
+    +nextOutcomeId: number,
     +outcomes: Array<RollOutcome>,
-    +outcomePage: number
 };
-
-export const ROLL_BUFFER_PAGE_LENGTH: number = 5;
 
 /** Whether the needed properties of the state are set to perform the roll. */
 export function propertiesSet(state: RollState): boolean {
@@ -27,7 +24,6 @@ export function propertiesSet(state: RollState): boolean {
         case 'count-hits': return true;
         case 'test-for': return state.testForDice != null;
         case 'roll-against': return state.rollAgainstDice != null;
-        case 'display': return state.displayMode != null;
         default:
             // Should not happen
             return false;
@@ -43,11 +39,8 @@ export function diceAvailable(state: RollState): boolean {
             return (state.rollDice || 0) <= state.buffer.length;
         case 'roll-against':
             return (state.rollDice || 0) + (state.rollAgainstDice || 0) <= state.buffer.length;
-        case 'display':
-            return (state.rollDice || 0) <= state.buffer.length;
         default:
             // Should not happen
             return true;
-
     }
 }

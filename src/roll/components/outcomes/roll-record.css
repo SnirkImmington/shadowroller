@@ -1,43 +1,28 @@
-.roll-record-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+.roll-record-entry {
+    height: 140px;
+    max-height: 140px;
 }
 
-.roll-record-label {
-    padding-top: 0.4em !important;
-    font-size: 1.15em !important;
+.roll-record-header {
+    border: 1px solid rgba(0, 0, 0, 0.125);
 }
 
-.roll-record-info {
-    margin-right: auto;
-    margin-bottom: 10px;
-    text-align: left;
+.roll-record-buttons > button {
+    border-width: 0px;
+    background-color: transparent;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 1px 0 #fff;
+    opacity: .8;
 }
 
-.roll-record-message {
-    margin-left: 10px;
+.roll-record-buttons > button:focus {
+    box-shadow: 0 0 0 0 !important;
+    -webkit-box-shadow: 0 0 0 0 !important;
+    outline: 0px !important;
 }
 
-
-.roll-record-buttons {
-    align-self: flex-end;
-    margin-left: auto;
-}
-
-/* Non-mobile stuff. */
-@media all and (min-width: 768px) {
-    .roll-record-panel {
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-    }
-
-    .roll-record-info {
-        margin-bottom: 0px;
-    }
-}
-
-.sorted-dice-list {
-    font-family: monospace;
+.roll-record-buttons > button:hover {
+    background-color: #6c757da0;
 }

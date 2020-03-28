@@ -1,18 +1,10 @@
 .numeric-input {
-    width: 8em !important;
-    max-width: 8em !important;
-    min-width: 8em !important;
-    padding-right: 4px !important;
-}
-
-.numeric-input-group {
-    width: min-content;
-}
-
-.numeric-input-suffix {
     font-family: monospace;
 }
 
-.form-group {
-    margin-bottom: 0px !important;
+@media all and (min-width: 992px) {
+    .numeric-input {
+        width: 6m !important;
+        max-width: 6em !important;
+    }
 }

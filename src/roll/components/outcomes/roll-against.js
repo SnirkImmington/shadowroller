@@ -7,9 +7,9 @@ import React from 'react';
 import RollRecord from './roll-record';
 import SortedDiceList from './sorted-dice-list';
 
-import RollAgainstResult from '../../result/roll-against';
+import RollAgainstResult from 'roll/result/roll-against';
 
-import pluralize from '../../../util/pluralize';
+import { pluralize } from 'util';
 
 type RollAgainstProps = {
     recordKey: number,
