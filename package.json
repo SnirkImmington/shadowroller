@@ -3,6 +3,7 @@
   "description": "Roll dice from random.org",
   "version": "0.3.4",
   "author": "S. B. Immington",
+  "license": "MIT",
   "homepage": "https://snirkimmington.github.io/shadowroller",
   "repository": {
     "type": "git",
