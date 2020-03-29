@@ -1,0 +1,15 @@
+* Shadowroller Server
+
+This repository contains the backend code for running the server.
+
+You can run this yourself!
+- Designed to run in a container or standalone
+- Reads all configuration through =SR_*= environment variables
+  + Defaults to a dev environment when none are specified
+- Scales locally using threads/goroutines but can also scale across multiple instances
+- Just needs Redis to work right now
+- Runs easily in a development mode alongside the frontend, or on production
+- Production uses Let's Encrypt HTTPS certs and
+
+The values used in configuration and deployment for https://snirkimmington.github.io/shadowroller
+are intentionally kept secret.
