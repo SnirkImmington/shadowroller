@@ -1,0 +1,23 @@
+
+version: '3'
+
+# Setup from
+# https://threedots.tech/post/go-docker-dev-environment-with-go-modules-and-live-code-reloading/
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+  sr_server:
+    build: . # use the Dockerfile from project root
+    container_name: sr_server
+    volumes:
+     - .:/var/sr_server/app
+     #- $GOPATH/pkg/mod/cache:/go/pkg/mod/cache # This allows you to share your gopkg cache with the container
+     # well, it's supposed to, didn't work for me.
+    working_dir: /var/sr_server/app
+    ports:
+     - "8921:8921"
+    entrypoint: reflex -r \'(.go|go.mod)\' -s go run main/main.go
