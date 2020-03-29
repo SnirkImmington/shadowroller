@@ -16,8 +16,8 @@
     "url": "https://github.com/snirkimmington/shadowroller/issues"
   },
   "devDependencies": {
-      "redux-logger": "^3.0.6",
-      "gh-pages": "^1.0.0"
+    "redux-logger": "^3.0.6",
+    "gh-pages": "^1.0.0"
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
