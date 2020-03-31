@@ -7,3 +7,10 @@
 [lints]
 
 [options]
+# Allow imports from src
+module.system.node.resolve_dirname=src
+module.system.node.resolve_dirname=node_modules
+
+esproposal.optional_chaining=enable
+esproposal.nullish_coalescing=enable
+experimental.const_params=true
