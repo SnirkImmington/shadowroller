@@ -24,6 +24,7 @@ var (
 	RedisUrl = readString("REDIS_URL", "redis://redis:6379")
 	// Backend options
 	HardcodedGameNames = readString("GAME_NAMES", "testgame1,testgame2")
+	RollBufferSize     = readInt("ROLL_BUFFER_SIZE", 200)
 )
 
 func readString(name string, defaultValue string) string {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 	"srserver"
 	"srserver/config"
@@ -20,15 +19,10 @@ func main() {
 	}
 	log.Println("Starting up...")
 
+	srserver.BeginGeneratingRolls()
 	srserver.RegisterDefaultGames()
 
-	var (
-		httpServer  *http.Server
-		httpsServer *http.Server
-	)
-
 	siteMux := srserver.MakeServerMux()
-	log.Println("- Mux created.")
 
 	// Run http->https and main servers in loops.
 	if config.IsProduction {
@@ -36,15 +30,14 @@ func main() {
 			"* Running in development *\n",
 			"* At: ", config.ServerAddress, " *\n")
 		certManager := srserver.MakeCertManager()
-		httpServer = srserver.MakeHttpRedirectServer(certManager)
-		httpsServer = srserver.MakeProductionServer(certManager, siteMux)
-		log.Println("- Production server created.")
+		redirectServer := srserver.MakeHttpRedirectServer(certManager)
+		mainServer := srserver.MakeProductionServer(certManager, siteMux)
 
 		// Loop the main server in a goroutine.
 		go func() {
 			log.Println("Starting production site server.")
 			for {
-				err := httpsServer.ListenAndServeTLS("", "")
+				err := mainServer.ListenAndServeTLS("", "")
 				if err != nil {
 					log.Println("Production site server failed!", err)
 					log.Println("Waiting before restarting site...")
@@ -57,7 +50,7 @@ func main() {
 		// Loop the redirect server in this thread.
 		log.Println("Starting production redirect server...")
 		for {
-			err := httpServer.ListenAndServe()
+			err := redirectServer.ListenAndServe()
 			if err != nil {
 				log.Println("Production redirect server failed!", err)
 				log.Println("Waiting before restarting redirect...")
@@ -70,11 +63,11 @@ func main() {
 			"* Running in development *\n",
 			"* At: ", config.ServerAddress, " *\n")
 		// Run the local server unlooped in this thread.
-		httpServer = srserver.MakeLocalServer(siteMux)
+		mainServer := srserver.MakeLocalServer(siteMux)
 		log.Println("- Development server created.")
 
 		log.Println("Starting development site server...")
-		err := httpServer.ListenAndServe()
+		err := mainServer.ListenAndServe()
 		if err != nil {
 			log.Println("Development server error:", err)
 			os.Exit(1)
