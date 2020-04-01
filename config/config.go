@@ -8,7 +8,7 @@ import (
 var (
 	IsProduction = readBool("IS_PRODUCTION", false)
 	// Server configs
-	ServerAddress   = readString("SERVER_ADDRESS", ":8921")
+	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
 	FrontendAddress = readString("FRONTEND_ADDRESS", "localhost:3000")
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)
