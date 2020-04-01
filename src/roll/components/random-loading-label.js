@@ -6,8 +6,8 @@ import * as React from 'react';
 
 import { connect } from 'react-redux';
 
-import type { LoadingState } from 'roll/componenents/state';
-import type { AppState, DispatchFn, GetStateFn } from 'roll/state';
+import type { LoadingState } from 'roll/state';
+import type { AppState, DispatchFn, GetStateFn } from 'state';
 import * as rollActions from 'roll/actions';
 import pickRandom from 'util/pick-random';
 

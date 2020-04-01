@@ -27,8 +27,7 @@ function RollHistoryPanel(props: Props) {
     const { outcomes } = props;
     const [showNumbers, setShowNumbers] = React.useState(false);
 
-    function showNumbersToggle(event: SyntheticInputEvent) {
-        console.log('Show numbers toggle', event, event.target.checked);
+    function showNumbersToggle(event: SyntheticInputEvent<HTMLInputElement>) {
         setShowNumbers(event.target.checked);
     }
 

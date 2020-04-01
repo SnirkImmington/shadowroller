@@ -12,7 +12,7 @@ export default function SortedDiceList(props: { rolls: number[] }) {
     var ix = 0;
     const withEmphasis = props.rolls.map(roll => {
         ix += 1;
-        roll = parseInt(roll, 10);
+        const roll = parseInt(roll, 10);
         const die = DICE_CHARS[roll];
         let className;
         switch (roll) {
