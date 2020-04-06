@@ -1,0 +1,48 @@
+* Database
+
+For simplicity's sake, all game data is stored in Redis right now.
+Most of this will be transitioned over to a persistent SQL DB.
+
+** Concepts
+
+*Game ID*: each game will have a unique ID (dev environment creates ~testgame1~ and ~2~)
+which the players use to connect to the game. The GM uses an ID which has an extra component -
+dev is ~testgame1-gm~. For simplicity's sake, we will not check how many GMs are connected.
+At the moment the GM just gets a visual indicator.
+
+*Player ID*: with the game ID, a player types in a name. Players may not enter the game without
+a unique name. We give them an ID internally and send them an encrypted JWT with the game ID and
+their player ID. They will get the ~{playerID -> playerName}~ set when they or other players connect.
+I will not implement player leaving yet, easier to just restart redis. Frontend will give players
+colors based on the ID as a hash or something.
+
+*Events*: the main function of the chat server is through pub/sub. Events are posted to a redis channel
+via the frontend POSTing using cookie auth. Frontend will receive events using Server Sent Events (basically
+codified long-polling) where the request goroutine will hold the connection open and write each event for the
+game as the players receive it. Game history is not saved outside of this channel. Events are JSON objects
+which contain the player ID, the name of the roll, and the results.
+
+** Games ~game.{gameID}~ hash
+/Represents a registered game. Contains the fields:/
+- ~dm_id~ string: the DM portion of the game ID
+- ~event_id~ number: current ID for each roll/chat passed through the game.
+
+** Players ~player.{gameID}~ hash
+- contains fields of format ~{playerID}: {playerName}~
+-
+
+** Game events ~game_event.{gameID}~ channel
+/A JSON-encoded event is passed through this channel./
+- *All event types*
+  + ~type~ string: one of ~roll.basic~
+  + ~id~ number: refers to the incrementing ~games.{gameID}.event_id~ for this event
+  + ~player~ string: player ID, or empty for server.
+
+* Code
+
+- ~hmget game.{gameID} dm_id~ determine if game ~gameID~ exists
+- ~hmset game.{gameID} dm_id {dmID}~ create a game with ~gameID~ and ~dmID~
+- ~put player.{gameId} {playerId} {playerName}~ add a player to a game
+  + should check if player with the name exists first
+- ~publish game_event.{gameId} "{'player_id':'snirk','roll':[1,2,3,4,5,6]}"~
+- ~subscribe game_event.{gameId}~
