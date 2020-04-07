@@ -8,4 +8,5 @@
 FROM golang:latest
 WORKDIR .
 RUN go get github.com/cespare/reflex
-ENTRYPOINT ["reflex", "-g", "./*", "-s", "go run main/main.go"]
+RUN go build
+ENTRYPOINT ["reflex", "-s", "-r" ".*.go", "go run main/main.go"]
