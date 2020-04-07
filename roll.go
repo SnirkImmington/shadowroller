@@ -22,24 +22,28 @@ import (
 
 var rollsChan = make(chan byte, config.RollBufferSize)
 
-func generateRolls(channel chan<- byte) {
-	log.Printf("Using PRNG roll seed source: %v", crypto.Reader)
-	for {
-		seedBytes := make([]byte, 8)
-		_, err := crypto.Read(seedBytes)
-		if err != nil {
-			log.Print("Unable to generate PRNG seed!", err)
-		}
-		seed, _ := binary.Varint(seedBytes)
-
-		rng := rand.New(rand.NewSource(seed))
-		for i := 0; i < config.RollBufferSize; i++ {
-			byteRoll := byte(rng.Intn(5) + 1)
-			channel <- byteRoll
-		}
+func fillRolls(rolls []byte) {
+	for i := 0; i < len(rolls); i++ {
+		rolls[i] = <-rollsChan
 	}
 }
 
 func BeginGeneratingRolls() {
-	go generateRolls(rollsChan)
+	go func() {
+		log.Printf("Using PRNG roll seed source: %v", crypto.Reader)
+		for {
+			seedBytes := make([]byte, 8)
+			_, err := crypto.Read(seedBytes)
+			if err != nil {
+				log.Print("Unable to generate PRNG seed!", err)
+			}
+			seed, _ := binary.Varint(seedBytes)
+
+			rng := rand.New(rand.NewSource(seed))
+			for i := 0; i < config.RollBufferSize; i++ {
+				byteRoll := byte(rng.Intn(6) + 1)
+				rollsChan <- byteRoll
+			}
+		}
+	}()
 }
