@@ -5,7 +5,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"golang.org/x/crypto/acme/autocert"
-	"log"
+	//"log"
+	"github.com/janberktold/sse"
+	"github.com/rs/cors"
 	"net/http"
 	"srserver/config"
 	"time"
@@ -21,19 +23,24 @@ import (
    https://blog.cloudflare.com/exposing-go-on-the-internet/
 
 */
+
+var sseUpgrader = sse.Upgrader{
+	RetryTime: time.Duration(config.SSERetryTimeSecs) * time.Second,
+}
+
 /*
    Creates an *http.Server using the given routing options.
 
    This uses config options to make the main local or production server.
    It's also used to make an http server that redirects to https.
 */
-func makeServerFromMux(mux *http.ServeMux) *http.Server {
+func makeServerFromHandler(handler http.Handler) *http.Server {
 	return &http.Server{
 		ReadTimeout:    time.Duration(config.ReadTimeoutSecs) * time.Second,
 		WriteTimeout:   time.Duration(config.WriteTimeoutSecs) * time.Second,
 		IdleTimeout:    time.Duration(config.IdleTimeoutSecs) * time.Second,
 		MaxHeaderBytes: config.MaxHeaderBytes,
-		Handler:        mux,
+		Handler:        handler,
 	}
 }
 
@@ -43,14 +50,14 @@ func MakeHttpRedirectServer(certManager *autocert.Manager) *http.Server {
 		newUrl := "https://" + request.Host + request.URL.String()
 		http.Redirect(response, request, newUrl, http.StatusMovedPermanently)
 	})
-	server := makeServerFromMux(mux)
+	server := makeServerFromHandler(mux)
 	server.Handler = certManager.HTTPHandler(server.Handler)
 	server.Addr = ":80"
 	return server
 }
 
-func MakeLocalServer(mux *http.ServeMux) *http.Server {
-	server := makeServerFromMux(mux)
+func MakeLocalServer(mux http.Handler) *http.Server {
+	server := makeServerFromHandler(mux)
 	server.Addr = config.ServerAddress // TODO is this accurate?
 	return server
 }
@@ -68,7 +75,7 @@ func MakeCertManager() *autocert.Manager {
 	}
 }
 
-func MakeProductionServer(certManager *autocert.Manager, mux *http.ServeMux) *http.Server {
+func MakeProductionServer(certManager *autocert.Manager, mux http.Handler) *http.Server {
 	tlsConfig := &tls.Config{
 		PreferServerCipherSuites: true,
 		CurvePreferences: []tls.CurveID{
@@ -80,35 +87,20 @@ func MakeProductionServer(certManager *autocert.Manager, mux *http.ServeMux) *ht
 			// TODO check if these are supported by the CPU architecture.
 			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
-			tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
+			tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+			tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
 			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 		},
 		GetCertificate: certManager.GetCertificate,
 	}
-	server := makeServerFromMux(mux)
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{config.FrontendAddress},
+		AllowCredentials: true, // Needed for JWT
+	})
+	mux = c.Handler(mux)
+	server := makeServerFromHandler(mux)
 	server.TLSConfig = tlsConfig
 	server.Addr = ":443"
 	return server
-}
-
-func httpError(response Response, request *Request, err error) {
-	logMessage := fmt.Sprintf("Internal error handling %s %s: %w", request.Method, request.URL, err)
-	log.Output(2, logMessage)
-	if config.IsProduction {
-		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
-	} else {
-		http.Error(response, logMessage, http.StatusInternalServerError)
-	}
-}
-
-func httpErrorMessage(response Response, request *Request, message interface{}) {
-	logMessage := fmt.Sprintf("Internal error handling %s %s: %v", request.Method, request.URL, message)
-	log.Output(2, logMessage)
-	if config.IsProduction {
-		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
-	} else {
-		http.Error(response, logMessage, http.StatusInternalServerError)
-	}
 }

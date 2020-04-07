@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"os"
 	"srserver"
 	"srserver/config"
@@ -19,6 +20,7 @@ func main() {
 	}
 	log.Println("Starting up...")
 
+	rand.Seed(time.Now().UnixNano())
 	srserver.BeginGeneratingRolls()
 	srserver.RegisterDefaultGames()
 
@@ -27,7 +29,7 @@ func main() {
 	// Run http->https and main servers in loops.
 	if config.IsProduction {
 		log.Println("\n\n",
-			"* Running in development *\n",
+			"* Running in production *\n",
 			"* At: ", config.ServerAddress, " *\n")
 		certManager := srserver.MakeCertManager()
 		redirectServer := srserver.MakeHttpRedirectServer(certManager)
@@ -35,7 +37,7 @@ func main() {
 
 		// Loop the main server in a goroutine.
 		go func() {
-			log.Println("Starting production site server.")
+			log.Println("Running production site server...")
 			for {
 				err := mainServer.ListenAndServeTLS("", "")
 				if err != nil {
@@ -48,7 +50,7 @@ func main() {
 		}()
 
 		// Loop the redirect server in this thread.
-		log.Println("Starting production redirect server...")
+		log.Println("Running production redirect server...")
 		for {
 			err := redirectServer.ListenAndServe()
 			if err != nil {
@@ -64,9 +66,8 @@ func main() {
 			"* At: ", config.ServerAddress, " *\n")
 		// Run the local server unlooped in this thread.
 		mainServer := srserver.MakeLocalServer(siteMux)
-		log.Println("- Development server created.")
 
-		log.Println("Starting development site server...")
+		log.Println("Running development site server...")
 		err := mainServer.ListenAndServe()
 		if err != nil {
 			log.Println("Development server error:", err)
