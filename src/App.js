@@ -2,12 +2,13 @@
 
 import './App.css';
 
-import React from 'react';
+import * as React from 'react';
 
 import RollInputPanel from './roll/containers/roll-input-panel';
 import RollHistoryPanel from './roll/containers/roll-history-panel';
 
 import styled from 'styled-components/macro';
+
 
 //* Main page component. */
 export function App(props: {}) {
@@ -17,8 +18,8 @@ export function App(props: {}) {
                 <h1 className="App-title">Shadowroller</h1>
             </header>
             <div className="App-wide-container">
-                <RollInputPanel />
-                <RollHistoryPanel />
+                    <RollInputPanel />
+                    <RollHistoryPanel />
             </div>
         </div>
     );
@@ -38,7 +39,7 @@ const AppHeader = styled.header`
 const AppTitle = styled.h1`
     font-size: 2em;
     font-style: oblique;
-    font_weight: 900;
+    font-weight: 900;
     text-align: center;
 `;
 
