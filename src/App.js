@@ -4,8 +4,11 @@ import './App.css';
 
 import * as React from 'react';
 
-import RollInputPanel from './roll/containers/roll-input-panel';
-import RollHistoryPanel from './roll/containers/roll-history-panel';
+import SRHeader from 'header';
+import JoinGamePrompt from 'join-game-prompt';
+import RollDicePrompt from 'roll-dice';
+import RollInputPanel from 'roll/containers/roll-input-panel';
+import RollHistoryPanel from 'roll/containers/roll-history-panel';
 
 import styled from 'styled-components/macro';
 
@@ -26,29 +29,16 @@ export function App(props: {}) {
 }
 
 const Page = styled.div`
-    border-radius: 0;
-`;
-
-const AppHeader = styled.header`
-    background-color: #222;
-    height: 4em;
-    padding: 0.9em;
-    color: white;
-`;
-
-const AppTitle = styled.h1`
-    font-size: 2em;
-    font-style: oblique;
-    font-weight: 900;
-    text-align: center;
+    border-radius: 0 !important;
 `;
 
 export default function App2(props: {}) {
+    // Page should be a flexbox.
     return (
-        <Page>
-            <AppHeader className="mb-2">
-                <AppTitle>Shadowroller</AppTitle>
-            </AppHeader>
+        <Page className="rounded-0">
+            <SRHeader expanded={true} />
+            <JoinGamePrompt />
+            <RollDicePrompt />
             <div className="App-wide-container">
                 <RollInputPanel />
                 <RollHistoryPanel />
