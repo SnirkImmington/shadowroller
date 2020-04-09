@@ -3,6 +3,7 @@
 import './App.css';
 
 import * as React from 'react';
+import styled from 'styled-components/macro';
 
 import SRHeader from 'header';
 import JoinGamePrompt from 'join-game-prompt';
@@ -10,39 +11,34 @@ import RollDicePrompt from 'roll-dice';
 import RollInputPanel from 'roll/containers/roll-input-panel';
 import RollHistoryPanel from 'roll/containers/roll-history-panel';
 
-import styled from 'styled-components/macro';
+import { GameCtx, GameDispatchCtx, gameReducer } from 'game/state';
+import { EventListCtx, EventDispatchCtx, eventListReducer } from 'event/state';
 
+export default function App(props: {}) {
+    const [gameState, gameDispatch] = React.useReducer(gameReducer, undefined);
+    const [eventList, eventDispatch] = React.useReducer(eventListReducer, { events: [] });
+    const [showGameJoin, setShowGameJoin] = React.useState(false);
 
-//* Main page component. */
-export function App(props: {}) {
-    return (
-        <div className="App rounded-0">
-            <header className="App-header mb-2">
-                <h1 className="App-title">Shadowroller</h1>
-            </header>
-            <div className="App-wide-container">
-                    <RollInputPanel />
-                    <RollHistoryPanel />
-            </div>
-        </div>
-    );
-}
+    function joinGameClicked() {
+        setShowGameJoin((state) => !state);
+    }
 
-const Page = styled.div`
-    border-radius: 0 !important;
-`;
-
-export default function App2(props: {}) {
     // Page should be a flexbox.
     return (
-        <Page className="rounded-0">
-            <SRHeader expanded={true} />
-            <JoinGamePrompt />
-            <RollDicePrompt />
-            <div className="App-wide-container">
-                <RollInputPanel />
-                <RollHistoryPanel />
-            </div>
-        </Page>
+        <div className="rounded-0">
+            <GameCtx.Provider value={gameState}>
+            <GameDispatchCtx.Provider value={gameDispatch}>
+                <SRHeader expanded={showGameJoin} onClick={joinGameClicked} />
+                {showGameJoin ? <JoinGamePrompt setShown={setShowGameJoin} /> : ''}
+                <EventDispatchCtx.Provider value={eventDispatch}>
+                    <RollDicePrompt />
+                    <div className="App-wide-container">
+                        { /*<RollInputPanel />*/ }
+                        <RollHistoryPanel eventList={eventList} />
+                    </div>
+                </EventDispatchCtx.Provider>
+            </GameDispatchCtx.Provider>
+            </GameCtx.Provider>
+        </div>
     );
 }
