@@ -142,7 +142,7 @@ export default function JoinGamePrompt({ setShown }: Props) {
 
     return (
         <Prompt>
-            <BoxTitle>Join</BoxTitle>
+            <BoxTitle>Join Game</BoxTitle>
             <Explanation className="form-text">
                 Join a game if you've been given a Game ID.
             </Explanation>
