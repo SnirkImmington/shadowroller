@@ -3,6 +3,8 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 
+import { GameCtx, GameDispatchCtx } from 'game/state';
+
 import { Button } from 'style';
 
 const SRHeader = styled.header`
@@ -52,20 +54,21 @@ const JoinButton = styled(Button)`
     }
 `;
 
-const ExpandAngle = styled.i`
-    padding-left: 0.5em;
-`;
-
 export type Props =  {
-    +expanded: bool
+    +expanded: bool,
+    +onClick: () => any,
 }
 
-export default function Header({ expanded }: Props) {
+export default function Header({ expanded, onClick }: Props) {
+    function handleJoinClick(event: SyntheticInputEvent<HTMLButtonElement>) {
+        event.preventDefault();
+        onClick();
+    }
     return (
         <SRHeader>
             <SRTitle>Shadowroller</SRTitle>
-            <JoinButton>
-                { expanded ? "HIDE" : "JOIN" }
+            <JoinButton onClick={handleJoinClick}>
+                JOIN
             </JoinButton>
         </SRHeader>
     );
