@@ -9,7 +9,7 @@ import SortedDiceList from './sorted-dice-list';
 
 import RollAgainstResult from 'roll/result/roll-against';
 
-import { pluralize } from 'util';
+import { pluralize } from 'srutil';
 
 type RollAgainstProps = {
     recordKey: number,

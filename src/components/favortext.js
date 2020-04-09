@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import pickRandom from 'util/pick-random';
+import { pickRandom } from 'srutil';
 
 type Props = {
     from: React.Node[]
