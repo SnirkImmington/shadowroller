@@ -32,7 +32,7 @@ const RollInputRow = styled(FormRow)`
 `
 
 const TitleRow = styled(FormRow)`
-    justify-content: flex-between;
+    justify-content: space-between;
 `;
 
 const FormLabel = styled.label`

@@ -34,6 +34,10 @@ const JoinButton = styled(Button)`
     background: #222;
     border: 3px solid white;
 
+    color: ${props => props.expanded ? '#222' : 'white'};
+    background: ${props =>props.expanded ? 'white' : '#222'};
+    border: 3px solid ${props=>props.expanded ? '#222' : 'white'};
+
     margin-left: auto;
 
     margin-right: 1em;
@@ -41,6 +45,7 @@ const JoinButton = styled(Button)`
         margin-right: 6em;
     }
 
+    /*
     &:hover {
         background: white;
         color: #222;
@@ -51,7 +56,7 @@ const JoinButton = styled(Button)`
         color: white;
         background: #222;
         border: 3px solid white;
-    }
+    }*/
 `;
 
 export type Props =  {
@@ -67,8 +72,8 @@ export default function Header({ expanded, onClick }: Props) {
     return (
         <SRHeader>
             <SRTitle>Shadowroller</SRTitle>
-            <JoinButton onClick={handleJoinClick}>
-                JOIN
+            <JoinButton expanded={expanded}>
+                { expanded ? "Hide" : "Join" }
             </JoinButton>
         </SRHeader>
     );
