@@ -24,7 +24,7 @@ func loggedHandler(wrapped HandlerFunc) http.HandlerFunc {
 			if err := recover(); err != nil {
 				message := fmt.Sprintf("Panic serving", request.Method, request.URL, "to", request.Host)
 				log.Println(message)
-				log.Println(debug.Stack())
+				log.Println(string(debug.Stack()))
 				http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()

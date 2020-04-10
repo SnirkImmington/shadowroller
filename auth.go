@@ -3,6 +3,7 @@ package srserver
 // Authentication
 
 import (
+	cryptoRand "crypto/rand"
 	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
 	jwtRequest "github.com/dgrijalva/jwt-go/request"
@@ -22,6 +23,12 @@ func GenUID() string {
 	rand.Read(bytes)
 	return base64.RawURLEncoding.EncodeToString(bytes)
 
+}
+
+func GenKey(size int64) string {
+	bytes := make([]byte, size)
+	cryptoRand.Read(bytes)
+	return base64.RawURLEncoding.EncodeToString(bytes)
 }
 
 func getJWTSecretKey(token *jwt.Token) (interface{}, error) {
