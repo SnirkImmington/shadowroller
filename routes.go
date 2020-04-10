@@ -16,10 +16,13 @@ func RegisterDefaultGames() {
 
 	gameNames := strings.Split(config.HardcodedGameNames, ",")
 
-	_, err := conn.Do("sadd", "game_ids", gameNames)
-	if err != nil {
-		log.Print("Error:", err)
-		return
+	var err error
+	for _, game := range gameNames {
+		_, err = conn.Do("hmset", "game:"+game, "event_id", 0)
+		if err != nil {
+			log.Print("Error:", err)
+			return
+		}
 	}
 
 	log.Print("Registered ", len(gameNames), " hardcoded game IDs.")

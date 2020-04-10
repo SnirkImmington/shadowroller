@@ -31,7 +31,7 @@ func handleJoinGame(response Response, request *Request) {
 	defer conn.Close()
 
 	// Unauthorized
-	gameExists, err := redis.Bool(conn.Do("exists game:" + join.GameID))
+	gameExists, err := redis.Bool(conn.Do("exists", "game:"+join.GameID))
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -43,15 +43,32 @@ func handleJoinGame(response Response, request *Request) {
 
 	playerID := GenUID()
 
-	conn.Send("multi")
-	conn.Send("hgetall", "player:"+join.GameID)
-	conn.Send("hmset", "player:"+join.GameID, playerID, join.PlayerName)
-	players, err := redis.StringMap(conn.Do("exec")) // TODO probably multi error
+	// Get all the players then set
+	err = conn.Send("hmset", "player:"+join.GameID, playerID, join.PlayerName)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
 	}
-	log.Printf("Players: %v", players)
+	err = conn.Send("hgetall", "player:"+join.GameID)
+	if err != nil {
+		httpInternalError(response, request, err)
+		return
+	}
+	err = conn.Flush()
+	if err != nil {
+		httpInternalError(response, request, err)
+		return
+	}
+	_, err = conn.Receive()
+	if err != nil {
+		httpInternalError(response, request, err)
+		return
+	}
+	players, err := redis.StringMap(conn.Receive())
+	if err != nil {
+		httpInternalError(response, request, err)
+		return
+	}
 	players[playerID] = join.PlayerName
 
 	_, err = postEvent(join.GameID, makePlayerJoinEvent(playerID, join.PlayerName), conn)
@@ -76,9 +93,7 @@ func handleJoinGame(response Response, request *Request) {
 	err = writeBodyJSON(response, joined)
 	if err != nil {
 		httpInternalError(response, request, err)
-		return
 	}
-	httpSuccess(response)
 }
 
 type RollRequest struct {
