@@ -9,7 +9,7 @@ var (
 	IsProduction = readBool("IS_PRODUCTION", false)
 	// Server configs
 	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
-	FrontendAddress = readString("FRONTEND_ADDRESS", "localhost:3000")
+	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
 	JWTSecretKey    = []byte(readString("SECRET_JWT", "1337s3cr3t"))
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)
