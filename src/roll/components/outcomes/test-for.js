@@ -8,7 +8,7 @@ import RollRecord from './roll-record';
 import SortedDiceList from './sorted-dice-list'
 
 import TestForResult from 'roll/result/test-for';
-import { pluralize } from 'util';
+import { pluralize } from 'srutil';
 
 type TestForRecordProps = {
     recordKey: number,

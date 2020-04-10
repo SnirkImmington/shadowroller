@@ -4,6 +4,8 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 
 import { AppWideBox, Button, DiceSpinner, FlexCenter } from 'style';
+
+import { GameDispatchCtx } from 'game/state';
 import { useFlavor } from 'srutil';
 
 const JOIN_FLAVOR = [
@@ -71,12 +73,11 @@ const JoinButton = styled(Button)`
 
 `;
 
-type Props = {
 
-}
+type JoinStatus = "incomplete"|"ready"|"loading"|"error";
 
 type StatusProps = {
-    +status: "ready"|"loading"|"error"
+    +status: JoinStatus
 }
 function StatusIndicator({ status }: StatusProps) {
     const joinFlavor = useFlavor(JOIN_FLAVOR);
@@ -85,6 +86,11 @@ function StatusIndicator({ status }: StatusProps) {
     if (status === "ready") {
         return (
             <i>{joinFlavor}</i>
+        );
+    }
+    else if (status === "incomplete") {
+        return (
+            "set a name and game"
         );
     }
     else if (status === "loading") {
@@ -102,17 +108,41 @@ function StatusIndicator({ status }: StatusProps) {
         return '';
     }
 }
+type Props = { +setShown: (bool) => any };
+export default function JoinGamePrompt({ setShown }: Props) {
+    const gameDispatch = React.useContext(GameDispatchCtx);
+    const [gameID, setGameID] = React.useState('');
+    const [playerName, setPlayerName] = React.useState('');
+    const [status, setStatus] = React.useState<JoinStatus>("incomplete");
 
-export default function JoinGamePrompt({ dispatch }: Props) {
-    function onSubmit(event: SyntheticInputEvent<HTMLButtonElement>) {
-        event.preventDefault();
+    function updateInputStatus() {
+        if (gameID !== "" && playerName !== "") {
+            setStatus("ready");
+        }
+        else {
+            setStatus("incomplete");
+        }
     }
 
-    const status = "loading";
+    function onGameIDChange(event: SyntheticInputEvent<HTMLInputElement>) {
+        setGameID(event.target.value ?? '');
+        updateInputStatus();
+    }
+
+    function onPlayerNameChange(event: SyntheticInputEvent<HTMLInputElement>) {
+        setPlayerName(event.target.value ?? '');
+        updateInputStatus();
+    }
+
+    function onSubmit(event: SyntheticInputEvent<HTMLButtonElement>) {
+        event.preventDefault();
+        setStatus("loading");
+        // setStatus("ready"); setShown(false);
+    }
 
     return (
         <Prompt>
-            <BoxTitle>Join</BoxTitle>
+            <BoxTitle>Join Game</BoxTitle>
             <Explanation className="form-text">
                 Join a game if you've been given a Game ID.
             </Explanation>
@@ -122,13 +152,19 @@ export default function JoinGamePrompt({ dispatch }: Props) {
                         <FormLabel htmlFor="join-game-id">
                             Game ID
                         </FormLabel>
-                        <GameIDInput type="text" id="join-game-id" />
+                        <GameIDInput type="text"
+                                     id="join-game-id"
+                                     onChange={onGameIDChange}
+                                     disabled={status === "loading"} />
                     </FormRow>
                     <FormRow>
                         <FormLabel htmlFor="join-game-player-name">
                             Player Name
                         </FormLabel>
-                        <Input type="text" id="join-game-player-name" />
+                        <Input type="text"
+                               id="join-game-player-name"
+                               onChange={onPlayerNameChange}
+                               disabled={status === "loading"} />
                     </FormRow>
                     <FormRow>
                         <FormLabel htmlFor="join-game-submit">
@@ -136,7 +172,7 @@ export default function JoinGamePrompt({ dispatch }: Props) {
                         </FormLabel>
                         <JoinButton id="join-game-submit"
                                     onClick={onSubmit}
-                                    disabled={status === "loading"}
+                                    disabled={status !== "ready"}
                                     >
                             Join
                         </JoinButton>

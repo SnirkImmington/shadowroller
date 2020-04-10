@@ -8,7 +8,7 @@ import RollRecord from './roll-record';
 import RollingDice from '../dice-list';
 
 import CountHitsResult from 'roll/result/count-hits';
-import { pluralize } from 'util';
+import { pluralize } from 'srutil';
 
 type CountHitsRecordProps = {
     recordKey: number;

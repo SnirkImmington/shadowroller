@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import pickRandom from 'util/pick-random';
+import { pickRandom } from 'srutil';
 
 type Props = {
     from: React.Node[]
@@ -23,7 +23,6 @@ export default class FavorText extends React.Component<Props> {
     }
 
     render() {
-        console.log('pickRandom:', pickRandom);
         const text = pickRandom(this.props.from);
 
         return <span className="favortext">{text}</span>;
