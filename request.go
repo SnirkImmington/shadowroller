@@ -28,13 +28,13 @@ func writeBodyJSON(response Response, value interface{}) error {
 	return json.NewEncoder(response).Encode(value)
 }
 
-func httpUnauthorized(response Response) {
-	log.Print("->", http.StatusUnauthorized, "Unauthorized")
+func httpUnauthorized(response Response, err error) {
+	log.Printf("-> 401 Unauthorized: %w", err)
 	http.Error(response, "Unauthorized", http.StatusUnauthorized)
 }
 
 func httpInternalError(response Response, request *Request, err error) {
-	logMessage := fmt.Sprintf("Internal error handling %s %s: %w", request.Method, request.URL, err)
+	logMessage := fmt.Sprintf("Internal error handling %s %s: %v", request.Method, request.URL, err)
 	log.Output(2, logMessage)
 	if config.IsProduction {
 		log.Print("-> 500 Internal Error")
