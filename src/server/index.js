@@ -11,9 +11,8 @@ const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
 
 export type JoinResponse = {
-    token: string,
     playerID: string,
-    players: Player[]
+    players: { [string]: string }
 };
 
 export function requestJoin(gameID: string, playerName: string): Promise<JoinResponse> {
@@ -23,10 +22,15 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
 
     return new Promise((resolve, reject) => {
         fetch(url, {
+            credentials: 'include',
             method: 'post',
+            //mode: 'cors',
             body: body,
         }).then(response => {
+            console.log('Headers:');
+            response.headers.forEach(h => console.log(h));
             response.json().then(json => {
+                postRoll(12);
                 if (json.playerID && json.players) {
                     resolve(json);
                 }
@@ -42,6 +46,17 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
     });
 }
 
+export function getPlayers(): Promise<{ [string]: string }> {
+    const url = BACKEND_URL + "players";
+    console.log("Requesting players");
+
+    return fetch(url, {
+        method: 'get',
+        //mode: 'cors',
+        credentials: 'include'
+    }).then(response => response.json());
+}
+
 export function postRoll(count: number): Promise<bool> {
     const url = BACKEND_URL + 'roll';
     const body = JSON.stringify({ count });
@@ -49,19 +64,19 @@ export function postRoll(count: number): Promise<bool> {
 
     return fetch(url, {
             method: 'post',
-            mode: 'cors',
+            //mode: 'cors',
             credentials: 'include',
             body
         }).then(response => response.ok);
 }
 
 export function useEvents() {
-    const gameState = React.useContext(GameCtx);
+    const connected = React.useContext(GameCtx)?.connected ?? false;
     const gameDispatch = React.useContext(GameDispatchCtx);
     const dispatch = React.useContext(EventDispatchCtx);
 
     React.useEffect(() => {
-        if (!gameState) {
+        if (!connected) {
             return;
         }
         const events = new EventSource(BACKEND_URL + "events", {
@@ -80,10 +95,11 @@ export function useEvents() {
             const ts = Date.now();
 
             if (event.ty === "roll") {
-                const playerName: string = gameState.players[event.pID] ?? '<player>';
+                console.log('Roll:', event);
                 dispatch({
                     ty: "gameRoll", id: event.id, ts,
-                    playerID: event.pID, playerName, dice: event.roll
+                    playerID: event.pID,
+                    dice: event.roll
                 });
             }
             else if (event.ty === "playerJoin") {
@@ -93,14 +109,13 @@ export function useEvents() {
                 });
             }
             else {
-                // unknown event!!!
                 console.log('Received unknown event', event);
             }
         };
         events.onopen = function() {
             console.log('Began to listen');
             dispatch({
-                id:0, ty: "gameConnect", connected: true
+                ty: "gameConnect", connected: true
             });
             gameDispatch({
                 ty: "connect", connected: true
@@ -108,7 +123,7 @@ export function useEvents() {
         };
         events.onerror = function() {
             dispatch({
-                id: 0, ty: "gameConnect", connected: false
+                ty: "gameConnect", connected: false
             });
             gameDispatch({
                 ty: "connect", connected: false
@@ -117,11 +132,11 @@ export function useEvents() {
         return () => {
             events.close();
             dispatch({
-                id: 0, ty: "gameConnect", connected: false
+                ty: "gameConnect", connected: false
             });
             gameDispatch({
-                id: 0, ty: "connect", connected: false
+                ty: "connect", connected: false
             });
         }
-    }, [dispatch, gameDispatch, gameState?.gameID]);
+    }, [dispatch, gameDispatch, connected]);
 }
