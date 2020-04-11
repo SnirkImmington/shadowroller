@@ -1,6 +1,7 @@
 // @flow
 import type { Expression, BindingPower, MinPower } from '.';
-import { powerOf, Token, Tokenizer } from '.';
+import { powerOf, Tokenizer } from 'math';
+import type { Token } from 'math/tokenize';
 
 // eslint-disable-next-line no-use-before-define
 type PrefixParser = (parser: Parser, current: Token) => ?Expression;

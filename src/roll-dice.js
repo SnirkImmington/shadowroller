@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 
 import type { Game } from 'game/state';
 import type { EventDispatch } from 'event/state';
@@ -10,7 +11,7 @@ import NumericInput from 'components/numeric-input';
 import { postRoll } from 'server';
 import { roll } from 'srutil';
 
-const Prompt = styled(AppWideBox)`
+const Prompt: StyledComponent<> = styled(AppWideBox)`
     border-top: 4px solid #0b0ba3;
 
     display: flex;
