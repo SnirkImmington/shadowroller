@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-
 import { AppWideBox, Button, DiceSpinner, FlexCenter } from 'style';
 
-import { GameDispatchCtx } from 'game/state';
+import { requestJoin } from 'server';
+import { Game, GameDispatchCtx } from 'game/state';
 import { useFlavor } from 'srutil';
 
 const JOIN_FLAVOR = [
@@ -108,36 +108,57 @@ function StatusIndicator({ status }: StatusProps) {
         return '';
     }
 }
-type Props = { +setShown: (bool) => any };
-export default function JoinGamePrompt({ setShown }: Props) {
+
+type Props = {
+    +game: Game;
+    +setShown: (bool) => void
+};
+export default function JoinGamePrompt({ game, setShown }: Props) {
     const gameDispatch = React.useContext(GameDispatchCtx);
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
     const [status, setStatus] = React.useState<JoinStatus>("incomplete");
 
-    function updateInputStatus() {
-        if (gameID !== "" && playerName !== "") {
-            setStatus("ready");
-        }
-        else {
-            setStatus("incomplete");
-        }
-    }
+    React.useEffect(() =>
+        setStatus(status =>
+            status === "incomplete"
+            && gameID !== ""
+            && playerName !== ""
+            ? "ready" : status
+        ),
+        [status, gameID, playerName]
+    );
 
-    function onGameIDChange(event: SyntheticInputEvent<HTMLInputElement>) {
-        setGameID(event.target.value ?? '');
-        updateInputStatus();
-    }
+    const onGameIDChange = (event: SyntheticInputEvent<HTMLInputElement>) => {
+        const gameID = event.target.value ?? '';
+        setGameID(gameID);
+        setStatus(status => gameID === '' ? "incomplete" : status);
+    };
 
-    function onPlayerNameChange(event: SyntheticInputEvent<HTMLInputElement>) {
-        setPlayerName(event.target.value ?? '');
-        updateInputStatus();
-    }
+    const onPlayerNameChange = (event: SyntheticInputEvent<HTMLInputElement>) => {
+        const playerName = event.target.value ?? '';
+        setPlayerName(playerName);
+        setStatus(status => playerName === '' ? "incomplete" : status);
+    };
 
     function onSubmit(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
         setStatus("loading");
-        // setStatus("ready"); setShown(false);
+        requestJoin(gameID, playerName)
+            .then(resp => {
+                setStatus("ready");
+                setShown(false);
+                gameDispatch({
+                    ty: "join", gameID,
+                    gameToken: resp.token,
+                    player: { id: resp.playerID, name: playerName },
+                    players: resp.players
+                });
+            })
+            .catch(err => {
+                console.log("Error connecting:", err);
+                setStatus("error");
+            });
     }
 
     return (
@@ -155,6 +176,7 @@ export default function JoinGamePrompt({ setShown }: Props) {
                         <GameIDInput type="text"
                                      id="join-game-id"
                                      onChange={onGameIDChange}
+                                     value={gameID}
                                      disabled={status === "loading"} />
                     </FormRow>
                     <FormRow>
@@ -164,6 +186,7 @@ export default function JoinGamePrompt({ setShown }: Props) {
                         <Input type="text"
                                id="join-game-player-name"
                                onChange={onPlayerNameChange}
+                               value={playerName}
                                disabled={status === "loading"} />
                     </FormRow>
                     <FormRow>

@@ -1,7 +1,8 @@
 // @flow
 
-//import * as React from 'react';
-import styled, { keyframes } from 'styled-components/macro'
+import * as React from 'react';
+import styled, { keyframes } from 'styled-components/macro';
+import { hashedColor } from 'srutil';
 
 export const AppWideBox = styled.div`
     border-bottom: 2px solid rgba(0, 0, 0, 0.225);
@@ -46,3 +47,14 @@ export const FlexCenter = styled.div`
     display: flex;
     align-items: center;
 `;
+
+export const HashColored = styled.b`
+    color: ${props => hashedColor(props.id)}
+`;
+
+type NameProps = { +id: string, +name: string };
+export function PlayerName({ id, name }: NameProps) {
+    return (
+        <HashColored id={id}>{name}</HashColored>
+    );
+}

@@ -2,93 +2,126 @@
 
 import * as React from 'react';
 
-import { GameCtx } from 'game/state';
+import { GameCtx, GameDispatchCtx } from 'game/state';
+import type { Player } from 'game/state';
+import { EventDispatchCtx } from 'event/state';
+import type { EventDispatch } from 'event/state';
 
 const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
-    'localhost:3001/' : 'https://shadowroller.immington.industries/';
+    'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
 
-type ServerRequest = {
-    +data: ?Object,
-    +error: ?Object,
-    +isLoading: bool,
-    +hasTriggered: bool,
-    +promise: Object,
+export type JoinResponse = {
+    token: string,
+    playerID: string,
+    players: Player[]
+};
+
+export function requestJoin(gameID: string, playerName: string): Promise<JoinResponse> {
+    const url = BACKEND_URL + 'join-game';
+    const body = JSON.stringify({ gameID, playerName });
+    console.log('Connecting to', url, body);
+
+    return new Promise((resolve, reject) => {
+        fetch(url, {
+            method: 'post',
+            body: body,
+        }).then(response => {
+            response.json().then(json => {
+                if (json.token && json.playerID && json.players) {
+                    resolve(json);
+                }
+                else {
+                    reject(json);
+                }
+            }).catch(parseError => {
+                reject(parseError);
+            });
+        }).catch(webError => {
+            reject(webError);
+        });
+    });
 }
 
-export function backendGet(resource: string, body: Object): Response {
-    const url = BACKEND_URL + resource;
+export function postRoll(count: number): Promise<bool> {
+    const url = BACKEND_URL + 'roll';
+    const body = JSON.stringify({ count });
+    console.log('Requesting', body);
+
+    return fetch(url, {
+            method: 'post',
+            mode: 'cors',
+            credentials: 'include',
+            body
+        }).then(response => response.ok);
 }
 
-export function useServer(method: string, resource: string, params: Object[]): ServerRequest {
-    const url = BACKEND_URL + resource;
-    const [data, setData] = React.useState(null);
-    const [error, setError] = React.useState(null);
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [hasTriggered, setHasTriggered] = React.useState(false);
-    const [promise, setPromise] = React.useState(null);
+export function useEvents() {
     const gameState = React.useContext(GameCtx);
+    const gameDispatch = React.useContext(GameDispatchCtx);
+    const dispatch = React.useContext(EventDispatchCtx);
 
-    console.log('useServer: pre-effect:');
     React.useEffect(() => {
-        if (hasTriggered) {
-            console.log('useServer: has triggered.');
-            return;
-        }
-
         if (!gameState) {
-            console.log('useServer: no game state.');
-            setData(null);
-            setError("Not connected to a game");
-            setIsLoading(false);
-            setHasTriggered(true);
-            setPromise(null);
             return;
         }
-        const request = new Request(url);
-        const headers = new Headers();
-        headers.set("Authentication", gameState.gameToken);
+        const events = new EventSource(BACKEND_URL + "events", {
+            withCredentials: true
+        });
+        events.onmessage = function(e) {
+            console.log('Event received', e.data);
+            let event;
+            try {
+                event = JSON.parse(e.data);
+            }
+            catch {
+                console.log("Invalid event:", e);
+                return;
+            }
+            const ts = Date.now();
 
-        setIsLoading(true);
-        setHasTriggered(true);
-        setPromise(
-            fetch(request, {
-                method: method,
-                headers: headers,
-                // credentials: ???
-                // body
-            })
-            .then(response => { // just chain the .json
-                console.log('Response received!');
-                response.json().then(json => {
-                    setIsLoading(false);
-                    if (response.ok) {
-                        console.log('Response ok!');
-                        setData(json);
-                        setError(null);
-                    }
-                    else {
-                        console.log('Response error!');
-                        setError(json);
-                        setData(null);
-                    }
+            if (event.ty === "roll") {
+                const playerName: string = gameState.players[event.pID] ?? '<player>';
+                dispatch({
+                    ty: "gameRoll", id: event.id, ts,
+                    playerID: event.pID, playerName, dice: event.roll
                 });
-            })
-            .catch(error => {
-                console.log('Response catch!');
-                setIsLoading(false);
-                setData(null);
-                setError(error);
-            })
-        );
-        console.log('Request begun.');
-    }, [gameState, url, method, params, promise, hasTriggered]);
-    console.log('useServer: done effect.');
-
-    return {
-        data: data,
-        error: error,
-        isLoading: isLoading,
-        hasTriggered: hasTriggered,
-        promise: promise,
-    }
+            }
+            else if (event.ty === "playerJoin") {
+                dispatch({
+                    ty: "playerJoin", id: event.id, ts,
+                    player: { id: event.pID, name: event.pName }
+                });
+            }
+            else {
+                // unknown event!!!
+                console.log('Received unknown event', event);
+            }
+        };
+        events.onopen = function() {
+            console.log('Began to listen');
+            dispatch({
+                id:0, ty: "gameConnect", connected: true
+            });
+            gameDispatch({
+                ty: "connect", connected: true
+            });
+        };
+        events.onerror = function() {
+            dispatch({
+                id: 0, ty: "gameConnect", connected: false
+            });
+            gameDispatch({
+                ty: "connect", connected: false
+            });
+        }
+        return () => {
+            events.close();
+            dispatch({
+                id: 0, ty: "gameConnect", connected: false
+            });
+            gameDispatch({
+                id: 0, ty: "connect", connected: false
+            });
+        }
+    }, [dispatch, gameDispatch, gameState?.gameID]);
 }

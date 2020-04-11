@@ -12,6 +12,7 @@ export type EventInfo = {|
 export type LocalRollEvent = {|
     +ty: "localRoll",
     +dice: number[],
+    id: number
 |};
 
 export type GameRollEvent = {|
@@ -25,12 +26,13 @@ export type GameRollEvent = {|
 export type GameJoinEvent = {|
     +ty: "gameJoin",
     +gameID: string,
+    id: number
 |};
 
 export type GameConnectEvent = {|
     +ty: "gameConnect",
     +connected: bool,
-    ...EventInfo
+    id: number
 |};
 
 export type PlayerJoinEvent = {|
@@ -48,14 +50,21 @@ export type GameEvent =
 ;
 
 export type EventList = {
+    +eventID: number,
     +events: GameEvent[]
 }
 
-export type EventListDispatch = (GameEvent) => any;
+export type EventDispatch = (GameEvent) => void;
 
 export function eventListReducer(state: EventList, event: GameEvent): EventList {
-    return { events: [event, ...state.events] };
+    if (!event.id || event.id === 0) {
+        event.id = state.eventID; // Local events are negative.
+    }
+    return {
+        eventID: state.eventID - 1,
+        events: [event, ...state.events]
+    };
 }
 
-export const EventListCtx = React.createContext<EventList>({ events: [] });
-export const EventDispatchCtx = React.createContext<EventListDispatch>(() => {});
+export const EventListCtx = React.createContext<EventList>({ events: [], eventID: 0 });
+export const EventDispatchCtx = React.createContext<EventDispatch>(() => {});

@@ -72,8 +72,8 @@ export default function Header({ expanded, onClick }: Props) {
     return (
         <SRHeader>
             <SRTitle>Shadowroller</SRTitle>
-            <JoinButton expanded={expanded}>
-                { expanded ? "Hide" : "Join" }
+            <JoinButton expanded={expanded} onClick={handleJoinClick}>
+                { expanded ? "Cancel" : "Join" }
             </JoinButton>
         </SRHeader>
     );

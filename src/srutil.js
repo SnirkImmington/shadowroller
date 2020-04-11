@@ -2,6 +2,14 @@
 
 import * as React from 'react';
 
+export function roll(count: number): number[] {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+        result.push(Math.floor(Math.random() * 6) + 1);
+    }
+    return result;
+}
+
 /** Pluralizes a number in English. */
 export function pluralize(count: number, text: string): string {
     if (count === 1) {
@@ -33,12 +41,12 @@ export function useFlavor(options: React.Node[]): React.Node {
 // https://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
 
 // Color generator guy claims 1/golden ratio is useful to improve distribution.
-const fixedOffset = 0.618033988749895 * 360;
+const fixedOffset = Math.floor(0.618033988749895 * 360);
 
 /// Produces a random HSL color from IDs which are base64 ecoded random bytes.
 export function hashedColor(id: string): string {
     // flow-ignore-line
     const hue = (Uint8Array.from(atob(id), c => c.charCodeAt(0))
         .reduce((sum, curr) => sum + curr, 0) + fixedOffset) % 360;
-    return `hsl(${hue}deg, 100%, 70%)`;
+    return `hsl(${hue}, 100%, 70%)`;
 }

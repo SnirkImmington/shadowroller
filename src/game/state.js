@@ -16,10 +16,10 @@ export type Game = ?{|
 |};
 
 export type GameAction =
-| { ty: "join", gameID: string, gameToken: string, player: Player, players: Player[] }
-| { ty: "connect", connected: bool }
-| { ty: "playerName", name: string }
-| { ty: "newPlayer", name: string, id: string }
+| { +ty: "join", gameID: string, gameToken: string, player: Player, players: Player[] }
+| { +ty: "connect", connected: bool }
+| { +ty: "playerName", name: string }
+| { +ty: "newPlayer", name: string, id: string }
 ;
 
 export function gameReducer(state: Game, action: GameAction): Game {
@@ -56,6 +56,6 @@ export function gameReducer(state: Game, action: GameAction): Game {
     }
 };
 
-export type GameDispatch = (GameAction) => any;
+export type GameDispatch = (GameAction) => void;
 export const GameCtx = React.createContext<Game>();
 export const GameDispatchCtx = React.createContext<GameDispatch>((_) => {});
