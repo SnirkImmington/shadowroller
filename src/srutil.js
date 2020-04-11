@@ -45,7 +45,8 @@ const fixedOffset = Math.floor(0.618033988749895 * 360);
 
 /// Produces a random HSL color from IDs which are base64 ecoded random bytes.
 export function hashedColor(id: string): string {
-    // flow-ignore-line
+    // MDN says I can do this
+    // flow-ignore-all-next-line
     const hue = (Uint8Array.from(atob(id), c => c.charCodeAt(0))
         .reduce((sum, curr) => sum + curr, 0) + fixedOffset) % 360;
     return `hsl(${hue}, 100%, 70%)`;
