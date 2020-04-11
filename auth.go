@@ -14,8 +14,9 @@ import (
 )
 
 type AuthClaims struct {
-	GameID   string `json:"gid"`
-	PlayerID string `json:"pid"`
+	GameID     string `json:"gid"`
+	PlayerID   string `json:"pid"`
+	PlayerName string `json:"pname"`
 	jwt.StandardClaims
 }
 
@@ -23,7 +24,6 @@ func GenUID() string {
 	bytes := make([]byte, 8)
 	rand.Read(bytes)
 	return base64.RawURLEncoding.EncodeToString(bytes)
-
 }
 
 func GenKey(size int64) string {
@@ -39,11 +39,12 @@ func getJWTSecretKey(token *jwt.Token) (interface{}, error) {
 	return config.JWTSecretKey, nil
 }
 
-func createAuthToken(gameID string, playerID string) (string, error) {
+func createAuthToken(gameID string, playerID string, playerName string) (string, error) {
 	claims := AuthClaims{
-		gameID,
-		playerID,
-		jwt.StandardClaims{
+		GameID:     gameID,
+		PlayerID:   playerID,
+		PlayerName: playerName,
+		StandardClaims: jwt.StandardClaims{
 			Issuer: "sr-server",
 		},
 	}

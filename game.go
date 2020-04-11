@@ -79,7 +79,7 @@ func handleJoinGame(response Response, request *Request) {
 
 	// Create JWT
 
-	token, err := createAuthToken(join.GameID, playerID)
+	token, err := createAuthToken(join.GameID, playerID, join.PlayerName)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
