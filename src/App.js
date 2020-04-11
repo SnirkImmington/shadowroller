@@ -9,8 +9,6 @@ import SRHeader from 'header';
 import JoinGamePrompt from 'join-game-prompt';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
-import RollInputPanel from 'roll/containers/roll-input-panel';
-import RollHistoryPanel from 'roll/containers/roll-history-panel';
 
 import { GameCtx, GameDispatchCtx, gameReducer } from 'game/state';
 import type { GameDispatch } from 'game/state';
@@ -46,7 +44,9 @@ export default function App(props: {}) {
         <div className="rounded-0">
             <GameCtx.Provider value={game}>
             <GameDispatchCtx.Provider value={gameDispatch}>
-                <SRHeader expanded={showGameJoin} onClick={joinGameClicked} />
+                <SRHeader game={game}
+                          expanded={showGameJoin}
+                          onClick={joinGameClicked} />
                 {showGameJoin ? <JoinGamePrompt game={game} setShown={setShowGameJoin} /> : ''}
                 <EventDispatchCtx.Provider value={eventDispatch}>
                     <RollDicePrompt game={game}

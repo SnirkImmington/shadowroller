@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import RollResult from '../result/roll-result';
+import RollResult from 'roll/result';
 
 import './rolling-dice.css';
 /*

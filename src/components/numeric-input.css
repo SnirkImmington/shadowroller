@@ -4,7 +4,7 @@
 
 @media all and (min-width: 992px) {
     .numeric-input {
-        width: 6m !important;
+        width: 6em !important;
         max-width: 6em !important;
     }
 }
