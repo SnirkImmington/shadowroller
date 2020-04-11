@@ -1,4 +1,5 @@
 [ignore]
+.*/node_modules/styled-components/.*
 
 [include]
 
@@ -7,6 +8,8 @@
 [lints]
 
 [options]
+# Give me an ignore comment
+suppress_comment= \\(.\\|\n\\)*\\flow-ignore-all-next-line
 # Allow imports from src
 module.system.node.allow_root_relative=true
 module.system.node.root_relative_dirname=src

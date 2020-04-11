@@ -2,9 +2,10 @@
 
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 import { hashedColor } from 'srutil';
 
-export const AppWideBox = styled.div`
+export const AppWideBox: StyledComponent<> = styled.div`
     border-bottom: 2px solid rgba(0, 0, 0, 0.225);
     margin: .5em auto;
     padding: 5px;
@@ -15,7 +16,7 @@ export const AppWideBox = styled.div`
     }
 `;
 
-export const Button = styled.button`
+export const Button: StyledComponent<> = styled.button`
     font-size: 1em;
     padding: 0.2em 1em;
     border-radius: 0px;
@@ -31,7 +32,7 @@ const diceFrames = keyframes`
     100% { content: '\\2685'; }
 `;
 
-export const DiceSpinner = styled.span`
+export const DiceSpinner: StyledComponent<> = styled.span`
     font-size: 1.5em;
     font-weight: 800;
     padding: 0.25em;
@@ -43,12 +44,12 @@ export const DiceSpinner = styled.span`
     }
 `;
 
-export const FlexCenter = styled.div`
+export const FlexCenter: StyledComponent<> = styled.div`
     display: flex;
     align-items: center;
 `;
 
-export const HashColored = styled.b`
+export const HashColored: StyledComponent<{ id: string }> = styled.b`
     color: ${props => hashedColor(props.id)}
 `;
 

@@ -1,13 +1,13 @@
 // @flow
 
 import * as React from 'react';
+import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
-
-import { GameCtx, GameDispatchCtx } from 'game/state';
-
 import { Button } from 'style';
 
-const SRHeader = styled.header`
+import type { Game } from 'game/state';
+
+const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
     height: 4em;
     padding; 0.9em;
@@ -59,21 +59,39 @@ const JoinButton = styled(Button)`
     }*/
 `;
 
-export type Props =  {
+export type Props = {
+    +game: Game,
     +expanded: bool,
     +onClick: () => any,
 }
 
-export default function Header({ expanded, onClick }: Props) {
+export default function Header({ game, expanded, onClick }: Props) {
     function handleJoinClick(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
         onClick();
     }
+
+    let message;
+    if (game) {
+        if (game.connected) {
+            message = <tt>{game.gameID}</tt>;
+        }
+        else {
+            message = "Disconnected";
+        }
+    }
+    else if (expanded) {
+        message = "Cancel";
+    }
+    else {
+        message = "Join";
+    }
+
     return (
         <SRHeader>
             <SRTitle>Shadowroller</SRTitle>
             <JoinButton expanded={expanded} onClick={handleJoinClick}>
-                { expanded ? "Cancel" : "Join" }
+                {message}
             </JoinButton>
         </SRHeader>
     );

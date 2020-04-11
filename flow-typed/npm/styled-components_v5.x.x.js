@@ -226,9 +226,9 @@ declare module 'styled-components' {
   declare export function useTheme<Theme>(): Theme;
 
   declare export type StyledComponent<
-    Props,
-    Theme,
-    Instance,
+    Props = { },
+    Theme = { },
+    Instance = React.Node,
     MergedProps = { ...$Exact<Props>, ...CommonSCProps, ... }
   > = React$AbstractComponent<MergedProps, Instance> &
     Class<InterpolatableComponent<MergedProps>>;
@@ -250,8 +250,8 @@ declare module 'styled-components' {
     >,
   |};
 
-  declare export type StyledShorthandFactory<V> = {|
-    [[call]]: <StyleProps, Theme>(
+  declare export type StyledShorthandFactory<V = React.Node> = {|
+    [[call]]: <StyleProps = { }, Theme = { }>(
       string[],
       ...Interpolation<PropsWithTheme<StyleProps, Theme>>[]
     ) => StyledComponent<StyleProps, Theme, V>,
