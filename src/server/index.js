@@ -27,7 +27,7 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
             body: body,
         }).then(response => {
             response.json().then(json => {
-                if (json.token && json.playerID && json.players) {
+                if (json.playerID && json.players) {
                     resolve(json);
                 }
                 else {

@@ -1,11 +1,12 @@
 //  @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { keyframes } from 'styled-components/macro';
 import { AppWideBox, Button, DiceSpinner, FlexCenter } from 'style';
 
 import { requestJoin } from 'server';
-import { Game, GameDispatchCtx } from 'game/state';
+import { GameDispatchCtx } from 'game/state';
+import type { Game } from 'game/state';
 import { useFlavor } from 'srutil';
 
 const JOIN_FLAVOR = [
@@ -22,7 +23,12 @@ const LOADING_FLAVOR = [
     "Contacting Mr. J...",
     "Hack on the Fly-ing...",
     "Brute Force-ing...",
-]
+];
+
+// const slideDown = keyframes`
+//     0% { max-height: 0 }
+//     100% { max-height: auto }
+// `;
 
 const Prompt = styled(AppWideBox)`
     border-top: 4px solid #2d2db3;
@@ -150,7 +156,6 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
                 setShown(false);
                 gameDispatch({
                     ty: "join", gameID,
-                    gameToken: resp.token,
                     player: { id: resp.playerID, name: playerName },
                     players: resp.players
                 });

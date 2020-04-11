@@ -13,7 +13,22 @@ import RollInputPanel from 'roll/containers/roll-input-panel';
 import RollHistoryPanel from 'roll/containers/roll-history-panel';
 
 import { GameCtx, GameDispatchCtx, gameReducer } from 'game/state';
+import type { GameDispatch } from 'game/state';
 import { EventListCtx, EventDispatchCtx, eventListReducer } from 'event/state';
+
+function initialCookieCheck(dispatch: GameDispatch) {
+    const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
+    if (!authMatch) {
+        return;
+    }
+    const auth = JSON.parse(atob(authMatch[1]));
+    dispatch({
+        ty: "join",
+        gameID: auth.gid,
+        player: { id: auth.pid, name: auth.pname },
+        players: []
+    });
+}
 
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(gameReducer, undefined);
@@ -24,6 +39,7 @@ export default function App(props: {}) {
         setShowGameJoin((state) => !state);
     }
 
+    React.useEffect(() => initialCookieCheck(gameDispatch), []);
 
     // Page should be a flexbox.
     return (

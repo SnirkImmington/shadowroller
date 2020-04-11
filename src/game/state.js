@@ -10,13 +10,12 @@ export type Player = {
 export type Game = ?{|
     +connected: bool,
     +gameID: string,
-    +gameToken: string,
     +player: Player,
     +players: Player[]
 |};
 
 export type GameAction =
-| { +ty: "join", gameID: string, gameToken: string, player: Player, players: Player[] }
+| { +ty: "join", gameID: string, player: Player, players: Player[] }
 | { +ty: "connect", connected: bool }
 | { +ty: "playerName", name: string }
 | { +ty: "newPlayer", name: string, id: string }
@@ -25,10 +24,10 @@ export type GameAction =
 export function gameReducer(state: Game, action: GameAction): Game {
     switch (action.ty) {
         case "join":
+            console.log("Joined game");
             return {
                 connected: true,
                 gameID: action.gameID,
-                gameToken: action.gameToken,
                 player: action.player,
                 players: action.players
             }
