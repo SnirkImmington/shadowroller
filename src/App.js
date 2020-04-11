@@ -13,6 +13,7 @@ import EventHistory from 'event/history-panel';
 import { GameCtx, GameDispatchCtx, gameReducer } from 'game/state';
 import type { GameDispatch } from 'game/state';
 import { EventListCtx, EventDispatchCtx, eventListReducer } from 'event/state';
+import * as server from 'server';
 
 function initialCookieCheck(dispatch: GameDispatch) {
     const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
@@ -24,8 +25,13 @@ function initialCookieCheck(dispatch: GameDispatch) {
         ty: "join",
         gameID: auth.gid,
         player: { id: auth.pid, name: auth.pname },
-        players: []
+        players: {}
     });
+    server.getPlayers().then(players => {
+        dispatch({
+            ty: "setPlayers", players
+        })
+    })
 }
 
 export default function App(props: {}) {

@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 import { AppWideBox, Button, DiceSpinner, FlexCenter } from 'style';
 
 import { requestJoin } from 'server';
 import { GameDispatchCtx } from 'game/state';
 import type { Game } from 'game/state';
+import { EventDispatchCtx } from 'event/state';
 import { useFlavor } from 'srutil';
 
 const JOIN_FLAVOR = [
@@ -30,7 +32,7 @@ const LOADING_FLAVOR = [
 //     100% { max-height: auto }
 // `;
 
-const Prompt = styled(AppWideBox)`
+const Prompt: StyledComponent<> = styled(AppWideBox)`
     border-top: 4px solid #2d2db3;
 
     display: flex;
@@ -121,6 +123,7 @@ type Props = {
 };
 export default function JoinGamePrompt({ game, setShown }: Props) {
     const gameDispatch = React.useContext(GameDispatchCtx);
+    const eventDispatch = React.useContext(EventDispatchCtx);
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
     const [status, setStatus] = React.useState<JoinStatus>("incomplete");
@@ -166,6 +169,18 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
             });
     }
 
+    function leaveGameClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
+        event.preventDefault();
+        setStatus("ready");
+        gameDispatch({
+            ty: "connect", connected: false
+        });
+        eventDispatch({
+            ty: "gameConnect", connected: false
+        });
+        //document.cookie = "srAuth=no; Max-Age=0";
+    }
+
     return (
         <Prompt>
             <BoxTitle>Join Game</BoxTitle>
@@ -195,6 +210,13 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
                                disabled={status === "loading"} />
                     </FormRow>
                     <FormRow>
+                        {game ?
+                            <Button id="leave-game-submit"
+                                    onClick={leaveGameClicked}>
+                                Leave
+                            </Button>
+                            : ''
+                        }
                         <FormLabel htmlFor="join-game-submit">
                             <StatusIndicator status={status} />
                         </FormLabel>

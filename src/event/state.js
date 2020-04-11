@@ -12,13 +12,12 @@ export type EventInfo = {|
 export type LocalRollEvent = {|
     +ty: "localRoll",
     +dice: number[],
-    id: number
+    id?: number
 |};
 
 export type GameRollEvent = {|
     +ty: "gameRoll",
     +playerID: string,
-    +playerName: string,
     +dice: number[],
     ...EventInfo
 |};
@@ -26,13 +25,13 @@ export type GameRollEvent = {|
 export type GameJoinEvent = {|
     +ty: "gameJoin",
     +gameID: string,
-    id: number
+    id?: number
 |};
 
 export type GameConnectEvent = {|
     +ty: "gameConnect",
     +connected: bool,
-    id: number
+    id?: number
 |};
 
 export type PlayerJoinEvent = {|
