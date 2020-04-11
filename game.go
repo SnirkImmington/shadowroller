@@ -85,6 +85,8 @@ func handleJoinGame(response Response, request *Request) {
 		return
 	}
 
+	http.SetCookie(response, createAuthCookie(token))
+
 	joined := JoinGameResponse{
 		PlayerID: playerID,
 		Players:  players,
@@ -104,7 +106,7 @@ type RollRequest struct {
 func handleRoll(response Response, request *Request) {
 	auth, err := authForRequest(request)
 	if err != nil {
-		httpUnauthorized(response)
+		httpUnauthorized(response, err)
 	}
 
 	var roll RollRequest
@@ -123,8 +125,9 @@ func handleRoll(response Response, request *Request) {
 	defer conn.Close()
 
 	// Block here for the roll.
-	rolls := make([]byte, roll.Count)
+	rolls := make([]int, roll.Count)
 	fillRolls(rolls)
+	log.Println("Rolls:", rolls)
 
 	_, err = postEvent(auth.GameID, makeRollEvent(auth.PlayerID, rolls), conn)
 	if err != nil {
@@ -138,11 +141,17 @@ func handleRoll(response Response, request *Request) {
 func handleEvents(response Response, request *Request) {
 	auth, err := authForRequest(request)
 	if err != nil {
-		httpUnauthorized(response)
+		httpUnauthorized(response, err)
 		return
 	}
 	// Upgrade to SSE stream
 	stream, err := sseUpgrader.Upgrade(response, request)
+	defer func() {
+		if !stream.IsOpen() {
+			log.Print("Closing stream to ", auth.PlayerID)
+			stream.Close()
+		}
+	}()
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -150,21 +159,30 @@ func handleEvents(response Response, request *Request) {
 	// Subscribe to redis
 	conn := redisPool.Get()
 	defer conn.Close()
-	conn.Send("subscribe", "game_event:"+auth.GameID)
-	conn.Flush()
+	sub := redis.PubSubConn{Conn: conn}
+	err = sub.Subscribe("game_event:" + auth.GameID)
+	if err != nil {
+		log.Printf("Error subscribing to game events")
+		return
+	}
+	log.Printf("Retrieving events in %s for %s...", auth.GameID, auth.PlayerID)
 	for {
-		log.Printf("Retrieving events in %s for %s...",
-			auth.GameID, auth.PlayerID)
-
-		event, err := redis.String(conn.Receive())
-		//eventType := event["type"]
-		//delete(event, "type")
-		if err != nil {
-			log.Printf("Internal error handling %s /event: %w", auth.GameID, err)
-			stream.Close()
+		if !stream.IsOpen() {
 			return
 		}
-		log.Printf("--> ", auth.GameID /*event["id"], eventType,*/, "to", auth.PlayerID)
-		stream.WriteJson(event) // TODO will this work???
+		switch m := sub.Receive().(type) {
+		case redis.Message:
+			log.Print("> event ", auth.GameID, " to ", auth.PlayerID)
+			err := stream.Write(m.Data)
+			if err != nil {
+				log.Print("Unable to write!!! ", err)
+				return
+			}
+		case redis.Subscription:
+			log.Print("Subbed: ", m)
+		case error:
+			log.Print("Error reading from stream: ", m)
+			return
+		}
 	}
 }
