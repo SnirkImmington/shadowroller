@@ -8,7 +8,7 @@ import (
 
 type EventCore struct {
 	Id        int    `json:"id"`
-	Type      string `json:"type"`
+	Type      string `json:"ty"`
 	Timestamp int64  `json:"ts"`
 }
 
@@ -25,18 +25,18 @@ func makeEventCore(eventType string) EventCore {
 
 type RollEvent struct {
 	EventCore
-	PlayerId string `json:"playerId"`
-	Roll     []byte `json:"roll"`
+	PlayerID string `json:"pID"`
+	Roll     []int  `json:"roll"`
 }
 
-func makeRollEvent(playerID string, roll []byte) *RollEvent {
+func makeRollEvent(playerID string, roll []int) *RollEvent {
 	return &RollEvent{makeEventCore("roll"), playerID, roll}
 }
 
 type PlayerJoinEvent struct {
 	EventCore
-	PlayerId   string `json:"playerId"`
-	PlayerName string `json:"playerName"`
+	PlayerId   string `json:"pid"`
+	PlayerName string `json:"pName"`
 }
 
 func makePlayerJoinEvent(playerID string, playerName string) *PlayerJoinEvent {
