@@ -7,8 +7,9 @@ import (
 	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
 	jwtRequest "github.com/dgrijalva/jwt-go/request"
-	"log"
+	//"log"
 	"math/rand"
+	"net/http"
 	"srserver/config"
 )
 
@@ -51,12 +52,31 @@ func createAuthToken(gameID string, playerID string) (string, error) {
 	return signed, err
 }
 
+func createAuthCookie(token string) *http.Cookie {
+	return &http.Cookie{
+		Name:     "srAuth",
+		Value:    token,
+		Domain:   config.CookieAddress,
+		Secure:   config.IsProduction, // http cookies on local env
+		SameSite: http.SameSiteLaxMode,
+	}
+}
+
+type CookieExtractor struct{ Name string } // name of cookie to extract
+func (c *CookieExtractor) ExtractToken(request *Request) (string, error) {
+	cookie, err := request.Cookie(c.Name)
+	if err != nil {
+		return "", err
+	}
+	return cookie.Value, nil
+}
+
 func authForRequest(request *Request) (*AuthClaims, error) {
 	token, err := jwtRequest.ParseFromRequest(
 		request,
-		jwtRequest.AuthorizationHeaderExtractor,
+		&CookieExtractor{"srAuth"},
 		getJWTSecretKey,
-		jwtRequest.WithClaims(AuthClaims{}),
+		jwtRequest.WithClaims(&AuthClaims{}),
 	)
 	if err != nil {
 		return nil, err
@@ -65,6 +85,5 @@ func authForRequest(request *Request) (*AuthClaims, error) {
 	if !ok || !token.Valid {
 		return nil, jwt.ErrInvalidKeyType
 	}
-	log.Printf("Retrieved auth claims: %v", auth)
 	return auth, nil
 }
