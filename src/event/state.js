@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Player } from 'game/state';
+import * as Game from 'game';
 
 export type EventInfo = {|
     +id: number,
@@ -36,7 +36,7 @@ export type GameConnectEvent = {|
 
 export type PlayerJoinEvent = {|
     +ty: "playerJoin",
-    +player: Player,
+    +player: Game.Player,
     ...EventInfo
 |};
 

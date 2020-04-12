@@ -5,7 +5,7 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as style from 'style';
 
-import type { Game } from 'game/state';
+import * as Game from 'game';
 import type { EventDispatch } from 'event/state';
 import NumericInput from 'components/numeric-input';
 import { postRoll } from 'server';
@@ -39,7 +39,7 @@ const RollButton = styled.button`
 
 type Props = {
     +dispatch: EventDispatch;
-    +game: Game;
+    +game: Game.State;
 };
 export default function RollDicePrompt({ game, dispatch }: Props) {
     const [diceCount, setDiceCount] = React.useState<?number>(null);

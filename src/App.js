@@ -11,7 +11,7 @@ import JoinGamePrompt from 'join-game-prompt';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
 
-import { GameCtx, GameDispatchCtx, gameReducer } from 'game/state';
+import * as Game from 'game';
 import { EventDispatchCtx, eventListReducer } from 'event/state';
 import * as server from 'server';
 
@@ -47,7 +47,7 @@ const AppRight: StyledComponent<> = styled.div`
 `;
 
 export default function App(props: {}) {
-    const [game, gameDispatch] = React.useReducer(gameReducer, undefined);
+    const [game, gameDispatch] = React.useReducer(Game.reduce, undefined);
     const [eventList, eventDispatch] = React.useReducer(eventListReducer, { events: [], eventID: 0 });
     const [showGameJoin, setShowGameJoin] = React.useState(false);
 
@@ -59,8 +59,8 @@ export default function App(props: {}) {
 
     // Page should be a flexbox.
     return (
-        <GameCtx.Provider value={game}>
-        <GameDispatchCtx.Provider value={gameDispatch}>
+        <Game.Ctx.Provider value={game}>
+        <Game.DispatchCtx.Provider value={gameDispatch}>
 
             <SRHeader game={game} expanded={showGameJoin} onClick={joinGameClicked} />
 
@@ -81,7 +81,7 @@ export default function App(props: {}) {
 
             </AppPadding>
 
-        </GameDispatchCtx.Provider>
-        </GameCtx.Provider>
+        </Game.DispatchCtx.Provider>
+        </Game.Ctx.Provider>
     );
 }

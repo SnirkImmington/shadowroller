@@ -6,8 +6,7 @@ import type { StyledComponent } from 'styled-components';
 import * as style from 'style';
 
 import { requestJoin } from 'server';
-import { GameDispatchCtx } from 'game/state';
-import type { Game } from 'game/state';
+import * as Game from 'game';
 import { EventDispatchCtx } from 'event/state';
 import { useFlavor } from 'srutil';
 
@@ -109,11 +108,11 @@ function StatusIndicator({ status }: StatusProps) {
 }
 
 type Props = {
-    +game: Game;
+    +game: Game.State;
     +setShown: (bool) => void
 };
 export default function JoinGamePrompt({ game, setShown }: Props) {
-    const gameDispatch = React.useContext(GameDispatchCtx);
+    const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(EventDispatchCtx);
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');

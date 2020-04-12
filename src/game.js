@@ -7,14 +7,14 @@ export type Player = {
     +name: string
 };
 
-export type Game = ?{|
+export type State = ?{|
     +connected: bool,
     +gameID: string,
     +player: Player,
     +players: { [string]: string }
 |};
 
-export type GameAction =
+export type Action =
 | { +ty: "join", gameID: string, player: Player, players: { [string]: string } }
 | { +ty: "connect", connected: bool }
 | { +ty: "playerName", name: string }
@@ -22,7 +22,7 @@ export type GameAction =
 | { +ty: "newPlayer", name: string, id: string }
 ;
 
-function gameReduce(state: Game, action: GameAction): Game {
+function reduceMain(state: State, action: Action): State {
     switch (action.ty) {
         case "join":
             console.log("Joined game");
@@ -65,20 +65,22 @@ function gameReduce(state: Game, action: GameAction): Game {
     }
 };
 
-let gameReducer: (Game, GameAction) => Game;
 
+export type Reducer = (State, Action) => State;
+
+let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {
-    gameReducer = function(state: Game, action: GameAction): Game {
-        const result = gameReduce(state, action);
+    reduce = function(state: State, action: Action): State {
+        const result = reduceMain(state, action);
         console.log(action.ty, state, action, result);
         return result;
     }
 }
 else {
-    gameReducer = gameReduce;
+    reduce = reduceMain;
 }
 
-export { gameReducer };
-export type GameDispatch = (GameAction) => void;
-export const GameCtx = React.createContext<Game>();
-export const GameDispatchCtx = React.createContext<GameDispatch>((_) => {});
+export { reduce };
+export type Dispatch = (Action) => void;
+export const Ctx = React.createContext<State>();
+export const DispatchCtx = React.createContext<Dispatch>((_) => {});

@@ -5,7 +5,7 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import { PlayerName } from 'style';
 
-import { GameCtx } from 'game/state';
+import * as Game from 'game';
 import type { GameJoinEvent, LocalRollEvent, GameConnectEvent, GameRollEvent, PlayerJoinEvent } from 'event/state';
 import DiceList from 'roll/components/dice-list';
 import * as srutil from 'srutil';
@@ -39,7 +39,7 @@ export function LocalRollRecord({ event }: { event: LocalRollEvent }) {
 }
 
 export function GameRollRecord({ event }: { event: GameRollEvent }) {
-    const game = React.useContext(GameCtx);
+    const game = React.useContext(Game.Ctx);
     console.log("Record for", game);
     const playerName = game?.players[event.playerID] ?? "Missingno";
     return (

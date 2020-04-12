@@ -5,7 +5,7 @@ import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
 import { Button } from 'style';
 
-import type { Game } from 'game/state';
+import * as Game from 'game';
 
 const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
@@ -60,7 +60,7 @@ const JoinButton = styled(Button)`
 `;
 
 export type Props = {
-    +game: Game,
+    +game: Game.State,
     +expanded: bool,
     +onClick: () => any,
 }
