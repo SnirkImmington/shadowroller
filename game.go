@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"srserver/config"
 	"strings"
+	//"time"
 )
 
 type GameJoinRequest struct {
@@ -216,4 +217,33 @@ func handleEvents(response Response, request *Request) {
 			// otherwise timeout is okay, we're polling stream.isOpen
 		}
 	}
+
+	/*
+		events, cancelled := receiveEvents(auth.GameID)
+		defer func() { cancelled <- true }()
+
+		for {
+			if !stream.IsOpen() {
+				log.Print("> ", auth.PlayerID, " disconnected.")
+				return
+			}
+
+			select {
+			case event := <-events:
+				log.Printf(event, " for ", auth.PlayerID)
+				err := stream.WriteString(event)
+				if err != nil {
+					log.Printf("Unable to write to stream: ", err)
+					stream.Close()
+					return
+				}
+			case <-time.After(3 * time.Second):
+				// we can check on our stream again!
+			default:
+				log.Print("Event stream closed!")
+				stream.Close()
+				return
+			}
+		}
+	*/
 }

@@ -3,26 +3,22 @@ package srserver
 import (
 	"encoding/json"
 	"github.com/gomodule/redigo/redis"
-	"time"
+	"log"
 )
 
+// EventCore contains the id and type fields for events.
 type EventCore struct {
-	Id        int    `json:"id"`
-	Type      string `json:"ty"`
-	Timestamp int64  `json:"ts"`
-}
-
-func (core *EventCore) setId(id int) {
-	core.Id = id
+	ID   string `json:"id"`
+	Type string `json:"ty"`
 }
 
 func makeEventCore(eventType string) EventCore {
 	return EventCore{
-		Type:      eventType,
-		Timestamp: time.Now().Unix(),
+		Type: eventType,
 	}
 }
 
+// RollEvent is posted when a player rolls dice.
 type RollEvent struct {
 	EventCore
 	PlayerID string `json:"pID"`
@@ -33,9 +29,10 @@ func makeRollEvent(playerID string, roll []int) *RollEvent {
 	return &RollEvent{makeEventCore("roll"), playerID, roll}
 }
 
+// PlayerJoinEvent is posted when a new player joins the game.
 type PlayerJoinEvent struct {
 	EventCore
-	PlayerId   string `json:"pid"`
+	PlayerID   string `json:"pid"`
 	PlayerName string `json:"pName"`
 }
 
@@ -45,23 +42,49 @@ func makePlayerJoinEvent(playerID string, playerName string) *PlayerJoinEvent {
 	}
 }
 
+// Event interface determines what is sent to postEvent
 type Event interface {
-	setId(id int)
 }
 
-func postEvent(gameID string, event Event, conn redis.Conn) (int, error) {
-	eventId, err := redis.Int(conn.Do("hincrby", "game."+gameID, "event_id", 1))
-	if err != nil {
-		return -1, err
-	}
-	event.setId(eventId)
+func postEvent(gameID string, event Event, conn redis.Conn) (string, error) {
 	bytes, err := json.Marshal(event)
 	if err != nil {
-		return -1, err
+		return "", err
 	}
-	_, err = conn.Do("publish", "game_event:"+gameID, bytes)
+	id, err := redis.String(conn.Do("XADD", "event:"+gameID, "payload", bytes))
 	if err != nil {
-		return -1, err
+		return "", err
 	}
-	return eventId, nil
+	return id, nil
+}
+
+func receiveEvents(gameID string) (<-chan string, chan<- bool) {
+	eventsChan := make(chan string, 10)
+	okChan := make(chan bool)
+	go func() {
+		defer close(eventsChan)
+		conn := redisPool.Get()
+		defer conn.Close()
+		log.Print("Begin reading events for ", gameID)
+
+		for {
+			// See if we've been cancelled.
+			select {
+			case _ = <-okChan:
+				log.Printf("Cancelling event read for ", gameID)
+				return
+			}
+
+			resp, err := redis.Values(conn.Do(
+				"XREAD", "BLOCK", 0, "STREAMS", "event:"+gameID, "$",
+			))
+			if err != nil {
+				log.Print("Error reading stream from ", gameID, ": ", err)
+				return
+			}
+			log.Print("received ", resp)
+			eventsChan <- "got one"
+		}
+	}()
+	return eventsChan, okChan
 }
