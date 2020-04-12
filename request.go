@@ -29,7 +29,8 @@ func writeBodyJSON(response Response, value interface{}) error {
 }
 
 func httpUnauthorized(response Response, err error) {
-	log.Printf("-> 401 Unauthorized: %w", err)
+	message := fmt.Sprintf("-> 401 Unauthorized: %v", err)
+	log.Output(2, message)
 	http.Error(response, "Unauthorized", http.StatusUnauthorized)
 }
 

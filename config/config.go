@@ -9,7 +9,7 @@ var (
 	IsProduction = readBool("IS_PRODUCTION", false)
 	// Server configs
 	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
-	CookieAddress   = readString("COOKIE_ADDRESS", "localhost:3001")
+	CookieAddress   = readString("COOKIE_ADDRESS", "localhost")
 	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
 	JWTSecretKey    = []byte(readString("SECRET_JWT", "1337s3cr3t"))
 	// TLS configs
@@ -26,7 +26,7 @@ var (
 	// LibraryOptions
 	RedisUrl = readString("REDIS_URL", "redis://redis:6379")
 	// Backend options
-	HardcodedGameNames = readString("GAME_NAMES", "testgame1,testgame2")
+	HardcodedGameNames = readString("GAME_NAMES", "test1,test2")
 	RollBufferSize     = readInt("ROLL_BUFFER_SIZE", 200)
 	MaxSingleRoll      = readInt("MAX_SINGLE_ROLL", 100)
 )

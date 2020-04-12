@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"github.com/dgrijalva/jwt-go"
 	jwtRequest "github.com/dgrijalva/jwt-go/request"
-	//"log"
 	"math/rand"
 	"net/http"
 	"srserver/config"
@@ -39,7 +38,7 @@ func getJWTSecretKey(token *jwt.Token) (interface{}, error) {
 	return config.JWTSecretKey, nil
 }
 
-func createAuthToken(gameID string, playerID string, playerName string) (string, error) {
+func createAuthCookie(gameID string, playerID string, playerName string) (*http.Cookie, error) {
 	claims := AuthClaims{
 		GameID:     gameID,
 		PlayerID:   playerID,
@@ -50,17 +49,17 @@ func createAuthToken(gameID string, playerID string, playerName string) (string,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString(config.JWTSecretKey)
-	return signed, err
-}
+	if err != nil {
+		return nil, err
+	}
 
-func createAuthCookie(token string) *http.Cookie {
 	return &http.Cookie{
 		Name:     "srAuth",
-		Value:    token,
-		Domain:   config.CookieAddress,
+		Value:    signed,
+		Domain:   config.CookieAddress + ":3001",
 		Secure:   config.IsProduction, // http cookies on local env
-		SameSite: http.SameSiteLaxMode,
-	}
+		SameSite: http.SameSiteStrictMode,
+	}, nil
 }
 
 type CookieExtractor struct{ Name string } // name of cookie to extract
