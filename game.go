@@ -3,10 +3,10 @@ package srserver
 import (
 	"github.com/gomodule/redigo/redis"
 	"log"
+	"math/rand"
 	"net/http"
 	"srserver/config"
-	"strings"
-	//"time"
+	"time"
 )
 
 type GameJoinRequest struct {
@@ -72,7 +72,12 @@ func handleJoinGame(response Response, request *Request) {
 	}
 	players[playerID] = join.PlayerName
 
-	_, err = postEvent(join.GameID, makePlayerJoinEvent(playerID, join.PlayerName), conn)
+	event := PlayerJoinEvent{
+		EventCore:  EventCore{Type: "playerJoin"},
+		PlayerID:   playerID,
+		PlayerName: join.PlayerName,
+	}
+	_, err = postEvent(join.GameID, event, conn)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -154,7 +159,12 @@ func handleRoll(response Response, request *Request) {
 	rolls := make([]int, roll.Count)
 	fillRolls(rolls)
 
-	_, err = postEvent(auth.GameID, makeRollEvent(auth.PlayerID, rolls), conn)
+	event := RollEvent{
+		EventCore: EventCore{Type: "roll"},
+		PlayerID:  auth.PlayerID,
+		Roll:      rolls,
+	}
+	_, err = postEvent(auth.GameID, event, conn)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -180,70 +190,37 @@ func handleEvents(response Response, request *Request) {
 	// Subscribe to redis
 	conn := redisPool.Get()
 	defer conn.Close()
-	sub := redis.PubSubConn{Conn: conn}
-	err = sub.Subscribe("game_event:" + auth.GameID)
-	if err != nil {
-		log.Printf("Error subscribing to game events", err)
-		stream.Close()
-		return
-	}
+	goID := rand.Intn(100)
 
-	log.Printf("Retrieving events in %s for %s...", auth.GameID, auth.PlayerID)
+	log.Printf("%v: Retrieving events in %s for %s...", goID, auth.GameID, auth.PlayerID)
+
+	events, cancelled := receiveEvents(auth.GameID)
+	defer func() { cancelled <- true }()
+
 	for {
 		if !stream.IsOpen() {
-			log.Print("> ", auth.PlayerID, " disconnected.")
+			log.Print(goID, ": ", auth.PlayerID, " disconnected.")
 			return
 		}
-		log.Printf("Receiving...")
-		switch m := sub.Receive().(type) { //sub.ReceiveWithTimeout(time.Duration(5) * time.Second).(type) {
-		case redis.Message:
-			log.Print("> event ", auth.GameID, " to ", auth.PlayerID)
-			err := stream.Write(m.Data)
-			if err != nil {
-				log.Print("Error writing to stream: ", err)
-				return
-			}
-		case redis.Subscription:
-			log.Print("Subbed: ", m)
-		case error:
-			if !strings.Contains(m.Error(), "timeout") {
-				log.Print("Error reading from redis: ", m)
-				stream.Close()
-				return
-			} else {
-				log.Print("Hit redis timeout, retrying")
-				sub = redis.PubSubConn{Conn: conn}
-			}
-			// otherwise timeout is okay, we're polling stream.isOpen
-		}
-	}
 
-	/*
-		events, cancelled := receiveEvents(auth.GameID)
-		defer func() { cancelled <- true }()
-
-		for {
-			if !stream.IsOpen() {
-				log.Print("> ", auth.PlayerID, " disconnected.")
-				return
-			}
-
-			select {
-			case event := <-events:
-				log.Printf(event, " for ", auth.PlayerID)
+		select {
+		case event, open := <-events:
+			log.Print(goID, " Receive: ", event, open)
+			if open {
+				log.Print(goID, " ", event, " for ", auth.PlayerID)
 				err := stream.WriteString(event)
 				if err != nil {
-					log.Printf("Unable to write to stream: ", err)
+					log.Print(goID, " Unable to write to stream: ", err)
 					stream.Close()
 					return
 				}
-			case <-time.After(3 * time.Second):
-				// we can check on our stream again!
-			default:
-				log.Print("Event stream closed!")
+			} else {
+				log.Print(goID, " Event stream closed!")
 				stream.Close()
 				return
 			}
+		case <-time.After(3 * time.Second):
+			// we can check on our stream again!
 		}
-	*/
+	}
 }
