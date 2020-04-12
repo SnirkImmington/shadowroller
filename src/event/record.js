@@ -6,7 +6,8 @@ import type { StyledComponent } from 'styled-components';
 import { PlayerName } from 'style';
 
 import * as Game from 'game';
-import type { GameJoinEvent, LocalRollEvent, GameConnectEvent, GameRollEvent, PlayerJoinEvent } from 'event/state';
+import * as Event from 'event';
+
 import DiceList from 'roll/components/dice-list';
 import * as srutil from 'srutil';
 
@@ -29,7 +30,7 @@ const SimpleRecord: StyledComponent<SimpleRecordProps> = styled.div`
     }
 `;
 
-export function LocalRollRecord({ event }: { event: LocalRollEvent }) {
+export function LocalRollRecord({ event }: { event: Event.LocalRoll }) {
     return (
         <DiceRecord>
             {`Rolled ${event.dice.length} dice`}
@@ -38,7 +39,7 @@ export function LocalRollRecord({ event }: { event: LocalRollEvent }) {
     );
 }
 
-export function GameRollRecord({ event }: { event: GameRollEvent }) {
+export function GameRollRecord({ event }: { event: Event.GameRoll }) {
     const game = React.useContext(Game.Ctx);
     console.log("Record for", game);
     const playerName = game?.players[event.playerID] ?? "Missingno";
@@ -53,7 +54,7 @@ export function GameRollRecord({ event }: { event: GameRollEvent }) {
     );
 }
 
-export function GameJoinRecord({ event }: { event: GameJoinEvent }) {
+export function GameJoinRecord({ event }: { event: Event.GameJoin }) {
     const formattedID: React.Node = <tt>{event.gameID}</tt>
     return (
         <SimpleRecord color="mediumseagreen">
@@ -62,7 +63,7 @@ export function GameJoinRecord({ event }: { event: GameJoinEvent }) {
     );
 }
 
-export function GameConnectRecord({ event }: { event: GameConnectEvent }) {
+export function GameConnectRecord({ event }: { event: Event.GameConnect }) {
     return (
         <SimpleRecord>
             {`${event.connected ? 'Connected to' : 'Disconnected from'} game`}
@@ -70,7 +71,7 @@ export function GameConnectRecord({ event }: { event: GameConnectEvent }) {
     );
 }
 
-export function PlayerJoinRecord({ event }: { event: PlayerJoinEvent }) {
+export function PlayerJoinRecord({ event }: { event: Event.PlayerJoin }) {
     return (
         <SimpleRecord color={srutil.hashedColor(event.player.id)}>
             {`${event.player.name} joined the game.`}

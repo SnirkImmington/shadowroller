@@ -6,13 +6,14 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 
+import * as Game from 'game';
+import * as Event from 'event';
+
 import SRHeader from 'header';
 import JoinGamePrompt from 'join-game-prompt';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
 
-import * as Game from 'game';
-import { EventDispatchCtx, eventListReducer } from 'event/state';
 import * as server from 'server';
 
 const AppPadding: StyledComponent<> = styled.div`
@@ -48,7 +49,8 @@ const AppRight: StyledComponent<> = styled.div`
 
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(Game.reduce, undefined);
-    const [eventList, eventDispatch] = React.useReducer(eventListReducer, { events: [], eventID: 0 });
+    // Not sure what the problem is here.
+    const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
     const [showGameJoin, setShowGameJoin] = React.useState(false);
 
     function joinGameClicked() {
@@ -66,7 +68,7 @@ export default function App(props: {}) {
 
             <AppPadding>
 
-                <EventDispatchCtx.Provider value={eventDispatch}>
+                <Event.DispatchCtx.Provider value={eventDispatch}>
 
                 <AppLeft>
                    { showGameJoin &&
@@ -77,7 +79,7 @@ export default function App(props: {}) {
                 <AppRight>
                     <EventHistory eventList={eventList} />
                 </AppRight>
-                </EventDispatchCtx.Provider>
+                </Event.DispatchCtx.Provider>
 
             </AppPadding>
 

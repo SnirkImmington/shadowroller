@@ -4,11 +4,11 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as style from 'style';
 
+import * as Event from 'event';
 import * as Records from 'event/record';
-import type { EventList, GameEvent } from 'event/state';
 import { useEvents } from 'server';
 
-function EventRecord({ event }: { event: GameEvent}) {
+function EventRecord({ event }: { event: Event.Action}) {
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} />;
         case "gameJoin": return <Records.GameJoinRecord event={event} />;
@@ -21,7 +21,7 @@ function EventRecord({ event }: { event: GameEvent}) {
     }
 }
 
-export default function EventHistory({ eventList }: { eventList: EventList}) {
+export default function EventHistory({ eventList }: { eventList: Event.List}) {
     useEvents();
 
     return (

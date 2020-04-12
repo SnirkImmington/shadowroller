@@ -3,13 +3,12 @@
 import * as React from 'react';
 
 import * as Game from 'game';
-import { EventDispatchCtx } from 'event/state';
-import type { EventDispatch } from 'event/state';
+import * as Event from 'event';
 
 const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
 
-export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: EventDispatch) {
+export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event.Dispatch) {
     const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
     if (!authMatch) {
         return;
@@ -94,7 +93,7 @@ export function postRoll(count: number): Promise<bool> {
 export function useEvents() {
     const connected = React.useContext(Game.Ctx)?.connected ?? false;
     const gameDispatch = React.useContext(Game.DispatchCtx);
-    const dispatch = React.useContext(EventDispatchCtx);
+    const dispatch = React.useContext(Event.DispatchCtx);
 
     React.useEffect(() => {
         if (!connected) {

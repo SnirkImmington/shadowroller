@@ -6,7 +6,8 @@ import type { StyledComponent } from 'styled-components';
 import * as style from 'style';
 
 import * as Game from 'game';
-import type { EventDispatch } from 'event/state';
+import * as Event from 'event';
+
 import NumericInput from 'components/numeric-input';
 import { postRoll } from 'server';
 import { roll } from 'srutil';
@@ -38,7 +39,7 @@ const RollButton = styled.button`
 `;
 
 type Props = {
-    +dispatch: EventDispatch;
+    +dispatch: Event.Dispatch;
     +game: Game.State;
 };
 export default function RollDicePrompt({ game, dispatch }: Props) {

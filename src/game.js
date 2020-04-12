@@ -22,7 +22,7 @@ export type Action =
 | { +ty: "newPlayer", name: string, id: string }
 ;
 
-function reduceMain(state: State, action: Action): State {
+function gameReduce(state: State, action: Action): State {
     switch (action.ty) {
         case "join":
             console.log("Joined game");
@@ -71,13 +71,13 @@ export type Reducer = (State, Action) => State;
 let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {
     reduce = function(state: State, action: Action): State {
-        const result = reduceMain(state, action);
-        console.log(action.ty, state, action, result);
+        const result = gameReduce(state, action);
+        console.log("Game ", action.ty, state, action, result);
         return result;
     }
 }
 else {
-    reduce = reduceMain;
+    reduce = gameReduce;
 }
 
 export { reduce };

@@ -5,9 +5,10 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as style from 'style';
 
-import { requestJoin } from 'server';
 import * as Game from 'game';
-import { EventDispatchCtx } from 'event/state';
+import * as Event from 'event';
+
+import { requestJoin } from 'server';
 import { useFlavor } from 'srutil';
 
 const JOIN_FLAVOR = [
@@ -113,7 +114,7 @@ type Props = {
 };
 export default function JoinGamePrompt({ game, setShown }: Props) {
     const gameDispatch = React.useContext(Game.DispatchCtx);
-    const eventDispatch = React.useContext(EventDispatchCtx);
+    const eventDispatch = React.useContext(Event.DispatchCtx);
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
     const [status, setStatus] = React.useState<JoinStatus>("incomplete");
