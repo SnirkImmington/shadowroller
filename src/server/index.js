@@ -18,7 +18,7 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event
         ty: "join",
         gameID: auth.gid,
         player: { id: auth.pid, name: auth.pname },
-        players: {}
+        players: new Map()
     });
     eventDispatch({
         ty: "gameJoin", gameID: auth.gid
@@ -32,7 +32,7 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event
 
 export type JoinResponse = {
     playerID: string,
-    players: { [string]: string }
+    players: Map<string, string>
 };
 
 export function requestJoin(gameID: string, playerName: string): Promise<JoinResponse> {
@@ -52,6 +52,11 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
             response.json().then(json => {
                 postRoll(12);
                 if (json.playerID && json.players) {
+                    const players = new Map();
+                    for (const id in json.players) {
+                        players.set(id, json.players[id]);
+                    }
+                    json.players = players;
                     resolve(json);
                 }
                 else {
@@ -66,7 +71,7 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
     });
 }
 
-export function getPlayers(): Promise<{ [string]: string }> {
+export function getPlayers(): Promise<Map<string, string>> {
     const url = BACKEND_URL + "players";
     console.log("Requesting players");
 
@@ -74,7 +79,14 @@ export function getPlayers(): Promise<{ [string]: string }> {
         method: 'get',
         //mode: 'cors',
         credentials: 'include'
-    }).then(response => response.json());
+    }).then(response => response.json())
+    .then(obj => {
+        const players = new Map();
+        for (const id in obj) {
+            players.set(id, obj[id]);
+        }
+        return players;
+    })
 }
 
 export function postRoll(count: number): Promise<bool> {

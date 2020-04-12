@@ -11,14 +11,14 @@ export type State = ?{|
     +connected: bool,
     +gameID: string,
     +player: Player,
-    +players: { [string]: string }
+    +players: Map<string, string>
 |};
 
 export type Action =
-| { +ty: "join", gameID: string, player: Player, players: { [string]: string } }
+| { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
 | { +ty: "connect", connected: bool }
 | { +ty: "playerName", name: string }
-| { +ty: "setPlayers", players: { [string]: string } }
+| { +ty: "setPlayers", players: Map<string, string> }
 | { +ty: "newPlayer", name: string, id: string }
 ;
 
@@ -46,14 +46,16 @@ function gameReduce(state: State, action: Action): State {
             };
         case "newPlayer":
             if (!state) { return state; }
+            const newPlayers = new Map(state.players);
+            newPlayers.set(action.id, action.name);
             return {
                 ...state,
-                players: { [action.id]: action.name, ...state.players },
+                players: newPlayers,
             };
         case "setPlayers":
             if (!state) { return state; }
-            if (!action.players[state.player.id]) {
-                action.players[state.player.id] = state.player.name;
+            if (!action.players.get(state.player.id)) {
+                action.players.set(state.player.id, state.player.name);
             }
             return {
                 ...state,

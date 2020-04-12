@@ -42,7 +42,7 @@ export function LocalRollRecord({ event }: { event: Event.LocalRoll }) {
 export function GameRollRecord({ event }: { event: Event.GameRoll }) {
     const game = React.useContext(Game.Ctx);
     console.log("Record for", game);
-    const playerName = game?.players[event.playerID] ?? "Missingno";
+    const playerName = game?.players.get(event.playerID) ?? "Missingno";
     return (
         <DiceRecord>
             <>
