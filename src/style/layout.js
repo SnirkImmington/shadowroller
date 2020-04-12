@@ -16,6 +16,7 @@ export const FlexColumn: StyledComponent<> = styled.div`
 
 const CardWrapper: StyledComponent<> = styled(FlexColumn)`
     border: 1px solid rgba(0, 0, 0, 0.2);
+    margin-bottom: 0.5em;
 `;
 
 const CardBody: StyledComponent<> = styled.div`

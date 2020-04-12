@@ -16,25 +16,24 @@ import { EventDispatchCtx, eventListReducer } from 'event/state';
 import * as server from 'server';
 
 const AppPadding: StyledComponent<> = styled.div`
-    margin: 0px auto;
+    /* Phones: margin near the side of the screen */
+    margin: 0px .5em;
     display: flex;
     flex-direction: column;
 
-    max-width: 95%;
+    /* Tablet+: more margin on the sides */
     @media all and (min-width: 768px) {
+        margin: 0px 1.5em;
         flex-direction: row;
-        max-width: 98%; /* align items */
     }
 `;
 
 const AppLeft: StyledComponent<> = styled.div`
-    /* Phones: padding between roll & history */
-    padding: 5px 0px;
+    /* Phones: vertical margin included in cards. */
 
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
-        padding: 0px;
-        margin-right: 5px;
+        margin-right: 0.5em;
         flex-grow: 3;
     }
 `;
@@ -64,13 +63,14 @@ export default function App(props: {}) {
         <GameDispatchCtx.Provider value={gameDispatch}>
 
             <SRHeader game={game} expanded={showGameJoin} onClick={joinGameClicked} />
-            {showGameJoin ? <JoinGamePrompt game={game} setShown={setShowGameJoin} /> : ''}
 
             <AppPadding>
 
                 <EventDispatchCtx.Provider value={eventDispatch}>
 
                 <AppLeft>
+                   { showGameJoin &&
+                       <JoinGamePrompt game={game} setShown={setShowGameJoin} />}
                     <RollDicePrompt game={game}
                                     dispatch={eventDispatch} />
                 </AppLeft>
