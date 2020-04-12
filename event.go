@@ -74,56 +74,14 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 				return
 			}
 
-			var channels [][]interface{}
-			err = redis.ScanSlice(data, &channels)
+			var scanned StreamResponse
+			rest, err := redis.Scan(data, &scanned)
 			if err != nil {
-				log.Print(goID, " unable to scan slice: ", err)
+				log.Print(goID, " unable to scan stream: ", err)
 				return
 			}
-			log.Print(goID, "Got ", len(channels), " response")
-			for i := 0; i < len(channels); i++ {
-				ch := channels[i]
-				var keyName string
-				var events []interface{}
-				rest, err := redis.Scan(ch, &keyName, &events)
-				if err != nil {
-					log.Print(goID, " Unable to scan key ", err)
-					return
-				}
-				log.Print(goID, " Got ", keyName, " -> ", events, ", ", rest)
-
-			}
-
-			log.Print("\n\n", goID, " Checking out some data:", data)
-			// We're only reading from one game's event list.
-			var channelResponse struct {
-				eName string
-				eval  []interface{}
-			}
-			_, err = redis.Scan(data, &channelResponse)
-			if err != nil {
-				log.Print(err)
-			} else {
-				log.Print(goID, " got ", channelResponse, " okay")
-			}
-			/*
-				log.Print("Found ", len(channels), " channels")
-
-				for i := 0; i < len(channels); i++ {
-					log.Printf("Scanning a channel")
-					var channelName string
-					_, err = redis.Scan(channels[i].([]interface{}), &channelName)
-					log.Printf("It's ", channelName)
-				}
-			*/
-
-			/*
-				var channel string
-				streamName := redis.Scan(mainStream, &cannel)
-
-				log.Print(goID, " Here's the base array: ", mainStream)
-				log.Print(goID, " with conversion: ", bytesToStrings(resp))
-			*/
+			log.Print(goID, " left to scan: ", rest)
+			log.Print(goID, " SUCCESS!! %#v", scanned)
 			eventsChan <- "got one"
 		}
 	}()
@@ -144,7 +102,69 @@ type StreamResponse struct {
 	Channels []ChannelResponse
 }
 
+func (resp *StreamResponse) RedisScan(input interface{}) error {
+	log.Printf("Beginning to scan a stream response")
+	var channels []ChannelResponse
+	var rest = input.([]interface{})
+	var err error
+	for { // TODO need to loop over rest.
+		log.Print("Gonna get a channel response")
+		var channel ChannelResponse
+		rest, err = redis.Scan(rest, &channel)
+		if err != nil {
+			return err
+		}
+		log.Print("Got a channel response!")
+		channels = append(channels, channel)
+	}
+	/*
+		err := redis.ScanSlice(input.([]interface{}), &channels)
+		if err != nil {
+			return err
+		}*/
+	log.Printf("Response scanned!")
+	resp.Channels = channels
+	return nil
+}
+
 type ChannelResponse struct {
 	Key       string
-	responses []Event
+	Responses []EventResponse
+}
+
+func (resp *ChannelResponse) RedisScan(input interface{}) error {
+	log.Print("Beginning to scan a channel response")
+	var key string
+	var responses []EventResponse
+	rest, err := redis.Scan(input.([]uint8), &key)
+	key, err := redis.String(input)
+	if err != nil {
+		return err
+	}
+	err = redis.ScanSlice(rest, responses)
+	if err != nil {
+		return err
+	}
+	log.Print("Channel response scanned!")
+	resp.Key = key
+	resp.Responses = responses
+	return nil
+}
+
+type EventResponse struct {
+	ID    string
+	Pairs map[string]string
+}
+
+func (resp *EventResponse) RedisScan(input interface{}) error {
+	var id string
+	rest, err := redis.Scan(input.([]interface{}), &id)
+
+	pairs, err := redis.StringMap(rest, err)
+	if err != nil {
+		return err
+	}
+	resp.ID = id
+	resp.Pairs = pairs
+	return nil
 }
