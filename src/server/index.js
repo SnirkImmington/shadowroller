@@ -3,10 +3,34 @@
 import * as React from 'react';
 
 import { GameCtx, GameDispatchCtx } from 'game/state';
+import type { GameDispatch } from 'game/state';
 import { EventDispatchCtx } from 'event/state';
+import type { EventDispatch } from 'event/state';
 
 const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
+
+export function initialCookieCheck(dispatch: GameDispatch, eventDispatch: EventDispatch) {
+    const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
+    if (!authMatch) {
+        return;
+    }
+    const auth = JSON.parse(atob(authMatch[1]));
+    dispatch({
+        ty: "join",
+        gameID: auth.gid,
+        player: { id: auth.pid, name: auth.pname },
+        players: {}
+    });
+    eventDispatch({
+        ty: "gameJoin", gameID: auth.gid
+    })
+    getPlayers().then(players => {
+        dispatch({
+            ty: "setPlayers", players
+        })
+    })
+}
 
 export type JoinResponse = {
     playerID: string,
