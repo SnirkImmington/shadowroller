@@ -27,7 +27,8 @@ export default function EventHistory({ eventList }: { eventList: EventList}) {
     return (
         <style.Card color="slateGray">
             <>
-                Some events:
+                <b>Connected to a game?</b>
+                <b>reconnect?</b>
             </>
             {''}
             {eventList.events.map(e => <EventRecord event={e} key={e.id} />)}

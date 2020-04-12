@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 import { PlayerName } from 'style';
 
 import { GameCtx } from 'game/state';
 import type { GameJoinEvent, LocalRollEvent, GameConnectEvent, GameRollEvent, PlayerJoinEvent } from 'event/state';
 import DiceList from 'roll/components/dice-list';
+import * as srutil from 'srutil';
 
 function DiceRecord({ children }: { children: React.Node[] }) {
     return (
@@ -17,13 +19,15 @@ function DiceRecord({ children }: { children: React.Node[] }) {
     );
 }
 
-function SimpleRecord({ children }: { children: React.Node | React.Node[] }) {
-    return (
-        <div>
-            {children}
-        </div>
-    );
-}
+type SimpleRecordProps = { color?: string, children: React.Node | React.Node[] };
+const SimpleRecord: StyledComponent<SimpleRecordProps> = styled.div`
+    margin: .25em 0px;
+    padding: 5px;
+    ${props => props?.color ?
+        `border-left: 5px solid ${props.color};
+         background-image: linear-gradient(to right, ${props.color}, white 0.4%)` : ''
+    }
+`;
 
 export function LocalRollRecord({ event }: { event: LocalRollEvent }) {
     return (
@@ -52,7 +56,7 @@ export function GameRollRecord({ event }: { event: GameRollEvent }) {
 export function GameJoinRecord({ event }: { event: GameJoinEvent }) {
     const formattedID: React.Node = <tt>{event.gameID}</tt>
     return (
-        <SimpleRecord>
+        <SimpleRecord color="mediumseagreen">
             {`Joined `}{formattedID}
         </SimpleRecord>
     );
@@ -68,7 +72,7 @@ export function GameConnectRecord({ event }: { event: GameConnectEvent }) {
 
 export function PlayerJoinRecord({ event }: { event: PlayerJoinEvent }) {
     return (
-        <SimpleRecord>
+        <SimpleRecord color={srutil.hashedColor(event.player.id)}>
             {`${event.player.name} joined the game.`}
         </SimpleRecord>
     );
