@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import * as style from 'style';
 
 import * as Records from 'event/record';
 import type { EventList, GameEvent } from 'event/state';
@@ -20,14 +21,16 @@ function EventRecord({ event }: { event: GameEvent}) {
     }
 }
 
-
 export default function EventHistory({ eventList }: { eventList: EventList}) {
     useEvents();
 
     return (
-        <div>
-            Some events:
+        <style.Card color="slateGray">
+            <>
+                Some events:
+            </>
+            {''}
             {eventList.events.map(e => <EventRecord event={e} key={e.id} />)}
-        </div>
+        </style.Card>
     );
 }

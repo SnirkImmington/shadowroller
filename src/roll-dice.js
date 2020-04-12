@@ -3,25 +3,13 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
+import * as style from 'style';
 
 import type { Game } from 'game/state';
 import type { EventDispatch } from 'event/state';
-import { AppWideBox, Button } from 'style';
 import NumericInput from 'components/numeric-input';
 import { postRoll } from 'server';
 import { roll } from 'srutil';
-
-const Prompt: StyledComponent<> = styled(AppWideBox)`
-    border-top: 4px solid #0b0ba3;
-
-    display: flex;
-    flex-direction: column;
-`;
-
-const Form = styled.div`
-    display: flex;
-    flex-direction: column;
-`;
 
 const FormRow = styled.div`
     margin: .5em 0px;
@@ -84,11 +72,11 @@ export default function RollDicePrompt({ game, dispatch }: Props) {
 
     // roll title gets game state, dispatch useLocalRoll
     return (
-        <Prompt>
-            <TitleRow>
+        <style.Card color="lightseagreen">
+            <>
                 <span>Roll Dice</span>
                 <span>Local roll???</span>
-            </TitleRow>
+            </>
             <RollInputRow>
                 <FormLabel htmlFor="roll-select-dice">
                     Roll
@@ -105,10 +93,11 @@ export default function RollDicePrompt({ game, dispatch }: Props) {
                 </FormLabel>
                 <RollButton id="roll-button-submit"
                             disabled={rollDisabled}
-                            onClick={onRollClicked}>
+                            onClick={onRollClicked}
+                            min={1} max={99} >
                     Roll dice
                 </RollButton>
             </FormRow>
-        </Prompt>
+        </style.Card>
     );
 }

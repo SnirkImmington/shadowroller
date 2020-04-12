@@ -3,18 +3,7 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import { hashedColor } from 'srutil';
-
-export const AppWideBox: StyledComponent<> = styled.div`
-    border-bottom: 2px solid rgba(0, 0, 0, 0.225);
-    margin: .5em auto;
-    padding: 5px;
-
-    max-width: 95%;
-    @media all and (min-width: 768px) {
-        max-width: 98%;
-    }
-`;
+import * as srutil from 'srutil';
 
 export const Button: StyledComponent<> = styled.button`
     font-size: 1em;
@@ -44,13 +33,8 @@ export const DiceSpinner: StyledComponent<> = styled.span`
     }
 `;
 
-export const FlexCenter: StyledComponent<> = styled.div`
-    display: flex;
-    align-items: center;
-`;
-
 export const HashColored: StyledComponent<{ id: string }> = styled.b`
-    color: ${props => hashedColor(props.id)}
+    color: ${props => srutil.hashedColor(props.id)}
 `;
 
 type NameProps = { +id: string, +name: string };

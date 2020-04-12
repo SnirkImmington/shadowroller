@@ -10,7 +10,7 @@ import type { Game } from 'game/state';
 const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
     height: 4em;
-    padding; 0.9em;
+    padding: 0.9em;
     color: white;
     margin-bottom: 1em;
     display: flex;

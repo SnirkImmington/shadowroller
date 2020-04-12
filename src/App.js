@@ -4,6 +4,7 @@ import './App.css';
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 
 import SRHeader from 'header';
 import JoinGamePrompt from 'join-game-prompt';
@@ -34,6 +35,15 @@ function initialCookieCheck(dispatch: GameDispatch) {
     })
 }
 
+const AppPadding: StyledComponent<> = styled.div`
+    margin: 0 auto;
+
+    max-width: 95%;
+    @media all and (min-width: 768) {
+        max-width: 98%;
+    }
+`;
+
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(gameReducer, undefined);
     const [eventList, eventDispatch] = React.useReducer(eventListReducer, { events: [], eventID: 0 });
@@ -47,20 +57,20 @@ export default function App(props: {}) {
 
     // Page should be a flexbox.
     return (
-        <div className="rounded-0">
             <GameCtx.Provider value={game}>
             <GameDispatchCtx.Provider value={gameDispatch}>
                 <SRHeader game={game}
                           expanded={showGameJoin}
                           onClick={joinGameClicked} />
                 {showGameJoin ? <JoinGamePrompt game={game} setShown={setShowGameJoin} /> : ''}
+                <AppPadding>
                 <EventDispatchCtx.Provider value={eventDispatch}>
                     <RollDicePrompt game={game}
                                     dispatch={eventDispatch} />
                     <EventHistory eventList={eventList} />
                 </EventDispatchCtx.Provider>
+                </AppPadding>
             </GameDispatchCtx.Provider>
             </GameCtx.Provider>
-        </div>
     );
 }

@@ -1,9 +1,9 @@
 //  @flow
 
 import * as React from 'react';
-import styled, { keyframes } from 'styled-components/macro';
+import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import { AppWideBox, Button, DiceSpinner, FlexCenter } from 'style';
+import * as style from 'style';
 
 import { requestJoin } from 'server';
 import { GameDispatchCtx } from 'game/state';
@@ -32,13 +32,6 @@ const LOADING_FLAVOR = [
 //     100% { max-height: auto }
 // `;
 
-const Prompt: StyledComponent<> = styled(AppWideBox)`
-    border-top: 4px solid #2d2db3;
-
-    display: flex;
-    flex-direction: column;
-`;
-
 const BoxTitle = styled.span`
     margin-left: auto;
     margin-right: auto;
@@ -55,10 +48,8 @@ const Form = styled.div`
     flex-direction: column;
 `;
 
-const FormRow = styled.div`
+const FormRow = styled(style.FlexRow)`
     margin: .5em 0px;
-    display: flex;
-    align-items: center;
     justify-content: flex-end;
     flex-wrap: wrap;
 `;
@@ -77,7 +68,7 @@ const GameIDInput = styled(Input)`
     font-family: monospace;
 `;
 
-const JoinButton = styled(Button)`
+const JoinButton = styled(style.Button)`
 
 `;
 
@@ -103,10 +94,10 @@ function StatusIndicator({ status }: StatusProps) {
     }
     else if (status === "loading") {
         return (
-            <FlexCenter>
+            <style.FlexRow>
                 <i>{loadFlavor}</i>
-                <DiceSpinner />
-            </FlexCenter>
+                <style.DiceSpinner />
+            </style.FlexRow>
         );
     }
     else if (status === "error") {
@@ -182,7 +173,7 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
     }
 
     return (
-        <Prompt>
+        <style.Card color="dimGray">
             <BoxTitle>Join Game</BoxTitle>
             <Explanation className="form-text">
                 Join a game if you've been given a Game ID.
@@ -211,10 +202,10 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
                     </FormRow>
                     <FormRow>
                         {game ?
-                            <Button id="leave-game-submit"
+                            <style.Button id="leave-game-submit"
                                     onClick={leaveGameClicked}>
                                 Leave
-                            </Button>
+                            </style.Button>
                             : ''
                         }
                         <FormLabel htmlFor="join-game-submit">
@@ -229,6 +220,6 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
                     </FormRow>
                 </Form>
             </form>
-        </Prompt>
+        </style.Card>
     )
 }

@@ -3,9 +3,7 @@
 import * as React from 'react';
 
 import { GameCtx, GameDispatchCtx } from 'game/state';
-import type { Player } from 'game/state';
 import { EventDispatchCtx } from 'event/state';
-import type { EventDispatch } from 'event/state';
 
 const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
