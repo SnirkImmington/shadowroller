@@ -54,7 +54,7 @@ export default function RollDicePrompt({ game, dispatch }: Props) {
         if (!game || !game.connected) {
             const dice = roll(diceCount);
             dispatch({
-                ty: "localRoll", dice, id: 0
+                ty: "localRoll", dice
             });
         }
         else {

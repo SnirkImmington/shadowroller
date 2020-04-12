@@ -65,5 +65,4 @@ export function eventListReducer(state: EventList, event: GameEvent): EventList 
     };
 }
 
-export const EventListCtx = React.createContext<EventList>({ events: [], eventID: 0 });
 export const EventDispatchCtx = React.createContext<EventDispatch>(() => {});

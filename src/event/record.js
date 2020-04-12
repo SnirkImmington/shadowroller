@@ -50,9 +50,12 @@ export function GameRollRecord({ event }: { event: GameRollEvent }) {
 }
 
 export function GameJoinRecord({ event }: { event: GameJoinEvent }) {
-    return <SimpleRecord>
-        {`Joined ${event.gameID}`}
-    </SimpleRecord>;
+    const formattedID: React.Node = <tt>{event.gameID}</tt>
+    return (
+        <SimpleRecord>
+            {`Joined `}{formattedID}
+        </SimpleRecord>
+    );
 }
 
 export function GameConnectRecord({ event }: { event: GameConnectEvent }) {

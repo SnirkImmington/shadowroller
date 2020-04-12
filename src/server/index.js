@@ -111,7 +111,7 @@ export function useEvents() {
             }
         };
         events.onopen = function() {
-            console.log('Began to listen');
+            console.log('Listening for events from the server.');
             dispatch({
                 ty: "gameConnect", connected: true
             });
@@ -119,7 +119,8 @@ export function useEvents() {
                 ty: "connect", connected: true
             });
         };
-        events.onerror = function() {
+        events.onerror = function(e) {
+            console.log("Error receiving events!", e)
             dispatch({
                 ty: "gameConnect", connected: false
             });

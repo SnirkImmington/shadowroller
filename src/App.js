@@ -13,10 +13,11 @@ import EventHistory from 'event/history-panel';
 
 import { GameCtx, GameDispatchCtx, gameReducer } from 'game/state';
 import type { GameDispatch } from 'game/state';
-import { EventListCtx, EventDispatchCtx, eventListReducer } from 'event/state';
+import { EventDispatchCtx, eventListReducer } from 'event/state';
+import type { EventDispatch } from 'event/state';
 import * as server from 'server';
 
-function initialCookieCheck(dispatch: GameDispatch) {
+function initialCookieCheck(dispatch: GameDispatch, eventDispatch: EventDispatch) {
     const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
     if (!authMatch) {
         return;
@@ -28,6 +29,9 @@ function initialCookieCheck(dispatch: GameDispatch) {
         player: { id: auth.pid, name: auth.pname },
         players: {}
     });
+    eventDispatch({
+        ty: "gameJoin", gameID: auth.gid
+    })
     server.getPlayers().then(players => {
         dispatch({
             ty: "setPlayers", players
@@ -53,7 +57,7 @@ export default function App(props: {}) {
         setShowGameJoin((state) => !state);
     }
 
-    React.useEffect(() => initialCookieCheck(gameDispatch), []);
+    React.useEffect(() => initialCookieCheck(gameDispatch, eventDispatch), []);
 
     // Page should be a flexbox.
     return (
