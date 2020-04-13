@@ -20,15 +20,15 @@ type AuthClaims struct {
 }
 
 func GenUID() string {
-	bytes := make([]byte, 8)
+	bytes := make([]byte, 6)
 	rand.Read(bytes)
-	return base64.RawURLEncoding.EncodeToString(bytes)
+	return base64.StdEncoding.EncodeToString(bytes)
 }
 
 func GenKey(size int64) string {
 	bytes := make([]byte, size)
 	cryptoRand.Read(bytes)
-	return base64.RawURLEncoding.EncodeToString(bytes)
+	return base64.URLEncoding.EncodeToString(bytes)
 }
 
 func getJWTSecretKey(token *jwt.Token) (interface{}, error) {
