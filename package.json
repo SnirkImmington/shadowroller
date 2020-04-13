@@ -17,7 +17,6 @@
     "url": "https://github.com/snirkimmington/shadowroller/issues"
   },
   "devDependencies": {
-    "redux-logger": "^3.0.6",
     "gh-pages": "^2.2.0"
   },
   "dependencies": {
@@ -26,9 +25,11 @@
     "flow-bin": "^0.121.0",
     "flow-typed": "^3.1.0",
     "isomorphic-fetch": "^2.2.1",
+    "moment": "^2.24.0",
     "react": "^16.13",
     "react-bootstrap": "^1.0.0",
     "react-dom": "^16.13.1",
+    "react-moment": "^0.9.7",
     "react-scripts": "3.4.1",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
