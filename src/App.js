@@ -18,14 +18,19 @@ import * as server from 'server';
 
 const AppPadding: StyledComponent<> = styled.div`
     /* Phones: margin near the side of the screen */
-    margin: 0px .5em;
+    padding: .5em;
     display: flex;
     flex-direction: column;
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 4em);
 
     /* Tablet+: more margin on the sides */
     @media all and (min-width: 768px) {
-        margin: 0px 1.5em;
+        padding: 0.5em 1.5em;
         flex-direction: row;
+        align-items: stretch;
+        height: calc(100% - 3.4em);
     }
 `;
 
@@ -34,16 +39,18 @@ const AppLeft: StyledComponent<> = styled.div`
 
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
-        margin-right: 0.5em;
-        flex-grow: 3;
+        margin-right: 1.5em;
+        flex-grow: 1; /* Grows out */
+        height: 100%;
     }
 `;
 
 const AppRight: StyledComponent<> = styled.div`
     /* Phones: no padding needed. */
+    height: 100%; /* Always fill the rest of the screen. */
 
     @media all and (min-width: 768px) {
-        flex-grow: 1;
+        width: 28em;
     }
 `;
 
@@ -66,13 +73,13 @@ export default function App(props: {}) {
 
             <SRHeader game={game} expanded={showGameJoin} onClick={joinGameClicked} />
 
+                   { showGameJoin &&
+                       <JoinGamePrompt game={game} setShown={setShowGameJoin} />}
             <AppPadding>
 
                 <Event.DispatchCtx.Provider value={eventDispatch}>
 
                 <AppLeft>
-                   { showGameJoin &&
-                       <JoinGamePrompt game={game} setShown={setShowGameJoin} />}
                     <RollDicePrompt game={game}
                                     dispatch={eventDispatch} />
                 </AppLeft>

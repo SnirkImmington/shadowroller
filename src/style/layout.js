@@ -14,14 +14,16 @@ export const FlexColumn: StyledComponent<> = styled.div`
     flex-direction: column;
 `;
 
-const CardWrapper: StyledComponent<> = styled(FlexColumn)`
+export const CardWrapper: StyledComponent<{ grow?: bool }> = styled(FlexColumn)`
     border: 1px solid rgba(0, 0, 0, 0.2);
     margin-bottom: 0.5em;
+    ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 
-const CardBody: StyledComponent<> = styled.div`
+const CardBody: StyledComponent<{ grow?: bool }> = styled.div`
     padding: 5px;
     border-top: 1px solid rgba(0, 0, 0, 0.2);
+    ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 
 type CardTitleProps = { +color: string };
@@ -31,12 +33,16 @@ const CardTitle: StyledComponent<CardTitleProps> = styled(FlexRow)`
     padding: 5px;
 `;
 
-type CardProps = { color: string, +children: React.Node[] };
-export function Card({ color, children }: CardProps) {
+type CardProps = {
+    grow?: bool,
+    color: string,
+    +children: React.Node[]
+};
+export function Card({ color, children, grow }: CardProps) {
     return (
-        <CardWrapper>
+        <CardWrapper grow={grow}>
             <CardTitle color={color}>{ children[0] }</CardTitle>
-            <CardBody>
+            <CardBody grow={grow}>
                 {children.slice(1)}
             </CardBody>
         </CardWrapper>

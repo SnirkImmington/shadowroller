@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 import * as style from 'style';
 
 import * as Event from 'event';
@@ -25,7 +26,7 @@ export default function EventHistory({ eventList }: { eventList: Event.List}) {
     useEvents();
 
     return (
-        <style.Card color="slateGray">
+        <style.Card grow color="slateGray">
             <>
                 <b>Connected to a game?</b>
                 <b>reconnect?</b>

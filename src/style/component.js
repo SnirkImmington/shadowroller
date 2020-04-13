@@ -33,6 +33,17 @@ export const DiceSpinner: StyledComponent<> = styled.span`
     }
 `;
 
+export const DieIcon: StyledComponent<> = styled.span`
+    color: lightslategray;
+    font-weight: 900;
+    font-size: 2em;
+    padding: 0.2em;
+
+    &::after {
+        content: '\\2680';
+    }
+`;
+
 export const HashColored: StyledComponent<{ id: string }> = styled.b`
     color: ${props => srutil.hashedColor(props.id)}
 `;

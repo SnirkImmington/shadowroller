@@ -12,9 +12,12 @@ const SRHeader: StyledComponent<> = styled.header`
     height: 4em;
     padding: 0.9em;
     color: white;
-    margin-bottom: 1em;
     display: flex;
     align-items: center;
+
+    @media all and (min-width: 768px) {
+        height: 3.4em;
+    }
 `;
 
 const SRTitle = styled.h1`
