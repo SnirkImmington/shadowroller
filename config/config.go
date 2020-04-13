@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"os"
 	"strconv"
 )
@@ -11,7 +12,7 @@ var (
 	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
 	CookieAddress   = readString("COOKIE_ADDRESS", "localhost")
 	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
-	JWTSecretKey    = []byte(readString("SECRET_JWT", "1337s3cr3t"))
+	JWTSecretKey    = []byte(readString("SECRET_JWT", "133713371337"))
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)
 	TlsHost   = readString("TLS_HOST", "https://shadowroller.immington.industries")
@@ -46,7 +47,7 @@ func readInt(name string, defaultValue int) int {
 	}
 	val, err := strconv.Atoi(envVal)
 	if err != nil {
-		return defaultValue
+		panic("Unable to read " + name + ": " + envVal)
 	}
 	return val
 }
@@ -58,7 +59,19 @@ func readBool(name string, defaultValue bool) bool {
 	}
 	val, err := strconv.ParseBool(envVal)
 	if err != nil {
-		return defaultValue
+		panic("Unable to read " + name + ": " + envVal)
+	}
+	return val
+}
+
+func readKey(name string, defaultValue string) []byte {
+	envVal, ok := os.LookupEnv("SR_" + name)
+	if !ok {
+		return []byte(defaultValue)
+	}
+	val, err := base64.StdEncoding.DecodeString(envVal)
+	if err != nil {
+		panic("Unable to decode key " + name)
 	}
 	return val
 }
