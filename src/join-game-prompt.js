@@ -43,25 +43,18 @@ const Explanation = styled.span`
     color: #666;
 `;
 
-const Form = styled.div`
-    display: flex;
-    flex-direction: column;
-`;
-
 const FormRow = styled(style.FlexRow)`
     margin: .5em 0px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
 `;
 
 const FormLabel = styled.label`
-    margin: auto 5px;
     /*margin-right: 0.5em;*/
     /*flex-basis: 0;*/
 `;
 
 const Input = styled.input`
     /*border-radius: 0px;*/
+    min-width: 7em;
 `;
 
 const GameIDInput = styled(Input)`
@@ -173,13 +166,12 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
     }
 
     return (
-        <style.Card color="dimGray">
-            <BoxTitle>Join Game</BoxTitle>
+        <style.CardWrapper color="dimGray">
             <Explanation className="form-text">
                 Join a game if you've been given a Game ID.
             </Explanation>
             <form id="join-game-form">
-                <Form>
+                <style.FlexColumn>
                     <FormRow>
                         <FormLabel htmlFor="join-game-id">
                             Game ID
@@ -189,8 +181,6 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
                                      onChange={onGameIDChange}
                                      value={gameID}
                                      disabled={status === "loading"} />
-                    </FormRow>
-                    <FormRow>
                         <FormLabel htmlFor="join-game-player-name">
                             Player Name
                         </FormLabel>
@@ -218,8 +208,42 @@ export default function JoinGamePrompt({ game, setShown }: Props) {
                             Join
                         </JoinButton>
                     </FormRow>
-                </Form>
+                </style.FlexColumn>
             </form>
-        </style.Card>
+        </style.CardWrapper>
     )
+}
+
+export function JoinTwo() {
+    let onGameIDChange = null;
+    let gameID = '';
+    let status = "ready";
+    let playerName = "smurf";
+    let onPlayerNameChange = null;
+    return (
+        <style.FlexColumn>
+            <style.FlexRow>
+                        <FormLabel htmlFor="join-game-id">
+                            Game ID
+                        </FormLabel>
+                        <GameIDInput type="text"
+                                     id="join-game-id"
+                                     onChange={onGameIDChange}
+                                     value={gameID}
+                                     disabled={status === "loading"} />
+                        <FormLabel htmlFor="join-game-player-name">
+                            Player Name
+                        </FormLabel>
+                        <Input type="text"
+                               id="join-game-player-name"
+                               onChange={onPlayerNameChange}
+                               value={playerName}
+                               disabled={status === "loading"} />
+            </style.FlexRow>
+            <style.FlexRow>
+                <style.DieIcon />
+                <span>Join a game if you've been given a Game ID.</span>
+            </style.FlexRow>
+        </style.FlexColumn>
+    );
 }
