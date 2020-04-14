@@ -1,7 +1,5 @@
 // @flow
 
-import './App.css';
-
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
@@ -21,13 +19,11 @@ const AppPadding: StyledComponent<> = styled.div`
     padding: .5em;
     display: flex;
     flex-direction: column;
-    position: absolute;
-    width: 100%;
     height: calc(100% - 4em);
 
     /* Tablet+: more margin on the sides */
     @media all and (min-width: 768px) {
-        padding: 0.5em 1.5em;
+        padding: 1.5em;
         flex-direction: row;
         align-items: stretch;
         height: calc(100% - 3.4em);
