@@ -9,7 +9,7 @@ import * as Event from 'event';
 import * as Records from 'event/record';
 import { useEvents } from 'server';
 
-function EventRecord({ event }: { event: Event.Action}) {
+function EventRecord({ event }: { event: Event.Event}) {
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} />;
         case "gameJoin": return <Records.GameJoinRecord event={event} />;

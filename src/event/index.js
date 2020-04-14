@@ -27,47 +27,35 @@ export type GameJoin = {
     id?: number
 };
 
-export type GameConnect = {
-    +ty: "gameConnect",
-    +connected: bool,
-    id?: number
-};
-
 export type PlayerJoin = {
     +ty: "playerJoin",
     +player: Game.Player,
     ...EventInfo
 };
 
-export type Action =
+export type Event =
 | LocalRoll
 | GameJoin
 | GameRoll
-| GameConnect
 | PlayerJoin
 ;
 
 export type List = {|
-    +eventID: number,
-    +events: Action[]
+    +events: Event[]
 |};
 
-export type Dispatch = (Action) => void;
-export type Reducer = (List, Action) => List;
+export type Dispatch = (Event) => void;
+export type Reducer = (List, Event) => List;
 
 let reduce: Reducer;
-function eventReduce(state: List, event: Action): List {
-    if (!event.id || event.id === 0) {
-        event.id = state.eventID; // Local events are negative.
-    }
+function eventReduce(state: List, event: Event): List {
     return {
-        eventID: state.eventID - 1,
         events: [event, ...state.events]
     };
 }
 
 if (process.env.NODE_ENV !== "production") {
-    reduce = function(state: List, event: Action): List {
+    reduce = function(state: List, event: Event): List {
         const result = eventReduce(state, event);
         console.log("New event ", event);
         return result;
@@ -77,7 +65,7 @@ else {
     reduce = eventReduce;
 }
 
-export const defaultState: List = { events: [], eventID: 0 };
+export const defaultState: List = { events: [] };
 
 export { reduce };
 
