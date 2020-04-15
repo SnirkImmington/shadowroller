@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 import { Button } from 'style';
 
 import * as Game from 'game';
+import * as server from 'server';
 
 const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
@@ -32,7 +33,7 @@ const SRTitle = styled.h1`
     }
 `;
 
-const JoinButton = styled(Button)`
+const JoinButtonUI = styled(Button)`
     color: white;
     background: #222;
     border: 3px solid white;
@@ -62,40 +63,67 @@ const JoinButton = styled(Button)`
     }*/
 `;
 
-export type Props = {
+type Props = {
     +game: Game.State,
-    +expanded: bool,
-    +onClick: () => any,
+    +connection: server.Connection,
+    +menuShown: bool,
+    +onClick: () => void
 }
 
-export default function Header({ game, expanded, onClick }: Props) {
-    function handleJoinClick(event: SyntheticInputEvent<HTMLButtonElement>) {
-        event.preventDefault();
-        onClick();
-    }
-
-    let message;
-    if (game) {
-        if (game.connected) {
-            message = <tt>{game.gameID}</tt>;
+function JoinButton({ game, connection, menuShown, onClick }: Props) {
+    let disabled = false;
+    let message = "";
+    if (!game) {
+        switch (connection) {
+            case "offline":
+                message = menuShown ? "Cancel" : "Join";
+                break;
+            case "connecting":
+                message = menuShown ? "Cancel" : "Connecting";
+                disabled = !menuShown;
+                break;
+            case "connected": // We should have a game if we're connected.
+                message = "Error!";
+                break;
+            case "errored":
+                message = "Try again";
+                break;
+            default:
+                (connection: empty); // eslint-disable-line no-unused-expressions
         }
-        else {
-            message = "Disconnected";
+    }
+    else { // Connected to game
+        switch (connection) {
+            case "offline":
+                message = menuShown ? "Cancel" : "Disconnected";
+                break;
+            case "connecting":
+                message = menuShown ? "Cancel" : "Reconnecting";
+                disabled = !menuShown;
+                break;
+            case "connected":
+                message = menuShown ? "Cancel" : game.gameID;
+                break;
+            case "errored":
+                message = "Error";
+                break;
+            default:
+                (connection: empty); // eslint-disable-line no-unused-expressions
         }
-    }
-    else if (expanded) {
-        message = "Cancel";
-    }
-    else {
-        message = "Join";
     }
 
     return (
+        <JoinButtonUI disabled={disabled} onClick={onClick}>
+            {message}
+        </JoinButtonUI>
+    );
+}
+
+export default function Header(props: Props) {
+    return (
         <SRHeader>
             <SRTitle>Shadowroller</SRTitle>
-            <JoinButton expanded={expanded} onClick={handleJoinClick}>
-                {message}
-            </JoinButton>
+            <JoinButton {...props} />
         </SRHeader>
     );
 }

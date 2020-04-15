@@ -52,40 +52,48 @@ const AppRight: StyledComponent<> = styled.div`
 
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(Game.reduce, undefined);
-    // Not sure what the problem is here.
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
-    const [showGameJoin, setShowGameJoin] = React.useState(false);
+    const [connection, setConnection] = React.useState<server.Connection>("offline");
 
-    function joinGameClicked() {
-        setShowGameJoin((state) => !state);
+    React.useEffect(() =>
+        server.initialCookieCheck(gameDispatch, setConnection), []);
+
+    const [menuShown, setMenuShown] = React.useState<bool>(false);
+
+    function onGameButtonClick() { setMenuShown((prev) => !prev); }
+
+    let menu: React.Node = '';
+    if (menuShown) {
+        menu = connection !== "connected" ?
+            <Game.JoinMenu connection={connection}
+                           setConnection={setConnection}
+                           dispatch={gameDispatch} />
+            : <Game.StatusMenu game={game}
+                               setConnection={setConnection}
+                               dispatch={gameDispatch} />;
     }
-
-    React.useEffect(() => server.initialCookieCheck(gameDispatch, eventDispatch), []);
 
     // Page should be a flexbox.
     return (
         <Game.Ctx.Provider value={game}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
+        <Event.DispatchCtx.Provider value={eventDispatch}>
 
-            <SRHeader game={game} expanded={showGameJoin} onClick={joinGameClicked} />
-
-                   { showGameJoin &&
-                       <JoinGamePrompt game={game} setShown={setShowGameJoin} />}
+            <SRHeader game={game}
+                      connection={connection}
+                      menuShown={menuShown}
+                      onClick={onGameButtonClick} />
+            { menu }
             <AppPadding>
-
-                <Event.DispatchCtx.Provider value={eventDispatch}>
-
                 <AppLeft>
-                    <RollDicePrompt game={game}
-                                    dispatch={eventDispatch} />
+                    <RollDicePrompt connection={connection} dispatch={eventDispatch} />
                 </AppLeft>
                 <AppRight>
                     <EventHistory eventList={eventList} />
                 </AppRight>
-                </Event.DispatchCtx.Provider>
-
             </AppPadding>
 
+        </Event.DispatchCtx.Provider>
         </Game.DispatchCtx.Provider>
         </Game.Ctx.Provider>
     );
