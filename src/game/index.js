@@ -86,3 +86,6 @@ export { reduce };
 export type Dispatch = (Action) => void;
 export const Ctx = React.createContext<State>();
 export const DispatchCtx = React.createContext<Dispatch>((_) => {});
+
+export { JoinMenu } from './join-menu';
+export { StatusMenu } from './status-menu';
