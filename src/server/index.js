@@ -8,25 +8,27 @@ import * as Event from 'event';
 const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
 
-export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event.Dispatch) {
+export type Connection = "offline" | "connecting" | "connected" | "errored";
+export type SetConnection = (Connection) => void;
+
+export function initialCookieCheck(dispatch: Game.Dispatch, setConnection: SetConnection) {
     const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
     if (!authMatch) {
         return;
     }
     const auth = JSON.parse(atob(authMatch[1]));
+    setConnection("connecting");
     dispatch({
         ty: "join",
         gameID: auth.gid,
         player: { id: auth.pid, name: auth.pname },
         players: new Map()
     });
-    eventDispatch({
-        ty: "gameJoin", gameID: auth.gid
-    })
     getPlayers().then(players => {
         dispatch({
             ty: "setPlayers", players
-        })
+        });
+        setConnection("connected");
     })
 }
 
@@ -86,7 +88,7 @@ export function getPlayers(): Promise<Map<string, string>> {
             players.set(id, obj[id]);
         }
         return players;
-    })
+    });
 }
 
 export function postRoll(count: number): Promise<bool> {
@@ -146,27 +148,27 @@ export function useEvents() {
         };
         events.onopen = function() {
             console.log('Listening for events from the server.');
-            dispatch({
-                ty: "gameConnect", connected: true
-            });
+            // dispatch({
+            //     ty: "gameConnect", connected: true
+            // });
             gameDispatch({
                 ty: "connect", connected: true
             });
         };
         events.onerror = function(e) {
             console.log("Error receiving events!", e)
-            dispatch({
-                ty: "gameConnect", connected: false
-            });
+            // dispatch({
+            //     ty: "gameConnect", connected: false
+            // });
             gameDispatch({
                 ty: "connect", connected: false
             });
         }
         return () => {
             events.close();
-            dispatch({
-                ty: "gameConnect", connected: false
-            });
+            // dispatch({
+            //     ty: "gameConnect", connected: false
+            // });
             gameDispatch({
                 ty: "connect", connected: false
             });

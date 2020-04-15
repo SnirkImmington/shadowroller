@@ -21,23 +21,30 @@ export type GameRoll = {
     ...EventInfo
 };
 
-export type GameJoin = {
-    +ty: "gameJoin",
-    +gameID: string,
-    id?: number
-};
-
 export type PlayerJoin = {
     +ty: "playerJoin",
     +player: Game.Player,
     ...EventInfo
 };
 
+export type GameJoin = {
+    +ty: "gameJoin",
+    +gameID: string,
+    id?: number
+};
+
+export type GameLeave = {
+    +ty: "gameLeave",
+    +gameID: string,
+    id?: number
+};
+
 export type Event =
 | LocalRoll
-| GameJoin
 | GameRoll
 | PlayerJoin
+| GameJoin
+| GameLeave
 ;
 
 export type List = {|

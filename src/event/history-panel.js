@@ -13,7 +13,8 @@ function EventRecord({ event }: { event: Event.Event}) {
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} />;
         case "gameJoin": return <Records.GameJoinRecord event={event} />;
-        case "gameConnect": return <Records.GameConnectRecord event={event} />;
+        case "gameLeave": return "gameleave";
+        //case "gameConnect": return <Records.GameConnectRecord event={event} />;
         case "gameRoll": return <Records.GameRollRecord event={event} />;
         case "playerJoin": return <Records.PlayerJoinRecord event={event} />;
         default:

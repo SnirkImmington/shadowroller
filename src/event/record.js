@@ -33,7 +33,7 @@ const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
 export function LocalRollRecord({ event }: { event: Event.LocalRoll }) {
     return (
         <DoubleRecord color="slateGray">
-            {`Rolled ${event.dice.length}`}
+            {`Rolled ${event.dice.length} dice`}
             <DiceList dice={event.dice} showNumbers={false} />
         </DoubleRecord>
     );
@@ -62,16 +62,8 @@ export function GameRollRecord({ event }: { event: Event.GameRoll }) {
 export function GameJoinRecord({ event }: { event: Event.GameJoin }) {
     const formattedID: React.Node = <tt>{event.gameID}</tt>
     return (
-        <SingleRecord color="mediumseagreen">
-            {`Joined `}{formattedID}
-        </SingleRecord>
-    );
-}
-
-export function GameConnectRecord({ event }: { event: Event.GameConnect }) {
-    return (
-        <SingleRecord>
-            {`${event.connected ? 'Connected to' : 'Disconnected from'} game`}
+        <SingleRecord color="#259950">
+            {`Joined `}{formattedID}.
         </SingleRecord>
     );
 }
