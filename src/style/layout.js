@@ -14,6 +14,12 @@ export const FlexColumn: StyledComponent<> = styled.div`
     flex-direction: column;
 `;
 
+export const ColumnToRow: StyledComponent<> = styled(FlexColumn)`
+    @media all and (min-width: 768px) {
+        flex-direction: row;
+    }
+`;
+
 export const CardWrapper: StyledComponent<{ grow?: bool }> = styled(FlexColumn)`
     border: 1px solid rgba(0, 0, 0, 0.2);
     margin-bottom: 0.5em;

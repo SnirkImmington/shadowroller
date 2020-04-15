@@ -9,7 +9,7 @@ import * as Game from 'game';
 import * as Event from 'event';
 
 import NumericInput from 'components/numeric-input';
-import { postRoll } from 'server';
+import * as server from 'server';
 import { roll } from 'srutil';
 
 const FormRow = styled.div`
@@ -39,10 +39,10 @@ const RollButton = styled.button`
 `;
 
 type Props = {
+    +connection: server.Connection;
     +dispatch: Event.Dispatch;
-    +game: Game.State;
 };
-export default function RollDicePrompt({ game, dispatch }: Props) {
+export default function RollDicePrompt({ connection, dispatch }: Props) {
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [rollLoading, setRollLoading] = React.useState(false);
 
@@ -52,7 +52,7 @@ export default function RollDicePrompt({ game, dispatch }: Props) {
 
     function onRollClicked() {
         if (!diceCount) { return; }
-        if (!game || !game.connected) {
+        if (connection !== "connected") {
             const dice = roll(diceCount);
             dispatch({
                 ty: "localRoll", dice
@@ -60,11 +60,11 @@ export default function RollDicePrompt({ game, dispatch }: Props) {
         }
         else {
             setRollLoading(true);
-            postRoll(diceCount)
+            server.postRoll(diceCount)
                 .then(res => {
                     setRollLoading(false);
                 })
-                .catch(err => {
+                .catch((err: mixed) => {
                     console.log("Error rolling:", err);
                     setRollLoading(false);
                 });

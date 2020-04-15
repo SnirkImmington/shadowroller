@@ -6,7 +6,6 @@ import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as Game from 'game';
-import type { Connection } from 'connection';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
@@ -27,8 +26,17 @@ const LOADING_FLAVOR = [
     "Brute Force-ing...",
 ];
 
+const Input: StyledComponent<> = styled.input`
+    mid-width: 7em;
+`;
+
+const GameIDInput = styled(Input)`
+    font-family: monospace;
+    min-width: 7em;
+`;
+
 type Props = {
-    connection: Connection,
+    connection: server.Connection,
     setConnection: (Connection) => void,
     dispatch: Game.Dispatch
 };
@@ -59,9 +67,9 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
                 });
                 setConnection("connected");
             })
-            .catch(err => {
+            .catch((err: mixed) => {
                 if (process.env.NODE_ENV !== "production") {
-                    console.log("Error connecting")
+                    console.log("Error connecting", err);
                 }
                 setConnection("offline");
             })
@@ -72,7 +80,26 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
         <UI.CardWrapper color="dimGray">
             Join a game if you've been given a Game ID.
             <form id="join-game-menu">
+                <UI.ColumnToRow>
+                    <UI.FlexRow>
+                        <GameIDInput type="text" id="join-game-id"
+                                     placeholder={"Game ID"}
+                                     value={gameID} onChange={onGameIDChange}
+                                     disabled={connection === "connecting"} />
+                        <Input type="text" id="join-player-name"
+                               placeholder={"Player name"}
+                               value={playerName} onChange={onPlayerNameChange}
+                               disabled={connection === "connecting"} />
 
+                    </UI.FlexRow>
+                    <UI.FlexRow>
+                        <span>Flavortext breh</span>
+                        <button id="join-game-submit" onClick={onSubmit}
+                                disabled={!ready}>
+                            Join
+                        </button>
+                    </UI.FlexRow>
+                </UI.ColumnToRow>
             </form>
         </UI.CardWrapper>
     )

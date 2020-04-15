@@ -16,7 +16,7 @@ export type State = ?{|
 
 export type Action =
 | { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
-| { +ty: "connect", connected: bool }
+| { +ty: "leave" }
 | { +ty: "playerName", name: string }
 | { +ty: "setPlayers", players: Map<string, string> }
 | { +ty: "newPlayer", name: string, id: string }
@@ -31,13 +31,12 @@ function gameReduce(state: State, action: Action): State {
                 gameID: action.gameID,
                 player: action.player,
                 players: action.players
+            };
+        case "leave":
+            if (state) {
+                document.cookie ="srAuth=00; Max-Age=1";
             }
-        case "connect":
-            if (!state) { return state; }
-            return {
-                ...state,
-                connected: action.connected,
-            }
+            return null;
         case "playerName":
             if (!state) { return state; }
             return {

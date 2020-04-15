@@ -19,7 +19,20 @@ export function StatusMenu({ game, dispatch, setConnection}: Props) {
     if (!game) {
         return 'Something messed up, please press the join button again';
     }
+
+    function handleLeave() {
+        dispatch({ ty: "leave" });
+        setConnection("offline");
+    }
+
     return (
-        `Connected to ${game.gameID} as ${game.player.name}.`
-    );
+        <UI.CardWrapper color="dimgray">
+            <UI.FlexRow>
+                <span>
+                    Connected to {game.gameID} as {game.player.name}.
+                </span>
+                <button onClick={handleLeave}>Leave</button>
+            </UI.FlexRow>
+        </UI.CardWrapper>
+    )
 }
