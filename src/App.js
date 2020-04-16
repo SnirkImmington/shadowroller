@@ -16,17 +16,16 @@ import * as server from 'server';
 
 const AppPadding: StyledComponent<> = styled.div`
     /* Phones: margin near the side of the screen */
-    padding: .5em;
+    height: 100%; /* */
+    padding: 0.5em;
     display: flex;
     flex-direction: column;
-    height: calc(100% - 4em);
 
     /* Tablet+: more margin on the sides */
     @media all and (min-width: 768px) {
         padding: 1.5em;
         flex-direction: row;
         align-items: stretch;
-        height: calc(100% - 3.4em);
     }
 `;
 
@@ -37,13 +36,12 @@ const AppLeft: StyledComponent<> = styled.div`
     @media all and (min-width: 768px) {
         margin-right: 1.5em;
         flex-grow: 1; /* Grows out */
-        height: 100%;
     }
 `;
 
 const AppRight: StyledComponent<> = styled.div`
     /* Phones: no padding needed. */
-    height: 100%; /* Always fill the rest of the screen. */
+    flex-grow: 1; /* Always go as high as possible. */
 
     @media all and (min-width: 768px) {
         width: 28em;
