@@ -26,18 +26,9 @@ const LOADING_FLAVOR = [
     "Brute Force-ing...",
 ];
 
-const Input: StyledComponent<> = styled.input`
-    mid-width: 7em;
-`;
-
-const GameIDInput = styled(Input)`
-    font-family: monospace;
-    min-width: 7em;
-`;
-
 type Props = {
     connection: server.Connection,
-    setConnection: (Connection) => void,
+    setConnection: server.SetConnection,
     dispatch: Game.Dispatch
 };
 export function JoinMenu({ connection, setConnection, dispatch }: Props) {
@@ -77,23 +68,27 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
     }
 
     return (
-        <UI.CardWrapper color="dimGray">
-            Join a game if you've been given a Game ID.
+        <UI.Menu color="dimGray">
             <form id="join-game-menu">
                 <UI.ColumnToRow>
+                    <span>
+                        Join a game if you've been given a Game ID.
+                    </span>
                     <UI.FlexRow>
-                        <GameIDInput type="text" id="join-game-id"
-                                     placeholder={"Game ID"}
-                                     value={gameID} onChange={onGameIDChange}
-                                     disabled={connection === "connecting"} />
-                        <Input type="text" id="join-player-name"
-                               placeholder={"Player name"}
-                               value={playerName} onChange={onPlayerNameChange}
-                               disabled={connection === "connecting"} />
+                        <UI.Input monospace id="join-game-id"
+                                  placeholder={"Game ID"}
+                                  value={gameID} onChange={onGameIDChange}
+                                  disabled={connection === "connecting"} />
+                        <UI.Input id="join-player-name"
+                                  placeholder={"Player name"}
+                                  value={playerName} onChange={onPlayerNameChange}
+                                  disabled={connection === "connecting"} />
 
                     </UI.FlexRow>
                     <UI.FlexRow>
-                        <span>Flavortext breh</span>
+                        <span>
+                            Flavortext breh
+                        </span>
                         <button id="join-game-submit" onClick={onSubmit}
                                 disabled={!ready}>
                             Join
@@ -101,6 +96,6 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
                     </UI.FlexRow>
                 </UI.ColumnToRow>
             </form>
-        </UI.CardWrapper>
+        </UI.Menu>
     )
 }

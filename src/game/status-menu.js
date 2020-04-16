@@ -26,13 +26,13 @@ export function StatusMenu({ game, dispatch, setConnection}: Props) {
     }
 
     return (
-        <UI.CardWrapper color="dimgray">
+        <UI.Menu>
             <UI.FlexRow>
                 <span>
                     Connected to {game.gameID} as {game.player.name}.
                 </span>
                 <button onClick={handleLeave}>Leave</button>
             </UI.FlexRow>
-        </UI.CardWrapper>
-    )
+        </UI.Menu>
+    );
 }
