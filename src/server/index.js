@@ -104,18 +104,16 @@ export function postRoll(count: number): Promise<bool> {
         }).then(response => response.ok);
 }
 
-export function useEvents() {
-    const connected = React.useContext(Game.Ctx)?.connected ?? false;
+export function useEvents(setConnection: SetConnection) {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     React.useEffect(() => {
-        if (!connected) {
-            return;
-        }
+        console.log("Creating a new eventsource!!!");
         const events = new EventSource(BACKEND_URL + "events", {
             withCredentials: true
         });
+        events.createdAt = new Date();
         events.onmessage = function(e) {
             console.log('Event received', e.data);
             let event;
@@ -146,32 +144,26 @@ export function useEvents() {
                 console.log('Received unknown event', event);
             }
         };
+        events.addEventListener("ping", function(event: any) {
+            if (process.env.NODE_ENV !== "production") {
+                console.log("Ping /events", (new Date() - events.createdAt) / 1000);
+            }
+        });
         events.onopen = function() {
             console.log('Listening for events from the server.');
-            // dispatch({
-            //     ty: "gameConnect", connected: true
-            // });
-            gameDispatch({
-                ty: "connect", connected: true
-            });
         };
         events.onerror = function(e) {
-            console.log("Error receiving events!", e)
-            // dispatch({
-            //     ty: "gameConnect", connected: false
-            // });
-            gameDispatch({
-                ty: "connect", connected: false
-            });
+            console.error("Error receiving events!", e);
+            console.log("Lost connection after", (new Date() - events.createdAt) / 1000, "seconds");
+            setConnection("errored");
         }
         return () => {
+            console.log("Closing events!!!");
             events.close();
+            setConnection("offline");
             // dispatch({
             //     ty: "gameConnect", connected: false
             // });
-            gameDispatch({
-                ty: "connect", connected: false
-            });
         }
-    }, [dispatch, gameDispatch, connected]);
+    }, [dispatch, gameDispatch, setConnection]);
 }
