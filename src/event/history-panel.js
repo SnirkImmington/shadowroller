@@ -5,9 +5,10 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as style from 'style';
 
+import * as Game from 'game';
 import * as Event from 'event';
 import * as Records from 'event/record';
-import { useEvents } from 'server';
+import * as server from 'server';
 
 function EventRecord({ event }: { event: Event.Event}) {
     switch (event.ty) {
@@ -23,15 +24,21 @@ function EventRecord({ event }: { event: Event.Event}) {
     }
 }
 
-export default function EventHistory({ eventList }: { eventList: Event.List}) {
-    useEvents();
+type Props = {
+    +game: Game.State,
+    +eventList: Event.List,
+    +connection: server.Connection,
+    +setConnection: server.SetConnection
+}
+export default function EventHistory({ game, eventList, connection, setConnection }: Props) {
+    server.useEvents(setConnection);
 
     return (
         <style.Card grow color="slateGray">
-            <>
-                <b>Connected to a game?</b>
-                <b>reconnect?</b>
-            </>
+            <div>
+                {game ? `Rolls from ${game.gameID}` : 'Roll history'}
+                {game ? connection : ''}
+            </div>
             {''}
             {eventList.events.map(e => <EventRecord event={e} key={e.id} />)}
         </style.Card>

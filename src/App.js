@@ -87,7 +87,10 @@ export default function App(props: {}) {
                     <RollDicePrompt connection={connection} dispatch={eventDispatch} />
                 </AppLeft>
                 <AppRight>
-                    <EventHistory eventList={eventList} />
+                    <EventHistory game={game}
+                                  connection={connection}
+                                  setConnection={setConnection}
+                                  eventList={eventList} />
                 </AppRight>
             </AppPadding>
 
