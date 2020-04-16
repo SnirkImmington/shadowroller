@@ -18,12 +18,16 @@ var (
 	TlsHost   = readString("TLS_HOST", "https://shadowroller.immington.industries")
 	CertDir   = readString("CERT_DIR", "/var/sr-server/cert/")
 	// Timeouts
-	ReadTimeoutSecs     = readInt("READ_TIMEOUT_SECS", 30)
-	WriteTimeoutSecs    = readInt("WRITE_TIMEOUT_SECS", 30)
-	IdleTimeoutSecs     = readInt("IDLE_TIMEOUT_SECS", 60)
-	SSEWriteTimeoutSecs = readInt("SSE_WRITE_TIMEOUT_SECS", 30)
-	SSERetryTimeSecs    = readInt("SSE_RETRY_TIME_SECS", 10)
-	MaxHeaderBytes      = readInt("MAX_HEADER_BYTES", 1<<20)
+	ReadTimeoutSecs  = readInt("READ_TIMEOUT_SECS", 30)
+	WriteTimeoutSecs = readInt("WRITE_TIMEOUT_SECS", 30)
+	IdleTimeoutSecs  = readInt("IDLE_TIMEOUT_SECS", 60)
+	// I'd like to have write timeouts, but those are infamously set globally for the
+	// server. The ResponseWriters we get can't set individual timeouts, so we can't
+	// have write timeouts for regular requests AND sse.
+	//SSEWriteTimeoutSecs = readInt("SSE_WRITE_TIMEOUT_SECS", 30)
+	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 5)
+	SSEPingSecs        = readInt("SSE_PING_SECS", 20)
+	MaxHeaderBytes     = readInt("MAX_HEADER_BYTES", 1<<20)
 	// LibraryOptions
 	RedisUrl = readString("REDIS_URL", "redis://redis:6379")
 	// Backend options

@@ -62,9 +62,7 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 				log.Printf("%v: Canceling event read for %v", goID, gameID)
 				return
 			default:
-				log.Print(goID, " not canceled yet")
 			}
-			log.Print(goID, " Checking Redis")
 
 			data, err := redis.Values(conn.Do(
 				"XREAD", "BLOCK", 0, "STREAMS", "event:"+gameID, "$",

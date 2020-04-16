@@ -197,15 +197,15 @@ func handleEvents(response Response, request *Request) {
 	events, cancelled := receiveEvents(auth.GameID)
 	defer func() { cancelled <- true }()
 
+	selectInterval := time.Duration(config.SSEPingSecs) * time.Second
 	for {
 		if !stream.IsOpen() {
-			log.Print(goID, ": ", auth.PlayerID, " disconnected.")
+			log.Print(goID, " ", auth.PlayerID, " disconnected.")
 			return
 		}
 
 		select {
 		case event, open := <-events:
-			log.Print(goID, " Receive: ", event, open)
 			if open {
 				log.Print(goID, " ", event, " for ", auth.PlayerID)
 				err := stream.WriteString(event)
@@ -219,8 +219,13 @@ func handleEvents(response Response, request *Request) {
 				stream.Close()
 				return
 			}
-		case <-time.After(3 * time.Second):
-			// we can check on our stream again!
+		case <-time.After(selectInterval):
+			err := stream.WriteEvent("ping", []byte("hi"))
+			if err != nil {
+				log.Print(goID, " Unable to ping stream: ", err)
+				stream.Close()
+				return
+			}
 		}
 	}
 }

@@ -25,7 +25,7 @@ import (
 */
 
 var sseUpgrader = sse.Upgrader{
-	RetryTime: time.Duration(config.SSERetryTimeSecs) * time.Second,
+	RetryTime: time.Duration(config.SSEClientRetrySecs) * time.Second,
 }
 
 /*
@@ -36,8 +36,8 @@ var sseUpgrader = sse.Upgrader{
 */
 func makeServerFromHandler(handler http.Handler) *http.Server {
 	return &http.Server{
-		ReadTimeout:    time.Duration(config.ReadTimeoutSecs) * time.Second,
-		WriteTimeout:   time.Duration(config.WriteTimeoutSecs) * time.Second,
+		ReadTimeout: time.Duration(config.ReadTimeoutSecs) * time.Second,
+		//WriteTimeout:   time.Duration(config.WriteTimeoutSecs) * time.Second,
 		IdleTimeout:    time.Duration(config.IdleTimeoutSecs) * time.Second,
 		MaxHeaderBytes: config.MaxHeaderBytes,
 		Handler:        handler,
