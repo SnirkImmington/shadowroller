@@ -31,11 +31,8 @@ type DieColorOptions = {
 }
 */
 
-const numbers = ["one", "two", "three", "four", "five", "six"]
-
 type DieProps = { roll: number };
 export const Die: StyledComponent<DieProps> = styled.i`
-    font-size: 2.2em;
     font-weight: 900;
     ${({roll}) =>
         `color: ${
@@ -48,9 +45,14 @@ export const Die: StyledComponent<DieProps> = styled.i`
         ${({roll}) =>
             `content: '${String.fromCharCode(0x267F + roll)}';`}
     }
+
+    font-size: 1.9em;
+    @media all and (min-width: 768px) {
+        font-size: 2.2em;
+    }
 `;
 
-const ListWrapper = styled(UI.FlexRow)`
+const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     max-width: 100%;
     overflow-y: auto;
 `;
