@@ -25,6 +25,8 @@ func readBodyJSON(request *Request, value interface{}) error {
 }
 
 func writeBodyJSON(response Response, value interface{}) error {
+	response.Header().Set("Content-Type", "text/json")
+	response.WriteHeader(http.StatusOK)
 	return json.NewEncoder(response).Encode(value)
 }
 
