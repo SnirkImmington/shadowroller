@@ -5,6 +5,14 @@ import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as srutil from 'srutil';
 
+type InputProps = { monospace? : bool };
+export const Input: StyledComponent<InputProps> = styled.input.attrs(props => ({
+    type: "text",
+}))`
+    font-family: ${props => props.monospace ? "monospace" : "inherit"};
+    min-width: 6em;
+`;
+
 export const Button: StyledComponent<> = styled.button`
     font-size: 1em;
     padding: 0.2em 1em;

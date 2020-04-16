@@ -14,6 +14,11 @@ export const FlexColumn: StyledComponent<> = styled.div`
     flex-direction: column;
 `;
 
+export const Menu: StyledComponent<> = styled.div`
+    background-color: rgba(22, 22, 22, 0.2);
+    padding: 0.5em;
+`;
+
 export const ColumnToRow: StyledComponent<> = styled(FlexColumn)`
     @media all and (min-width: 768px) {
         flex-direction: row;
