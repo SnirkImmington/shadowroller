@@ -41,10 +41,10 @@ const AppLeft: StyledComponent<> = styled.div`
 
 const AppRight: StyledComponent<> = styled.div`
     /* Phones: no padding needed. */
-    flex-grow: 1; /* Always go as high as possible. */
+    height: 100%; /* Always go as high as possible. */
 
     @media all and (min-width: 768px) {
-        width: 28em;
+        width: 30em;
     }
 `;
 

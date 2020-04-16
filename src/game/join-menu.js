@@ -26,6 +26,13 @@ const LOADING_FLAVOR = [
     "Brute Force-ing...",
 ];
 
+const MenuLayout = styled(UI.ColumnToRow)`
+
+    @media all and (min-width: 768px) {
+        align-items: center;
+    }
+`;
+
 type Props = {
     connection: server.Connection,
     setConnection: server.SetConnection,
@@ -70,7 +77,7 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
     return (
         <UI.Menu color="dimGray">
             <form id="join-game-menu">
-                <UI.ColumnToRow>
+                <MenuLayout>
                     <span>
                         Join a game if you've been given a Game ID.
                     </span>
@@ -94,7 +101,7 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
                             Join
                         </button>
                     </UI.FlexRow>
-                </UI.ColumnToRow>
+                </MenuLayout>
             </form>
         </UI.Menu>
     )
