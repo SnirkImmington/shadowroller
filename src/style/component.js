@@ -10,14 +10,16 @@ export const Input: StyledComponent<InputProps> = styled.input.attrs(props => ({
     type: "text",
 }))`
     font-family: ${props => props.monospace ? "monospace" : "inherit"};
-    min-width: 6em;
+    max-width: 10em;
+    margin: 0px 0.25em;
 `;
 
 export const Button: StyledComponent<> = styled.button`
     font-size: 1em;
-    padding: 0.2em 1em;
+    padding: 0.1em 1em;
     border-radius: 0px;
     align-text: center;
+    margin: 0px 0.25em;
 `;
 
 const diceFrames = keyframes`

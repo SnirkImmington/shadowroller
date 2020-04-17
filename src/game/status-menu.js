@@ -2,13 +2,27 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
+//import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as Game from 'game';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
+
+const Message = styled.span`
+    color: rgba(0, 0, 0.9);
+
+    margin: 0px 1em;
+`;
+
+const LeaveButton = styled(UI.Button)`
+    margin-left: auto;
+    margin-right: 1em;
+    @media all and (min-width: 768px) {
+        margin-left: 0px;
+    }
+`;
 
 type Props = {
     game: Game.State,
@@ -17,7 +31,7 @@ type Props = {
 };
 export function StatusMenu({ game, dispatch, setConnection}: Props) {
     if (!game) {
-        return 'Something messed up, please press the join button again';
+        return 'Something messed up, maybe press the join button again?';
     }
 
     function handleLeave() {
@@ -28,10 +42,12 @@ export function StatusMenu({ game, dispatch, setConnection}: Props) {
     return (
         <UI.Menu>
             <UI.FlexRow>
-                <span>
+                <Message>
                     Connected to {game.gameID} as {game.player.name}.
-                </span>
-                <button onClick={handleLeave}>Leave</button>
+                </Message>
+                <LeaveButton onClick={handleLeave}>
+                    Leave
+                </LeaveButton>
             </UI.FlexRow>
         </UI.Menu>
     );

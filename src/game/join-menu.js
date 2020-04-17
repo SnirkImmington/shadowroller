@@ -10,25 +10,10 @@ import * as Game from 'game';
 import * as server from 'server';
 import * as srutil from 'srutil';
 
-const JOIN_FLAVOR = [
-    "See you on the flip side.",
-    "Good luck out there.",
-];
-
-const LOADING_FLAVOR = [
-    "Hacking you in...",
-    "Acquiring marks...",
-    "Authenticating...",
-    "Acquiring intel...",
-    "Starting the run...",
-    "Contacting Mr. J...",
-    "Hack on the Fly-ing...",
-    "Brute Force-ing...",
-];
-
 const MenuLayout = styled(UI.ColumnToRow)`
-
+    padding: 0px 0.5em;
     @media all and (min-width: 768px) {
+        padding: 0px 1em;
         align-items: center;
     }
 `;
@@ -78,10 +63,10 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
         <UI.Menu color="dimGray">
             <form id="join-game-menu">
                 <MenuLayout>
-                    <span>
+                    <span style={{'margin-right': 'auto'}}>
                         Join a game if you've been given a Game ID.
                     </span>
-                    <UI.FlexRow>
+                    <UI.ColumnToRow>
                         <UI.Input monospace id="join-game-id"
                                   placeholder={"Game ID"}
                                   value={gameID} onChange={onGameIDChange}
@@ -91,15 +76,12 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
                                   value={playerName} onChange={onPlayerNameChange}
                                   disabled={connection === "connecting"} />
 
-                    </UI.FlexRow>
+                    </UI.ColumnToRow>
                     <UI.FlexRow>
-                        <span>
-                            Flavortext breh
-                        </span>
-                        <button id="join-game-submit" onClick={onSubmit}
-                                disabled={!ready}>
+                        <UI.Button id="join-game-submit" onClick={onSubmit}
+                                   disabled={!ready}>
                             Join
-                        </button>
+                        </UI.Button>
                     </UI.FlexRow>
                 </MenuLayout>
             </form>
