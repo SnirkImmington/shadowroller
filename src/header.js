@@ -44,7 +44,7 @@ const JoinButtonUI = styled(Button)`
 
     margin-left: auto;
 
-    margin-right: 1em;
+    margin-right: 0.25em;
     @media all and (min-width: 768px) {
         margin-right: 4em;
     }
