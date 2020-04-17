@@ -1,14 +1,11 @@
 // @flow
 
-import * as React from 'react';
-
 import * as Game from 'game';
-import * as Event from 'event';
 
-const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
+export const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
 
-export type Connection = "offline" | "connecting" | "connected" | "errored";
+export type Connection = "offline" | "connecting" | "connected" | "disconnected";
 export type SetConnection = (Connection) => void;
 
 export function initialCookieCheck(dispatch: Game.Dispatch, setConnection: SetConnection) {
@@ -104,66 +101,4 @@ export function postRoll(count: number): Promise<bool> {
         }).then(response => response.ok);
 }
 
-export function useEvents(setConnection: SetConnection) {
-    const gameDispatch = React.useContext(Game.DispatchCtx);
-    const dispatch = React.useContext(Event.DispatchCtx);
-
-    React.useEffect(() => {
-        console.log("Creating a new eventsource!!!");
-        const events = new EventSource(BACKEND_URL + "events", {
-            withCredentials: true
-        });
-        events.createdAt = new Date();
-        events.onmessage = function(e) {
-            console.log('Event received', e.data);
-            let event;
-            try {
-                event = JSON.parse(e.data);
-            }
-            catch {
-                console.log("Invalid event:", e);
-                return;
-            }
-            const ts = Date.now();
-
-            if (event.ty === "roll") {
-                console.log('Roll:', event);
-                dispatch({
-                    ty: "gameRoll", id: event.id, ts,
-                    playerID: event.pID,
-                    dice: event.roll
-                });
-            }
-            else if (event.ty === "playerJoin") {
-                dispatch({
-                    ty: "playerJoin", id: event.id, ts,
-                    player: { id: event.pID, name: event.pName }
-                });
-            }
-            else {
-                console.log('Received unknown event', event);
-            }
-        };
-        events.addEventListener("ping", function(event: any) {
-            if (process.env.NODE_ENV !== "production") {
-                console.log("Ping /events", (new Date() - events.createdAt) / 1000);
-            }
-        });
-        events.onopen = function() {
-            console.log('Listening for events from the server.');
-        };
-        events.onerror = function(e) {
-            console.error("Error receiving events!", e);
-            console.log("Lost connection after", (new Date() - events.createdAt) / 1000, "seconds");
-            setConnection("errored");
-        }
-        return () => {
-            console.log("Closing events!!!");
-            events.close();
-            setConnection("offline");
-            // dispatch({
-            //     ty: "gameConnect", connected: false
-            // });
-        }
-    }, [dispatch, gameDispatch, setConnection]);
-}
+export * from './events';

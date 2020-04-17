@@ -90,7 +90,8 @@ export default function App(props: {}) {
                     <EventHistory game={game}
                                   connection={connection}
                                   setConnection={setConnection}
-                                  eventList={eventList} />
+                                  eventList={eventList}
+                                  dispatch={eventDispatch} />
                 </AppRight>
             </AppPadding>
 

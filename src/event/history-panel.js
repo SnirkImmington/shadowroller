@@ -27,11 +27,13 @@ function EventRecord({ event }: { event: Event.Event}) {
 type Props = {
     +game: Game.State,
     +eventList: Event.List,
+    +dispatch: Event.Dispatch,
     +connection: server.Connection,
     +setConnection: server.SetConnection
 }
-export default function EventHistory({ game, eventList, connection, setConnection }: Props) {
-    server.useEvents(setConnection);
+export default function EventHistory({ game, eventList, dispatch, connection, setConnection }: Props) {
+    const gameID = game?.gameID;
+    server.useEvents(gameID, setConnection, dispatch);
 
     return (
         <style.Card grow color="slateGray">
