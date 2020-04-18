@@ -17,13 +17,13 @@
     "url": "https://github.com/snirkimmington/shadowroller/issues"
   },
   "devDependencies": {
+    "flow-bin": "^0.121.0",
+    "flow-typed": "^3.1.0",
     "gh-pages": "^2.2.0"
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
     "es6-promise": "^4.2.8",
-    "flow-bin": "^0.121.0",
-    "flow-typed": "^3.1.0",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.24.0",
     "react": "^16.13",
@@ -40,6 +40,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -b master -d build",
     "start": "react-scripts start",
+    "start-export": "HOST='0.0.0.0' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
