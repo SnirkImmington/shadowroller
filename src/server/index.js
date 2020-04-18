@@ -9,11 +9,17 @@ export type Connection = "offline" | "connecting" | "connected" | "disconnected"
 export type SetConnection = (Connection) => void;
 
 export function initialCookieCheck(dispatch: Game.Dispatch, setConnection: SetConnection) {
-    const authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
-    if (!authMatch) {
+    let authMatch, auth;
+    try {
+        authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
+        auth = JSON.parse(atob(authMatch[1]));
+    }
+    catch {
         return;
     }
-    const auth = JSON.parse(atob(authMatch[1]));
+    if (!auth || !authMatch) {
+        return;
+    }
     setConnection("connecting");
     dispatch({
         ty: "join",
