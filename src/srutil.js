@@ -50,7 +50,6 @@ export function hashedColor(id: string): string {
         converted = atob(id);
     }
     catch {
-        console.log("Unable to hash input ", id);
         converted = id;
     }
 

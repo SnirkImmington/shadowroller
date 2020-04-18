@@ -43,7 +43,6 @@ export type JoinResponse = {
 export function requestJoin(gameID: string, playerName: string): Promise<JoinResponse> {
     const url = BACKEND_URL + 'join-game';
     const body = JSON.stringify({ gameID, playerName });
-    console.log('Connecting to', url, body);
 
     return new Promise((resolve, reject) => {
         fetch(url, {
@@ -52,8 +51,6 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
             //mode: 'cors',
             body: body,
         }).then(response => {
-            console.log('Headers:');
-            response.headers.forEach(h => console.log(h));
             response.json().then(json => {
                 if (json.playerID && json.players) {
                     const players = new Map();
@@ -77,7 +74,6 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
 
 export function getPlayers(): Promise<Map<string, string>> {
     const url = BACKEND_URL + "players";
-    console.log("Requesting players");
 
     return fetch(url, {
         method: 'get',
@@ -96,7 +92,6 @@ export function getPlayers(): Promise<Map<string, string>> {
 export function postRoll(count: number): Promise<bool> {
     const url = BACKEND_URL + 'roll';
     const body = JSON.stringify({ count });
-    console.log('Requesting', body);
 
     return fetch(url, {
             method: 'post',

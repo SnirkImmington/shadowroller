@@ -5,17 +5,13 @@ import * as React from 'react';
 import * as Event from 'event';
 import * as server from 'server';
 
-function onPing(e) {
-}
-
 function onMessage(e, dispatch) {
-    console.log("Event received", e.data);
     let event;
     try {
         event = JSON.parse(e.data);
     }
     catch (err) {
-        console.log("Error parsing event", err, e);
+        console.error("Error parsing event", err, e);
     }
     if (event.ty === "roll") {
         dispatch({
@@ -30,7 +26,7 @@ function onMessage(e, dispatch) {
         });
     }
     else {
-        console.log("Received unknown event", event);
+        console.error("Received unknown event", event);
     }
 }
 
@@ -69,7 +65,6 @@ export function useEvents(
             }
         });
         source.onopen = function() {
-            console.log("Connected to /events.");
             if (source.readyState === 1) {
                 setConnection("connected");
             }

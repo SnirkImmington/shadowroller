@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
+// import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as Game from 'game';

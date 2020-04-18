@@ -25,7 +25,6 @@ export type Action =
 function gameReduce(state: State, action: Action): State {
     switch (action.ty) {
         case "join":
-            console.log("Joined game");
             return {
                 connected: true,
                 gameID: action.gameID,

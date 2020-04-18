@@ -8,7 +8,6 @@ import * as Game from 'game';
 import * as Event from 'event';
 
 import SRHeader from 'header';
-import JoinGamePrompt from 'join-game-prompt';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
 

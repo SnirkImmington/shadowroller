@@ -8,7 +8,6 @@ import * as UI from 'style';
 import * as Game from 'game';
 
 import * as server from 'server';
-import * as srutil from 'srutil';
 
 const Message = styled.span`
     color: rgba(0, 0, 0.9);

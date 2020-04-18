@@ -80,7 +80,7 @@ else {
     reduce = eventReduce;
 }
 
-export const defaultState: List = { events: [] };
+export const defaultState: List = { events: [], lastMilli: 0, lastOffset: 0 };
 
 export { reduce };
 

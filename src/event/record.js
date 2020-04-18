@@ -5,7 +5,6 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
-import * as Game from 'game';
 import * as Event from 'event';
 
 import DiceList from 'roll/components/dice-list';
@@ -15,10 +14,10 @@ type RecordProps = {| +style: any |};
 
 type SingleRecordProps = {
     color?: string,
-    //children: React.Node | React.Node[],
+    children: React.Node | React.Node[],
     ...RecordProps
 };
-const SingleRecordStyle: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
+const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
     padding: 2px 4px;
     ${props => props?.color ? `
         border-left: 6px solid ${props.color};
@@ -29,13 +28,7 @@ const SingleRecordStyle: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)
     }
 `;
 
-function SingleRecord({ color, children, style}: SingleRecordProps) {
-    return <SingleRecordStyle color={color} style={style}>
-        {children}
-    </SingleRecordStyle>
-}
-
-const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecordStyle)`
+const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
     flex-direction: column;
     align-items: flex-start;
 `;

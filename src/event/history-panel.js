@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
+//import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import { VariableSizeList as List } from 'react-window';
@@ -34,16 +34,17 @@ function RollResultList({ events }: ListProps) {
         return EventRecord({ event, style });
     }
 
+    // This function is being inconsistent.
     function getItemSize(index: number): number {
-        console.log("Getting item size of", index);
+        return 66;
+        /*
         switch(events[index].ty) {
             case "localRoll":
             case "gameRoll":
-                console.log("I guess it's 360px?");
                 return 66;
             default:
-                return 64;
-        }
+                return 32;
+        }*/
     }
 
     function itemKey(index, data) {
