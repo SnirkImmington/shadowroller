@@ -54,11 +54,12 @@ func createAuthCookie(gameID string, playerID string, playerName string) (*http.
 	}
 
 	return &http.Cookie{
-		Name:     "srAuth",
-		Value:    signed,
-		Domain:   config.CookieAddress + ":3001",
+		Name:  "srAuth",
+		Value: signed,
+		// Domain:   config.CookieAddress,
 		Secure:   config.IsProduction, // http cookies on local env
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
+		HttpOnly: false, // JS should read cookie to reconnect
 	}, nil
 }
 
