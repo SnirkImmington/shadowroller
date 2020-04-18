@@ -49,18 +49,13 @@ const JoinButtonUI = styled(Button)`
         margin-right: 4em;
     }
 
-    /*
     &:hover {
-        background: white;
-        color: #222;
-        border: 3px solid white;
+        background: #333;
     }
 
     &:active {
-        color: white;
-        background: #222;
-        border: 3px solid white;
-    }*/
+        background: #444;
+    }
 `;
 
 type Props = {
