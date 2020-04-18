@@ -3,7 +3,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import * as style from 'style';
+import * as UI from 'style';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -35,8 +35,13 @@ const FormLabel = styled.label`
     /*flex-basis: 0;*/
 `;
 
-const RollButton = styled.button`
+const RollButton = styled(UI.Button)`
+    background-image: linear-gradient(180deg, #337ab7 0, #3688c8);
+    font-size: 1.05em;
+    font-weight: 500;
+    padding: .3rem .7rem;
 `;
+
 
 type Props = {
     +connection: server.Connection;
@@ -50,7 +55,8 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
         rollLoading || !diceCount || diceCount < 1 || diceCount > 100
     );
 
-    function onRollClicked() {
+    function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
+        event.preventDefault();
         if (!diceCount) { return; }
         if (connection !== "connected") {
             const dice = roll(diceCount);
@@ -73,16 +79,18 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
 
     // roll title gets game state, dispatch useLocalRoll
     return (
-        <style.Card color="lightseagreen">
-            <>
+        <UI.Card color="lightseagreen">
+            <TitleRow>
                 <span>Roll Dice</span>
                 <span>Local roll???</span>
-            </>
+            </TitleRow>
+            <form id="dice-input" onSubmit={onRollClicked}>
             <RollInputRow>
                 <FormLabel htmlFor="roll-select-dice">
                     Roll
                 </FormLabel>
                 <NumericInput controlId="roll-select-dice"
+                              min={1} max={99}
                               onSelect={setDiceCount} />
                 <FormLabel htmlFor="roll-select-dice">
                     dice
@@ -92,13 +100,15 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                 <FormLabel htmlFor="roll-submit">
                     flavortext!
                 </FormLabel>
-                <RollButton id="roll-button-submit"
+                <button className="btn btn-primary">Roll btn</button>
+                <RollButton className="btn">Roll dice</RollButton>
+                <RollButton id="roll-button-submit" type="submit"
                             disabled={rollDisabled}
-                            onClick={onRollClicked}
-                            min={1} max={99} >
+                            onClick={onRollClicked}>
                     Roll dice
                 </RollButton>
             </FormRow>
-        </style.Card>
+            </form>
+        </UI.Card>
     );
 }

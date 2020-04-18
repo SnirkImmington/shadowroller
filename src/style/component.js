@@ -17,7 +17,7 @@ export const Input: StyledComponent<InputProps> = styled.input.attrs(props => ({
 export const Button: StyledComponent<> = styled.button`
     font-size: 1em;
     padding: 0.1em 1em;
-    border-radius: 0px;
+    border: 1px solid transparent;
     align-text: center;
     margin: 0px 0.25em;
 `;
@@ -52,6 +52,10 @@ export const DieIcon: StyledComponent<> = styled.span`
     &::after {
         content: '\\2680';
     }
+`;
+
+export const Flavor: StyledComponent<> = styled.i`
+    color: #333;
 `;
 
 export const HashColored: StyledComponent<{ id: string }> = styled.b`

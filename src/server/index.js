@@ -49,7 +49,6 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
             console.log('Headers:');
             response.headers.forEach(h => console.log(h));
             response.json().then(json => {
-                postRoll(12);
                 if (json.playerID && json.players) {
                     const players = new Map();
                     for (const id in json.players) {
