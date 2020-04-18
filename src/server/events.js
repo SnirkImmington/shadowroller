@@ -19,13 +19,13 @@ function onMessage(e, dispatch) {
     }
     if (event.ty === "roll") {
         dispatch({
-            ty: "gameRoll", id: event.id, ts: Date.now(),
-            playerID: event.pID, dice: event.roll
+            ty: "gameRoll", id: event.id,
+            playerID: event.pID, playerName: event.pName, dice: event.roll,
         });
     }
     else if (event.ty === "playerJoin") {
         dispatch({
-            ty: "playerJoin", id: event.id, ts: Date.now(),
+            ty: "playerJoin", id: event.id,
             player: { id: event.pID, name: event.pName }
         });
     }
