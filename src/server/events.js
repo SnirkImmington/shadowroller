@@ -39,23 +39,23 @@ export function useEvents(
         setConnection: server.SetConnection,
         dispatch: Event.Dispatch
 ) {
-    const [lastGameID, setLastGameID] = React.useState(null);
     const events = React.useRef<?EventSource>();
 
+    // This effect is only called when gameID changes.
+    // It stores `events` in a ref for use imperatively between calls.
+    // `events` is cleaned up only when `gameID` changes [i.e. to null].
+    // We can leave the resource trying to reconnect otherwise.
+    // When the gameID does change, we close the connection and re-create.
     React.useEffect(() => {
-        if (gameID !== lastGameID) {
-            if (events.current != null) {
-                events.current.close();
-            }
-            setLastGameID(gameID);
-            setConnection("offline");
+        if (events.current) {
+            events.current.close();
         }
+
         if (!gameID) {
             events.current = null;
             return;
         }
 
-        console.log("Creating eventsource for ", gameID);
         setConnection("connecting");
         const source = new EventSource(server.BACKEND_URL + "events", {
             withCredentials: true
@@ -82,11 +82,6 @@ export function useEvents(
             setConnection("offline");
         };
         events.current = source;
-        return () => {
-            if (events.current) {
-                events.current.close();
-            }
-            setConnection("offline");
-        }
-    }, [gameID, lastGameID, setConnection, dispatch]);
+        return; // Cleanup handled imperatively through use of ref.
+    }, [gameID, setConnection, dispatch]);
 }
