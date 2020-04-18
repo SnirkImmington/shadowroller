@@ -58,8 +58,7 @@ export function hashedColor(id: string): string {
     for (let i = 0; i < converted.length; i++) {
         sum += converted.charCodeAt(i);
     }
-    sum %= 360;
 
-    const hue = sum + fixedOffset % 360;
-    return `hsl(${hue}, 100%, 70%)`;
+    const hue = (sum + fixedOffset) % 360;
+    return `hsl(${hue}, 70%, 70%)`;
 }
