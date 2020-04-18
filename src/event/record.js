@@ -11,47 +11,51 @@ import * as Event from 'event';
 import DiceList from 'roll/components/dice-list';
 import * as srutil from 'srutil';
 
+type RecordProps = {| +style: any |};
+
 type SingleRecordProps = {
     color?: string,
-    children: React.Node | React.Node[]
+    //children: React.Node | React.Node[],
+    ...RecordProps
 };
-const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
-    margin: .3em 0px;
+const SingleRecordStyle: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
     padding: 2px 4px;
     ${props => props?.color ? `
         border-left: 6px solid ${props.color};
-        border-right: 6px solid ${props.color};
+        border-top: 3px solid white;
+        border-bottom: 3px solid white;
+
     ` : ''
     }
 `;
 
-const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
+function SingleRecord({ color, children, style}: SingleRecordProps) {
+    return <SingleRecordStyle color={color} style={style}>
+        {children}
+    </SingleRecordStyle>
+}
+
+const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecordStyle)`
     flex-direction: column;
     align-items: flex-start;
 `;
 
-export function LocalRollRecord({ event }: { event: Event.LocalRoll }) {
+type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
+export function LocalRollRecord({ event, style }: LocalRollProps) {
     return (
-        <DoubleRecord color="slateGray">
+        <DoubleRecord color="slateGray" style={style}>
             {`Rolled ${event.dice.length} dice`}
             <DiceList dice={event.dice} showNumbers={false} />
         </DoubleRecord>
     );
 }
 
-export function GameRollRecord({ event }: { event: Event.GameRoll }) {
-    // TODO This component will re-render whenever game state changes.
-    // It may be worth splitting players out of game state eventually.
-    const game = React.useContext(Game.Ctx);
-    let playerName = "Missingno";
-    if (game) {
-        playerName = game.players.get(event.playerID) || playerName;
-    }
-
+type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
+export function GameRollRecord({ event, style }: GameRollProps) {
     return (
-        <DoubleRecord color={srutil.hashedColor(event.playerID)}>
+        <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
             <span>
-                <UI.PlayerName id={event.playerID} name={playerName} />
+                <UI.PlayerName id={event.playerID} name={event.playerName} />
                 {` rolls ${event.dice.length} dice`}
             </span>
             <DiceList dice={event.dice} showNumbers={false} />
@@ -59,18 +63,10 @@ export function GameRollRecord({ event }: { event: Event.GameRoll }) {
     );
 }
 
-export function GameJoinRecord({ event }: { event: Event.GameJoin }) {
-    const formattedID: React.Node = <tt>{event.gameID}</tt>
+type PlayerJoinProps = { +event: Event.PlayerJoin, ...RecordProps };
+export function PlayerJoinRecord({ event, style }: PlayerJoinProps) {
     return (
-        <SingleRecord color="#259950">
-            {`Joined `}{formattedID}.
-        </SingleRecord>
-    );
-}
-
-export function PlayerJoinRecord({ event }: { event: Event.PlayerJoin }) {
-    return (
-        <SingleRecord color={srutil.hashedColor(event.player.id)}>
+        <SingleRecord color={srutil.hashedColor(event.player.id)} style={style}>
             {`${event.player.name} joined the game.`}
         </SingleRecord>
     );

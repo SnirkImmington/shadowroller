@@ -4,19 +4,19 @@ import * as React from 'react';
 import * as Game from 'game';
 
 export type EventInfo = {|
-    +id: number,
-    +ts: number
+    +id?: string,
 |};
 
 export type LocalRoll = {
     +ty: "localRoll",
     +dice: number[],
-    id?: number
+    ...EventInfo
 };
 
 export type GameRoll = {
     +ty: "gameRoll",
     +playerID: string,
+    +playerName: string,
     +dice: number[],
     ...EventInfo
 };
@@ -27,27 +27,15 @@ export type PlayerJoin = {
     ...EventInfo
 };
 
-export type GameJoin = {
-    +ty: "gameJoin",
-    +gameID: string,
-    id?: number
-};
-
-export type GameLeave = {
-    +ty: "gameLeave",
-    +gameID: string,
-    id?: number
-};
-
 export type Event =
 | LocalRoll
 | GameRoll
 | PlayerJoin
-| GameJoin
-| GameLeave
 ;
 
 export type List = {|
+    +lastMilli: number,
+    +lastOffset: number,
     +events: Event[]
 |};
 
@@ -56,7 +44,27 @@ export type Reducer = (List, Event) => List;
 
 let reduce: Reducer;
 function eventReduce(state: List, event: Event): List {
+    let currMilli = state.lastMilli, currOffset = state.lastOffset;
+    if (!event.id) { // millisecond
+        let now = new Date().valueOf() * 1000;
+        if (now <= currMilli) {
+            currOffset += 1;
+            event.id = `${currMilli}-${currOffset}`;
+        }
+        else {
+            currMilli = now;
+            currOffset = 0;
+            event.id = `${currMilli}-${currOffset}`;
+        }
+    }
+    else {
+        const [milli, offset] = event.id.split("-", 2);
+        currMilli = parseInt(milli);
+        currOffset = parseInt(offset);
+    }
     return {
+        lastMilli: currMilli,
+        lastOffset: currOffset,
         events: [event, ...state.events]
     };
 }
@@ -64,7 +72,7 @@ function eventReduce(state: List, event: Event): List {
 if (process.env.NODE_ENV !== "production") {
     reduce = function(state: List, event: Event): List {
         const result = eventReduce(state, event);
-        console.log("New event ", event);
+        console.log("New event ", event, result);
         return result;
     }
 }
