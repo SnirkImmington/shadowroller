@@ -26,22 +26,31 @@ export const ColumnToRow: StyledComponent<> = styled(FlexColumn)`
 `;
 
 export const CardWrapper: StyledComponent<{ grow?: bool }> = styled(FlexColumn)`
-    border: 1px solid rgba(0, 0, 0, 0.2);
     margin-bottom: 0.5em;
     ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 
-const CardBody: StyledComponent<{ grow?: bool }> = styled.div`
-    padding: 5px;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled.div`
+    padding-top: 5px;
     ${props => props?.grow ? 'height: 100%;' : ''}
+`;
+
+export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
+    font-family: monospace;
+    color: ${props => props.color};
+    font-size: 1.1rem;
+
+    &::before {
+        content: '> ';
+    }
 `;
 
 type CardTitleProps = { +color: string };
 const CardTitle: StyledComponent<CardTitleProps> = styled(FlexRow)`
-    background-color: ${props => props.color};
-    color: white;
-    padding: 5px;
+    border-bottom: 2px solid ${props => props.color};
+    padding: .5rem 1rem;
+    width: 100%;
+
 `;
 
 type CardProps = {
@@ -53,7 +62,7 @@ export function Card({ color, children, grow }: CardProps) {
     return (
         <CardWrapper grow={grow}>
             <CardTitle color={color}>{ children[0] }</CardTitle>
-            <CardBody grow={grow}>
+            <CardBody color={color} grow={grow}>
                 {children.slice(1)}
             </CardBody>
         </CardWrapper>
