@@ -3,6 +3,7 @@ package srserver
 // Server routing
 
 import (
+	"fmt"
 	gorillaMux "github.com/gorilla/mux"
 	"io"
 	"log"
@@ -16,12 +17,10 @@ func RegisterDefaultGames() {
 
 	gameNames := strings.Split(config.HardcodedGameNames, ",")
 
-	var err error
 	for _, game := range gameNames {
-		_, err = conn.Do("hmset", "game:"+game, "event_id", 0)
+		_, err := conn.Do("hmset", "game:"+game, "event_id", 0)
 		if err != nil {
-			log.Print("Error:", err)
-			return
+			panic(fmt.Sprintf("Unable to connect to redis: ", err))
 		}
 	}
 
@@ -40,8 +39,8 @@ func MakeServerMux() *gorillaMux.Router {
 	mux.HandleFunc("/roll", loggedHandler(handleRoll)).Methods("POST")
 
 	mux.HandleFunc("/", loggedHandler(func(response Response, request *Request) {
-		io.WriteString(response, "Hello world!")
-	}))
+		io.WriteString(response, "Maybe try https://snirkimmington.github.io/shadowroller ?")
+	})).Methods("GET")
 
 	mux.HandleFunc("/health-check", loggedHandler(func(response Response, request *Request) {
 		io.WriteString(response, "ok")
