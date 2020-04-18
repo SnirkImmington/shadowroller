@@ -179,6 +179,7 @@ func handleEvents(response Response, request *Request) {
 		httpUnauthorized(response, err)
 		return
 	}
+	goID := rand.Intn(100)
 
 	// Upgrade to SSE stream
 	stream, err := sseUpgrader.Upgrade(response, request)
@@ -187,10 +188,15 @@ func handleEvents(response Response, request *Request) {
 		return
 	}
 
+	err = stream.WriteEvent("ping", []byte("hi"))
+	if err != nil {
+		log.Print(goID, " Could not say hello: ", err)
+		return
+	}
+
 	// Subscribe to redis
 	conn := redisPool.Get()
 	defer conn.Close()
-	goID := rand.Intn(100)
 
 	log.Printf("%v: Retrieving events in %s for %s...", goID, auth.GameID, auth.PlayerID)
 
