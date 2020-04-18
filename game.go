@@ -160,9 +160,10 @@ func handleRoll(response Response, request *Request) {
 	fillRolls(rolls)
 
 	event := RollEvent{
-		EventCore: EventCore{Type: "roll"},
-		PlayerID:  auth.PlayerID,
-		Roll:      rolls,
+		EventCore:  EventCore{Type: "roll"},
+		PlayerID:   auth.PlayerID,
+		PlayerName: auth.PlayerName,
+		Roll:       rolls,
 	}
 	_, err = postEvent(auth.GameID, event, conn)
 	if err != nil {

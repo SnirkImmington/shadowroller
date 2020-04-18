@@ -16,14 +16,15 @@ type EventCore struct {
 // RollEvent is posted when a player rolls dice.
 type RollEvent struct {
 	EventCore
-	PlayerID string `json:"pID",redis:"pID"`
-	Roll     []int  `json:"roll",redis"roll"`
+	PlayerID   string `json:"pID",redis:"pID"`
+	PlayerName string `json:"pName",redis:"pName"`
+	Roll       []int  `json:"roll",redis"roll"`
 }
 
 // PlayerJoinEvent is posted when a new player joins the game.
 type PlayerJoinEvent struct {
 	EventCore
-	PlayerID   string `json:"pid",redis:"pid"`
+	PlayerID   string `json:"pID",redis:"pID"`
 	PlayerName string `json:"pName",redis:"pName"`
 }
 
