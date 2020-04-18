@@ -58,7 +58,7 @@ func MakeHttpRedirectServer(certManager *autocert.Manager) *http.Server {
 
 func MakeLocalServer(mux http.Handler) *http.Server {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{config.FrontendAddress},
+		AllowedOrigins:   []string{config.FrontendAddress, config.StagingAddress},
 		AllowCredentials: true, // Needed for JWT
 	})
 	mux = c.Handler(mux)
