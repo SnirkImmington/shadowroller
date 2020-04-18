@@ -43,7 +43,10 @@ export function StatusMenu({ game, dispatch, setConnection}: Props) {
         <UI.Menu>
             <UI.FlexRow>
                 <Message>
-                    Connected to {game.gameID} as {game.player.name}.
+                    Connected to {game.gameID} as {' '}
+                    <UI.HashColored id={game.player.id}>
+                        {game.player.name}
+                    </UI.HashColored>.
                 </Message>
                 <LeaveButton onClick={handleLeave}>
                     Leave
