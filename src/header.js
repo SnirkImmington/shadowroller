@@ -90,14 +90,14 @@ function JoinButton({ game, connection, menuShown, onClick }: Props) {
     else { // Connected to game
         switch (connection) {
             case "offline":
-                message = menuShown ? "Cancel" : "Disconnected";
+                message = menuShown ? "Close" : "Disconnected";
                 break;
             case "connecting":
                 message = menuShown ? "Cancel" : "Reconnecting";
                 disabled = !menuShown;
                 break;
             case "connected":
-                message = menuShown ? "Cancel" : game.gameID;
+                message = menuShown ? "Close" : game.gameID;
                 break;
             case "errored":
                 message = "Error";
