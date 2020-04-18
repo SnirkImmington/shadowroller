@@ -32,7 +32,7 @@ type DieColorOptions = {
 */
 
 type DieProps = { roll: number };
-export const Die: StyledComponent<DieProps> = styled.i`
+export const Die: StyledComponent<DieProps> = styled.b`
     font-weight: 900;
     ${({roll}) =>
         `color: ${
@@ -46,7 +46,7 @@ export const Die: StyledComponent<DieProps> = styled.i`
             `content: '${String.fromCharCode(0x267F + roll)}';`}
     }
 
-    font-size: 1.9em;
+    font-size: 8vw;
     @media all and (min-width: 768px) {
         font-size: 2.2em;
     }
@@ -54,6 +54,7 @@ export const Die: StyledComponent<DieProps> = styled.i`
 
 const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     max-width: 100%;
+    overflow-x: hidden;
     overflow-y: auto;
 `;
 
@@ -68,9 +69,9 @@ export default function RollingDice(props: Props) {
 
     return (
         <ListWrapper>
-            <div>
+            <span style={{lineHeight: 1.2, overflow: 'hidden'}}>
                 {dice}
-            </div>
+            </span>
             <span className="roll-explain-text col-auto my-auto">
                 <b className="">
                     {displayMessage ? result.toString() : ''}
