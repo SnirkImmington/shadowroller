@@ -33,6 +33,7 @@ type DieColorOptions = {
 
 type DieProps = { roll: number };
 export const Die: StyledComponent<DieProps> = styled.b`
+    line-height: 1em;
     font-weight: 900;
     ${({roll}) =>
         `color: ${
@@ -48,14 +49,34 @@ export const Die: StyledComponent<DieProps> = styled.b`
 
     font-size: 8vw;
     @media all and (min-width: 768px) {
-        font-size: 2.2em;
+        font-size: 2.4em;
     }
 `;
 
 const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
-    max-width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+    width: 100%;
+    line-height: 1em;
+
+    overflow-x: auto; /* left-right overflow */
+    overflow-y: hidden; /* up-down overflow */
+
+    /* Scrollbars! */
+    scrollbar-width: thin;
+    scrollbar-color: #81132add transparent;
+
+    &::-webkit-scrollbar {
+        height: 4px;
+        width: 4px;
+    }
+    & ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    & ::-webkit-scrollbar-thumb {
+        background-color: teansparent;
+        background: transparent;
+        border-radius: 6px;
+        border: 3px solid #81132add;
+    }
 `;
 
 type Props = { +showNumbers?: bool, +dice: number[] };
@@ -69,14 +90,10 @@ export default function RollingDice(props: Props) {
 
     return (
         <ListWrapper>
-            <span style={{lineHeight: 1.2, overflow: 'hidden'}}>
                 {dice}
-            </span>
-            <span className="roll-explain-text col-auto my-auto">
-                <b className="">
-                    {displayMessage ? result.toString() : ''}
-                </b>
-            </span>
+            <b className="">
+                {displayMessage ? result.toString() : ''}
+            </b>
         </ListWrapper>
     );
 }

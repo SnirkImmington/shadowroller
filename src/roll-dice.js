@@ -12,20 +12,17 @@ import NumericInput from 'components/numeric-input';
 import * as server from 'server';
 import { roll } from 'srutil';
 
-const FormRow = styled.div`
-    margin: .5em 0px;
-    display: flex;
-    align-items: center;
+const ButtonRow = styled(UI.FlexRow)`
+    margin: .75rem .5rem;
     justify-content: flex-end;
-    flex-wrap: wrap;
 `;
 
-const RollInputRow = styled(FormRow)`
-    flex-wrap: nowrap;
-    justify-content: flex-around;
-`
+const RollInputRow = styled(UI.FlexRow)`
+    margin: .75rem .5rem;
+`;
 
-const TitleRow = styled(FormRow)`
+const TitleRow = styled(UI.FlexRow)`
+    width: 100%;
     justify-content: space-between;
 `;
 
@@ -36,12 +33,17 @@ const FormLabel = styled.label`
 `;
 
 const RollButton = styled(UI.Button)`
-    background-image: linear-gradient(180deg, #337ab7 0, #3688c8);
+    background-image: linear-gradient(180deg, #52605e 0, #3f4946);
     font-size: 1.05em;
-    font-weight: 500;
+    color: #ccc;
+    font-weight: 600;
     padding: .3rem .7rem;
-`;
 
+    & :not(:disabled) {
+        background-image: linear-gradient(180deg, #394341 0, #232928);
+        color: white;
+    }
+`;
 
 type Props = {
     +connection: server.Connection;
@@ -50,15 +52,20 @@ type Props = {
 export default function RollDicePrompt({ connection, dispatch }: Props) {
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [rollLoading, setRollLoading] = React.useState(false);
+    const [localRoll, setLocalRoll] = React.useState(false);
 
     const rollDisabled = (
         rollLoading || !diceCount || diceCount < 1 || diceCount > 100
     );
 
+    function rollLocalClicked(event: SyntheticInputEvent<HTMLInputElement>) {
+        setLocalRoll(prev => !prev);
+    }
+
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
         if (!diceCount) { return; }
-        if (connection !== "connected") {
+        if (localRoll || connection !== "connected") {
             const dice = roll(diceCount);
             dispatch({
                 ty: "localRoll", dice
@@ -79,10 +86,16 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
 
     // roll title gets game state, dispatch useLocalRoll
     return (
-        <UI.Card color="lightseagreen">
+        <UI.Card color="#81132a">
             <TitleRow>
-                <span>Roll Dice</span>
-                <span>Local roll???</span>
+                <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
+                <UI.FlexRow>
+                <input type="checkbox" id="toggle-local-roll"
+                       checked={localRoll} onChange={rollLocalClicked} />
+                <label htmlFor="toggle-local-roll" style={{marginBottom: 0, marginLeft: ".25em"}}>
+                    Roll locally
+                </label>
+                </UI.FlexRow>
             </TitleRow>
             <form id="dice-input" onSubmit={onRollClicked}>
             <RollInputRow>
@@ -96,18 +109,13 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                     dice
                 </FormLabel>
             </RollInputRow>
-            <FormRow>
-                <FormLabel htmlFor="roll-submit">
-                    flavortext!
-                </FormLabel>
-                <button className="btn btn-primary">Roll btn</button>
-                <RollButton className="btn">Roll dice</RollButton>
+            <ButtonRow>
                 <RollButton id="roll-button-submit" type="submit"
                             disabled={rollDisabled}
                             onClick={onRollClicked}>
                     Roll dice
                 </RollButton>
-            </FormRow>
+            </ButtonRow>
             </form>
         </UI.Card>
     );
