@@ -2,14 +2,40 @@
 
 This repository contains the backend code for running the server.
 
-You can run this yourself!
-- Designed to run in a container or standalone
-- Reads all configuration through ~SR_*~ environment variables
-  + Defaults to a dev environment when none are specified
-- Scales locally using threads/goroutines but can also scale across multiple instances
-- Just needs Redis to work right now
-- Runs easily in a development mode alongside the frontend, or on production
-- Production uses Let's Encrypt HTTPS certs and CORS
+** You can run this yourself!
+
+The backend exposes itself at ~0.0.0.0:3001~, which include devices in your LAN.
+This allows your phone to connect! I'm working on a setting for just using localhost.
+
+*** Run Docker
+
+There's a ~Dockerfile~ and ~docker-compose.yml~ included to run the project with Docker.
+This allows you to run with no dependencies.
+~sudo docker-compose up~ starts the backend and redis.
+
+*** Run locally
+
+You will need:
+- Redis
+- Go
+
+All you need to do right now is to run 3 commands:
+
+- ~redis-server --port 6379~ starts Redis. It's only going to print things if it errors.
+- ~go run main/main.go~ starts the backend and exposes ~0.0.0.0:3001~
+
+*** Environments
+
+There are three environments set up by switches in ~config/config.go~.
+- *Production* uses HTTPS with Let's Encrypt.
+- *Development* runs on ~localhost~ only without HTTPS.
+- *Staging* (planned) is Development, but it uses HTTPS with self-signed certs.
+
+Generally, code uses ~config.IsProduction~ unless it's setting up HTTPS.
+
+*** Config Vars
+
+Generally, the app is able to
 
 The values used in configuration and deployment for https://snirkimmington.github.io/shadowroller
 are intentionally kept secret.
