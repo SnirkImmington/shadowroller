@@ -65,9 +65,12 @@ export function GameRollRecord({ event, style }: GameRollProps) {
 
 type PlayerJoinProps = { +event: Event.PlayerJoin, ...RecordProps };
 export function PlayerJoinRecord({ event, style }: PlayerJoinProps) {
+    const name = <UI.PlayerName id={event.player.id} name={event.player.name} />
     return (
         <SingleRecord color={srutil.hashedColor(event.player.id)} style={style}>
-            {`${event.player.name} joined the game.`}
+            <span>
+            {name}{` joined.`}
+            </span>
         </SingleRecord>
     );
 }
