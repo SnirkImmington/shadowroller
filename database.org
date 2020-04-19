@@ -1,0 +1,41 @@
+* Database
+
+For simplicity's sake, all game data is stored in Redis right now.
+Most of this will be transitioned over to a persistent SQL DB.
+
+** Concepts
+
+*Game ID*: each game will have a unique ID (dev environment creates ~testgame1~ and ~testgame2~)
+which the players use to connect to the game. This ID should be kept secret.
+
+*Player ID*: with the game ID, a player types in a name. Players in a game may have the same name.
+We give them a random ID internally and send them a *signed* JWT with the game ID and their player ID.
+They will get the ~{playerID -> playerName}~ set when they or other players connect.
+I will not implement player leaving yet, easier to just restart redis.
+Frontend will give player names random colors based on the random ID.
+
+*Events*: the main function of the +chat+ roll server is through pub/sub. Events are posted to a redis channel
+via the frontend POSTing using JWT auth. Frontend will receive events using Server Sent Events (basically
+codified long-polling) where the request goroutine will hold the connection open and write each event for the
+game as the players receive it. Game history is not saved outside of this channel. Events are JSON objects
+which contain the player ID, type of the event, and {roll, dice rolled} or {join, player who joined}.
+
+** Games ~game:{gameID}~ hash
+- ~event_id~ number: incrementing event ID
+
+** Players ~player_name:{gameID}~ hash
+- contains fields of format ~{playerID}: {playerName}~
+
+** Game events ~game_event:{gameID}~ channel
+/A JSON-encoded event is passed through this channel./
+- *Event* (the core datatype)
+  + ~type~ string: one of ~"player_joined"~, ~"roll"~
+  + ~id~ number: incrementing event ID stored in ~game.{gameID} event_id~
+  + ~ts~ Timestamp: unix timestamp of event (second precision)
+- *Player Joined*
+  + ~player_id~ string: new player ID
+  + ~player_name~ string: new player name
+#  + ~players~ { (id): (name), ... }: all players in the game
+- *Roll events*
+  + ~player_id~ number: player ID
+  + ~roll~ []number: the dice rolled

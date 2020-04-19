@@ -1,0 +1,8 @@
+# JUST IN CASE
+prod*
+
+# Builds?
+build/
+
+# Redis db
+dump.rdb
