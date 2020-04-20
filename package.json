@@ -38,7 +38,7 @@
   },
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -b master -d build",
+    "deploy": "gh-pages -f -d build",
     "start": "react-scripts start",
     "start-export": "HOST='0.0.0.0' react-scripts start",
     "build": "react-scripts build",
