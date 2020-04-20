@@ -54,8 +54,6 @@ export default class RollResult {
         }
     }
 
-    status(): RollStatus { return this.status; }
-
     isGlitched(): bool { return this.glitched; }
 
     isCrit(): bool { return this.critical; }

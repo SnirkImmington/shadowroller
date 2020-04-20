@@ -121,7 +121,7 @@ export default class NumericInput extends React.Component<Props, State> {
         if (invalid && this.state.text !== "") {
             result = (
                 <span className="input-group-text numeric-input-suffix bg-danger">
-                    <b class="text-white">!</b>
+                    <b className="text-white">!</b>
                 </span>
             )
         }

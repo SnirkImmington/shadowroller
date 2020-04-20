@@ -1,10 +1,13 @@
 // @flow
 
 import * as React from 'react';
+import styled from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components/macro';
 
-import RollResult from '../result/roll-result';
+import * as UI from 'style';
 
-import './rolling-dice.css';
+import RollResult from 'roll/result';
+
 /*
 // The roll animations are non-random to save a few computing cycles and maybe
 // let people guess what number is gonna show.
@@ -28,45 +31,69 @@ type DieColorOptions = {
 }
 */
 
-type Props = {
-    dice: Array<number>,
-    showNumbers: bool
-}
+type DieProps = { roll: number };
+export const Die: StyledComponent<DieProps> = styled.b`
+    line-height: 1em;
+    font-weight: 900;
+    ${({roll}) =>
+        `color: ${
+            roll === 1 ? '#811111c0' :
+            roll === 5 || roll === 6 ? '#4d703ec0' :
+            '#2e2e32c0'
+        };`
+    }
+    &::after {
+        ${({roll}) =>
+            `content: '${String.fromCharCode(0x267F + roll)}';`}
+    }
 
+    font-size: 8vw;
+    @media all and (min-width: 768px) {
+        font-size: 2.4em;
+    }
+`;
+
+const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
+    width: 100%;
+    line-height: 1em;
+
+    overflow-x: auto; /* left-right overflow */
+    overflow-y: hidden; /* up-down overflow */
+
+    /* Scrollbars! */
+    scrollbar-width: thin;
+    scrollbar-color: #81132add transparent;
+
+    &::-webkit-scrollbar {
+        height: 4px;
+        width: 4px;
+    }
+    & ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    & ::-webkit-scrollbar-thumb {
+        background-color: teansparent;
+        background: transparent;
+        border-radius: 6px;
+        border: 3px solid #81132add;
+    }
+`;
+
+type Props = { +showNumbers?: bool, +dice: number[] };
 export default function RollingDice(props: Props) {
-    const dice = props.dice.map((die, ix) => {
-        // Unicode character for die result, they start at 0x2680 for 1
-        let dieText = String.fromCharCode(0x267F + die);
-        let className;
-        switch (die) {
-            case 1:
-                className = "die-icon die-glitch";
-                break;
-            case 5:
-            case 6:
-                className = "die-icon die-hit";
-                break;
-            default:
-                className = "die-icon die-default text-muted"
-        }
-        return (
-            <span key={ix} className={className}>{dieText}</span>
-        )
-    });
+    const dice = props.dice.map((die, ix) =>
+        <Die key={ix} roll={die} />
+    );
 
     const result = new RollResult(props.dice);
     const displayMessage = props.showNumbers || result.isGlitched();
 
     return (
-        <span className="rolling-dice-group row">
-            <span className="col-auto">
+        <ListWrapper>
                 {dice}
-            </span>
-            <span className="roll-explain-text col-auto my-auto">
-                <b className="">
-                    {displayMessage ? result.toString() : ''}
-                </b>
-            </span>
-        </span>
+            <b className="">
+                {displayMessage ? result.toString() : ''}
+            </b>
+        </ListWrapper>
     );
 }
