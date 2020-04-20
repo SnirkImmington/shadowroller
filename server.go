@@ -1,9 +1,7 @@
 package srserver
 
 import (
-	"context"
 	"crypto/tls"
-	"fmt"
 	"golang.org/x/crypto/acme/autocert"
 	//"log"
 	"github.com/janberktold/sse"
@@ -60,6 +58,7 @@ func MakeLocalServer(mux http.Handler) *http.Server {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{config.FrontendAddress, config.StagingAddress},
 		AllowCredentials: true, // Needed for JWT
+		Debug:            config.CORSDebug,
 	})
 	mux = c.Handler(mux)
 	server := makeServerFromHandler(mux)
@@ -95,8 +94,9 @@ func MakeProductionServer(certManager *autocert.Manager, mux http.Handler) *http
 		GetCertificate: certManager.GetCertificate,
 	}
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{config.FrontendAddress},
+		AllowedOrigins:   []string{config.FrontendAddress, config.TlsHost},
 		AllowCredentials: true, // Needed for JWT
+		Debug:            config.CORSDebug,
 	})
 	mux = c.Handler(mux)
 	server := makeServerFromHandler(mux)

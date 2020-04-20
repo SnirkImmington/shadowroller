@@ -16,6 +16,7 @@ var (
 	ServerHTTPSPort = readString("SERVER_HTTPS_PORT", ":443")
 	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
 	StagingAddress  = readString("STAGING_ADDRESS", "http://srserver.null:3000")
+	CORSDebug       = readBool("CORS_DEBUG", false)
 	JWTSecretKey    = readKeyFile("KEYFILE_JWT", "133713371337")
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)

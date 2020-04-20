@@ -38,7 +38,7 @@ func handleJoinGame(response Response, request *Request) {
 		return
 	}
 	if !gameExists {
-		http.Error(response, "Game not found", 404)
+		httpNotFound(response)
 		return
 	}
 

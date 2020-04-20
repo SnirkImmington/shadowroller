@@ -30,6 +30,11 @@ func writeBodyJSON(response Response, value interface{}) error {
 	return json.NewEncoder(response).Encode(value)
 }
 
+func httpNotFound(response Response) {
+	log.Output(2, "-> 404 not found")
+	http.Error(response, "Not found", 404)
+}
+
 func httpUnauthorized(response Response, err error) {
 	message := fmt.Sprintf("-> 401 Unauthorized: %v", err)
 	log.Output(2, message)
