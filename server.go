@@ -52,7 +52,7 @@ func MakeHttpRedirectServer(certManager *autocert.Manager) *http.Server {
 	})
 	server := makeServerFromHandler(mux)
 	server.Handler = certManager.HTTPHandler(server.Handler)
-	server.Addr = ":80"
+	server.Addr = config.ServerHTTPPort
 	return server
 }
 
@@ -106,6 +106,6 @@ func MakeProductionServer(certManager *autocert.Manager, mux http.Handler) *http
 	mux = c.Handler(mux)
 	server := makeServerFromHandler(mux)
 	server.TLSConfig = tlsConfig
-	server.Addr = ":443"
+	server.Addr = config.ServerHTTPSPort
 	return server
 }
