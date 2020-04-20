@@ -69,14 +69,9 @@ func MakeLocalServer(mux http.Handler) *http.Server {
 
 func MakeCertManager() *autocert.Manager {
 	return &autocert.Manager{
-		Prompt: autocert.AcceptTOS,
-		HostPolicy: func(ctx context.Context, host string) error {
-			if host == config.ServerAddress {
-				return nil
-			}
-			return fmt.Errorf("acme/autocert: only %s is allowed", config.ServerAddress)
-		},
-		Cache: autocert.DirCache(config.CertDir),
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("shadowroller.immington.industries"),
+		Cache:      autocert.DirCache(config.CertDir),
 	}
 }
 

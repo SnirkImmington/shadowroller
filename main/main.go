@@ -13,7 +13,7 @@ func main() {
 	log.SetOutput(os.Stdout)
 	if config.IsProduction {
 		log.SetFlags(
-			log.Ldate | log.Ltime | log.LUTC | log.Lmicroseconds | log.Llongfile,
+			log.Ldate | log.Ltime | log.LUTC | log.Lmicroseconds | log.Lshortfile,
 		)
 	} else {
 		log.SetFlags(log.Ltime | log.Lshortfile)
