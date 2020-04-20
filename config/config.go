@@ -2,6 +2,8 @@ package config
 
 import (
 	"encoding/base64"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 )
@@ -12,7 +14,7 @@ var (
 	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
 	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
 	StagingAddress  = readString("STAGING_ADDRESS", "http://srserver.null:3000")
-	JWTSecretKey    = []byte(readString("SECRET_JWT", "133713371337"))
+	JWTSecretKey    = readKeyFile("KEYFILE_JWT", "133713371337")
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)
 	TlsHost   = readString("TLS_HOST", "https://shadowroller.immington.industries")
@@ -68,14 +70,21 @@ func readBool(name string, defaultValue bool) bool {
 	return val
 }
 
-func readKey(name string, defaultValue string) []byte {
+func readKeyFile(name string, defaultValue string) []byte {
 	envVal, ok := os.LookupEnv("SR_" + name)
+	var contents string
 	if !ok {
-		return []byte(defaultValue)
+		contents = defaultValue
+	} else {
+		fileContent, err := ioutil.ReadFile(envVal)
+		if err != nil {
+			panic(fmt.Sprintf("Unable to read key %v from file %v: %v", name, envVal, err))
+		}
+		contents = string(fileContent)
 	}
-	val, err := base64.StdEncoding.DecodeString(envVal)
+	val, err := base64.StdEncoding.DecodeString(contents)
 	if err != nil {
-		panic("Unable to decode key " + name)
+		panic(fmt.Sprintf("Unable to decode key %v: %v", name, err))
 	}
 	return val
 }
