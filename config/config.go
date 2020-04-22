@@ -39,6 +39,7 @@ var (
 	HardcodedGameNames = readString("GAME_NAMES", "test1,test2")
 	RollBufferSize     = readInt("ROLL_BUFFER_SIZE", 200)
 	MaxSingleRoll      = readInt("MAX_SINGLE_ROLL", 100)
+	MaxEventRange      = readInt("MAX_EVENT_RANGE", 50)
 )
 
 func readString(name string, defaultValue string) string {

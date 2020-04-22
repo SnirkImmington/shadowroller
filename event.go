@@ -9,6 +9,7 @@ import (
 
 // EventCore contains the type of events
 type EventCore struct {
+	// del `json:"-",redis:"del"`
 	//ID   string `json:"id,omitempty"` // specially written by Redis
 	Type string `json:"ty",redis:"ty"`
 }
@@ -76,12 +77,19 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 
 			keyInfo := data[0].([]interface{})
 
-			idList := keyInfo[1].([]interface{})
-			for i := 0; i < len(idList); i++ {
-				idInfo := idList[i].([]interface{})
+			entryList := keyInfo[1].([]interface{})
+			for i := 0; i < len(entryList); i++ {
+				entryInfo := entryList[i].([]interface{})
 
-				id := string(idInfo[0].([]byte))
-				fieldList := idInfo[1].([]interface{})
+				id := string(entryInfo[0].([]byte))
+				fieldList := entryInfo[1].([]interface{})
+				// field structure:
+				// 0:del 1:true|false
+				// 2:ty 3:<eventType string>
+				// 4:event 5:<eventJson string>
+
+				//eventType := fieldList[1].([]byte)
+
 				// We assume there's only one field
 				// I think fieldList is at the point where we can use redigo helpers
 				value := fieldList[1].([]byte)

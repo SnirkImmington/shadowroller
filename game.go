@@ -238,3 +238,47 @@ func handleEvents(response Response, request *Request) {
 		}
 	}
 }
+
+type EventRangeRequest struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+	Max   int    `json:"max"`
+}
+
+type EventRangeResponse struct {
+	Events []Event // full event payload!
+	LastID string
+}
+
+/*
+   on join: { start: '', end: <lastEventID> }, backfill buffer
+  -> [ {id: <some-early-id>, ... } ]
+  if there's < max responses, client knows it's hit the boundary.
+*/
+// GET /event-range { start: <id>, end: <id>, max: int }
+func handleEventRange(response Response, request *Request) {
+	auth, err := authForRequest(request)
+	if err != nil {
+		httpUnauthorized(response, err)
+		return
+	}
+
+	conn := redisPool.Get()
+	defer conn.Close()
+
+	var eventsRange EventRangeRequest
+	err = readBodyJSON(request, &eventsRange)
+	if err != nil {
+		httpInvalidRequest(response, "Invalid request")
+		return
+	}
+	if eventsRange.Max <= 0 {
+		httpInvalidRequest(response, "Invalid range bound")
+	}
+
+	if eventsRange.Max > config.MaxEventRange {
+		eventsRange.Max = config.MaxEventRange
+	}
+
+	// Can't trust input from client!
+}
