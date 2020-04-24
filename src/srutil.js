@@ -37,9 +37,6 @@ export function useFlavor(options: React.Node[]): React.Node {
 // Color generation taken from:
 // https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 
-// String hash code taken from:
-// https://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-
 // Color generator guy claims 1/golden ratio is useful to improve distribution.
 const fixedOffset = Math.floor(0.618033988749895 * 360);
 
@@ -53,11 +50,12 @@ export function hashedColor(id: string): string {
         converted = id;
     }
 
+    // Get a checksum of the ID to use as a unique color hue
     let sum = 0;
     for (let i = 0; i < converted.length; i++) {
         sum += converted.charCodeAt(i);
     }
 
-    const hue = (sum + fixedOffset) % 360;
-    return `hsl(${hue}, 70%, 70%)`;
+    const hue = ((sum % 360) + fixedOffset) % 360;
+    return `hsl(${hue}, 80%, 56%)`;
 }
