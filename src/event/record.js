@@ -36,10 +36,12 @@ const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
 type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
 export function LocalRollRecord({ event, style }: LocalRollProps) {
     const title = event.title !== '' ?
-        <>&nbsp;for <b>{event.title}</b></> : '';
+        <>&nbsp;to <b>{event.title}</b></> : '';
     return (
         <DoubleRecord color="slateGray" style={style}>
-            {`Rolled ${event.dice.length} dice`}{title}
+            <span>
+                {`Rolled ${event.dice.length} dice`}{title}
+            </span>
             <DiceList dice={event.dice} showNumbers={false} />
         </DoubleRecord>
     );
