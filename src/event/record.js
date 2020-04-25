@@ -48,7 +48,7 @@ export function LocalRollRecord({ event, style }: LocalRollProps) {
 type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
 export function GameRollRecord({ event, style }: GameRollProps) {
     const title = event.title !== '' ?
-        <>&nbsp;for <b>{event.title}</b></> : '';
+        <>&nbsp;to <b>{event.title}</b></> : '';
     return (
         <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
             <span>
