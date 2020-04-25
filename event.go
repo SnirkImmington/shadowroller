@@ -18,7 +18,8 @@ type RollEvent struct {
 	EventCore
 	PlayerID   string `json:"pID",redis:"pID"`
 	PlayerName string `json:"pName",redis:"pName"`
-	Roll       []int  `json:"roll",redis"roll"`
+	Roll       []int  `json:"roll",redis:"roll"`
+	Title      string `json:"title",redis:"title"`
 }
 
 // PlayerJoinEvent is posted when a new player joins the game.
