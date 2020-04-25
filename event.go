@@ -5,11 +5,11 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"log"
 	"math/rand"
+	"regexp"
 )
 
 // EventCore contains the type of events
 type EventCore struct {
-	// del `json:"-",redis:"del"`
 	//ID   string `json:"id,omitempty"` // specially written by Redis
 	Type string `json:"ty",redis:"ty"`
 }
@@ -44,6 +44,12 @@ func postEvent(gameID string, event Event, conn redis.Conn) (string, error) {
 		return "", err
 	}
 	return id, nil
+}
+
+var idRegex = regexp.MustCompile(`^([\d]{13})-([\d]+)$`)
+
+func validEventID(id string) bool {
+	return idRegex.MatchString(id)
 }
 
 func receiveEvents(gameID string) (<-chan string, chan<- bool) {
@@ -83,12 +89,6 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 
 				id := string(entryInfo[0].([]byte))
 				fieldList := entryInfo[1].([]interface{})
-				// field structure:
-				// 0:del 1:true|false
-				// 2:ty 3:<eventType string>
-				// 4:event 5:<eventJson string>
-
-				//eventType := fieldList[1].([]byte)
 
 				// We assume there's only one field
 				// I think fieldList is at the point where we can use redigo helpers
