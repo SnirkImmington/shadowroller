@@ -1,6 +1,7 @@
 package srserver
 
 import (
+	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"log"
 	"math/rand"
@@ -274,11 +275,35 @@ func handleEventRange(response Response, request *Request) {
 	}
 	if eventsRange.Max <= 0 {
 		httpInvalidRequest(response, "Invalid range bound")
+		return
 	}
 
 	if eventsRange.Max > config.MaxEventRange {
-		eventsRange.Max = config.MaxEventRange
+		message := fmt.Sprintf("Range bound too big! Max bound: %v", config.MaxEventRange)
+		httpInvalidRequest(response, message)
+		return
 	}
 
-	// Can't trust input from client!
+	// We want to be careful here because these IDs are user input!
+	//
+
+	if eventsRange.Start == "" {
+		eventsRange.Start = "-"
+	} else if !validEventID(eventsRange.Start) {
+		httpInvalidRequest(response, "Invalid start ID")
+		return
+	}
+
+	if eventsRange.End == "" {
+		eventsRange.End = "+"
+	} else if !validEventID(eventsRange.End) {
+		httpInvalidRequest(response, "Invalid end ID")
+		return
+	}
+
+	resp, err := conn.Do(
+		"XRANGE", "event:"+auth.GameID,
+		eventsRange.End, eventsRange.Start,
+		"COUNT", eventsRange.Max,
+	)
 }
