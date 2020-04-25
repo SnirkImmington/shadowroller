@@ -129,7 +129,8 @@ func handleGetPlayers(response Response, request *Request) {
 }
 
 type RollRequest struct {
-	Count int `json:"count"`
+	Count int    `json:"count"`
+	Title string `json:"title"`
 }
 
 // $ POST /roll count
@@ -164,6 +165,7 @@ func handleRoll(response Response, request *Request) {
 		PlayerID:   auth.PlayerID,
 		PlayerName: auth.PlayerName,
 		Roll:       rolls,
+		Title:      roll.Title,
 	}
 	_, err = postEvent(auth.GameID, event, conn)
 	if err != nil {
