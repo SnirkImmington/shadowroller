@@ -89,9 +89,10 @@ export function getPlayers(): Promise<Map<string, string>> {
     });
 }
 
-export function postRoll(count: number): Promise<bool> {
+type RollParams = { count: number, title: string };
+export function postRoll(roll: RollParams): Promise<bool> {
     const url = BACKEND_URL + 'roll';
-    const body = JSON.stringify({ count });
+    const body = JSON.stringify(roll);
 
     return fetch(url, {
             method: 'post',
