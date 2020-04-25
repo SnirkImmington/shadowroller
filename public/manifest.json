@@ -1,9 +1,9 @@
 {
   "short_name": "Shadowroller",
-  "name": "Dice roller for Shadowrun",
+  "name": "Shadowroller",
   "icons": [
   ],
-  "start_url": "./index.html",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
