@@ -177,14 +177,14 @@ export default class NumericInput extends React.Component<Props, State> {
         ) : "";
 
         return (
-            <div className="input-group mx-2 mx-lg-0">
+            <div className="input-group mx-2">
                 <div className="input-group-prepend">
                     <span className="input-group-text">
                         <i className="fa fa-calculator"
                            aria-hidden="true"></i>
                     </span>
                 </div>
-                <input className="numeric-input form-control pr-0"
+                <input className="numeric-input form-control"
                        type="tel"
                        aria-label="Calculator"
                        inputMode="numeric"
