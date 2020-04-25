@@ -48,7 +48,7 @@ let reduce: Reducer;
 function eventReduce(state: List, event: Event): List {
     let currMilli = state.lastMilli, currOffset = state.lastOffset;
     if (!event.id) { // millisecond
-        let now = new Date().valueOf() * 1000;
+        let now = new Date().valueOf();
         if (now <= currMilli) {
             currOffset += 1;
             event.id = `${currMilli}-${currOffset}`;
