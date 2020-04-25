@@ -88,7 +88,7 @@ const TitleRow = styled(UI.FlexRow)`
 `;
 
 const FormLabel = styled.label`
-    margin: auto 5px;
+    margin: 0;
     /*margin-right: 0.5em;*/
     /*flex-basis: 0;*/
 `;
@@ -103,6 +103,15 @@ const RollButton = styled(UI.Button)`
     & :not(:disabled) {
         background-image: linear-gradient(180deg, #394341 0, #232928);
         color: white;
+    }
+`;
+
+const RollToLabel = styled.label`
+    margin-left: .5rem;
+    margin-right: 1.3em;
+
+    @media all and (min-width: 768px) {
+        margin: 0 .5rem 0 0;
     }
 `;
 
@@ -139,13 +148,12 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
             dispatch({
                 ty: "localRoll",
                 dice,
-                title: '',
+                title: title,
             });
-            setTitleFlavor(srutil.pickRandom(ROLL_TITLE_FLAVOR));
         }
         else {
             setRollLoading(true);
-            server.postRoll(diceCount)
+            server.postRoll({ count: diceCount, title: title })
                 .then(res => {
                     setRollLoading(false);
                 })
@@ -153,6 +161,10 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                     console.log("Error rolling:", err);
                     setRollLoading(false);
                 });
+        }
+        setTitle('');
+        if (Math.floor(Math.random() * 4) === 0) {
+            setTitleFlavor(srutil.pickRandom(ROLL_TITLE_FLAVOR));
         }
     }
 
@@ -162,39 +174,45 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
             <TitleRow>
                 <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
                 <UI.FlexRow>
-                <input type="checkbox" id="toggle-local-roll"
-                       diabled={!connected} checked={localRoll || !connected}
-                       onChange={rollLocalClicked} />
-                <label htmlFor="toggle-local-roll"
-                       style={{marginBottom: 0, marginLeft: ".25em"}}>
-                    Roll locally
-                </label>
+                    <input type="checkbox" id="toggle-local-roll"
+                           disabled={!connected} checked={localRoll || !connected}
+                           onChange={rollLocalClicked} />
+                    <label htmlFor="toggle-local-roll"
+                           style={{marginBottom: 0, marginLeft: ".25em"}}>
+                        Roll locally
+                    </label>
                 </UI.FlexRow>
             </TitleRow>
             <form id="dice-input" onSubmit={onRollClicked}>
-            <RollInputRow>
-                <FormLabel htmlFor="roll-select-dice">
-                    Roll
-                </FormLabel>
-                <NumericInput controlId="roll-select-dice"
-                              min={1} max={99}
-                              onSelect={setDiceCount} />
-                <FormLabel htmlFor="roll-select-dice">
-                    dice
-                </FormLabel>
-                <FormLabel htmlFor="roll-title">
-                    to
-                </FormLabel>
-                <input type="text" id="roll-title"
-                       placeholder={titleFlavor} onChange={rollTitleChanged} />
-            </RollInputRow>
-            <ButtonRow>
-                <RollButton id="roll-button-submit" type="submit"
-                            disabled={rollDisabled}
-                            onClick={onRollClicked}>
-                    Roll dice
-                </RollButton>
-            </ButtonRow>
+                <UI.ColumnToRow>
+                    <RollInputRow>
+                        <FormLabel htmlFor="roll-select-dice">
+                            Roll
+                        </FormLabel>
+                        <NumericInput controlId="roll-select-dice"
+                                      min={1} max={99}
+                                      onSelect={setDiceCount} />
+                        <FormLabel htmlFor="roll-select-dice">
+                            dice
+                        </FormLabel>
+                    </RollInputRow>
+                    <UI.FlexRow>
+                        <RollToLabel htmlFor="roll-title">
+                            to
+                        </RollToLabel>
+                        <input type="text" id="roll-title"
+                               placeholder={titleFlavor}
+                               onChange={rollTitleChanged}
+                               value={title} />
+                    </UI.FlexRow>
+                </UI.ColumnToRow>
+                <ButtonRow>
+                    <RollButton id="roll-button-submit" type="submit"
+                                disabled={rollDisabled}
+                                onClick={onRollClicked}>
+                        Roll dice
+                    </RollButton>
+                </ButtonRow>
             </form>
         </UI.Card>
     );
