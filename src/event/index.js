@@ -10,6 +10,7 @@ export type EventInfo = {|
 export type LocalRoll = {
     +ty: "localRoll",
     +dice: number[],
+    +title: string,
     ...EventInfo
 };
 
@@ -17,6 +18,7 @@ export type GameRoll = {
     +ty: "gameRoll",
     +playerID: string,
     +playerName: string,
+    +title: string,
     +dice: number[],
     ...EventInfo
 };

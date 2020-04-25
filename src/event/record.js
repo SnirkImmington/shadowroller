@@ -35,9 +35,11 @@ const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
 
 type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
 export function LocalRollRecord({ event, style }: LocalRollProps) {
+    const title = event.title !== '' ?
+        <>&nbsp;for <b>{event.title}</b></> : '';
     return (
         <DoubleRecord color="slateGray" style={style}>
-            {`Rolled ${event.dice.length} dice`}
+            {`Rolled ${event.dice.length} dice`}{title}
             <DiceList dice={event.dice} showNumbers={false} />
         </DoubleRecord>
     );
@@ -45,11 +47,13 @@ export function LocalRollRecord({ event, style }: LocalRollProps) {
 
 type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
 export function GameRollRecord({ event, style }: GameRollProps) {
+    const title = event.title !== '' ?
+        <>&nbsp;for <b>{event.title}</b></> : '';
     return (
         <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
             <span>
                 <UI.PlayerName id={event.playerID} name={event.playerName} />
-                {` rolls ${event.dice.length} dice`}
+                {` rolls ${event.dice.length} dice`}{title}
             </span>
             <DiceList dice={event.dice} showNumbers={false} />
         </DoubleRecord>
