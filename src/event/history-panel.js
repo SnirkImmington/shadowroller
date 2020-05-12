@@ -36,7 +36,7 @@ function RollResultList({ events }: ListProps) {
 
     // This function is being inconsistent.
     function getItemSize(index: number): number {
-        return 66;
+        return 76;
         /*
         switch(events[index].ty) {
             case "localRoll":

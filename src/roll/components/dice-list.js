@@ -79,21 +79,15 @@ const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     }
 `;
 
-type Props = { +showNumbers?: bool, +dice: number[] };
+type Props = { +dice: number[] };
 export default function RollingDice(props: Props) {
     const dice = props.dice.map((die, ix) =>
         <Die key={ix} roll={die} />
     );
 
-    const result = new RollResult(props.dice);
-    const displayMessage = props.showNumbers || result.isGlitched();
-
     return (
         <ListWrapper>
                 {dice}
-            <b className="">
-                {displayMessage ? result.toString() : ''}
-            </b>
         </ListWrapper>
     );
 }

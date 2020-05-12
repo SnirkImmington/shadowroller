@@ -8,6 +8,7 @@ import * as UI from 'style';
 import * as Event from 'event';
 
 import DiceList from 'roll/components/dice-list';
+import RollResult from 'roll/result';
 import * as srutil from 'srutil';
 
 type RecordProps = {| +style: any |};
@@ -26,6 +27,11 @@ const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
 
     ` : ''
     }
+`;
+
+const RollTitleRow = styled(UI.FlexRow)`
+    width: 100%;
+    justify-content: space-between;
 `;
 
 const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
@@ -51,13 +57,19 @@ type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
 export function GameRollRecord({ event, style }: GameRollProps) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
+    const rollResult = new RollResult(event.dice);
+    const showMessage = event.dice.length > 12 || rollResult.glitched;
     return (
         <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
+            <RollTitleRow>
             <span>
                 <UI.PlayerName id={event.playerID} name={event.playerName} />
                 {` rolls ${event.dice.length} dice`}{title}
             </span>
-            <DiceList dice={event.dice} showNumbers={false} />
+            {showMessage ?
+                <b>{rollResult.toString()}</b> : ''}
+            </RollTitleRow>
+            <DiceList dice={event.dice} />
         </DoubleRecord>
     );
 }

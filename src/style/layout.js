@@ -3,6 +3,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
+import flexbox from '@styled-system/flexbox';
 
 export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
@@ -13,6 +14,13 @@ export const FlexColumn: StyledComponent<> = styled.div`
     display: flex;
     flex-direction: column;
 `;
+
+export const Flex: StyledComponent<> = styled.div(
+    {
+        display: "flex",
+    },
+    flexbox
+)
 
 export const Menu: StyledComponent<> = styled.div`
     background-color: rgba(22, 22, 22, 0.2);
