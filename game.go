@@ -1,6 +1,7 @@
 package srserver
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"log"
@@ -247,7 +248,7 @@ type EventRangeRequest struct {
 }
 
 type EventRangeResponse struct {
-	Events []Event // full event payload!
+	Events []map[string]interface{} // full event payload!
 	LastID string
 }
 
@@ -301,9 +302,43 @@ func handleEventRange(response Response, request *Request) {
 		return
 	}
 
-	resp, err := conn.Do(
-		"XRANGE", "event:"+auth.GameID,
+	eventsData, err := redis.Values(conn.Do(
+		"XREVRANGE", "event:"+auth.GameID,
 		eventsRange.End, eventsRange.Start,
 		"COUNT", eventsRange.Max,
-	)
+	))
+	if err != nil {
+		httpInternalError(response, request, err)
+		return
+	}
+
+	var events []map[string]interface{}
+	var lastID string
+	for i := 0; i < len(events); i++ {
+		eventInfo := eventsData[i].([]interface{})
+
+		lastID = string(eventInfo[0].([]byte))
+		fieldList := eventInfo[1].([]interface{})
+
+		eventValue := fieldList[1].([]byte)
+
+		var event map[string]interface{}
+		err := json.Unmarshal(eventValue, &event)
+		if err != nil {
+			log.Print("Unable to deserialize event: ", err)
+			httpInternalError(response, request, err)
+			return
+		}
+		events = append(events, event)
+	}
+	eventRange := EventRangeResponse{
+		Events: events,
+		LastID: lastID,
+	}
+	err = writeBodyJSON(response, eventRange)
+	if err != nil {
+		httpInternalError(response, request, err)
+	} else {
+		log.Print("-> 200 OK ", len(events), " - ", lastID)
+	}
 }
