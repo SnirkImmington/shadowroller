@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import { VariableSizeList as List } from 'react-window';
+import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import * as Game from 'game';
@@ -25,8 +26,9 @@ function EventRecord({ event, style }: RecordProps) {
     }
 }
 
-type ListProps = { +events: Array<Event.Event> };
 type RowRenderProps = { +style: any, +index: number };
+
+type ListProps = { +events: Array<Event.Event> };
 function RollResultList({ events }: ListProps) {
 
     function ListRow({ style, index }: RowRenderProps) {
@@ -62,6 +64,49 @@ function RollResultList({ events }: ListProps) {
                 </List>
             )}
         </AutoSizer>
+    );
+}
+
+function LoadingResultList() {
+    const atEventEnd = false;
+    const moreEventsLoading = false;
+    const events = [];
+    let loadNextEvents;
+
+    const itemCount = !atEventEnd ? events.length + 1 : events.length;
+    const loadMore = moreEventsLoading ? () => {} : loadNextEvents;
+
+    // TODO this should take event ID into account.. we can do `<` on IDs though
+    function loadedAt(index: number) { return atEventEnd || index < events.length; }
+
+    function RenderRow({ index, style }) {
+        if (index >= events.length) {
+            return "loading";
+        }
+        else {
+            const event = events[index];
+            return <EventRecord event={event} style={style} />;
+        }
+    }
+
+    return (
+        <InfiniteLoader isItemLoaded={loadedAt}
+                        itemCount={events.length}
+                        loadMoreItems={moreEventsLoading ? () => {} : loadNextEvents}>
+            {({ onItemsRendered, ref }) => (
+                <AutoSizer>
+                    {({ height, width }) => (
+                        <List height={height} width={width}
+                              itemCount={events.length}
+                              itemSize={76}
+                              onItemsRendered={onItemsRendered} ref={ref}>
+                            {RenderRow}
+                        </List>
+                    )}
+                </AutoSizer>
+            )}
+        </InfiniteLoader>
+
     );
 }
 
