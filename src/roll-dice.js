@@ -174,13 +174,6 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
             <TitleRow>
                 <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
                 <UI.FlexRow>
-                    <input type="checkbox" id="toggle-local-roll"
-                           disabled={!connected} checked={localRoll || !connected}
-                           onChange={rollLocalClicked} />
-                    <label htmlFor="toggle-local-roll"
-                           style={{marginBottom: 0, marginLeft: ".25em"}}>
-                        Roll locally
-                    </label>
                 </UI.FlexRow>
             </TitleRow>
             <form id="dice-input" onSubmit={onRollClicked}>
@@ -207,6 +200,13 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <ButtonRow>
+                    <input type="checkbox" id="toggle-local-roll"
+                           disabled={!connected} checked={localRoll || !connected}
+                           onChange={rollLocalClicked} />
+                    <label htmlFor="toggle-local-roll"
+                           style={{marginBottom: 0, marginLeft: ".25em", marginRight: "0.25em"}}>
+                        Roll locally
+                    </label>
                     <RollButton id="roll-button-submit" type="submit"
                                 disabled={rollDisabled}
                                 onClick={onRollClicked}>
