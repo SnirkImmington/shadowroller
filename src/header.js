@@ -71,6 +71,7 @@ function JoinButton({ game, connection, menuShown, onClick }: Props) {
     if (!game) {
         switch (connection) {
             case "offline":
+            case "disconnected":
                 message = menuShown ? "Cancel" : "Join";
                 break;
             case "connecting":
@@ -90,6 +91,7 @@ function JoinButton({ game, connection, menuShown, onClick }: Props) {
     else { // Connected to game
         switch (connection) {
             case "offline":
+            case "disconnected":
                 message = menuShown ? "Close" : "Disconnected";
                 break;
             case "connecting":
