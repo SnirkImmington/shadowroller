@@ -44,11 +44,12 @@ const ButtonZone = styled(UI.FlexRow)`
 `;
 
 type Props = {
-    connection: server.Connection,
-    setConnection: server.SetConnection,
-    dispatch: Game.Dispatch
+    +connection: server.Connection,
+    +setConnection: server.SetConnection,
+    +hide: () => void,
+    +dispatch: Game.Dispatch
 };
-export function JoinMenu({ connection, setConnection, dispatch }: Props) {
+export function JoinMenu({ connection, setConnection, hide, dispatch }: Props) {
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
     const enterIDFlavor = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
@@ -76,6 +77,7 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
                     players: resp.players
                 });
                 setConnection("connected");
+                hide();
             })
             .catch((err: mixed) => {
                 if (process.env.NODE_ENV !== "production") {

@@ -9,7 +9,7 @@ import * as Event from 'event';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
-import EventHistory from 'event/history-panel';
+import EventHistory, { LoadingResultList } from 'event/history-panel';
 
 import * as server from 'server';
 
@@ -64,6 +64,7 @@ export default function App(props: {}) {
         menu = connection !== "connected" ?
             <Game.JoinMenu connection={connection}
                            setConnection={setConnection}
+                           hide={() => setMenuShown(false)}
                            dispatch={gameDispatch} />
             : <Game.StatusMenu game={game}
                                setConnection={setConnection}
@@ -84,13 +85,18 @@ export default function App(props: {}) {
             <AppPadding>
                 <AppLeft>
                     <RollDicePrompt connection={connection} dispatch={eventDispatch} />
+                    <EventHistory game={game} connection={connection}
+                                  setConnection={setConnection}
+                                  eventList={eventList}
+                                  dispatch={eventDispatch} />
                 </AppLeft>
                 <AppRight>
-                    <EventHistory game={game}
+                    <LoadingResultList game={game}
                                   connection={connection}
                                   setConnection={setConnection}
                                   eventList={eventList}
                                   dispatch={eventDispatch} />
+
                 </AppRight>
             </AppPadding>
 
