@@ -43,11 +43,18 @@ type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
 export function LocalRollRecord({ event, style }: LocalRollProps) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
+    const rollResult = new RollResult(event.dice);
     return (
         <DoubleRecord color="slateGray" style={style}>
+            <RollTitleRow>
             <span>
                 {`Rolled ${event.dice.length} dice`}{title}
             </span>
+            {rollResult.shouldDisplay ?
+                <b style={{ 'color': "slateGray" }}>
+                    {rollResult.toString()}
+                </b> : ''}
+            </RollTitleRow>
             <DiceList dice={event.dice} showNumbers={false} />
         </DoubleRecord>
     );
@@ -58,7 +65,6 @@ export function GameRollRecord({ event, style }: GameRollProps) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
     const rollResult = new RollResult(event.dice);
-    const showMessage = event.dice.length > 12 || rollResult.glitched;
     return (
         <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
             <RollTitleRow>
@@ -66,8 +72,11 @@ export function GameRollRecord({ event, style }: GameRollProps) {
                 <UI.PlayerName id={event.playerID} name={event.playerName} />
                 {` rolls ${event.dice.length} dice`}{title}
             </span>
-            {showMessage ?
-                <b>{rollResult.toString()}</b> : ''}
+            {rollResult.shouldDisplay ?
+                <UI.HashColored id={event.playerID}>
+                    {rollResult.toString()}
+                </UI.HashColored>
+                : ''}
             </RollTitleRow>
             <DiceList dice={event.dice} />
         </DoubleRecord>
