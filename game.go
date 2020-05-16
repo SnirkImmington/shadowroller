@@ -1,6 +1,7 @@
 package srserver
 
 import (
+	"encoding/json"
 	"github.com/gomodule/redigo/redis"
 	"log"
 	"math/rand"
@@ -15,8 +16,9 @@ type GameJoinRequest struct {
 }
 
 type JoinGameResponse struct {
-	PlayerID string            `json:"playerID"`
-	Players  map[string]string `json:"players"`
+	PlayerID      string            `json:"playerID"`
+	Players       map[string]string `json:"players"`
+	NewestEventID string            `json:"newestID"`
 }
 
 // * POST /join-game { gameId, playerId } => { token, playerID }
@@ -77,7 +79,7 @@ func handleJoinGame(response Response, request *Request) {
 		PlayerID:   playerID,
 		PlayerName: join.PlayerName,
 	}
-	_, err = postEvent(join.GameID, event, conn)
+	newestEventID, err := postEvent(join.GameID, event, conn)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -92,8 +94,9 @@ func handleJoinGame(response Response, request *Request) {
 	http.SetCookie(response, cookie)
 
 	joined := JoinGameResponse{
-		PlayerID: playerID,
-		Players:  players,
+		PlayerID:      playerID,
+		Players:       players,
+		NewestEventID: newestEventID,
 	}
 	err = writeBodyJSON(response, joined)
 	if err != nil {
@@ -236,5 +239,107 @@ func handleEvents(response Response, request *Request) {
 				return
 			}
 		}
+	}
+}
+
+type EventRangeRequest struct {
+	Newest string `json:"newest"`
+	Oldest string `json:"oldest"`
+}
+
+type EventRangeResponse struct {
+	Events []map[string]interface{} `json:"events"`
+	LastID string                   `json:"lastId"`
+	More   bool                     `json:"more"`
+}
+
+/*
+   on join: { start: '', end: <lastEventID> }, backfill buffer
+  -> [ {id: <some-early-id>, ... } ]
+  if there's < max responses, client knows it's hit the boundary.
+*/
+// GET /event-range { start: <id>, end: <id>, max: int }
+func handleEventRange(response Response, request *Request) {
+	auth, err := authForRequest(request)
+	if err != nil {
+		httpUnauthorized(response, err)
+		return
+	}
+
+	conn := redisPool.Get()
+	defer conn.Close()
+
+	var eventsRange EventRangeRequest
+	err = readBodyJSON(request, &eventsRange)
+	if err != nil {
+		httpInvalidRequest(response, "Invalid request")
+		return
+	}
+
+	log.Println("Retrieving events for", eventsRange)
+
+	// We want to be careful here because these IDs are user input!
+	//
+
+	if eventsRange.Newest == "" {
+		eventsRange.Newest = "-"
+	} else if !validEventID(eventsRange.Newest) {
+		httpInvalidRequest(response, "Invalid newest ID")
+		return
+	}
+
+	if eventsRange.Oldest == "" {
+		eventsRange.Oldest = "+"
+	} else if !validEventID(eventsRange.Oldest) {
+		httpInvalidRequest(response, "Invalid oldest ID")
+		return
+	}
+
+	log.Println("Parsed event range", eventsRange)
+
+	eventsData, err := redis.Values(conn.Do(
+		"XREVRANGE", "event:"+auth.GameID,
+		eventsRange.Oldest, eventsRange.Newest,
+		"COUNT", config.MaxEventRange,
+	))
+	if err != nil {
+		httpInternalError(response, request, err)
+		return
+	}
+
+	var firstID string
+	var events []map[string]interface{}
+	for i := 0; i < len(eventsData); i++ {
+		eventInfo := eventsData[i].([]interface{})
+
+		eventID := string(eventInfo[0].([]byte))
+		if firstID == "" {
+			firstID = eventID
+		}
+		fieldList := eventInfo[1].([]interface{})
+
+		eventValue := fieldList[1].([]byte)
+
+		var event map[string]interface{}
+		err := json.Unmarshal(eventValue, &event)
+		if err != nil {
+			log.Print("Unable to deserialize event: ", err)
+			httpInternalError(response, request, err)
+			return
+		}
+		event["id"] = string(eventID)
+		events = append(events, event)
+	}
+	lastID := events[len(events)-1]["id"].(string)
+	eventRange := EventRangeResponse{
+		Events: events,
+		LastID: lastID,
+		More:   len(events) == config.MaxEventRange,
+	}
+	err = writeBodyJSON(response, eventRange)
+	if err != nil {
+		httpInternalError(response, request, err)
+	} else {
+		log.Print("-> 200 OK ", firstID, " ... ", lastID, " count=", len(events))
 	}
 }
