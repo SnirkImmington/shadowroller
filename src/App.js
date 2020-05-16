@@ -9,7 +9,7 @@ import * as Event from 'event';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
-import EventHistory, { RollResultList, LoadingResultList } from 'event/history-panel';
+import EventHistory from 'event/history-panel';
 
 import * as server from 'server';
 

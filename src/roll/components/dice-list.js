@@ -6,8 +6,6 @@ import type { StyledComponent } from 'styled-components/macro';
 
 import * as UI from 'style';
 
-import RollResult from 'roll/result';
-
 /*
 // The roll animations are non-random to save a few computing cycles and maybe
 // let people guess what number is gonna show.
@@ -47,7 +45,7 @@ export const Die: StyledComponent<DieProps> = styled.b`
             `content: '${String.fromCharCode(0x267F + roll)}';`}
     }
 
-    font-size: 8.1vw;
+    font-size: 8.4vw;
     @media all and (min-width: 768px) {
         font-size: 2.4em;
     }
