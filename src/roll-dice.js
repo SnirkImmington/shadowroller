@@ -145,11 +145,10 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
         if (!diceCount) { return; }
         if (localRoll || !connected) {
             const dice = srutil.roll(diceCount);
-            dispatch({
-                ty: "localRoll",
-                dice,
-                title: title,
-            });
+            const localRoll: Event.LocalRoll = {
+                ty: "localRoll", ts: new Date().valueOf(), title, dice
+            };
+            dispatch({ ty: "newEvent", event: localRoll });
         }
         else {
             setRollLoading(true);

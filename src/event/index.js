@@ -12,7 +12,7 @@ export type LocalRoll = {|
 |};
 
 export type GameRoll = {|
-    +ty: "roll",
+    +ty: "gameRoll",
     +id: string,
     +playerID: string,
     +playerName: string,
@@ -37,11 +37,9 @@ export type Event =
 | PlayerJoin
 ;
 
-export type HistoryFetchMode = "newer" | "older";
 export type HistoryFetchState = "ready" | "fetching" | "finished";
 
 export type Action =
-| {| +ty: "setSubscription", connection: Server.Connection |}
 | {| +ty: "setHistoryFetch", state: HistoryFetchState |}
 | {| +ty: "newEvent", event: Event |}
 | {| +ty: "mergeEvents", events: Event[] |}
@@ -90,12 +88,10 @@ Invariants:
 export type State = {|
     +events: Event[],
     +historyFetch: HistoryFetchState,
-    +subscription: Server.Connection,
 |};
 export const defaultState: State = {
     events: [],
     historyFetch: "ready",
-    subscription: "offline"
 };
 
 function compareValue(event: Event): number {
@@ -141,10 +137,12 @@ function appendEventsReduce(state: State, newEvents: Event[]): State {
         if (newEvent.id && oldEvent.id && newEvent.id === oldEvent.id) {
             events.push(newEvent);
             newIx++;
+            oldIx++;
         }
         // uh, comparing arrays is totally fine, don't worry about it
+        // LARGER event ids are on the TOP
         // flow-ignore-all-next-line
-        else if (compareValue(newEvent) < compareValue(oldEvent)) {
+        else if (compareValue(newEvent) > compareValue(oldEvent)) {
             events.push(newEvent);
             newIx++;
         }
@@ -165,16 +163,18 @@ function eventReduce(state: State, action: Action): State {
     switch (action.ty) {
         case "setHistoryFetch":
             return { ...state, historyFetch: action.state };
-        case "setSubscription":
-            return { ...state, subscription: action.connection };
         case "newEvent":
             return { ...state, events: [action.event, ...state.events] };
         case "mergeEvents":
             return appendEventsReduce(state, action.events);
         case "clearEvents":
-            return { ...state, events: [] };
+            const localEvents = state.events.filter(e => e.ts ? true : false);
+            return { ...state, events: localEvents };
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
+            if (process.env.NODE_ENV !== "production") {
+                console.error("Events received invalid action", action);
+            }
             return state;
     }
 }
