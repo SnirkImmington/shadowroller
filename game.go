@@ -282,14 +282,14 @@ func handleEventRange(response Response, request *Request) {
 	//
 
 	if eventsRange.Newest == "" {
-		eventsRange.Newest = "+"
+		eventsRange.Newest = "-"
 	} else if !validEventID(eventsRange.Newest) {
 		httpInvalidRequest(response, "Invalid newest ID")
 		return
 	}
 
 	if eventsRange.Oldest == "" {
-		eventsRange.Oldest = "-"
+		eventsRange.Oldest = "+"
 	} else if !validEventID(eventsRange.Oldest) {
 		httpInvalidRequest(response, "Invalid oldest ID")
 		return
@@ -299,23 +299,23 @@ func handleEventRange(response Response, request *Request) {
 
 	eventsData, err := redis.Values(conn.Do(
 		"XREVRANGE", "event:"+auth.GameID,
-		eventsRange.Newest, eventsRange.Oldest,
-		"COUNT", "40",
+		eventsRange.Oldest, eventsRange.Newest,
+		"COUNT", config.MaxEventRange,
 	))
-	log.Println("Redis response:", eventsData)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
 	}
 
+	var firstID string
 	var events []map[string]interface{}
-	var lastID string
 	for i := 0; i < len(eventsData); i++ {
 		eventInfo := eventsData[i].([]interface{})
-		log.Println("Have event info:", eventInfo)
 
 		eventID := string(eventInfo[0].([]byte))
-		log.Println("Have event id?", eventID)
+		if firstID == "" {
+			firstID = eventID
+		}
 		fieldList := eventInfo[1].([]interface{})
 
 		eventValue := fieldList[1].([]byte)
@@ -330,14 +330,16 @@ func handleEventRange(response Response, request *Request) {
 		event["id"] = string(eventID)
 		events = append(events, event)
 	}
+	lastID := events[len(events)-1]["id"].(string)
 	eventRange := EventRangeResponse{
 		Events: events,
 		LastID: lastID,
+		More:   len(events) == config.MaxEventRange,
 	}
 	err = writeBodyJSON(response, eventRange)
 	if err != nil {
 		httpInternalError(response, request, err)
 	} else {
-		log.Print("-> 200 OK ", len(events), " - ", lastID)
+		log.Print("-> 200 OK ", firstID, " ... ", lastID, " count=", len(events))
 	}
 }
