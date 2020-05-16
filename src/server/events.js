@@ -29,7 +29,6 @@ function parseEvent(event: any): ?Event.ServerEvent {
 }
 
 function onMessage(e, dispatch) {
-    console.log("Message", e);
     let eventData;
     try {
         eventData = JSON.parse(e.data);

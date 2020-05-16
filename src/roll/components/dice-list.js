@@ -47,7 +47,7 @@ export const Die: StyledComponent<DieProps> = styled.b`
             `content: '${String.fromCharCode(0x267F + roll)}';`}
     }
 
-    font-size: 8vw;
+    font-size: 8.1vw;
     @media all and (min-width: 768px) {
         font-size: 2.4em;
     }

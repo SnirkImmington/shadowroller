@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import * as Game from 'game';
-import * as Server from 'server';
 
 export type LocalRoll = {|
     +ty: "localRoll",
