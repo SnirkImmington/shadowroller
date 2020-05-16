@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import * as Game from 'game';
+import * as Event from 'event';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
@@ -44,11 +45,13 @@ const ButtonZone = styled(UI.FlexRow)`
 `;
 
 type Props = {
-    connection: server.Connection,
-    setConnection: server.SetConnection,
-    dispatch: Game.Dispatch
+    +connection: server.Connection,
+    +setConnection: server.SetConnection,
+    +hide: () => void,
+    +dispatch: Game.Dispatch,
+    +eventDispatch: Event.Dispatch,
 };
-export function JoinMenu({ connection, setConnection, dispatch }: Props) {
+export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispatch }: Props) {
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
     const enterIDFlavor = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
@@ -76,13 +79,21 @@ export function JoinMenu({ connection, setConnection, dispatch }: Props) {
                     players: resp.players
                 });
                 setConnection("connected");
+                hide();
+                eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
+                server.fetchEvents({ oldest: resp.newestID }).then(resp => {
+                    eventDispatch({
+                        ty: "setHistoryFetch", state: resp.more ? "ready" : "finished"
+                    });
+                    eventDispatch({ ty: "mergeEvents", events: resp.events });
+                })
             })
             .catch((err: mixed) => {
                 if (process.env.NODE_ENV !== "production") {
                     console.log("Error connecting", err);
                 }
                 setConnection("offline");
-            })
+            });
         setConnection("connecting");
     }
 

@@ -5,13 +5,14 @@ type RollStatus = "Success" | "Glitched" | "Critical";
 
 /** Represents the result of a dice roll. */
 export default class RollResult {
-    dice: number[];
-    hits: number;
-    misses: number;
-    glitched: boolean;
-    hit: boolean;
-    critical: boolean;
-    status: RollStatus;
+    +dice: number[];
+    +hits: number;
+    +misses: number;
+    +glitched: bool;
+    +hit: bool;
+    +critical: bool;
+    +shouldDisplay: bool;
+    +status: RollStatus;
 
     constructor(dice: number[]) {
         this.dice = dice;
@@ -41,6 +42,8 @@ export default class RollResult {
             this.hit = true;
         }
 
+        this.shouldDisplay = this.glitched || this.dice.length > 12 || this.hits > 4;
+
         if (this.glitched) {
             if (this.critical) {
                 this.status = "Critical";
@@ -53,18 +56,6 @@ export default class RollResult {
             this.status = "Success";
         }
     }
-
-    isGlitched(): bool { return this.glitched; }
-
-    isCrit(): bool { return this.critical; }
-
-    isHit(): bool { return this.hit; }
-
-    getDice(): number[] { return this.dice; }
-
-    getHits(): number { return this.hits; }
-
-    getMisses(): number { return this.misses; }
 
     toString(): string {
         let result;

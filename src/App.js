@@ -53,7 +53,7 @@ export default function App(props: {}) {
     const [connection, setConnection] = React.useState<server.Connection>("offline");
 
     React.useEffect(() =>
-        server.initialCookieCheck(gameDispatch, setConnection), []);
+        server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
 
     const [menuShown, setMenuShown] = React.useState<bool>(false);
 
@@ -64,10 +64,13 @@ export default function App(props: {}) {
         menu = connection !== "connected" ?
             <Game.JoinMenu connection={connection}
                            setConnection={setConnection}
-                           dispatch={gameDispatch} />
+                           hide={() => setMenuShown(false)}
+                           dispatch={gameDispatch}
+                           eventDispatch={eventDispatch} />
             : <Game.StatusMenu game={game}
                                setConnection={setConnection}
-                               dispatch={gameDispatch} />;
+                               dispatch={gameDispatch}
+                               eventDispatch={eventDispatch} />;
     }
 
     // Page should be a flexbox.
@@ -86,8 +89,7 @@ export default function App(props: {}) {
                     <RollDicePrompt connection={connection} dispatch={eventDispatch} />
                 </AppLeft>
                 <AppRight>
-                    <EventHistory game={game}
-                                  connection={connection}
+                    <EventHistory game={game} connection={connection}
                                   setConnection={setConnection}
                                   eventList={eventList}
                                   dispatch={eventDispatch} />

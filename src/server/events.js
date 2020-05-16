@@ -3,41 +3,77 @@
 import * as React from 'react';
 
 import * as Event from 'event';
-import * as server from 'server';
+import * as server from '../server';
+
+function parseEvent(event: any): ?Event.ServerEvent {
+    switch (event.ty) {
+        case "roll":
+            return ({
+                ty: "gameRoll", id: event.id,
+                playerID: event.pID,
+                playerName: event.pName,
+                dice: event.roll,
+                title: event.title ?? ''
+            }: Event.GameRoll);
+        case "playerJoin":
+            return ({
+                ty: "playerJoin", id: event.id,
+                player: { id: event.pID, name: event.pName },
+            }: Event.PlayerJoin);
+        default:
+            if (process.env.NODE_ENV !== 'production') {
+                console.error("Invalid event", event);
+            }
+            return null;
+    }
+}
 
 function onMessage(e, dispatch) {
-    let event;
+    let eventData;
     try {
-        event = JSON.parse(e.data);
+        eventData = JSON.parse(e.data);
     }
     catch (err) {
-        console.error("Error parsing event", err, e);
+        console.error("Invalid response from server", err, e);
+        return;
     }
-    if (event.ty === "roll") {
-        dispatch({
-            ty: "gameRoll", id: event.id,
-            playerID: event.pID,
-            playerName: event.pName,
-            dice: event.roll,
-            title: event.title ?? ''
-        });
+    const event = parseEvent(eventData);
+    if (!event) {
+        console.error("Invalid event received from server", event);
+        return;
     }
-    else if (event.ty === "playerJoin") {
-        dispatch({
-            ty: "playerJoin", id: event.id,
-            player: { id: event.pID, name: event.pName }
-        });
-    }
-    else {
-        console.error("Received unknown event", event);
-    }
+    dispatch({ ty: "newEvent", event });
+}
+
+/*
+- player-joined <- lastID // fetched[0]
+- (older-1)
+- (older-2)               // ...fetched[n]
+*/
+type EventsParams = { oldest?: string, newest?: string };
+type EventsResponse = { events: Event.ServerEvent[], more: bool };
+export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
+    return server.backendPost("event-range", params).then(resp => {
+        const events = [];
+        for (const eventData of resp.events) {
+            const event = parseEvent(eventData);
+            if (!event) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.error("Could not parse event", eventData);
+                }
+                continue;
+            }
+            events.push(event);
+        }
+        return { events, more: resp.more };
+    });
 }
 
 export function useEvents(
         gameID: ?string,
         setConnection: server.SetConnection,
         dispatch: Event.Dispatch
-) {
+): ?EventSource {
     const events = React.useRef<?EventSource>();
 
     // This effect is only called when gameID changes.
@@ -80,6 +116,9 @@ export function useEvents(
             setConnection("offline");
         };
         events.current = source;
-        return; // Cleanup handled imperatively through use of ref.
+        return; // Cleanup handled imperatively through use of ref
+        // and to account for program logic and EventSource specifics.
     }, [gameID, setConnection, dispatch]);
+
+    return events.current;
 }

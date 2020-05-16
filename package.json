@@ -29,8 +29,10 @@
     "react-scripts": "3.4.1",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-window": "^1.8.5",
+    "react-window-infinite-loader": "^1.0.5",
     "sass": "^1.26.3",
-    "styled-components": "^5.0.1"
+    "styled-components": "^5.0.1",
+    "styled-system": "^5.1.5"
   },
   "scripts": {
     "predeploy": "npm run build",

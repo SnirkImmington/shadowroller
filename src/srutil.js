@@ -29,9 +29,7 @@ export function pickRandom<T>(items: Array<T>): T {
 }
 
 export function useFlavor(options: React.Node[]): React.Node {
-    // eslint-disable-next-line no-unused-vars
-    const [result, _] = React.useState(() => pickRandom(options));
-    return result;
+    return React.useState(() => pickRandom(options))[0];
 }
 
 // Color generation taken from:

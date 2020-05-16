@@ -6,12 +6,13 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import { VariableSizeList as List } from 'react-window';
+import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import * as Game from 'game';
 import * as Event from 'event';
 import * as Records from 'event/record';
-import * as server from 'server';
+import * as Server from 'server';
 
 type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {
@@ -25,43 +26,97 @@ function EventRecord({ event, style }: RecordProps) {
     }
 }
 
-type ListProps = { +events: Array<Event.Event> };
 type RowRenderProps = { +style: any, +index: number };
-function RollResultList({ events }: ListProps) {
 
-    function ListRow({ style, index }: RowRenderProps) {
-        const event: Event.Event = events[index];
-        return EventRecord({ event, style });
-    }
+type LoadingListProps = {
+    +state: Event.State,
+    +connection: Server.Connection,
+    +dispatch: Event.Dispatch,
+};
+export function LoadingResultList({ state, connection, dispatch }: LoadingListProps) {
+    const atHistoryEnd = state.historyFetch === "finished";
+    const fetchingEvents = state.historyFetch === "fetching";
+    const eventsLength = state.events.length;
+    const itemCount = eventsLength + (atHistoryEnd || connection === "offline" ? 0 : 1);
 
-    // This function is being inconsistent.
-    function getItemSize(index: number): number {
-        return 66;
-        /*
-        switch(events[index].ty) {
+    const listRef = React.useRef(null);
+
+    // Once we've connected this ref to the list,
+    // we want to ask the list to stop caching the item sizes whenever we push
+    // new items to the top! This gets re-done when we push items to the bottom,
+    // but that's okay. And when we are pushing items to the top, it's just
+    // recalculating the first ~9.
+    React.useEffect(() => {
+        if (listRef.current != null && listRef.current._listRef != null) {
+            listRef.current._listRef.resetAfterIndex(0);
+        }
+    }, [ eventsLength ]);
+
+    // TODO this should take event ID into account.. we can do `<` on IDs though
+    const loadedAt = React.useCallback((index: number) => {
+        return index < eventsLength || atHistoryEnd;
+    }, [atHistoryEnd, eventsLength]);
+
+    const itemSize = React.useMemo(() => (index: number) => {
+        if (index >= eventsLength) {
+            return 40;
+        }
+        const event = state.events[index];
+        switch (event.ty) {
             case "localRoll":
             case "gameRoll":
-                return 66;
+                return 74;
             default:
-                return 32;
-        }*/
-    }
+                return 40;
+        }
+    }, [eventsLength, state.events]);
 
-    function itemKey(index, data) {
-        return events[index].id;
+    let RenderRow = React.useMemo(() => ({ index, style }: RowRenderProps) => {
+        if (!loadedAt(index)) {
+            return <Records.EventsLoadingIndicator style={style} />;
+        }
+        else {
+            const event = state.events[index];
+            return <EventRecord event={event} style={style} />;
+        }
+    }, [loadedAt, state.events]);
+
+    function loadMoreItems(oldestIx: number): ?Promise<void> {
+        if (fetchingEvents || connection === "offline") {
+            return;
+        }
+        dispatch({ ty: "setHistoryFetch", state: "fetching" });
+        const event = state.events[oldestIx - 1];
+        if (!event) {
+            return;
+        }
+        const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
+        Server.fetchEvents({ oldest: oldestID }).then(resp => {
+            dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
+            dispatch({ ty: "mergeEvents", events: resp.events });
+        });
     }
 
     return (
         <AutoSizer>
-            {({ height, width }) => (
-                <List height={height} width={width}
-                      itemCount={events.length}
-                      itemData={events} itemKey={itemKey}
-                      itemSize={getItemSize}>
-                    {ListRow}
-                </List>
+            {({height, width}) => (
+                <InfiniteLoader
+                    ref={listRef}
+                    itemCount={itemCount}
+                    isItemLoaded={loadedAt}
+                    loadMoreItems={loadMoreItems}>
+                    {({ onItemsRendered, ref}) => (
+                        <List height={height} width={width}
+                              itemCount={itemCount}
+                              itemSize={itemSize}
+                              onItemsRendered={onItemsRendered} ref={ref}>
+                            {RenderRow}
+                        </List>
+                    )}
+                </InfiniteLoader>
             )}
         </AutoSizer>
+
     );
 }
 
@@ -72,14 +127,14 @@ const TitleBar = styled(UI.FlexRow)`
 
 type Props = {
     +game: Game.State,
-    +eventList: Event.List,
+    +eventList: Event.State,
     +dispatch: Event.Dispatch,
-    +connection: server.Connection,
-    +setConnection: server.SetConnection
+    +connection: Server.Connection,
+    +setConnection: Server.SetConnection,
 }
 export default function EventHistory({ game, eventList, dispatch, connection, setConnection }: Props) {
     const gameID = game?.gameID;
-    server.useEvents(gameID, setConnection, dispatch);
+    Server.useEvents(gameID, setConnection, dispatch);
 
     let title, right;
     if (game) {
@@ -96,7 +151,9 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
                 <span style={{fontSize: '1.1rem'}}>{right}</span>
             </TitleBar>
-            <RollResultList events={eventList.events} />
+            <LoadingResultList
+                state={eventList} dispatch={dispatch}
+                connection={connection} />
         </UI.Card>
     );
 }

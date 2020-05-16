@@ -61,6 +61,9 @@ function gameReduce(state: State, action: Action): State {
             };
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
+            if (process.env.NODE_ENV !== 'production') {
+                console.error("GameReduce: invalid action ", action);
+            }
             return state;
     }
 };
@@ -72,7 +75,7 @@ let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {
     reduce = function(state: State, action: Action): State {
         const result = gameReduce(state, action);
-        console.log("Game ", action.ty, state, action, result);
+        console.log("Game", action.ty, state, action, result);
         return result;
     }
 }
