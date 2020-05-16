@@ -12,32 +12,71 @@ function onMessage(e, dispatch) {
     }
     catch (err) {
         console.error("Error parsing event", err, e);
+        return;
     }
     if (event.ty === "roll") {
-        dispatch({
+        const rollEvent: Event.GameRoll = {
             ty: "gameRoll", id: event.id,
             playerID: event.pID,
             playerName: event.pName,
             dice: event.roll,
             title: event.title ?? ''
-        });
+        };
+        dispatch({ ty: "newEvent", event: rollEvent });
     }
     else if (event.ty === "playerJoin") {
-        dispatch({
+        const joinEvent: Event.PlayerJoin = {
             ty: "playerJoin", id: event.id,
-            player: { id: event.pID, name: event.pName }
-        });
+            player: { id: event.pID, name: event.pName },
+        }
+        dispatch({ ty: "newEvent", event: joinEvent });
     }
     else {
         console.error("Received unknown event", event);
     }
 }
 
+export type LoadEventResult = Promise<{| events: Event.Event[], more: bool |}>
+export function fetchEventsBefore(oldestID: string): LoadEventResult {
+    const url = server.BACKEND_URL + 'event-range';
+    const body = JSON.stringify({
+        newer: oldestID,
+    });
+    return fetch(url, {
+        credentials: 'include',
+        method: 'get',
+        body: body,
+    }).then(response => response.json())
+    .then(obj => {
+        return (obj: {| events: Event.Event[], more: bool |});
+    });
+}
+
+/*
+- player-joined <- lastID // fetched[0]
+- (older-1)
+- (older-2)               // ...fetched[n]
+*/
+export function fetchInitialEvents(firstID: string, dispatch: Event.Dispatch): Promise<void> {
+    dispatch({ ty: "setHistoryFetch", state: "fetching" });
+    const body = JSON.stringify({
+        newest: firstID
+    });
+    return fetch(server.BACKEND_URL + 'event-range', {
+        method: 'get', body: body
+    })
+    .then(res => res.json())
+    .then(({ events, more }) => {
+        dispatch({ ty: "setHistoryFetch", state: more ? "ready" : "finished" });
+        dispatch({ ty: "mergeEvents", events: events });
+    });
+}
+
 export function useEvents(
         gameID: ?string,
         setConnection: server.SetConnection,
         dispatch: Event.Dispatch
-) {
+): ?EventSource {
     const events = React.useRef<?EventSource>();
 
     // This effect is only called when gameID changes.
@@ -80,6 +119,9 @@ export function useEvents(
             setConnection("offline");
         };
         events.current = source;
-        return; // Cleanup handled imperatively through use of ref.
+        return; // Cleanup handled imperatively through use of ref
+        // and to account for program logic and EventSource specifics.
     }, [gameID, setConnection, dispatch]);
+
+    return events.current;
 }
