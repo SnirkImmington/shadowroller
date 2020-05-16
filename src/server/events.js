@@ -3,53 +3,47 @@
 import * as React from 'react';
 
 import * as Event from 'event';
-import * as server from 'server';
+import * as server from '../server';
 
-function onMessage(e, dispatch) {
-    let event;
-    try {
-        event = JSON.parse(e.data);
-    }
-    catch (err) {
-        console.error("Error parsing event", err, e);
-        return;
-    }
-    if (event.ty === "roll") {
-        const rollEvent: Event.GameRoll = {
-            ty: "roll", id: event.id,
-            playerID: event.pID,
-            playerName: event.pName,
-            roll: event.roll,
-            title: event.title ?? ''
-        };
-        dispatch({ ty: "newEvent", event: rollEvent });
-    }
-    else if (event.ty === "playerJoin") {
-        const joinEvent: Event.PlayerJoin = {
-            ty: "playerJoin", id: event.id,
-            player: { id: event.pID, name: event.pName },
-        }
-        dispatch({ ty: "newEvent", event: joinEvent });
-    }
-    else {
-        console.error("Received unknown event", event);
+function parseEvent(event: any): ?Event.ServerEvent {
+    switch (event.ty) {
+        case "roll":
+            return ({
+                ty: "gameRoll", id: event.id,
+                playerID: event.pID,
+                playerName: event.pName,
+                dice: event.roll,
+                title: event.title ?? ''
+            }: Event.GameRoll);
+        case "playerJoin":
+            return ({
+                ty: "playerJoin", id: event.id,
+                player: { id: event.pID, name: event.pName },
+            }: Event.PlayerJoin);
+        default:
+            if (process.env.NODE_ENV !== 'production') {
+                console.error("Invalid event", event);
+            }
+            return null;
     }
 }
 
-export type LoadEventResult = Promise<{| events: Event.Event[], more: bool |}>
-export function fetchEventsBefore(oldestID: string): LoadEventResult {
-    const url = server.BACKEND_URL + 'event-range';
-    const body = JSON.stringify({
-        oldest: oldestID,
-    });
-    return fetch(url, {
-        credentials: 'include',
-        method: 'post',
-        body: body,
-    }).then(response => response.json())
-    .then(obj => {
-        return (obj: {| events: Event.Event[], more: bool |});
-    });
+function onMessage(e, dispatch) {
+    console.log("Message", e);
+    let eventData;
+    try {
+        eventData = JSON.parse(e.data);
+    }
+    catch (err) {
+        console.error("Invalid response from server", err, e);
+        return;
+    }
+    const event = parseEvent(eventData);
+    if (!event) {
+        console.error("Invalid event received from server", event);
+        return;
+    }
+    dispatch({ ty: "newEvent", event });
 }
 
 /*
@@ -57,18 +51,22 @@ export function fetchEventsBefore(oldestID: string): LoadEventResult {
 - (older-1)
 - (older-2)               // ...fetched[n]
 */
-export function fetchInitialEvents(firstID: string, dispatch: Event.Dispatch): Promise<void> {
-    dispatch({ ty: "setHistoryFetch", state: "fetching" });
-    const body = JSON.stringify({
-        oldest: firstID
-    });
-    return fetch(server.BACKEND_URL + 'event-range', {
-        method: 'post', credentials: 'include', body: body
-    })
-    .then(res => res.json())
-    .then(({ events, more }) => {
-        dispatch({ ty: "setHistoryFetch", state: more ? "ready" : "finished" });
-        dispatch({ ty: "mergeEvents", events: events });
+type EventsParams = { oldest?: string, newest?: string };
+type EventsResponse = { events: Event.ServerEvent[], more: bool };
+export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
+    return server.backendPost("event-range", params).then(resp => {
+        const events = [];
+        for (const eventData of resp.events) {
+            const event = parseEvent(eventData);
+            if (!event) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.error("Could not parse event", eventData);
+                }
+                continue;
+            }
+            events.push(event);
+        }
+        return { events, more: resp.more };
     });
 }
 

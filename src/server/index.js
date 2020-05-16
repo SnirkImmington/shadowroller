@@ -11,7 +11,9 @@ export const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
 export type Connection = "offline" | "connecting" | "connected" | "disconnected";
 export type SetConnection = (Connection) => void;
 
-function backendGet<T>(path: string, params: ?{ [string]: any }): Promise<T> {
+// I don't wanna export these but this is the easist way to access from submodule
+
+export function backendGet<T>(path: string, params: ?{ [string]: any }): Promise<T> {
     let url = BACKEND_URL + path;
     if (params) {
         url = `${url}?${new URLSearchParams(params).toString()}`;
@@ -23,7 +25,7 @@ function backendGet<T>(path: string, params: ?{ [string]: any }): Promise<T> {
     }).then(response => response.json());
 }
 
-function backendPost(path: string, body: any, confirm = false): Promise<any> {
+export function backendPost(path: string, body: any, confirm: bool = false): Promise<any> {
     let url = BACKEND_URL + path;
     return fetch(url, {
         method: 'post',
@@ -32,7 +34,7 @@ function backendPost(path: string, body: any, confirm = false): Promise<any> {
     }).then(response => confirm ? response.ok : response.json());
 }
 
-export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event.Dispatch, setConnection: SetConnection) {
+export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Event.Dispatch, setConnection: SetConnection) {
     let authMatch, auth;
     try {
         authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
@@ -57,16 +59,22 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event
         });
         setConnection("connected");
     });
-    events.fetchInitialEvents('', eventDispatch);
+    eventsDispatch({ ty: "setHistoryFetch", state: "fetching" });
+    events.fetchEvents({}).then(resp => {
+        eventsDispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
+        eventsDispatch({ ty: "mergeEvents", events: resp.events });
+    })
 }
 
 export type JoinResponse = {
     playerID: string,
-    players: Map<string, string>
+    players: Map<string, string>,
+    newestID: string,
 };
 
 export function requestJoin(gameID: string, playerName: string): Promise<JoinResponse> {
     return backendPost('join-game', { gameID, playerName }).then(json => {
+        // We replace the players field with a map but return the rest of the json.
         if (json.playerID && json.players) {
             const players = new Map();
             for (const id in json.players) {
@@ -74,6 +82,9 @@ export function requestJoin(gameID: string, playerName: string): Promise<JoinRes
             }
             json.players = players;
             return json;
+        }
+        else {
+            throw Error("Could not parse join game");
         }
     });
 }
