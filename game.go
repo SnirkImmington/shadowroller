@@ -2,7 +2,6 @@ package srserver
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"log"
 	"math/rand"
@@ -17,8 +16,9 @@ type GameJoinRequest struct {
 }
 
 type JoinGameResponse struct {
-	PlayerID string            `json:"playerID"`
-	Players  map[string]string `json:"players"`
+	PlayerID      string            `json:"playerID"`
+	Players       map[string]string `json:"players"`
+	NewestEventID string            `json:"newestID"`
 }
 
 // * POST /join-game { gameId, playerId } => { token, playerID }
@@ -79,7 +79,7 @@ func handleJoinGame(response Response, request *Request) {
 		PlayerID:   playerID,
 		PlayerName: join.PlayerName,
 	}
-	_, err = postEvent(join.GameID, event, conn)
+	newestEventID, err := postEvent(join.GameID, event, conn)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -94,8 +94,9 @@ func handleJoinGame(response Response, request *Request) {
 	http.SetCookie(response, cookie)
 
 	joined := JoinGameResponse{
-		PlayerID: playerID,
-		Players:  players,
+		PlayerID:      playerID,
+		Players:       players,
+		NewestEventID: newestEventID,
 	}
 	err = writeBodyJSON(response, joined)
 	if err != nil {
@@ -242,14 +243,14 @@ func handleEvents(response Response, request *Request) {
 }
 
 type EventRangeRequest struct {
-	Start string `json:"start"`
-	End   string `json:"end"`
-	Max   int    `json:"max"`
+	Newest string `json:"newest"`
+	Oldest string `json:"oldest"`
 }
 
 type EventRangeResponse struct {
-	Events []map[string]interface{} // full event payload!
-	LastID string
+	Events []map[string]interface{} `json:"events"`
+	LastID string                   `json:"lastId"`
+	More   bool                     `json:"more"`
 }
 
 /*
@@ -274,39 +275,34 @@ func handleEventRange(response Response, request *Request) {
 		httpInvalidRequest(response, "Invalid request")
 		return
 	}
-	if eventsRange.Max <= 0 {
-		httpInvalidRequest(response, "Invalid range bound")
-		return
-	}
 
-	if eventsRange.Max > config.MaxEventRange {
-		message := fmt.Sprintf("Range bound too big! Max bound: %v", config.MaxEventRange)
-		httpInvalidRequest(response, message)
-		return
-	}
+	log.Println("Retrieving events for", eventsRange)
 
 	// We want to be careful here because these IDs are user input!
 	//
 
-	if eventsRange.Start == "" {
-		eventsRange.Start = "-"
-	} else if !validEventID(eventsRange.Start) {
-		httpInvalidRequest(response, "Invalid start ID")
+	if eventsRange.Newest == "" {
+		eventsRange.Newest = "+"
+	} else if !validEventID(eventsRange.Newest) {
+		httpInvalidRequest(response, "Invalid newest ID")
 		return
 	}
 
-	if eventsRange.End == "" {
-		eventsRange.End = "+"
-	} else if !validEventID(eventsRange.End) {
-		httpInvalidRequest(response, "Invalid end ID")
+	if eventsRange.Oldest == "" {
+		eventsRange.Oldest = "-"
+	} else if !validEventID(eventsRange.Oldest) {
+		httpInvalidRequest(response, "Invalid oldest ID")
 		return
 	}
+
+	log.Println("Parsed event range", eventsRange)
 
 	eventsData, err := redis.Values(conn.Do(
 		"XREVRANGE", "event:"+auth.GameID,
-		eventsRange.End, eventsRange.Start,
-		"COUNT", eventsRange.Max,
+		eventsRange.Newest, eventsRange.Oldest,
+		"COUNT", "40",
 	))
+	log.Println("Redis response:", eventsData)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
@@ -314,10 +310,12 @@ func handleEventRange(response Response, request *Request) {
 
 	var events []map[string]interface{}
 	var lastID string
-	for i := 0; i < len(events); i++ {
+	for i := 0; i < len(eventsData); i++ {
 		eventInfo := eventsData[i].([]interface{})
+		log.Println("Have event info:", eventInfo)
 
-		lastID = string(eventInfo[0].([]byte))
+		eventID := string(eventInfo[0].([]byte))
+		log.Println("Have event id?", eventID)
 		fieldList := eventInfo[1].([]interface{})
 
 		eventValue := fieldList[1].([]byte)
@@ -329,6 +327,7 @@ func handleEventRange(response Response, request *Request) {
 			httpInternalError(response, request, err)
 			return
 		}
+		event["id"] = string(eventID)
 		events = append(events, event)
 	}
 	eventRange := EventRangeResponse{

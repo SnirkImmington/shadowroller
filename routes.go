@@ -34,6 +34,8 @@ func MakeServerMux() *gorillaMux.Router {
 
 	mux.HandleFunc("/events", loggedHandler(handleEvents)).Methods("GET")
 
+	mux.HandleFunc("/event-range", loggedHandler(handleEventRange)).Methods("POST")
+
 	mux.HandleFunc("/players", loggedHandler(handleGetPlayers)).Methods("GET")
 
 	mux.HandleFunc("/roll", loggedHandler(handleRoll)).Methods("POST")
