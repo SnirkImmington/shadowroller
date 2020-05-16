@@ -12,16 +12,13 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import * as Game from 'game';
 import * as Event from 'event';
 import * as Records from 'event/record';
-import * as server from 'server';
+import * as Server from 'server';
 
 type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {
-    console.log("Rendering event", event);
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} style={style} />;
-        case "roll":
-            console.log("Gonna render a game roll", event)
-            return <Records.GameRollRecord event={event} style={style} />;
+        case "gameRoll": return <Records.GameRollRecord event={event} style={style} />;
         case "playerJoin": return <Records.PlayerJoinRecord event={event} style={style} />;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -31,63 +28,30 @@ function EventRecord({ event, style }: RecordProps) {
 
 type RowRenderProps = { +style: any, +index: number };
 
-type ListProps = { +events: Array<Event.Event> };
-export function RollResultList({ events }: ListProps) {
-
-    function ListRow({ style, index }: RowRenderProps) {
-        const event: Event.Event = events[index];
-        return EventRecord({ event, style });
-    }
-
-    // This function is being inconsistent.
-    function getItemSize(index: number): number {
-        return 76;
-        /*
-        switch(events[index].ty) {
-            case "localRoll":
-            case "gameRoll":
-                return 66;
-            default:
-                return 32;
-        }*/
-    }
-
-    function itemKey(index, data) {
-        return events[index].id || events[index].ts || index;
-    }
-
-    return (
-        <AutoSizer>
-            {({ height, width }) => (
-                <List height={height} width={width}
-                      itemCount={events.length}
-                      itemData={events} itemKey={itemKey}
-                      itemSize={getItemSize}>
-                    {ListRow}
-                </List>
-            )}
-        </AutoSizer>
-    );
-}
-
 type LoadingListProps = {
     +state: Event.State,
+    +connection: Server.Connection,
     +dispatch: Event.Dispatch,
 };
-export function LoadingResultList({ state, dispatch }: LoadingListProps) {
+export function LoadingResultList({ state, connection, dispatch }: LoadingListProps) {
+    console.log("LoadingResultList", arguments[0]);
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
-    const itemCount = state.events.length + (atHistoryEnd ? 0 : 1);
+    const itemCount = state.events.length + (atHistoryEnd || connection === "offline" ? 0 : 1);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
     function loadedAt(index: number) {
         return index < state.events.length || atHistoryEnd;
     }
 
-    function RenderRow({ index, style }) {
+    function RenderRow({ index, style }: RowRenderProps) {
         if (!loadedAt(index)) {
-            if (state.subscription === "offline") {
-                return <div style={style}>"---"</div>;
+            if (connection === "offline") {
+                return (
+                    <div style={style}>
+                        ---
+                    </div>
+                );
             }
             return (
                 <div style={style}>
@@ -103,15 +67,28 @@ export function LoadingResultList({ state, dispatch }: LoadingListProps) {
     }
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
-        console.log("LoadMoreItems: ", arguments);
+        console.log("LoadMoreItems: ", oldestIx);
         if (fetchingEvents) {
-            console.log("Is fetching");
+            console.log("> We're already loading more items, nothing to do.");
             return;
         }
-        if (state.subscription === "offline") {
-            console.log("Not online!");
+        if (connection === "offline") {
+            console.log("> We're offline!");
             return;
         }
+        console.log("> Gonna load more items!!!");
+        dispatch({ ty: "setHistoryFetch", state: "fetching" });
+        const event = state.events[oldestIx - 1];
+        if (!event) {
+            console.log("> There's no event for ", oldestIx);
+            return;
+        }
+        const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
+        console.log("The oldest ID we know of is", oldestID);
+        Server.fetchEvents({ oldest: oldestID }).then(resp => {
+            dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
+            dispatch({ ty: "mergeEvents", events: resp.events });
+        });
     }
 
     return (
@@ -145,12 +122,12 @@ type Props = {
     +game: Game.State,
     +eventList: Event.State,
     +dispatch: Event.Dispatch,
-    +connection: server.Connection,
-    +setConnection: server.SetConnection
+    +connection: Server.Connection,
+    +setConnection: Server.SetConnection,
 }
 export default function EventHistory({ game, eventList, dispatch, connection, setConnection }: Props) {
     const gameID = game?.gameID;
-    server.useEvents(gameID, setConnection, dispatch);
+    Server.useEvents(gameID, setConnection, dispatch);
 
     let title, right;
     if (game) {
@@ -167,7 +144,9 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
                 <span style={{fontSize: '1.1rem'}}>{right}</span>
             </TitleBar>
-            <LoadingResultList state={eventList} dispatch={dispatch} />
+            <LoadingResultList
+                state={eventList} dispatch={dispatch}
+                connection={connection} />
         </UI.Card>
     );
 }

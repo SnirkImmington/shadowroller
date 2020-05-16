@@ -69,7 +69,8 @@ export default function App(props: {}) {
                            eventDispatch={eventDispatch} />
             : <Game.StatusMenu game={game}
                                setConnection={setConnection}
-                               dispatch={gameDispatch} />;
+                               dispatch={gameDispatch}
+                               eventDispatch={eventDispatch} />;
     }
 
     // Page should be a flexbox.
