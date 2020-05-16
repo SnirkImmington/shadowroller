@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import * as Game from 'game';
+import * as Event from 'event';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
@@ -47,9 +48,10 @@ type Props = {
     +connection: server.Connection,
     +setConnection: server.SetConnection,
     +hide: () => void,
-    +dispatch: Game.Dispatch
+    +dispatch: Game.Dispatch,
+    +eventDispatch: Event.Dispatch,
 };
-export function JoinMenu({ connection, setConnection, hide, dispatch }: Props) {
+export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispatch }: Props) {
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
     const enterIDFlavor = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
@@ -78,6 +80,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch }: Props) {
                 });
                 setConnection("connected");
                 hide();
+                server.fetchInitialEvents(resp.newestID, eventDispatch);
             })
             .catch((err: mixed) => {
                 if (process.env.NODE_ENV !== "production") {

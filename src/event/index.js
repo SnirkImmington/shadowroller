@@ -12,7 +12,7 @@ export type LocalRoll = {|
 |};
 
 export type GameRoll = {|
-    +ty: "gameRoll",
+    +ty: "roll",
     +id: string,
     +playerID: string,
     +playerName: string,
@@ -120,17 +120,18 @@ export type Reducer = (State, Action) => State;
 // Assuming that the state's events and the new events are both sorted, combine
 // the new events into the old events.
 function appendEventsReduce(state: State, newEvents: Event[]): State {
+    console.log("Reducing", state.events, "with", newEvents);
     const oldEvents = state.events;
-    const events = new Array(oldEvents.length + newEvents.length);
+    const events = [];
 
     let oldIx = 0, newIx = 0;
     while (true) {
         if (oldIx >= oldEvents.length) {
-            events.concat(newEvents.slice(newIx));
+            events.push(...newEvents.slice(newIx));
             break;
         }
         if (newIx >= newEvents.length) {
-            events.concat(oldEvents.slice(oldIx));
+            events.push(...oldEvents.slice(oldIx));
             break;
         }
         const oldEvent = oldEvents[oldIx];

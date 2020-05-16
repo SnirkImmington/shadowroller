@@ -16,9 +16,12 @@ import * as server from 'server';
 
 type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {
+    console.log("Rendering event", event);
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} style={style} />;
-        case "gameRoll": return <Records.GameRollRecord event={event} style={style} />;
+        case "roll":
+            console.log("Gonna render a game roll", event)
+            return <Records.GameRollRecord event={event} style={style} />;
         case "playerJoin": return <Records.PlayerJoinRecord event={event} style={style} />;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -84,15 +87,16 @@ export function LoadingResultList({ state, dispatch }: LoadingListProps) {
     function RenderRow({ index, style }) {
         if (!loadedAt(index)) {
             if (state.subscription === "offline") {
-                return '';
+                return <div style={style}>"---"</div>;
             }
             return (
                 <div style={style}>
                     Loading... <UI.DiceSpinner />
                 </div>
-            )
+            );
         }
         else {
+            //console.log("Render at", index, state.events[index], style);
             const event = state.events[index];
             return <EventRecord event={event} style={style} />;
         }
@@ -163,7 +167,7 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
                 <span style={{fontSize: '1.1rem'}}>{right}</span>
             </TitleBar>
-            <RollResultList events={eventList.events} />
+            <LoadingResultList state={eventList} dispatch={dispatch} />
         </UI.Card>
     );
 }

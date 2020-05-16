@@ -1,6 +1,9 @@
 // @flow
 
 import * as Game from 'game';
+import * as Event from 'event';
+
+import * as events from './events';
 
 export const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
@@ -8,7 +11,7 @@ export const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
 export type Connection = "offline" | "connecting" | "connected" | "disconnected";
 export type SetConnection = (Connection) => void;
 
-export function initialCookieCheck(dispatch: Game.Dispatch, setConnection: SetConnection) {
+export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event.Dispatch, setConnection: SetConnection) {
     let authMatch, auth;
     try {
         authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
@@ -32,7 +35,8 @@ export function initialCookieCheck(dispatch: Game.Dispatch, setConnection: SetCo
             ty: "setPlayers", players
         });
         setConnection("connected");
-    })
+    });
+    events.fetchInitialEvents('', eventDispatch);
 }
 
 export type JoinResponse = {

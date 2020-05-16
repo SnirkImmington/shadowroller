@@ -9,7 +9,7 @@ import * as Event from 'event';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
-import EventHistory, { LoadingResultList } from 'event/history-panel';
+import EventHistory, { RollResultList, LoadingResultList } from 'event/history-panel';
 
 import * as server from 'server';
 
@@ -53,7 +53,7 @@ export default function App(props: {}) {
     const [connection, setConnection] = React.useState<server.Connection>("offline");
 
     React.useEffect(() =>
-        server.initialCookieCheck(gameDispatch, setConnection), []);
+        server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
 
     const [menuShown, setMenuShown] = React.useState<bool>(false);
 
@@ -65,7 +65,8 @@ export default function App(props: {}) {
             <Game.JoinMenu connection={connection}
                            setConnection={setConnection}
                            hide={() => setMenuShown(false)}
-                           dispatch={gameDispatch} />
+                           dispatch={gameDispatch}
+                           eventDispatch={eventDispatch} />
             : <Game.StatusMenu game={game}
                                setConnection={setConnection}
                                dispatch={gameDispatch} />;
@@ -85,18 +86,12 @@ export default function App(props: {}) {
             <AppPadding>
                 <AppLeft>
                     <RollDicePrompt connection={connection} dispatch={eventDispatch} />
+                </AppLeft>
+                <AppRight>
                     <EventHistory game={game} connection={connection}
                                   setConnection={setConnection}
                                   eventList={eventList}
                                   dispatch={eventDispatch} />
-                </AppLeft>
-                <AppRight>
-                    <LoadingResultList game={game}
-                                  connection={connection}
-                                  setConnection={setConnection}
-                                  eventList={eventList}
-                                  dispatch={eventDispatch} />
-
                 </AppRight>
             </AppPadding>
 

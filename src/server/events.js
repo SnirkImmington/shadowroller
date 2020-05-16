@@ -16,10 +16,10 @@ function onMessage(e, dispatch) {
     }
     if (event.ty === "roll") {
         const rollEvent: Event.GameRoll = {
-            ty: "gameRoll", id: event.id,
+            ty: "roll", id: event.id,
             playerID: event.pID,
             playerName: event.pName,
-            dice: event.roll,
+            roll: event.roll,
             title: event.title ?? ''
         };
         dispatch({ ty: "newEvent", event: rollEvent });
@@ -40,11 +40,11 @@ export type LoadEventResult = Promise<{| events: Event.Event[], more: bool |}>
 export function fetchEventsBefore(oldestID: string): LoadEventResult {
     const url = server.BACKEND_URL + 'event-range';
     const body = JSON.stringify({
-        newer: oldestID,
+        oldest: oldestID,
     });
     return fetch(url, {
         credentials: 'include',
-        method: 'get',
+        method: 'post',
         body: body,
     }).then(response => response.json())
     .then(obj => {
@@ -60,10 +60,10 @@ export function fetchEventsBefore(oldestID: string): LoadEventResult {
 export function fetchInitialEvents(firstID: string, dispatch: Event.Dispatch): Promise<void> {
     dispatch({ ty: "setHistoryFetch", state: "fetching" });
     const body = JSON.stringify({
-        newest: firstID
+        oldest: firstID
     });
     return fetch(server.BACKEND_URL + 'event-range', {
-        method: 'get', body: body
+        method: 'post', credentials: 'include', body: body
     })
     .then(res => res.json())
     .then(({ events, more }) => {
