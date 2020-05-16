@@ -204,7 +204,7 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                            disabled={!connected} checked={localRoll || !connected}
                            onChange={rollLocalClicked} />
                     <label htmlFor="toggle-local-roll"
-                           style={{marginBottom: 0, marginLeft: ".25em", marginRight: "0.25em"}}>
+                           style={{marginBottom: 0, marginLeft: ".25em", marginRight: ".25em"}}>
                         Roll locally
                     </label>
                     <RollButton id="roll-button-submit" type="submit"
