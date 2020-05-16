@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import * as Game from 'game';
+import * as Event from 'event';
 
 import * as server from 'server';
 
@@ -26,15 +27,17 @@ const LeaveButton = styled(UI.Button)`
 type Props = {
     game: Game.State,
     dispatch: Game.Dispatch,
+    eventDispatch: Event.Dispatch,
     setConnection: server.SetConnection
 };
-export function StatusMenu({ game, dispatch, setConnection}: Props) {
+export function StatusMenu({ game, dispatch, eventDispatch, setConnection}: Props) {
     if (!game) {
         return 'Something messed up, maybe press the join button again?';
     }
 
     function handleLeave() {
         dispatch({ ty: "leave" });
+        eventDispatch({ ty: "clearEvents" });
         setConnection("offline");
     }
 

@@ -80,14 +80,20 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                 });
                 setConnection("connected");
                 hide();
-                server.fetchInitialEvents(resp.newestID, eventDispatch);
+                eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
+                server.fetchEvents({ oldest: resp.newestID }).then(resp => {
+                    eventDispatch({
+                        ty: "setHistoryFetch", state: resp.more ? "ready" : "finished"
+                    });
+                    eventDispatch({ ty: "mergeEvents", events: resp.events });
+                })
             })
             .catch((err: mixed) => {
                 if (process.env.NODE_ENV !== "production") {
                     console.log("Error connecting", err);
                 }
                 setConnection("offline");
-            })
+            });
         setConnection("connecting");
     }
 
