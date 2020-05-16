@@ -11,6 +11,27 @@ export const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
 export type Connection = "offline" | "connecting" | "connected" | "disconnected";
 export type SetConnection = (Connection) => void;
 
+function backendGet<T>(path: string, params: ?{ [string]: any }): Promise<T> {
+    let url = BACKEND_URL + path;
+    if (params) {
+        url = `${url}?${new URLSearchParams(params).toString()}`;
+    }
+
+    return fetch(url, {
+        method: 'get',
+        credentials: 'include',
+    }).then(response => response.json());
+}
+
+function backendPost(path: string, body: any, confirm = false): Promise<any> {
+    let url = BACKEND_URL + path;
+    return fetch(url, {
+        method: 'post',
+        credentials: 'include',
+        body: body == null ? '' : JSON.stringify(body),
+    }).then(response => confirm ? response.ok : response.json());
+}
+
 export function initialCookieCheck(dispatch: Game.Dispatch, eventDispatch: Event.Dispatch, setConnection: SetConnection) {
     let authMatch, auth;
     try {
@@ -45,49 +66,23 @@ export type JoinResponse = {
 };
 
 export function requestJoin(gameID: string, playerName: string): Promise<JoinResponse> {
-    const url = BACKEND_URL + 'join-game';
-    const body = JSON.stringify({ gameID, playerName });
-
-    return new Promise((resolve, reject) => {
-        fetch(url, {
-            credentials: 'include',
-            method: 'post',
-            //mode: 'cors',
-            body: body,
-        }).then(response => {
-            response.json().then(json => {
-                if (json.playerID && json.players) {
-                    const players = new Map();
-                    for (const id in json.players) {
-                        players.set(id, json.players[id]);
-                    }
-                    json.players = players;
-                    resolve(json);
-                }
-                else {
-                    reject(json);
-                }
-            }).catch(parseError => {
-                reject(parseError);
-            });
-        }).catch(webError => {
-            reject(webError);
-        });
+    return backendPost('join-game', { gameID, playerName }).then(json => {
+        if (json.playerID && json.players) {
+            const players = new Map();
+            for (const id in json.players) {
+                players.set(id, json.players[id]);
+            }
+            json.players = players;
+            return json;
+        }
     });
 }
 
 export function getPlayers(): Promise<Map<string, string>> {
-    const url = BACKEND_URL + "players";
-
-    return fetch(url, {
-        method: 'get',
-        //mode: 'cors',
-        credentials: 'include'
-    }).then(response => response.json())
-    .then(obj => {
+    return backendGet('players').then(json => {
         const players = new Map();
-        for (const id in obj) {
-            players.set(id, obj[id]);
+        for (const id in json) {
+            players.set(id, json[id]);
         }
         return players;
     });
@@ -95,15 +90,7 @@ export function getPlayers(): Promise<Map<string, string>> {
 
 type RollParams = { count: number, title: string };
 export function postRoll(roll: RollParams): Promise<bool> {
-    const url = BACKEND_URL + 'roll';
-    const body = JSON.stringify(roll);
-
-    return fetch(url, {
-            method: 'post',
-            //mode: 'cors',
-            credentials: 'include',
-            body
-        }).then(response => response.ok);
+    return backendPost('roll', roll, true);
 }
 
 export * from './events';
