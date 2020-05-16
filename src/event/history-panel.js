@@ -34,57 +34,63 @@ type LoadingListProps = {
     +dispatch: Event.Dispatch,
 };
 export function LoadingResultList({ state, connection, dispatch }: LoadingListProps) {
-    console.log("LoadingResultList", arguments[0]);
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
-    const itemCount = state.events.length + (atHistoryEnd || connection === "offline" ? 0 : 1);
+    const eventsLength = state.events.length;
+    const itemCount = eventsLength + (atHistoryEnd || connection === "offline" ? 0 : 1);
+
+    const listRef = React.useRef(null);
+
+    // Once we've connected this ref to the list,
+    // we want to ask the list to stop caching the item sizes whenever we push
+    // new items to the top! This gets re-done when we push items to the bottom,
+    // but that's okay. And when we are pushing items to the top, it's just
+    // recalculating the first ~9.
+    React.useEffect(() => {
+        if (listRef.current != null && listRef.current._listRef != null) {
+            listRef.current._listRef.resetAfterIndex(0);
+        }
+    }, [ eventsLength ]);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
-    function loadedAt(index: number) {
-        return index < state.events.length || atHistoryEnd;
-    }
+    const loadedAt = React.useCallback((index: number) => {
+        return index < eventsLength || atHistoryEnd;
+    }, [atHistoryEnd, eventsLength]);
 
-    function RenderRow({ index, style }: RowRenderProps) {
+    const itemSize = React.useMemo(() => (index: number) => {
+        if (index >= eventsLength) {
+            return 40;
+        }
+        const event = state.events[index];
+        switch (event.ty) {
+            case "localRoll":
+            case "gameRoll":
+                return 74;
+            default:
+                return 40;
+        }
+    }, [eventsLength, state.events]);
+
+    let RenderRow = React.useMemo(() => ({ index, style }: RowRenderProps) => {
         if (!loadedAt(index)) {
-            if (connection === "offline") {
-                return (
-                    <div style={style}>
-                        ---
-                    </div>
-                );
-            }
-            return (
-                <div style={style}>
-                    Loading... <UI.DiceSpinner />
-                </div>
-            );
+            return <Records.EventsLoadingIndicator style={style} />;
         }
         else {
-            //console.log("Render at", index, state.events[index], style);
             const event = state.events[index];
             return <EventRecord event={event} style={style} />;
         }
-    }
+    }, [loadedAt, state.events]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
-        console.log("LoadMoreItems: ", oldestIx);
-        if (fetchingEvents) {
-            console.log("> We're already loading more items, nothing to do.");
+        if (fetchingEvents || connection === "offline") {
             return;
         }
-        if (connection === "offline") {
-            console.log("> We're offline!");
-            return;
-        }
-        console.log("> Gonna load more items!!!");
         dispatch({ ty: "setHistoryFetch", state: "fetching" });
         const event = state.events[oldestIx - 1];
         if (!event) {
-            console.log("> There's no event for ", oldestIx);
             return;
         }
         const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
-        console.log("The oldest ID we know of is", oldestID);
         Server.fetchEvents({ oldest: oldestID }).then(resp => {
             dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
             dispatch({ ty: "mergeEvents", events: resp.events });
@@ -95,13 +101,14 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
         <AutoSizer>
             {({height, width}) => (
                 <InfiniteLoader
+                    ref={listRef}
                     itemCount={itemCount}
                     isItemLoaded={loadedAt}
                     loadMoreItems={loadMoreItems}>
                     {({ onItemsRendered, ref}) => (
                         <List height={height} width={width}
                               itemCount={itemCount}
-                              itemSize={() => 76}
+                              itemSize={itemSize}
                               onItemsRendered={onItemsRendered} ref={ref}>
                             {RenderRow}
                         </List>

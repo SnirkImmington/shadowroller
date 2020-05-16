@@ -24,7 +24,6 @@ const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
         border-left: 6px solid ${props.color};
         border-top: 3px solid white;
         border-bottom: 3px solid white;
-
     ` : ''
     }
 `;
@@ -38,6 +37,14 @@ const DoubleRecord: StyledComponent<SingleRecordProps> = styled(SingleRecord)`
     flex-direction: column;
     align-items: flex-start;
 `;
+
+export function EventsLoadingIndicator({ style }: any) {
+    return (
+        <SingleRecord color="white" style={style}>
+            <span>Getting some rolls... <UI.DiceSpinner /></span>
+        </SingleRecord>
+    );
+}
 
 type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
 export function LocalRollRecord({ event, style }: LocalRollProps) {
