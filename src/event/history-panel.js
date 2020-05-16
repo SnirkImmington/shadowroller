@@ -29,7 +29,7 @@ function EventRecord({ event, style }: RecordProps) {
 type RowRenderProps = { +style: any, +index: number };
 
 type ListProps = { +events: Array<Event.Event> };
-function RollResultList({ events }: ListProps) {
+export function RollResultList({ events }: ListProps) {
 
     function ListRow({ style, index }: RowRenderProps) {
         const event: Event.Event = events[index];
@@ -50,7 +50,7 @@ function RollResultList({ events }: ListProps) {
     }
 
     function itemKey(index, data) {
-        return events[index].id;
+        return events[index].id || events[index].ts || index;
     }
 
     return (
@@ -67,45 +67,67 @@ function RollResultList({ events }: ListProps) {
     );
 }
 
-function LoadingResultList() {
-    const atEventEnd = false;
-    const moreEventsLoading = false;
-    const events = [];
-    let loadNextEvents;
-
-    const itemCount = !atEventEnd ? events.length + 1 : events.length;
-    const loadMore = moreEventsLoading ? () => {} : loadNextEvents;
+type LoadingListProps = {
+    +state: Event.State,
+    +dispatch: Event.Dispatch,
+};
+export function LoadingResultList({ state, dispatch }: LoadingListProps) {
+    const atHistoryEnd = state.historyFetch === "finished";
+    const fetchingEvents = state.historyFetch === "fetching";
+    const itemCount = state.events.length + (atHistoryEnd ? 0 : 1);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
-    function loadedAt(index: number) { return atEventEnd || index < events.length; }
+    function loadedAt(index: number) {
+        return index < state.events.length || atHistoryEnd;
+    }
 
     function RenderRow({ index, style }) {
-        if (index >= events.length) {
-            return "loading";
+        if (!loadedAt(index)) {
+            if (state.subscription === "offline") {
+                return '';
+            }
+            return (
+                <div style={style}>
+                    Loading... <UI.DiceSpinner />
+                </div>
+            )
         }
         else {
-            const event = events[index];
+            const event = state.events[index];
             return <EventRecord event={event} style={style} />;
         }
     }
 
+    function loadMoreItems(oldestIx: number): ?Promise<void> {
+        console.log("LoadMoreItems: ", arguments);
+        if (fetchingEvents) {
+            console.log("Is fetching");
+            return;
+        }
+        if (state.subscription === "offline") {
+            console.log("Not online!");
+            return;
+        }
+    }
+
     return (
-        <InfiniteLoader isItemLoaded={loadedAt}
-                        itemCount={events.length}
-                        loadMoreItems={moreEventsLoading ? () => {} : loadNextEvents}>
-            {({ onItemsRendered, ref }) => (
-                <AutoSizer>
-                    {({ height, width }) => (
+        <AutoSizer>
+            {({height, width}) => (
+                <InfiniteLoader
+                    itemCount={itemCount}
+                    isItemLoaded={loadedAt}
+                    loadMoreItems={loadMoreItems}>
+                    {({ onItemsRendered, ref}) => (
                         <List height={height} width={width}
-                              itemCount={events.length}
-                              itemSize={76}
+                              itemCount={itemCount}
+                              itemSize={() => 76}
                               onItemsRendered={onItemsRendered} ref={ref}>
                             {RenderRow}
                         </List>
                     )}
-                </AutoSizer>
+                </InfiniteLoader>
             )}
-        </InfiniteLoader>
+        </AutoSizer>
 
     );
 }
@@ -117,7 +139,7 @@ const TitleBar = styled(UI.FlexRow)`
 
 type Props = {
     +game: Game.State,
-    +eventList: Event.List,
+    +eventList: Event.State,
     +dispatch: Event.Dispatch,
     +connection: server.Connection,
     +setConnection: server.SetConnection
