@@ -7,6 +7,7 @@ import (
 	gorillaMux "github.com/gorilla/mux"
 	"io"
 	"log"
+	"net/http"
 	"srserver/config"
 	"strings"
 )
@@ -40,9 +41,18 @@ func MakeServerMux() *gorillaMux.Router {
 
 	mux.HandleFunc("/roll", loggedHandler(handleRoll)).Methods("POST")
 
-	mux.HandleFunc("/", loggedHandler(func(response Response, request *Request) {
-		io.WriteString(response, "Maybe try https://snirkimmington.github.io/shadowroller ?")
-	})).Methods("GET")
+	mux.HandleFunc("/", func(response Response, request *Request) {
+		if config.IsProduction {
+			log.Println(request.Proto, request.Method, request.RequestURI, "-> shadowroller")
+			http.Redirect(
+				response, request,
+				"https://snirkimmington.github.io/shadowroller", http.StatusSeeOther,
+			)
+		} else {
+			log.Println(request.Method, request.URL, "-> shadowroller")
+			io.WriteString(response, `<a href="`+config.FrontendAddress+`">Frontend</a>`)
+		}
+	}).Methods("GET")
 
 	mux.HandleFunc("/health-check", loggedHandler(func(response Response, request *Request) {
 		io.WriteString(response, "ok")
