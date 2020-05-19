@@ -22,7 +22,14 @@ export function backendGet<T>(path: string, params: ?{ [string]: any }): Promise
     return fetch(url, {
         method: 'get',
         credentials: 'include',
-    }).then(response => response.json());
+    })
+        .then(response => response.json())
+        .catch(err => {
+            if (process.env.NODE_ENV !== 'production') {
+                console.error("Error from GET", url, err.message.substr(12));
+            }
+            throw err;
+        });
 }
 
 export function backendPost(path: string, body: any, confirm: bool = false): Promise<any> {
@@ -31,7 +38,14 @@ export function backendPost(path: string, body: any, confirm: bool = false): Pro
         method: 'post',
         credentials: 'include',
         body: body == null ? '' : JSON.stringify(body),
-    }).then(response => confirm ? response.ok : response.json());
+    })
+        .then(response => confirm ? response.ok : response.json())
+        .catch(err => {
+            if (process.env.NODE_ENV !== 'production') {
+                console.error("Error from POST", url, err.message.substr(12));
+            }
+            throw err;
+        });
 }
 
 export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Event.Dispatch, setConnection: SetConnection) {
@@ -41,6 +55,9 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Even
         auth = JSON.parse(atob(authMatch[1]));
     }
     catch {
+        if (process.env.NODE_ENV !== 'production') {
+            console.error("Unable to parse auth from cookie: ", document.cookie);
+        }
         return;
     }
     if (!auth || !authMatch) {
