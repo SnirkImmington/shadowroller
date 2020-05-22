@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import NumericInput from 'components/numeric-input';
+import NI2 from 'numeric-input';
 
 import * as Event from 'event';
 import * as server from 'server';
@@ -187,25 +188,30 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                         <FormLabel htmlFor="roll-select-dice">
                             dice
                         </FormLabel>
+                        <NI2 id="roll-select-dice-2" min={1} max={99} onSelect={setDiceCount} />
                     </RollInputRow>
-                    <UI.FlexRow>
+                    <UI.FlexRow maxWidth>
                         <RollToLabel htmlFor="roll-title">
                             to
                         </RollToLabel>
-                        <input type="text" id="roll-title"
-                               placeholder={titleFlavor}
-                               onChange={rollTitleChanged}
-                               value={title} />
+                        <UI.Input id="roll-title"
+                                  maxWidth size={32}
+                                  placeholder={titleFlavor}
+                                  onChange={rollTitleChanged}
+                                  value={title} />
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <ButtonRow>
-                    <input type="checkbox" id="toggle-local-roll"
-                           disabled={!connected} checked={localRoll || !connected}
-                           onChange={rollLocalClicked} />
-                    <label htmlFor="toggle-local-roll"
-                           style={{marginBottom: 0, marginLeft: ".25em", marginRight: ".25em"}}>
-                        Roll locally
-                    </label>
+                    {connected ?
+                        <>
+                            <input type="checkbox" id="toggle-local-roll"
+                                   checked={localRoll} onChange={rollLocalClicked} />
+                            <label htmlFor="toggle-local-roll"
+                                   style={{marginBottom: 0, marginLeft: ".25em", marginRight: ".25em"}}>
+                                Roll locally
+                            </label>
+                        </>
+                    : ''}
                     <RollButton id="roll-button-submit" type="submit"
                                 disabled={rollDisabled}
                                 onClick={onRollClicked}>
