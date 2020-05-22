@@ -20,11 +20,9 @@
     "flow-bin": "^0.121.0",
     "flow-typed": "^3.1.0",
     "gh-pages": "^2.2.0",
-    "react-scripts": "3.4.1",
-    "sass": "^1.26.3"
+    "react-scripts": "3.4.1"
   },
   "dependencies": {
-    "bootstrap": "^4.4.1",
     "react": "^16.13",
     "react-bootstrap": "^1.0.0",
     "react-dom": "^16.13.1",
