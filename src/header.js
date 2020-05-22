@@ -10,14 +10,13 @@ import * as server from 'server';
 
 const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
-    height: 4em;
-    padding: 0.9em;
+    height: 4.6rem;
     color: white;
     display: flex;
     align-items: center;
 
     @media all and (min-width: 768px) {
-        height: 3.4em;
+        height: 3.4rem;
     }
 `;
 
@@ -25,11 +24,10 @@ const SRTitle = styled.h1`
     font-size: 2em;
     font-style: oblique;
     font-weight: 900;
-    margin-top: 5px;
 
-    margin-left: .5em;
+    margin-left: .5rem;
     @media all and (min-width: 768px) {
-        margin-left: 4em;
+        margin-left: 8rem;
     }
 `;
 
