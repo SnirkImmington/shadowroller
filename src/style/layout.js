@@ -8,6 +8,7 @@ import flexbox from '@styled-system/flexbox';
 export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
     align-items: center;
+    ${(props) => props.maxWidth ? 'width: 100%;' : ''}
 `;
 
 export const FlexColumn: StyledComponent<> = styled.div`

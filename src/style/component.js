@@ -4,14 +4,21 @@ import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as srutil from 'srutil';
+import theme from './theme';
 
 type InputProps = { monospace? : bool };
 export const Input: StyledComponent<InputProps> = styled.input.attrs(props => ({
     type: "text",
 }))`
     font-family: ${props => props.monospace ? "monospace" : "inherit"};
-    max-width: 10em;
+    ${(props) => props.size ? 'max-width: 100%;' : 'max-width: 12em'}
     margin: 0px 0.25em;
+    border: 2px solid darkslategray;
+    padding: 6px;
+    line-height: 1;
+    &:focus {
+        border: 2px solid red;
+    }
 `;
 
 export const Button: StyledComponent<> = styled.button`
