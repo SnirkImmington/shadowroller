@@ -3,30 +3,58 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import * as srutil from 'srutil';
+import { color } from 'styled-system';
 import theme from './theme';
+
+import * as srutil from 'srutil';
 
 type InputProps = { monospace? : bool };
 export const Input: StyledComponent<InputProps> = styled.input.attrs(props => ({
     type: "text",
 }))`
-    font-family: ${props => props.monospace ? "monospace" : "inherit"};
-    ${(props) => props.size ? 'max-width: 100%;' : 'max-width: 12em'}
+    ${color}
+    font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
+    max-width: ${(props) => props.size ? '100%' : '12em'};
+
     margin: 0px 0.25em;
     border: 2px solid darkslategray;
     padding: 6px;
     line-height: 1;
+
     &:focus {
-        border: 2px solid red;
+        outline: 1px solid ${theme.colors.primary};
+        border: 2px solid ${theme.colors.primary};
     }
 `;
 
 export const Button: StyledComponent<> = styled.button`
     font-size: 1em;
-    padding: 0.1em 1em;
-    border: 1px solid transparent;
+    font-weight: 500;
+    padding: 0.2em 1em;
+    border: 0;
     align-text: center;
-    margin: 0px 0.25em;
+    margin: 2px 0.25em;
+    cursor: pointer;
+    color: black;
+    background-color: white;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    &:active {
+        background-color: #ddd;
+    }
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed;
+        color: rgba(0, 0, 0, 0.69);
+        background-color: #ccc;
+    }
+`;
+
+export const BaseButton: StyledComponent<> = styled.button`
 `;
 
 const diceFrames = keyframes`

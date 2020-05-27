@@ -5,8 +5,7 @@ import styled from 'styled-components/macro';
 // import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
-import NumericInput from 'components/numeric-input';
-import NI2 from 'numeric-input';
+import NumericInput from 'numeric-input';
 
 import * as Event from 'event';
 import * as server from 'server';
@@ -89,21 +88,30 @@ const TitleRow = styled(UI.FlexRow)`
 `;
 
 const FormLabel = styled.label`
-    margin: 0;
+    /*margin: 0;*/
     /*margin-right: 0.5em;*/
     /*flex-basis: 0;*/
 `;
 
 const RollButton = styled(UI.Button)`
-    background-image: linear-gradient(180deg, #52605e 0, #3f4946);
     font-size: 1.05em;
-    color: #ccc;
     font-weight: 600;
     padding: .3rem .7rem;
 
-    & :not(:disabled) {
-        background-image: linear-gradient(180deg, #394341 0, #232928);
-        color: white;
+    color: white;
+    background-image: linear-gradient(180deg, #394341 0, #232928);
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:active {
+        background-image: linear-gradient(180deg, #263427 0, #192423);
+    }
+
+    &[disabled] {
+        color: #ccc;
+        background-image: linear-gradient(180deg, #52605e 0, #3f4946);
     }
 `;
 
@@ -182,13 +190,12 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                         <FormLabel htmlFor="roll-select-dice">
                             Roll
                         </FormLabel>
-                        <NumericInput controlId="roll-select-dice"
+                        <NumericInput id="roll-select-dice"
                                       min={1} max={99}
                                       onSelect={setDiceCount} />
                         <FormLabel htmlFor="roll-select-dice">
                             dice
                         </FormLabel>
-                        <NI2 id="roll-select-dice-2" min={1} max={99} onSelect={setDiceCount} />
                     </RollInputRow>
                     <UI.FlexRow maxWidth>
                         <RollToLabel htmlFor="roll-title">
