@@ -136,10 +136,9 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
     const gameID = game?.gameID;
     Server.useEvents(gameID, setConnection, dispatch);
 
-    let title, right;
+    let title;
     if (game) {
         title = gameID;
-        right = <UI.HashColored id={game.player.id}>{game.player.name}</UI.HashColored>;
     }
     else {
         title = "Results";
@@ -149,7 +148,6 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
         <UI.Card grow color="#81132a">
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
-                <span style={{fontSize: '1.1rem'}}>{right}</span>
             </TitleBar>
             <LoadingResultList
                 state={eventList} dispatch={dispatch}
