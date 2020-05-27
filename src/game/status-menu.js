@@ -11,7 +11,7 @@ import * as Event from 'event';
 import * as server from 'server';
 
 const Message = styled.span`
-    color: rgba(0, 0, 0.9);
+    color: rgba(0, 0, 1);
 
     margin: 0px 1em;
 `;

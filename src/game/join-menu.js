@@ -100,7 +100,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
     let flavor = connection === "connecting" ? loadingFlavor : enterIDFlavor;
 
     return (
-        <UI.Menu color="dimGray">
+        <UI.Menu>
             <form id="join-game-menu">
                 <MenuLayout>
                     <span style={{marginRight: 'auto'}}>
