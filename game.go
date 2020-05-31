@@ -307,6 +307,21 @@ func handleEventRange(response Response, request *Request) {
 		return
 	}
 
+	if len(eventsData) == 0 {
+		eventRange := EventRangeResponse{
+			Events: make([]map[string]interface{}, 0),
+			LastID: "",
+			More:   false,
+		}
+		err = writeBodyJSON(response, eventRange)
+		if err != nil {
+			httpInternalError(response, request, err)
+		} else {
+			log.Print("-> 200 OK count=0")
+		}
+		return
+	}
+
 	var firstID string
 	var events []map[string]interface{}
 	for i := 0; i < len(eventsData); i++ {
@@ -330,10 +345,10 @@ func handleEventRange(response Response, request *Request) {
 		event["id"] = string(eventID)
 		events = append(events, event)
 	}
-	lastID := events[len(events)-1]["id"].(string)
+	//lastID := events[len(events)-1]["id"].(string)
+	lastID := "this panicked before"
 	eventRange := EventRangeResponse{
 		Events: events,
-		LastID: lastID,
 		More:   len(events) == config.MaxEventRange,
 	}
 	err = writeBodyJSON(response, eventRange)
