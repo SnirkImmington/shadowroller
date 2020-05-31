@@ -5,7 +5,7 @@ import styled from 'styled-components/macro';
 // import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
-import NumericInput from 'components/numeric-input';
+import NumericInput from 'numeric-input';
 
 import * as Event from 'event';
 import * as server from 'server';
@@ -20,12 +20,11 @@ const ROLL_TITLE_FLAVOR = [
     "geek the mage",
     "not freak out",
     "sneak past the guards",
+    "lie to the cops",
     "hack the vending machine",
-    "fly the shuttle",
     "palm the data chip",
     "hack the planet",
     "punch this guy",
-    "repair my cyberarm",
     "acquire target lock",
     "break target lock",
 
@@ -36,6 +35,7 @@ const ROLL_TITLE_FLAVOR = [
     "punch a hole in the elf",
     "repair the hole in the wall",
     "repair the hole in the door",
+    "repair my cyberarm",
 
     "swipe the statue",
     "aim the torpedos",
@@ -49,8 +49,8 @@ const ROLL_TITLE_FLAVOR = [
     "peer into the depths",
     "repair the juggernaut",
     "turn the world to chaos",
+    "hack the grenade",
 
-    "Judge Intentions on Mr. J",
     "hack the cleaning drone",
     "pick a Hawaiian shirt",
     "shoot through the water tank",
@@ -58,12 +58,15 @@ const ROLL_TITLE_FLAVOR = [
     "not die to the spirit",
     "animate objects",
     "turn invisible",
+    "hack the cupcake",
 
     "drive through the storm",
     "not spray more tags",
     "win the bike race",
     "identify the gang",
     "play the guitar",
+    "run from the bear",
+    "find the bandit",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",
@@ -71,6 +74,7 @@ const ROLL_TITLE_FLAVOR = [
     "prepare",
     "swipe George's ID card",
     "pretend to be George",
+    "throw a knife",
 ];
 
 const ButtonRow = styled(UI.FlexRow)`
@@ -79,7 +83,11 @@ const ButtonRow = styled(UI.FlexRow)`
 `;
 
 const RollInputRow = styled(UI.FlexRow)`
-    margin: .75rem .5rem;
+    margin: 0.75rem 0;
+
+    @media all and (min-width: 768px) {
+        margin: 0.5rem;
+    }
 `;
 
 const TitleRow = styled(UI.FlexRow)`
@@ -88,31 +96,40 @@ const TitleRow = styled(UI.FlexRow)`
 `;
 
 const FormLabel = styled.label`
-    margin: 0;
-    /*margin-right: 0.5em;*/
-    /*flex-basis: 0;*/
 `;
 
-const RollButton = styled(UI.Button)`
-    background-image: linear-gradient(180deg, #52605e 0, #3f4946);
-    font-size: 1.05em;
-    color: #ccc;
+const RollButton = styled.button`
+    font-size: 1.07em;
     font-weight: 600;
+    align-text: center;
+    cursor: pointer;
     padding: .3rem .7rem;
+    border: 0;
 
-    & :not(:disabled) {
-        background-image: linear-gradient(180deg, #394341 0, #232928);
-        color: white;
+    color: white;
+    background-image: linear-gradient(180deg, #394341 0, #232928);
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:active {
+        background-image: linear-gradient(180deg, #263427 0, #192423);
+    }
+
+    &:focus {
+        outline: 1px solid ${props => props.theme.colors.secondary}dd;
+    }
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed;
+        color: #ccc;
+        background-image: linear-gradient(180deg, #52605e 0, #3f4946);
     }
 `;
 
 const RollToLabel = styled.label`
-    margin-left: .5rem;
-    margin-right: 1.3em;
-
-    @media all and (min-width: 768px) {
-        margin: 0 .5rem 0 0;
-    }
 `;
 
 type Props = {
@@ -167,6 +184,10 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
         }
     }
 
+    const numericInput = React.useMemo(() => (
+        <NumericInput id="roll-select-dice" min={1} max={99} onSelect={setDiceCount} />
+    ), [setDiceCount]);
+
     // roll title gets game state, dispatch useLocalRoll
     return (
         <UI.Card color="#81132a">
@@ -181,31 +202,33 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                         <FormLabel htmlFor="roll-select-dice">
                             Roll
                         </FormLabel>
-                        <NumericInput controlId="roll-select-dice"
-                                      min={1} max={99}
-                                      onSelect={setDiceCount} />
+                        {numericInput}
                         <FormLabel htmlFor="roll-select-dice">
                             dice
                         </FormLabel>
                     </RollInputRow>
-                    <UI.FlexRow>
+                    <UI.FlexRow maxWidth>
                         <RollToLabel htmlFor="roll-title">
                             to
                         </RollToLabel>
-                        <input type="text" id="roll-title"
-                               placeholder={titleFlavor}
-                               onChange={rollTitleChanged}
-                               value={title} />
+                        <UI.Input id="roll-title"
+                                  maxWidth size={32}
+                                  placeholder={titleFlavor}
+                                  onChange={rollTitleChanged}
+                                  value={title} />
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <ButtonRow>
-                    <input type="checkbox" id="toggle-local-roll"
-                           disabled={!connected} checked={localRoll || !connected}
-                           onChange={rollLocalClicked} />
-                    <label htmlFor="toggle-local-roll"
-                           style={{marginBottom: 0, marginLeft: ".25em", marginRight: ".25em"}}>
-                        Roll locally
-                    </label>
+                    {connected ?
+                        <>
+                            <input type="checkbox" id="toggle-local-roll"
+                                   checked={localRoll} onChange={rollLocalClicked} />
+                            <label htmlFor="toggle-local-roll"
+                                   style={{marginBottom: 0, marginLeft: ".25em", marginRight: ".25em"}}>
+                                Roll locally
+                            </label>
+                        </>
+                    : ''}
                     <RollButton id="roll-button-submit" type="submit"
                                 disabled={rollDisabled}
                                 onClick={onRollClicked}>

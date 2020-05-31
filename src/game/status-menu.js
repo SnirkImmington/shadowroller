@@ -10,15 +10,17 @@ import * as Event from 'event';
 
 import * as server from 'server';
 
-const Message = styled.span`
-    color: rgba(0, 0, 0.9);
+const Message = styled.p`
+    margin: 0 0.5em;
 
-    margin: 0px 1em;
+    @media all and (min-width: 768px) {
+        margin-left: 2rem;
+    }
 `;
 
 const LeaveButton = styled(UI.Button)`
     margin-left: auto;
-    margin-right: 1em;
+    margin-right: .5rem;
     @media all and (min-width: 768px) {
         margin-left: 0px;
     }
@@ -46,7 +48,7 @@ export function StatusMenu({ game, dispatch, eventDispatch, setConnection}: Prop
             <UI.FlexRow>
                 <Message>
                     Connected to {game.gameID} as {' '}
-                    <UI.HashColored id={game.player.id}>
+                    <UI.HashColored light id={game.player.id}>
                         {game.player.name}
                     </UI.HashColored>.
                 </Message>

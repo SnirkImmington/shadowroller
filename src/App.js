@@ -1,8 +1,9 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeProvider } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
+import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -20,9 +21,17 @@ const AppPadding: StyledComponent<> = styled.div`
     display: flex;
     flex-direction: column;
 
+    /*color: white;
+    background: rgb(80, 120, 120);
+
+    & input {
+        color: white
+        background: rgb(100, 100, 100);
+    }*/
+
     /* Tablet+: more margin on the sides */
     @media all and (min-width: 768px) {
-        padding: 1.5em;
+        padding: 1.2em;
         flex-direction: row;
         align-items: stretch;
     }
@@ -75,6 +84,7 @@ export default function App(props: {}) {
 
     // Page should be a flexbox.
     return (
+        <ThemeProvider theme={theme}>
         <Game.Ctx.Provider value={game}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
@@ -99,5 +109,6 @@ export default function App(props: {}) {
         </Event.DispatchCtx.Provider>
         </Game.DispatchCtx.Provider>
         </Game.Ctx.Provider>
+        </ThemeProvider>
     );
 }

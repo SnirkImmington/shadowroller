@@ -3,38 +3,31 @@
 import * as React from 'react';
 import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
-import { Button } from 'style';
+import * as UI from 'style';
 
 import * as Game from 'game';
 import * as server from 'server';
 
 const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
-    height: 4em;
-    padding: 0.9em;
+    height: 3.4rem;
     color: white;
     display: flex;
     align-items: center;
-
-    @media all and (min-width: 768px) {
-        height: 3.4em;
-    }
 `;
 
 const SRTitle = styled.h1`
     font-size: 2em;
     font-style: oblique;
     font-weight: 900;
-    margin-top: 5px;
 
-    margin-left: .5em;
+    margin-left: .5rem;
     @media all and (min-width: 768px) {
-        margin-left: 4em;
+        margin-left: 8rem;
     }
 `;
 
-const JoinButtonUI = styled(Button)`
-    color: white;
+const JoinButtonUI = styled.button`
     background: #222;
     border: 3px solid white;
 
@@ -42,15 +35,22 @@ const JoinButtonUI = styled(Button)`
     background: ${props =>props.expanded ? 'white' : '#222'};
     border: 3px solid ${props=>props.expanded ? '#222' : 'white'};
 
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.2em 0.75em;
+    align-text: center;
+    cursor: pointer;
+
     margin-left: auto;
 
-    margin-right: 0.25em;
+    margin-right: 0.5rem;
     @media all and (min-width: 768px) {
-        margin-right: 4em;
+        margin-right: 4rem;
     }
 
     &:hover {
         background: #333;
+        text-decoration: none;
     }
 
     &:active {
@@ -67,7 +67,7 @@ type Props = {
 
 function JoinButton({ game, connection, menuShown, onClick }: Props) {
     let disabled = false;
-    let message = "";
+    let message: React.Node = "";
     if (!game) {
         switch (connection) {
             case "offline":
@@ -99,7 +99,7 @@ function JoinButton({ game, connection, menuShown, onClick }: Props) {
                 disabled = !menuShown;
                 break;
             case "connected":
-                message = menuShown ? "Close" : game.gameID;
+                message = menuShown ? "Close" : game.player.name;
                 break;
             case "errored":
                 message = "Error";

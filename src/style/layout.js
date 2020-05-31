@@ -8,6 +8,7 @@ import flexbox from '@styled-system/flexbox';
 export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
     align-items: center;
+    ${(props) => props.maxWidth ? 'width: 100%;' : ''}
 `;
 
 export const FlexColumn: StyledComponent<> = styled.div`
@@ -23,7 +24,8 @@ export const Flex: StyledComponent<> = styled.div(
 )
 
 export const Menu: StyledComponent<> = styled.div`
-    background-color: rgba(22, 22, 22, 0.2);
+    background-color: ${props=>props.theme.colors.gray2};
+    color: white;
     padding: 0.5em;
 `;
 
@@ -44,21 +46,18 @@ const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled.div`
 `;
 
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
-    font-family: monospace;
+    font-family: "source-code-pro", monospace;
     color: ${props => props.color};
-    font-size: 1.1rem;
-
-    &::before {
-        content: '> ';
-    }
+    font-size: 1.3rem;
+    margin-left: 0.4em;
 `;
 
 type CardTitleProps = { +color: string };
 const CardTitle: StyledComponent<CardTitleProps> = styled(FlexRow)`
+    line-height: 1;
+    padding-bottom: 0.25rem; /* Can't use line height because it pads the top too */
     border-bottom: 2px solid ${props => props.color};
-    padding: .5rem 1rem;
-    width: 100%;
-
+    /*width: 50%*/;
 `;
 
 type CardProps = {

@@ -31,8 +31,9 @@ type DieColorOptions = {
 
 type DieProps = { roll: number };
 export const Die: StyledComponent<DieProps> = styled.b`
-    line-height: 1em;
+    line-height: 1;
     font-weight: 900;
+    font-family: "source-code-pro";
     ${({roll}) =>
         `color: ${
             roll === 1 ? '#811111c0' :
@@ -40,20 +41,20 @@ export const Die: StyledComponent<DieProps> = styled.b`
             '#2e2e32c0'
         };`
     }
-    &::after {
+    /*&::after {
         ${({roll}) =>
             `content: '${String.fromCharCode(0x267F + roll)}';`}
-    }
+    }*/
 
     font-size: 8.4vw;
     @media all and (min-width: 768px) {
-        font-size: 2.4em;
+        font-size: 3.8rem;
     }
 `;
 
 const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     width: 100%;
-    line-height: 1em;
+    line-height: 1;
 
     overflow-x: auto; /* left-right overflow */
     overflow-y: hidden; /* up-down overflow */
@@ -80,7 +81,7 @@ const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
 type Props = { +dice: number[] };
 export default function RollingDice(props: Props) {
     const dice = props.dice.map((die, ix) =>
-        <Die key={ix} roll={die} />
+        <Die key={ix} roll={die}>{String.fromCharCode(0x267F + die)}</Die>
     );
 
     return (
