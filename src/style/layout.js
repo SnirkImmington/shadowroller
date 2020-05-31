@@ -24,7 +24,8 @@ export const Flex: StyledComponent<> = styled.div(
 )
 
 export const Menu: StyledComponent<> = styled.div`
-    background-color: rgba(20, 20, 22, 0.35);
+    background-color: ${props=>props.theme.colors.gray2};
+    color: white;
     padding: 0.5em;
 `;
 
@@ -47,11 +48,8 @@ const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled.div`
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
     font-family: "source-code-pro", monospace;
     color: ${props => props.color};
-    font-size: 1.4rem;
-
-    &::before {
-        content: '> ';
-    }
+    font-size: 1.3rem;
+    margin-left: 0.4em;
 `;
 
 type CardTitleProps = { +color: string };

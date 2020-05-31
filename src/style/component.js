@@ -4,54 +4,76 @@ import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import { color } from 'styled-system';
-import theme from './theme';
+import typeof Theme from './theme';
 
 import * as srutil from 'srutil';
 
 type InputProps = { monospace? : bool };
-export const Input: StyledComponent<InputProps> = styled.input.attrs(props => ({
-    type: "text",
+export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(props => ({
+    type: props.type ?? "text",
 }))`
     ${color}
     font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
     max-width: ${(props) => props.size ? '100%' : '12em'};
 
-    margin: 0px 0.25em;
-    border: 2px solid darkslategray;
-    padding: 6px;
+    margin: 0px 0.5em;
+    border: 1px solid lightslategray;
+    padding: 5px;
     line-height: 1;
+    font-size: 1em;
 
     &:focus {
-        outline: 1px solid ${theme.colors.primary};
-        border: 2px solid ${theme.colors.primary};
+        outline: 1px solid ${props => props.theme.colors.secondary};
+        border: 1px solid ${props => props.theme.colors.secondary};
     }
 `;
 
-export const Button: StyledComponent<> = styled.button`
-    font-size: 1em;
-    font-weight: 500;
-    padding: 0.2em 1em;
-    border: 0;
+export const Button: StyledComponent<{}, Theme> = styled.button`
+    font-size: 1.05em;
+    line-height: 1;
+    font-weight: bold;
+    padding: 0.2em .5em;
     align-text: center;
-    margin: 2px 0.25em;
+    border: 0px;
+    margin: 0;
     cursor: pointer;
-    color: black;
-    background-color: white;
+    color: ${props => props.theme.colors.secondary};
+    background-color: transparent;
+    white-space: pre;
+
+    &:before {
+        content: " ";
+        margin-right: .25em;
+        font-family: "source-code-pro", monospace;
+    }
+    &:after {
+        content: " ";
+        margin-left: .25em;
+        font-family: "source-code-pro", monospace;
+    }
 
     &:hover {
-        text-decoration: underline;
+        &:before {
+            content: ">";
+        }
+
+        &:after {
+            content: "<";
+        }
     }
 
     &:active {
-        background-color: #ddd;
+        color: ${props => props.theme.colors.secondaryPressed};
+        &:before { content: ">" }
+        &:after { content: "<" }
     }
 
     &[disabled] {
         pointer-events: none;
         cursor: not-allowed;
-        color: rgba(0, 0, 0, 0.69);
-        background-color: #ccc;
+        color: ${props=>props.theme.colors.secondaryDesaturated2};
     }
+    ${color}
 `;
 
 export const BaseButton: StyledComponent<> = styled.button`
@@ -90,16 +112,17 @@ export const DieIcon: StyledComponent<> = styled.span`
 `;
 
 export const Flavor: StyledComponent<> = styled.i`
-    color: #333;
+    color: ${props => props.warn ? props.theme.colors.warning : props.light ? "#fffd" : "#333"};
 `;
 
-export const HashColored: StyledComponent<{ id: string }> = styled.b`
-    color: ${props => srutil.hashedColor(props.id)}
+export const HashColored: StyledComponent<{ id: string, light?: bool }> = styled.b`
+    color: ${props => srutil.hashedColor(props.id)};
+    ${props => props.light ? "padding: 1px; background: white;" : ""}
 `;
 
-type NameProps = { +id: string, +name: string };
-export function PlayerName({ id, name }: NameProps) {
+type NameProps = { +id: string, +name: string, light?: bool };
+export function PlayerName({ id, name, light }: NameProps) {
     return (
-        <HashColored id={id}>{name}</HashColored>
+        <HashColored light={light} id={id}>{name}</HashColored>
     );
 }

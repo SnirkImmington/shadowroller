@@ -10,14 +10,10 @@ import * as server from 'server';
 
 const SRHeader: StyledComponent<> = styled.header`
     background-color: #222;
-    height: 4.6rem;
+    height: 3.4rem;
     color: white;
     display: flex;
     align-items: center;
-
-    @media all and (min-width: 768px) {
-        height: 3.4rem;
-    }
 `;
 
 const SRTitle = styled.h1`
@@ -31,8 +27,7 @@ const SRTitle = styled.h1`
     }
 `;
 
-const JoinButtonUI = styled(UI.Button)`
-    color: white;
+const JoinButtonUI = styled.button`
     background: #222;
     border: 3px solid white;
 
@@ -40,11 +35,17 @@ const JoinButtonUI = styled(UI.Button)`
     background: ${props =>props.expanded ? 'white' : '#222'};
     border: 3px solid ${props=>props.expanded ? '#222' : 'white'};
 
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.2em 0.75em;
+    align-text: center;
+    cursor: pointer;
+
     margin-left: auto;
 
-    margin-right: 0.25em;
+    margin-right: 0.5rem;
     @media all and (min-width: 768px) {
-        margin-right: 4em;
+        margin-right: 4rem;
     }
 
     &:hover {
@@ -98,7 +99,7 @@ function JoinButton({ game, connection, menuShown, onClick }: Props) {
                 disabled = !menuShown;
                 break;
             case "connected":
-                message = menuShown ? "Close" : <UI.PlayerName id={game.player.id} name={game.player.name} />;
+                message = menuShown ? "Close" : game.player.name;
                 break;
             case "errored":
                 message = "Error";

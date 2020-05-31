@@ -8,8 +8,20 @@ import * as events from './events';
 export const BACKEND_URL = process.env.NODE_ENV !== 'production' ?
     'http://localhost:3001/' : 'https://shadowroller.immington.industries/';
 
-export type Connection = "offline" | "connecting" | "connected" | "disconnected";
+export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
 export type SetConnection = (Connection) => void;
+
+export function connectionFor(response: Response): Connection {
+    if (response.ok) {
+        return "connected";
+    }
+    else if (response.status >= 500) {
+        return "disconnected";
+    }
+    else {
+        return "errored";
+    }
+}
 
 // I don't wanna export these but this is the easist way to access from submodule
 
@@ -22,14 +34,14 @@ export function backendGet<T>(path: string, params: ?{ [string]: any }): Promise
     return fetch(url, {
         method: 'get',
         credentials: 'include',
-    })
-        .then(response => response.json())
-        .catch(err => {
-            if (process.env.NODE_ENV !== 'production') {
-                console.error("Error from GET", url, err.message.substr(12));
-            }
-            throw err;
-        });
+    }).then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        else {
+            throw response;
+        }
+    });
 }
 
 export function backendPost(path: string, body: any, confirm: bool = false): Promise<any> {
@@ -38,14 +50,20 @@ export function backendPost(path: string, body: any, confirm: bool = false): Pro
         method: 'post',
         credentials: 'include',
         body: body == null ? '' : JSON.stringify(body),
-    })
-        .then(response => confirm ? response.ok : response.json())
-        .catch(err => {
+    }).then(response => {
+        if (confirm) {
+            return response.ok;
+        }
+        else if (response.ok) {
+            return response.json();
+        }
+        else {
             if (process.env.NODE_ENV !== 'production') {
-                console.error("Error from POST", url, err.message.substr(12));
+                console.error("Error from POST", url, response.status, response.statusText);
             }
-            throw err;
-        });
+            throw response;
+        }
+    });
 }
 
 export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Event.Dispatch, setConnection: SetConnection) {
@@ -70,17 +88,27 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Even
         player: { id: auth.pid, name: auth.pname },
         players: new Map()
     });
-    getPlayers().then(players => {
-        dispatch({
-            ty: "setPlayers", players
+    getPlayers()
+        .then(players => {
+            dispatch({
+                ty: "setPlayers", players
+            });
+            setConnection("connected");
+        })
+        .catch(response => {
+            setConnection(connectionFor(response));
         });
-        setConnection("connected");
-    });
     eventsDispatch({ ty: "setHistoryFetch", state: "fetching" });
-    events.fetchEvents({}).then(resp => {
-        eventsDispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
-        eventsDispatch({ ty: "mergeEvents", events: resp.events });
-    })
+    events.fetchEvents({})
+        .then(resp => {
+            eventsDispatch({
+                ty: "setHistoryFetch", state: resp.more ? "ready" : "finished"
+            });
+            eventsDispatch({ ty: "mergeEvents", events: resp.events });
+        })
+        .catch(response => {
+            setConnection(connectionFor(response));
+        });
 }
 
 export type JoinResponse = {

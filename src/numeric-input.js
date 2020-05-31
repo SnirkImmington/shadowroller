@@ -7,6 +7,7 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 
 import * as UI from 'style';
+import * as icons from 'style/icon';
 
 type Props = {
     id: string,
@@ -23,24 +24,60 @@ type ValueState =
 | "tooSmall"
 | "tooBig"
 | ["error", number]
-| ["literal", number]
-| ["expr", number]
+// value, is rounded
+| ["literal", number, bool]
+| ["expr", number, bool]
 ;
 
-const Parent: StyledComponent<> = styled(UI.FlexRow)``;
-const CalcBox = styled.div``;
-const ErrorBox = styled.div``;
-const RoundingBox = styled.div``;
+const Parent: StyledComponent<> = styled(UI.FlexRow)`
+    font-family: "source-code-pro", monospace;
+    margin-right: 0.5em;
+`;
+// Component covers making sure each part matches the height and border style.
+const Component = styled.div`
+    padding: 5px;
+    border: 1px solid lightslategray;
+    margin: 0;
+    border-left: none;
+
+    ${UI.Input}:focus ~ & {
+        border: 1px solid ${props => props.theme.colors.secondary};
+        outline: 1px solid ${props => props.theme.colors.secondary};
+    }
+`;
+const CalcBox = styled(Component)`
+    background: ${props => props.color ?? props.theme.colors.primary};
+    color: white;
+    width: calc(1.8em);
+    height: calc(1em + 12px);
+    border-right: none;
+    margin-left: 0.5em;
+
+    ${UI.Input}:focus + & {
+        border: 1px solid ${props => props.theme.colors.secondary};
+        outline: 1px solid ${props => props.theme.colors.secondary};
+    }
+`;
+const ErrorBox = styled(Component)`
+    border-left: none;
+    background: ${props => props.theme.colors.warning};
+`;
+const RoundingBox = styled(Component)`
+    border-left: none;
+    color: white; /* ?? */
+    background: ${props => props.theme.colors.secondary};
+`;
 
 const StyledInput = styled(UI.Input)`
-    
+    margin-left: 0;
+    margin-right: 0;
 `;
 
 export default function NumericInput(props: Props) {
     const [text, setText] = React.useState<string>("");
     const [state, setState] = React.useState<ValueState>("empty");
     const [round, setRound] = React.useState<RoundingMode>(props.round ?? "up");
-    const [isRounded, setIsRounded] = React.useState<bool>(false);
+    const [showInfo, setInfoShown] = React.useState<bool>(false);
 
     let computed: number = 0;
     if (props.value != null) {
@@ -50,7 +87,7 @@ export default function NumericInput(props: Props) {
         computed = state[1];
     }
 
-    console.log("NI2: ", { text, state, round, isRounded, computed });
+    console.log("NunericInput:", { text, state, round, computed });
 
     function onTextInput(event: SyntheticInputEvent<HTMLInputElement>) {
         setText(event.target.value);
@@ -79,6 +116,7 @@ export default function NumericInput(props: Props) {
         }
         // Evaluate the expression
         let value = evaluate(expr);
+        let rounded = false;
         // On runtime error, set error
         if (isNaN(value)) {
             // We can't really give a good error position
@@ -89,10 +127,7 @@ export default function NumericInput(props: Props) {
         // Check if we have to round and set flag accordingly
         if (!Number.isInteger(value)) {
             value = round === 'up' ? Math.ceil(value) : Math.floor(value);
-            setIsRounded(true);
-        }
-        else {
-            setIsRounded(false);
+            rounded = true;
         }
         // Check if we're in bounds
         if (props.min != null && value < props.min) {
@@ -107,10 +142,10 @@ export default function NumericInput(props: Props) {
         }
         // Check if this is just a regular number
         if (expr.type === 'number') {
-            setState(["literal", value]);
+            setState(["literal", value, rounded]);
         }
         else {
-            setState(["expr", value]);
+            setState(["expr", value, rounded]);
         }
         props.onSelect(value);
     }
@@ -121,25 +156,40 @@ export default function NumericInput(props: Props) {
 
     let components: React.Node[] = [
         <CalcBox key="calc">
-            +-*/
+            <span className="fa-layers">
+                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 up-5 left-5" />
+                <UI.FAIcon icon={icons.faMinus}  transform="shrink-4 up-5 right-9" />
+                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 down-5 left-5" />
+                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 down-5 right-9" />
+            </span>
         </CalcBox>,
-        <input type="tel" aria-label="Calculator" inputMode="numeric"
+        <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
                value={text} onChange={onTextInput} key="input" />
     ];
 
     if (state === "tooSmall") {
         components.push(
             <ErrorBox key="small">
-                &lt;&nbsp;{props.min}
+                2smol
             </ErrorBox>
         );
     }
     else if (state === "tooBig") {
         components.push(
             <ErrorBox key="big">
-                &gt;&nbsp;{props.max}
+                2big
             </ErrorBox>
         );
+    }
+    else if (state === "empty" || state[0] === "literal") { }
+    else if (state[0] === "expr") {
+        components.push(
+            <Component key="value">
+                {state[1]}
+            </Component>
+        );
+    }
+    else if (state[0] === "error") {
     }
 
     return (

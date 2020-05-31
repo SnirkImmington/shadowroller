@@ -91,10 +91,13 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
             return;
         }
         const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
-        Server.fetchEvents({ oldest: oldestID }).then(resp => {
+        const eventFetch = Server.fetchEvents({ oldest: oldestID }).then(resp => {
             dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
             dispatch({ ty: "mergeEvents", events: resp.events });
         });
+        if (process.env.NODE_ENV !== 'production') {
+            eventFetch.catch(err => console.error('Error fetching events: ', err));
+        }
     }
 
     return (

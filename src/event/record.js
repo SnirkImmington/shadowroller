@@ -13,17 +13,26 @@ import * as srutil from 'srutil';
 
 type RecordProps = {| +style: any |};
 
+const GUTTER_SIZE = 4;
+
 type SingleRecordProps = {
     color?: string,
     children: React.Node | React.Node[],
     ...RecordProps
 };
-const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow)`
-    padding: 2px 4px;
+const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow).attrs(
+    props => ({
+        style: {
+            ...props.style,
+            top: props.style.top + GUTTER_SIZE,
+            height: props.style.height - GUTTER_SIZE,
+        }
+    })
+)`
+    padding: 3px 4px;
     ${props => props?.color ? `
-        border-left: 6px solid ${props.color};
-        border-top: 3px solid white;
-        border-bottom: 3px solid white;
+        border-left: 4px solid ${props.color};
+        border-right: 4px solid ${props.color};
     ` : ''
     }
 `;

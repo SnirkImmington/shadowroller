@@ -3,7 +3,7 @@
 import * as React from 'react';
 import styled, { ThemeProvider } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import * as theme from 'style/theme';
+import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
