@@ -33,6 +33,7 @@ var (
 	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 5)
 	SSEPingSecs        = readInt("SSE_PING_SECS", 20)
 	MaxHeaderBytes     = readInt("MAX_HEADER_BYTES", 1<<20)
+	MaxRequestsPerMin  = readInt("MAX_REQUESTS_PER_MIN", 10)
 	// LibraryOptions
 	RedisUrl = readString("REDIS_URL", "redis://:6379")
 	// Backend options

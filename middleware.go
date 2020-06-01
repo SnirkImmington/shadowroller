@@ -2,43 +2,42 @@ package srserver
 
 import (
 	"fmt"
+	"github.com/gomodule/redigo/redis"
 	"log"
 	"net/http"
 	"runtime/debug"
 	"srserver/config"
+	"time"
 )
 
-func loggingMiddleware(wrapped http.HandlerFunc) http.HandlerFunc {
-	return func(response Response, request *Request) {
+func loggingMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
 		if config.IsProduction {
 			log.Println(request.Proto, request.Method, request.RequestURI)
 		} else {
 			log.Println(request.Method, request.RequestURI)
 		}
-		wrapped(response, request)
-	}
+		wrapped.ServeHTTP(response, request)
+	})
 }
 
-func recoveryMiddleware(wrapped http.HandlerFunc) http.HandlerFunc {
-	return func(response Response, request *Request) {
+func recoveryMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				message := fmt.Sprintf("Panic serving %s %s to %s", request.Method, request.RequestURI, request.Host)
 				log.Println(message)
 				log.Println(string(debug.Stack()))
-				if config.IsProduction {
-					http.Error(response, "Internal Server Error", http.StatusInternalServerError)
-				} else {
-					http.Error(response, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-				}
+				//httpInternalError(response, request, err)
+				http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()
-		wrapped(response, request)
-	}
+		wrapped.ServeHTTP(response, request)
+	})
 }
 
-func rateLimitedMiddleware(wrapped HandlerFunc) http.HandlerFunc {
-	return func(response Response, request *Request) {
+func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
 		conn := redisPool.Get()
 		defer conn.Close()
 
@@ -62,27 +61,40 @@ func rateLimitedMiddleware(wrapped HandlerFunc) http.HandlerFunc {
 		// but it doesn't matter for this application. Feel free
 		// to spam more requests around DST transitions and leap seconds.
 		ts := time.Now().Unix() % 60
-		rateLimitKey := "ratelimit." + request.RemoteAddr + "." + string(ts)
+		rateLimitKey := "ratelimit:" + request.RemoteAddr + ":" + string(ts)
 
 		current, err := redis.Int(conn.Do("get", rateLimitKey))
 		if err != nil {
-			// oops
+			httpInternalError(response, request, err)
+			return
 		}
 
-		if current > 10 { // config.RequestsPerMinute
+		if current > config.MaxRequestsPerMin {
 			log.Print("Rate limit for", request.RemoteAddr, "hit")
 			http.Error(response, "Rate limited", 400)
 			return
-		} else {
-			conn.Send("multi")
-			conn.Send("incr", rateLimitKey)
-			conn.Send("expire", rateLimitKey, 60)
-			err := conn.Send("exec")
-			if err != nil {
-				// oops
-			}
 		}
 
-		wrapped(response, request)
-	}
+		err = conn.Send("multi")
+		if err != nil {
+			httpInternalError(response, request, err)
+			return
+		}
+		err = conn.Send("incr", rateLimitKey)
+		if err != nil {
+			httpInternalError(response, request, err)
+			return
+		}
+		err = conn.Send("expire", rateLimitKey, 60)
+		if err != nil {
+			httpInternalError(response, request, err)
+			return
+		}
+		err = conn.Send("exec")
+		if err != nil {
+			httpInternalError(response, request, err)
+		}
+
+		wrapped.ServeHTTP(response, request)
+	})
 }
