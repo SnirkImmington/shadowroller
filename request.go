@@ -19,6 +19,13 @@ var redisPool = &redis.Pool{
 	},
 }
 
+func closeRedis(conn redis.Conn) {
+	err := conn.Close()
+	if err != nil {
+		log.Printf("Error closing redis connection: %v", err)
+	}
+}
+
 func readBodyJSON(request *Request, value interface{}) error {
 	decoder := json.NewDecoder(request.Body)
 	return decoder.Decode(value)

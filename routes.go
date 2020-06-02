@@ -14,7 +14,7 @@ import (
 
 func RegisterDefaultGames() {
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	gameNames := strings.Split(config.HardcodedGameNames, ",")
 

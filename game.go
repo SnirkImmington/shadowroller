@@ -31,7 +31,7 @@ func handleJoinGame(response Response, request *Request) {
 	}
 
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	// Unauthorized
 	gameExists, err := redis.Bool(conn.Do("exists", "game:"+join.GameID))
@@ -115,7 +115,7 @@ func handleGetPlayers(response Response, request *Request) {
 	}
 
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	players, err := redis.StringMap(conn.Do("hgetall", "player:"+auth.GameID))
 	if err != nil {
@@ -157,7 +157,7 @@ func handleRoll(response Response, request *Request) {
 	}
 
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	// Block here for the roll.
 	rolls := make([]int, roll.Count)
@@ -202,7 +202,7 @@ func handleEvents(response Response, request *Request) {
 
 	// Subscribe to redis
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	log.Printf("%v: Retrieving events in %s for %s...", goID, auth.GameID, auth.PlayerID)
 
@@ -267,7 +267,7 @@ func handleEventRange(response Response, request *Request) {
 	}
 
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	var eventsRange EventRangeRequest
 	err = readBodyJSON(request, &eventsRange)

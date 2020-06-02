@@ -61,7 +61,7 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 		defer close(eventsChan)
 
 		conn := redisPool.Get()
-		defer conn.Close()
+		defer closeRedis(conn)
 		log.Print(goID, " Begin reading events for ", gameID)
 
 		for {
