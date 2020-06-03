@@ -43,11 +43,12 @@ const StyledInput = styled(UI.Input)`
 const Component = styled.div`
     padding: 5px;
     border: 1px solid lightslategray;
+    background: #eee;
     margin: 0;
 
     /* There's no "previous sibling" selector, so it's all following. */
     ${StyledInput}:focus ~ & {
-        border: 1px 1px solid ${props => props.theme.colors.secondary};
+        border: 1px solid ${props => props.theme.colors.secondary};
         outline: 1px solid ${props => props.theme.colors.secondary};
     }
 `;
@@ -76,11 +77,9 @@ const CalcBox = styled(Component)`
     }
 `;
 const ErrorBox = styled(Component)`
-    border-left: none;
     background: ${props => props.theme.colors.warning};
 `;
 const RoundingBox = styled(Component)`
-    border-left: none;
     color: white; /* ?? */
     background: ${props => props.theme.colors.secondary};
 `;
