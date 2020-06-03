@@ -16,9 +16,10 @@ import * as srutil from 'srutil';
 const ENTER_GAME_ID_FLAVOR = [
     "I hope you've got a good fake.",
     <span><tt>password12345</tt> is not a Game ID.</span>,
+    <span><tt>deckerpizza</tt> is not a Game ID.</span>,
     <span><tt>bikinitrolls</tt> is not a Game ID.</span>,
     <span><tt>aimattrees</tt> is not a Game ID.</span>,
-    <span><tt>pizzadecker</tt> is not a Game ID.</span>,
+    <span><tt>foofaraw</tt> is not a Game ID.</span>,
 
     "Show some ID, chummer.",
     "Gimme a real one this time.",
@@ -175,6 +176,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                         <UI.Flavor light warn={warn}>{flavor}</UI.Flavor>
                         <UI.Button id="join-game-submit" onClick={onSubmit}
                                    disabled={!ready}>
+                        {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                             Join
                         </UI.Button>
                     </ButtonZone>
