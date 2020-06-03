@@ -29,33 +29,50 @@ type ValueState =
 | ["expr", number, bool]
 ;
 
-const Parent: StyledComponent<> = styled(UI.FlexRow)`
-    font-family: "source-code-pro", monospace;
-    margin-right: 0.5em;
+const StyledInput = styled(UI.Input)`
+    margin-left: 0;
+    margin-right: 0;
+    border-left: none;
+
+    &:focus {
+        border-left: none;
+    }
 `;
+
 // Component covers making sure each part matches the height and border style.
 const Component = styled.div`
     padding: 5px;
     border: 1px solid lightslategray;
     margin: 0;
-    border-left: none;
 
-    ${UI.Input}:focus ~ & {
-        border: 1px solid ${props => props.theme.colors.secondary};
+    /* There's no "previous sibling" selector, so it's all following. */
+    ${StyledInput}:focus ~ & {
+        border: 1px 1px solid ${props => props.theme.colors.secondary};
         outline: 1px solid ${props => props.theme.colors.secondary};
     }
 `;
+
+const Parent: StyledComponent<> = styled(UI.FlexRow)`
+    font-family: "source-code-pro", monospace;
+    margin-right: 0.5em;
+    height: calc(1rem + 10px);
+
+    & > * {
+        height: calc(1rem + 10px);
+    }
+`;
+
 const CalcBox = styled(Component)`
     background: ${props => props.color ?? props.theme.colors.primary};
     color: white;
     width: calc(1.8em);
-    height: calc(1em + 12px);
-    border-right: none;
     margin-left: 0.5em;
+    padding: 0px;
+    order: -1;
 
-    ${UI.Input}:focus + & {
-        border: 1px solid ${props => props.theme.colors.secondary};
-        outline: 1px solid ${props => props.theme.colors.secondary};
+    &:focus {
+        border-right: none;
+        outline-right: none;
     }
 `;
 const ErrorBox = styled(Component)`
@@ -68,10 +85,6 @@ const RoundingBox = styled(Component)`
     background: ${props => props.theme.colors.secondary};
 `;
 
-const StyledInput = styled(UI.Input)`
-    margin-left: 0;
-    margin-right: 0;
-`;
 
 export default function NumericInput(props: Props) {
     const [text, setText] = React.useState<string>("");
@@ -155,16 +168,16 @@ export default function NumericInput(props: Props) {
     }
 
     let components: React.Node[] = [
+        <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
+               value={text} onChange={onTextInput} key="input" />,
         <CalcBox key="calc">
             <span className="fa-layers">
-                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 up-5 left-5" />
-                <UI.FAIcon icon={icons.faMinus}  transform="shrink-4 up-5 right-9" />
-                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 down-5 left-5" />
-                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 down-5 right-9" />
+                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 up-2 left-2" />
+                <UI.FAIcon icon={icons.faMinus}  transform="shrink-4 up-2 right-11" />
+                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 down-9 left-2" />
+                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 down-9 right-11" />
             </span>
-        </CalcBox>,
-        <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
-               value={text} onChange={onTextInput} key="input" />
+        </CalcBox>
     ];
 
     if (state === "tooSmall") {
