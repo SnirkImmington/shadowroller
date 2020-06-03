@@ -67,11 +67,13 @@ const ROLL_TITLE_FLAVOR = [
     "play the guitar",
     "run from the bear",
     "find the bandit",
+    "jump through the air duct",
+    "fireball the door",
+    "shoot between the hostages",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",
     "throw the deck",
-    "prepare",
     "swipe George's ID card",
     "pretend to be George",
     "throw a knife",
@@ -179,7 +181,7 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                 });
         }
         setTitle('');
-        if (Math.floor(Math.random() * 4) === 0) {
+        if (Math.floor(Math.random() * 2.6) === 0) {
             setTitleFlavor(srutil.pickRandom(ROLL_TITLE_FLAVOR));
         }
     }
