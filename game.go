@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"regexp"
 	"srserver/config"
 	"time"
 )
@@ -192,6 +193,11 @@ func handleRoll(response Response, request *Request) {
 	httpSuccess(response, "rolled ", len(rolls), " dice")
 }
 
+// Hacky workaround for logs to show event type.
+// A user couldn't actually write "ty":"foo" in the field, though,
+// as it'd come back escaped.
+var eventParseRegex = regexp.MustCompile(`"ty":"([^"]+)"`)
+
 // $ GET /events
 func handleEvents(response Response, request *Request) {
 	logRequest(request)
@@ -234,6 +240,10 @@ func handleEvents(response Response, request *Request) {
 		select {
 		case event, open := <-events:
 			if open {
+				eventTy := eventParseRegex.FindString(event)
+				log.Printf("%v: Sending %v to %v (%v) in %v",
+					goID, eventTy[5:], auth.PlayerID, auth.PlayerName, auth.GameID,
+				)
 				err := stream.WriteString(event)
 				if err != nil {
 					log.Print(goID, " Unable to write to stream: ", err)
