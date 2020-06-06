@@ -3,7 +3,6 @@
 import * as React from 'react';
 import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
-import * as UI from 'style';
 
 import * as Game from 'game';
 import * as server from 'server';
@@ -20,6 +19,7 @@ const SRTitle = styled.h1`
     font-size: 2em;
     font-style: oblique;
     font-weight: 900;
+    letter-spacing: 1.2px;
 
     margin-left: .5rem;
     @media all and (min-width: 768px) {
