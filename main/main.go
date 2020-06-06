@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+// http://www.patorjk.com/software/taag/ "Small Slant"
+const SHADOWROLLER = `
+   ____ __            __                         __ __
+  / __// /  ___ _ ___/ /___  _    __ ____ ___   / // /___  ____
+ _\ \ / _ \/ _ '// _  // _ \| |/|/ // __// _ \ / // // -_)/ __/
+/___//_//_/\_,_/ \_,_/ \___/|__,__//_/   \___//_//_/ \__//_/
+`
+
 func main() {
 	log.SetOutput(os.Stdout)
 	if config.IsProduction {
@@ -19,7 +27,6 @@ func main() {
 		log.SetFlags(log.Ltime | log.Lshortfile)
 	}
 	log.Println("Starting up...")
-
 	rand.Seed(time.Now().UnixNano())
 	srserver.BeginGeneratingRolls()
 	srserver.RegisterDefaultGames()
@@ -28,11 +35,11 @@ func main() {
 
 	// Run http->https and main servers in loops.
 	if config.IsProduction {
-		log.Println("\n\n",
+		log.Println(SHADOWROLLER, "\n",
 			"* Running in production *\n",
 			"* At: ", config.ServerAddress, " *\n")
 		certManager := srserver.MakeCertManager()
-		redirectServer := srserver.MakeHttpRedirectServer(certManager)
+		redirectServer := srserver.MakeHTTPRedirectServer(certManager)
 		mainServer := srserver.MakeProductionServer(certManager, siteMux)
 
 		// Loop the main server in a goroutine.
@@ -61,7 +68,7 @@ func main() {
 			}
 		}
 	} else {
-		log.Println("\n\n",
+		log.Println(SHADOWROLLER, "\n",
 			"* Running in development *\n",
 			"* At: ", config.ServerAddress, " *\n")
 		// Run the local server unlooped in this thread.

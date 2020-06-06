@@ -10,13 +10,13 @@ import (
 	"time"
 )
 
-func loggingMiddleware(wrapped http.Handler) http.Handler {
+func headersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		if config.IsProduction {
-			log.Println(request.Proto, request.Method, request.RequestURI)
-		} else {
-			log.Println(request.Method, request.RequestURI)
+		if config.TlsEnable {
+			response.Header().Set("Strict-Transport-Security", "max-age=31536000")
 		}
+		response.Header().Set("Cache-control", "no-cache")
+		response.Header().Set("X-Content-Type-Options", "nosniff")
 		wrapped.ServeHTTP(response, request)
 	})
 }
@@ -60,19 +60,22 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 		// it up on Wikipedia and check my OS's implementation,
 		// but it doesn't matter for this application. Feel free
 		// to spam more requests around DST transitions and leap seconds.
-		ts := time.Now().Unix() % 60
-		rateLimitKey := "ratelimit:" + request.RemoteAddr + ":" + string(ts)
+		_, _, sec := time.Now().Clock()
+		rateLimitKey := fmt.Sprintf("ratelimit:%v:%v", request.RemoteAddr, sec%10)
 
 		current, err := redis.Int(conn.Do("get", rateLimitKey))
-		if err != nil {
+		if err == redis.ErrNil {
+			current = 0
+		} else if err != nil {
 			httpInternalError(response, request, err)
 			return
 		}
 
-		if current > config.MaxRequestsPerMin {
-			log.Print("Rate limit for", request.RemoteAddr, "hit")
-			http.Error(response, "Rate limited", 400)
-			return
+		limited := false
+		if current > config.MaxRequestsPer10Secs {
+			log.Printf("Rate limit for %v hit", request.RemoteAddr)
+			http.Error(response, "Rate limited", http.StatusTooManyRequests)
+			limited = true
 		}
 
 		err = conn.Send("multi")
@@ -85,7 +88,8 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 			httpInternalError(response, request, err)
 			return
 		}
-		err = conn.Send("expire", rateLimitKey, 60)
+		// Always push back expire time: forces client to back off for 10s
+		err = conn.Send("expire", rateLimitKey, "10")
 		if err != nil {
 			httpInternalError(response, request, err)
 			return
@@ -93,8 +97,11 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 		err = conn.Send("exec")
 		if err != nil {
 			httpInternalError(response, request, err)
+			return
 		}
 
-		wrapped.ServeHTTP(response, request)
+		if !limited {
+			wrapped.ServeHTTP(response, request)
+		}
 	})
 }
