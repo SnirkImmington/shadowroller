@@ -143,9 +143,7 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
     const [rollLoading, setRollLoading] = React.useState(false);
     const [localRoll, setLocalRoll] = React.useState(false);
     const [title, setTitle] = React.useState('');
-    const [titleFlavor, setTitleFlavor] = React.useState(
-        () => srutil.pickRandom(ROLL_TITLE_FLAVOR)
-    );
+    const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
 
     const connected = connection === "connected";
     const rollDisabled = (
@@ -182,7 +180,7 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
         }
         setTitle('');
         if (Math.floor(Math.random() * 2.6) === 0) {
-            setTitleFlavor(srutil.pickRandom(ROLL_TITLE_FLAVOR));
+            newTitleFlavor();
         }
     }
 
