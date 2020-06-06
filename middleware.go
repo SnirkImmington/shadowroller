@@ -15,7 +15,7 @@ func headersMiddleware(wrapped http.Handler) http.Handler {
 		if config.TlsEnable {
 			response.Header().Set("Strict-Transport-Security", "max-age=31536000")
 		}
-		response.Header().Set("Cache-control", "no-cache")
+		response.Header().Set("Cache-Control", "no-cache")
 		response.Header().Set("X-Content-Type-Options", "nosniff")
 		wrapped.ServeHTTP(response, request)
 	})
