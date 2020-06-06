@@ -53,6 +53,10 @@ func validEventID(id string) bool {
 }
 
 func receiveEvents(gameID string) (<-chan string, chan<- bool) {
+	// Due to an implicit cast going on, I can't just use return vars here.
+	// Events channel is buffered: if there are too many events for our consumer,
+	// we will block on the channel push, and we backpressure redis to hold onto
+	// events for us.
 	eventsChan := make(chan string, 10)
 	okChan := make(chan bool)
 	go func() {
@@ -81,30 +85,20 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 				return
 			}
 
-			keyInfo := data[0].([]interface{})
+			// data is an array of key, eventlist. We only subscribed to 1 key.
+			eventKeyInfo := data[0].([]interface{})
+			eventList := eventKeyInfo[1].([]interface{})
 
-			entryList := keyInfo[1].([]interface{})
-			for i := 0; i < len(entryList); i++ {
-				entryInfo := entryList[i].([]interface{})
-
-				id := string(entryInfo[0].([]byte))
-				fieldList := entryInfo[1].([]interface{})
-
-				// We assume there's only one field
-				// I think fieldList is at the point where we can use redigo helpers
-				value := fieldList[1].([]byte)
-
-				var event map[string]interface{}
-				err := json.Unmarshal(value, &event)
-				if err != nil {
-					log.Print(goID, " Unable to deserialize event: ", err)
-					return
-				}
-				event["id"] = id
+			events, err := scanEvents(eventList)
+			if err != nil {
+				log.Print(goID, " Unable to deserialize event: ", err)
+				return
+			}
+			for _, event := range events {
 				reStringed, err := json.Marshal(event)
 				if err != nil {
 					log.Print(goID, " Unable to write event back to string: ", err)
-					return
+					continue
 				}
 				eventsChan <- string(reStringed)
 			}
@@ -112,3 +106,37 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 	}()
 	return eventsChan, okChan
 }
+
+func scanEvents(eventsData []interface{}) ([]map[string]interface{}, error) {
+	events := make([]map[string]interface{}, len(eventsData))
+
+	for i := 0; i < len(eventsData); i++ {
+		eventInfo := eventsData[i].([]interface{})
+
+		eventID := string(eventInfo[0].([]byte))
+		fieldList := eventInfo[1].([]interface{})
+
+		eventValue := fieldList[1].([]byte)
+
+		var event map[string]interface{}
+		err := json.Unmarshal(eventValue, &event)
+		if err != nil {
+			return nil, err
+		}
+		event["id"] = string(eventID)
+		events[i] = event
+	}
+	return events, nil
+}
+
+/*
+
+*3
+  *2
+    $15 id
+    *2
+      $7 payload
+      $90 CONTENT
+  *2
+    $15 id
+*/
