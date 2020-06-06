@@ -33,16 +33,24 @@ const ENTER_GAME_ID_FLAVOR = [
     "Wow, so exclusive.",
 ];
 const LOADING_FLAVOR = [
-    "Hacking you in",
-    "Acquiring marks",
-    "Asking for permission",
+    "Hacking you in...",
+    "Acquiring marks...",
+    "Asking for permission...",
 ];
 const NOT_FOUND_FLAVOR = [
     "I don't think that Game ID exists.",
+    "You put in the right Game ID?",
     "Game ID first, then player name.",
-    "That's not a game ID, chummer",
+    "That's not a game ID, chummer.",
+    "That's no Game ID!",
+    "SIN scanner caught you on that one."
 ];
-const ERRORED_FLAVOR = [
+const SERVER_ERROR_FLAVOR = [
+    "Something went wrong with the server.",
+    "The server is having an issue.",
+    "Server glitched attempting to check your ID.",
+];
+const NO_CONNECTION_FLAVOR = [
     "Can't connect to the server.",
 ];
 
@@ -74,7 +82,7 @@ const JoinText = styled.span`
 
 const ButtonZone = styled(UI.FlexRow)`
     /* Mobile: last row, button on the right */
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-top: .5em;
     @media all and (min-width: 768px) {
         margin-top: 0px;
@@ -92,10 +100,14 @@ type Props = {
 export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispatch }: Props) {
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
-    const enterIDFlavor = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
-    const connectingFlavor = srutil.useFlavor(LOADING_FLAVOR);
-    const notFoundFlavor = srutil.useFlavor(NOT_FOUND_FLAVOR);
-    const erroredFlavor = srutil.useFlavor(ERRORED_FLAVOR);
+
+    const [enterIDFlavor] = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
+    const [connectingFlavor, newConnecting] = srutil.useFlavor(LOADING_FLAVOR);
+    const [noConnectionFlavor, newNoConnection] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
+    const [notFoundFlavor, newNotFound] = srutil.useFlavor(NOT_FOUND_FLAVOR);
+    const [serverErrorFlavor, newServerError] = srutil.useFlavor(SERVER_ERROR_FLAVOR);
+
+    const [flavor, setFlavor] = React.useState<React.Node>(enterIDFlavor);
 
     const ready = gameID !== '' && playerName !== '';
 
@@ -111,9 +123,13 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
         if (!ready) { return; }
 
         setConnection("connecting");
+        setFlavor(connectingFlavor);
+        newConnecting();
         server.requestJoin(gameID, playerName)
             .then(resp => {
-                console.log("Request join success", resp);
+                if (process.env.NODE_ENV !== "production") {
+                    console.log("Join success", resp);
+                }
                 dispatch({
                     ty: "join",
                     gameID: gameID,
@@ -135,19 +151,26 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                 });
             })
             .catch((resp: Response) => {
-                console.log("Request join fail", resp);
+                switch (server.statusFor(resp)) {
+                    case "badRequest":
+                        setFlavor(notFoundFlavor);
+                        newNotFound();
+                        break;
+                    case "serverError":
+                        setFlavor(serverErrorFlavor);
+                        newServerError();
+                        break;
+                    case "noConnection":
+                        setFlavor(noConnectionFlavor);
+                        newNoConnection();
+                        break;
+                    default:
+                }
                 setConnection(server.connectionFor(resp));
             });
     }
 
-    let flavor;
-    let warn = false;
-    switch (connection) {
-        case "connecting": flavor = connectingFlavor; break;
-        case "disconnected": flavor = erroredFlavor; warn = true; break;
-        case "errored": flavor = notFoundFlavor; warn = true; break;
-        default: flavor = enterIDFlavor;
-    }
+    let warn = connection === "disconnected" || connection === "errored";
 
     return (
         <UI.Menu>
@@ -174,9 +197,9 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                     </UI.ColumnToRow>
                     <ButtonZone>
                         <UI.Flavor light warn={warn}>{flavor}</UI.Flavor>
+                        {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                         <UI.Button id="join-game-submit" onClick={onSubmit}
                                    disabled={!ready}>
-                        {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                             Join
                         </UI.Button>
                     </ButtonZone>
