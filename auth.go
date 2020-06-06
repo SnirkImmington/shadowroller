@@ -60,6 +60,7 @@ func createAuthCookie(gameID string, playerID string, playerName string) (*http.
 		Secure:   config.IsProduction, // http cookies on local env
 		SameSite: http.SameSiteNoneMode,
 		HttpOnly: false, // JS should read cookie to reconnect
+		MaxAge:   config.AuthCookieMaxAge,
 	}, nil
 }
 

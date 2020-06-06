@@ -14,7 +14,7 @@ import (
 
 func RegisterDefaultGames() {
 	conn := redisPool.Get()
-	defer conn.Close()
+	defer closeRedis(conn)
 
 	gameNames := strings.Split(config.HardcodedGameNames, ",")
 
@@ -30,16 +30,19 @@ func RegisterDefaultGames() {
 
 func MakeServerMux() *gorillaMux.Router {
 	mux := gorillaMux.NewRouter()
+	mux.Use(recoveryMiddleware)
+	mux.Use(headersMiddleware)
+	mux.Use(rateLimitedMiddleware)
 
-	mux.HandleFunc("/join-game", loggedHandler(handleJoinGame)).Methods("POST")
+	mux.HandleFunc("/join-game", handleJoinGame).Methods("POST")
 
-	mux.HandleFunc("/events", loggedHandler(handleEvents)).Methods("GET")
+	mux.HandleFunc("/events", handleEvents).Methods("GET")
 
-	mux.HandleFunc("/event-range", loggedHandler(handleEventRange)).Methods("POST")
+	mux.HandleFunc("/event-range", handleEventRange).Methods("POST")
 
-	mux.HandleFunc("/players", loggedHandler(handleGetPlayers)).Methods("GET")
+	mux.HandleFunc("/players", handleGetPlayers).Methods("GET")
 
-	mux.HandleFunc("/roll", loggedHandler(handleRoll)).Methods("POST")
+	mux.HandleFunc("/roll", handleRoll).Methods("POST")
 
 	mux.HandleFunc("/", func(response Response, request *Request) {
 		if config.IsProduction {
@@ -50,13 +53,20 @@ func MakeServerMux() *gorillaMux.Router {
 			)
 		} else {
 			log.Println(request.Method, request.URL, "-> shadowroller")
-			io.WriteString(response, `<a href="`+config.FrontendAddress+`">Frontend</a>`)
+			_, err := io.WriteString(response,
+				`<a href="`+config.FrontendAddress+`">Frontend</a>`)
+			if err != nil {
+				httpInternalError(response, request, err)
+				return
+			}
+			httpSuccess(response)
 		}
 	}).Methods("GET")
 
-	mux.HandleFunc("/health-check", loggedHandler(func(response Response, request *Request) {
-		io.WriteString(response, "ok")
-	}))
+	mux.HandleFunc("/health-check", func(response Response, request *Request) {
+		logRequest(request)
+		httpSuccess(response)
+	})
 
 	return mux
 }

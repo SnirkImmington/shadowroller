@@ -11,13 +11,14 @@ import (
 var (
 	IsProduction = readBool("IS_PRODUCTION", false)
 	// Server configs
-	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
-	ServerHTTPPort  = readString("SERVER_HTTP_PORT", ":80")
-	ServerHTTPSPort = readString("SERVER_HTTPS_PORT", ":443")
-	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
-	StagingAddress  = readString("STAGING_ADDRESS", "http://srserver.null:3000")
-	CORSDebug       = readBool("CORS_DEBUG", false)
-	JWTSecretKey    = readKeyFile("KEYFILE_JWT", "133713371337")
+	ServerAddress    = readString("SERVER_ADDRESS", ":3001")
+	ServerHTTPPort   = readString("SERVER_HTTP_PORT", ":80")
+	ServerHTTPSPort  = readString("SERVER_HTTPS_PORT", ":443")
+	FrontendAddress  = readString("FRONTEND_ADDRESS", "http://localhost:3000")
+	StagingAddress   = readString("STAGING_ADDRESS", "http://srserver.null:3000")
+	CORSDebug        = readBool("CORS_DEBUG", false)
+	JWTSecretKey     = readKeyFile("KEYFILE_JWT", "133713371337")
+	AuthCookieMaxAge = readInt("COOKIE_MAX_AGE", 2592000) // 30 days
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)
 	TlsHost   = readString("TLS_HOST", "https://shadowroller.immington.industries")
@@ -30,9 +31,10 @@ var (
 	// server. The ResponseWriters we get can't set individual timeouts, so we can't
 	// have write timeouts for regular requests AND sse.
 	//SSEWriteTimeoutSecs = readInt("SSE_WRITE_TIMEOUT_SECS", 30)
-	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 5)
-	SSEPingSecs        = readInt("SSE_PING_SECS", 20)
-	MaxHeaderBytes     = readInt("MAX_HEADER_BYTES", 1<<20)
+	SSEClientRetrySecs   = readInt("SSE_CLIENT_RETRY_SECS", 5)
+	SSEPingSecs          = readInt("SSE_PING_SECS", 20)
+	MaxHeaderBytes       = readInt("MAX_HEADER_BYTES", 1<<20)
+	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 20)
 	// LibraryOptions
 	RedisUrl = readString("REDIS_URL", "redis://:6379")
 	// Backend options
