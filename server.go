@@ -42,11 +42,11 @@ func makeServerFromHandler(handler http.Handler) *http.Server {
 	}
 }
 
-func MakeHttpRedirectServer(certManager *autocert.Manager) *http.Server {
+func MakeHTTPRedirectServer(certManager *autocert.Manager) *http.Server {
 	mux := &http.ServeMux{}
 	mux.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
-		newUrl := "https://" + request.Host + request.URL.String()
-		http.Redirect(response, request, newUrl, http.StatusMovedPermanently)
+		newURL := "https://" + request.Host + request.URL.String()
+		http.Redirect(response, request, newURL, http.StatusMovedPermanently)
 	})
 	server := makeServerFromHandler(mux)
 	server.Handler = certManager.HTTPHandler(server.Handler)
