@@ -28,8 +28,9 @@ export function pickRandom<T>(items: Array<T>): T {
     return items[Math.floor(Math.random() * items.length)];
 }
 
-export function useFlavor(options: React.Node[]): React.Node {
-    return React.useState(() => pickRandom(options))[0];
+export function useFlavor(options: React.Node[]): [React.Node, () => void] {
+    const [flavor, setFlavor] = React.useState(() => pickRandom(options));
+    return [flavor, () => setFlavor(() => pickRandom(options))];
 }
 
 // Color generation taken from:

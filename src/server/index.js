@@ -12,14 +12,29 @@ export type Connection = "offline" | "connecting" | "connected" | "errored" | "d
 export type SetConnection = (Connection) => void;
 
 export function connectionFor(response: Response): Connection {
-    if (response.ok) {
-        return "connected";
-    }
-    else if (response.status >= 500) {
+    if (!response.status) {
         return "disconnected";
     }
+    else if (response.ok) {
+        return "connected";
+    }
+    return "errored";
+}
+
+export type ResponseStatus = | "success" | "badRequest" | "serverError" | "noConnection";
+
+export function statusFor(response: Response): ResponseStatus {
+    if (!response.status) {
+        return "noConnection";
+    }
+    else if (response.ok) {
+        return "success";
+    }
+    else if (response.status >= 500) {
+        return "serverError";
+    }
     else {
-        return "errored";
+        return "badRequest";
     }
 }
 

@@ -67,11 +67,13 @@ const ROLL_TITLE_FLAVOR = [
     "play the guitar",
     "run from the bear",
     "find the bandit",
+    "jump through the air duct",
+    "fireball the door",
+    "shoot between the hostages",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",
     "throw the deck",
-    "prepare",
     "swipe George's ID card",
     "pretend to be George",
     "throw a knife",
@@ -141,9 +143,7 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
     const [rollLoading, setRollLoading] = React.useState(false);
     const [localRoll, setLocalRoll] = React.useState(false);
     const [title, setTitle] = React.useState('');
-    const [titleFlavor, setTitleFlavor] = React.useState(
-        () => srutil.pickRandom(ROLL_TITLE_FLAVOR)
-    );
+    const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
 
     const connected = connection === "connected";
     const rollDisabled = (
@@ -179,8 +179,8 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                 });
         }
         setTitle('');
-        if (Math.floor(Math.random() * 4) === 0) {
-            setTitleFlavor(srutil.pickRandom(ROLL_TITLE_FLAVOR));
+        if (Math.floor(Math.random() * 2.6) === 0) {
+            newTitleFlavor();
         }
     }
 

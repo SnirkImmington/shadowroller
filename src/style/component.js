@@ -15,6 +15,7 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
     ${color}
     font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
     max-width: ${(props) => props.size ? '100%' : '12em'};
+    max-height: calc(1em + 12px);
 
     margin: 0px 0.5em;
     border: 1px solid lightslategray;
@@ -60,6 +61,10 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
         &:after {
             content: "<";
         }
+    }
+    &:focus {
+        &:before { content: ">"; }
+        &:after { content: "<"; }
     }
 
     &:active {
