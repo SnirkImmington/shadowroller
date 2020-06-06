@@ -9,6 +9,7 @@ import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import * as icons from 'style/icon';
 
+type RoundingMode = "up" | "down";
 type Props = {
     id: string,
     onSelect: (?number) => void,
@@ -18,7 +19,6 @@ type Props = {
     round?: RoundingMode,
 };
 
-type RoundingMode = "up" | "down";
 type ValueState =
 | "empty"
 | "tooSmall"
