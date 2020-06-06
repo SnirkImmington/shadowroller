@@ -11,13 +11,14 @@ import (
 var (
 	IsProduction = readBool("IS_PRODUCTION", false)
 	// Server configs
-	ServerAddress   = readString("SERVER_ADDRESS", ":3001")
-	ServerHTTPPort  = readString("SERVER_HTTP_PORT", ":80")
-	ServerHTTPSPort = readString("SERVER_HTTPS_PORT", ":443")
-	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
-	StagingAddress  = readString("STAGING_ADDRESS", "http://srserver.null:3000")
-	CORSDebug       = readBool("CORS_DEBUG", false)
-	JWTSecretKey    = readKeyFile("KEYFILE_JWT", "133713371337")
+	ServerAddress    = readString("SERVER_ADDRESS", ":3001")
+	ServerHTTPPort   = readString("SERVER_HTTP_PORT", ":80")
+	ServerHTTPSPort  = readString("SERVER_HTTPS_PORT", ":443")
+	FrontendAddress  = readString("FRONTEND_ADDRESS", "http://localhost:3000")
+	StagingAddress   = readString("STAGING_ADDRESS", "http://srserver.null:3000")
+	CORSDebug        = readBool("CORS_DEBUG", false)
+	JWTSecretKey     = readKeyFile("KEYFILE_JWT", "133713371337")
+	AuthCookieMaxAge = readInt("COOKIE_MAX_AGE", 2592000) // 30 days
 	// TLS configs
 	TlsEnable = readBool("TLS_ENABLE", false)
 	TlsHost   = readString("TLS_HOST", "https://shadowroller.immington.industries")
