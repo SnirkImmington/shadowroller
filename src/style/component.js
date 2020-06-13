@@ -29,11 +29,60 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
     }
 `;
 
+export const NewButton: StyledComponent<{}, Theme> = styled.button`
+    all: unset;
+    line-height: 1;
+    font-weight: bold;
+    padding: 0.2em;
+    align-text: center;
+    margin: 4px;
+    cursor: pointer;
+
+    background-color:
+`;
+
+export const LinkButton: StyledComponent<{}, Theme> = styled.button`
+    display: inline;
+    font-family: "source-code-pro", monospace;
+    font-weight: bold;
+    font-size: 1em;
+
+    cursor: pointer;
+    text-decoration: underline;
+
+    color: ${({light, theme}) =>
+        light ? theme.colors.secondary : theme.colors.primaryLight
+    };
+    background-color: transparent;
+    border: 0;
+    outline: 0;
+    padding: 2px;
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed;
+        text-decoration: none;
+        filter: grayscale(80%);
+    }
+
+    &:hover {
+        filter: brightness(115%);
+    }
+
+    &:active {
+        filter: brightness(70%);
+    }
+
+    &:focus {
+        filter: brightness(75%);
+    }
+`;
+
 export const Button: StyledComponent<{}, Theme> = styled.button`
     font-size: 1.05em;
     line-height: 1;
     font-weight: bold;
-    padding: 0.2em .5em;
+    padding: 0.1em 0;
     align-text: center;
     border: 0px;
     margin: 0;
@@ -43,34 +92,34 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
     white-space: pre;
 
     &:before {
-        content: " ";
-        margin-right: .25em;
+        content: "[";
+        margin: 0 0.01em 0 0.1em;
         font-family: "source-code-pro", monospace;
     }
     &:after {
-        content: " ";
-        margin-left: .25em;
+        content: "]";
+        margin: 0 0.1em 0 0.01em;
         font-family: "source-code-pro", monospace;
     }
 
     &:hover {
         &:before {
-            content: ">";
+            content: "[";
         }
 
         &:after {
-            content: "<";
+            content: "]";
         }
     }
     &:focus {
-        &:before { content: ">"; }
-        &:after { content: "<"; }
+        &:before { content: "["; }
+        &:after { content: "]"; }
     }
 
     &:active {
         color: ${props => props.theme.colors.secondaryPressed};
-        &:before { content: ">" }
-        &:after { content: "<" }
+        &:before { content: "[" }
+        &:after { content: "]" }
     }
 
     &[disabled] {
@@ -81,7 +130,16 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
     ${color}
 `;
 
-export const BaseButton: StyledComponent<> = styled.button`
+const StyledRadiolist: StyledComponent<> = styled.div`
+    & input {
+        display: none;
+    }
+`;
+
+export const NoButtionRadio: StyledComponent<> = styled.input.attrs(props => ({
+    type: "radio",
+    ...props
+}))`
 `;
 
 const diceFrames = keyframes`
