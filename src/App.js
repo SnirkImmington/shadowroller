@@ -3,6 +3,7 @@
 import * as React from 'react';
 import styled, { ThemeProvider } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
+import * as UI from 'style';
 import theme from 'style/theme';
 
 import * as Game from 'game';
@@ -11,39 +12,19 @@ import * as Event from 'event';
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
+import DebugBar from 'debug-bar';
 
 import * as server from 'server';
-
-const AppPadding: StyledComponent<> = styled.div`
-    /* Phones: margin near the side of the screen */
-    height: 100%; /* */
-    padding: 0.5em;
-    display: flex;
-    flex-direction: column;
-
-    /*color: white;
-    background: rgb(80, 120, 120);
-
-    & input {
-        color: white
-        background: rgb(100, 100, 100);
-    }*/
-
-    /* Tablet+: more margin on the sides */
-    @media all and (min-width: 768px) {
-        padding: 1.2em;
-        flex-direction: row;
-        align-items: stretch;
-    }
-`;
 
 const AppLeft: StyledComponent<> = styled.div`
     /* Phones: vertical margin included in cards. */
 
+    padding-left: 0.5em;
+
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
-        margin-right: 1.5em;
         flex-grow: 1; /* Grows out */
+        padding-right: 14px;
     }
 `;
 
@@ -51,8 +32,10 @@ const AppRight: StyledComponent<> = styled.div`
     /* Phones: no padding needed. */
     height: 100%; /* Always go as high as possible. */
 
+    padding-left: 2px;
+
     @media all and (min-width: 768px) {
-        width: 30em;
+        width: 32em;
     }
 `;
 
@@ -89,12 +72,16 @@ export default function App(props: {}) {
         <Game.DispatchCtx.Provider value={gameDispatch}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
 
+            {process.env.NODE_ENV !== "production" &&
+                <DebugBar />
+            }
+
             <SRHeader game={game}
                       connection={connection}
                       menuShown={menuShown}
                       onClick={onGameButtonClick} />
             { menu }
-            <AppPadding>
+            <UI.ColumnToRow grow>
                 <AppLeft>
                     <RollDicePrompt connection={connection} dispatch={eventDispatch} />
                 </AppLeft>
@@ -104,7 +91,7 @@ export default function App(props: {}) {
                                   eventList={eventList}
                                   dispatch={eventDispatch} />
                 </AppRight>
-            </AppPadding>
+            </UI.ColumnToRow>
 
         </Event.DispatchCtx.Provider>
         </Game.DispatchCtx.Provider>
