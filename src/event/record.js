@@ -7,7 +7,7 @@ import * as UI from 'style';
 
 import * as Event from 'event';
 
-import DiceList from 'roll/components/dice-list';
+import DiceList, { FADice, SRDice } from 'roll/components/dice-list';
 import RollResult from 'roll/result';
 import * as srutil from 'srutil';
 
@@ -32,7 +32,6 @@ const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow).attr
     padding: 3px 4px;
     ${props => props?.color ? `
         border-left: 4px solid ${props.color};
-        border-right: 4px solid ${props.color};
     ` : ''
     }
 `;
@@ -71,7 +70,7 @@ export function LocalRollRecord({ event, style }: LocalRollProps) {
                     {rollResult.toString()}
                 </b> : ''}
             </RollTitleRow>
-            <DiceList dice={event.dice} showNumbers={false} />
+            <SRDice dice={event.dice} showNumbers={false} />
         </DoubleRecord>
     );
 }
@@ -94,11 +93,45 @@ export function GameRollRecord({ event, style }: GameRollProps) {
                 </UI.HashColored>
                 : ''}
             </RollTitleRow>
-            <DiceList dice={event.dice} />
+            <SRDice dice={event.dice} />
         </DoubleRecord>
     );
 }
 
+export function EditRollRecord({ event, style }: GameRollProps) {
+    const title = event.title !== '' ?
+        <>
+            to <b>{event.title}</b>
+        </>
+        : `${event.dice.length} dice`;
+    const rollResult = new RollResult(event.dice);
+    return (
+        <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
+            <div style={{width: '100%'}}>
+            <RollTitleRow maxWidth>
+                <span>
+                    <UI.PlayerName id={event.playerID} name={event.playerName} />
+                    &nbsp;rolls&nbsp;
+                    {title}
+                </span>
+            {rollResult.shouldDisplay ?
+                <UI.HashColored id={event.playerID}>
+                    {rollResult.toString()}
+                </UI.HashColored>
+                : ''}
+            </RollTitleRow>
+            <SRDice dice={event.dice} />
+            </div>
+            <UI.FlexRow maxWidth>
+                <UI.LinkButton light>push the limit</UI.LinkButton>
+                &nbsp;|&nbsp;
+                <UI.LinkButton light>second chance</UI.LinkButton>
+                &nbsp;|&nbsp;
+                <UI.LinkButton light disabled>remove</UI.LinkButton>
+            </UI.FlexRow>
+        </DoubleRecord>
+    );
+}
 type PlayerJoinProps = { +event: Event.PlayerJoin, ...RecordProps };
 export function PlayerJoinRecord({ event, style }: PlayerJoinProps) {
     const name = <UI.PlayerName id={event.player.id} name={event.player.name} />

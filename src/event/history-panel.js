@@ -18,7 +18,7 @@ type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} style={style} />;
-        case "gameRoll": return <Records.GameRollRecord event={event} style={style} />;
+        case "gameRoll": return <Records.EditRollRecord event={event} style={style} />;
         case "playerJoin": return <Records.PlayerJoinRecord event={event} style={style} />;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -29,15 +29,16 @@ function EventRecord({ event, style }: RecordProps) {
 type RowRenderProps = { +style: any, +index: number };
 
 type LoadingListProps = {
-    +state: Event.State,
     +connection: Server.Connection,
-    +dispatch: Event.Dispatch,
 };
-export function LoadingResultList({ state, connection, dispatch }: LoadingListProps) {
+export function LoadingResultList({ connection }: LoadingListProps) {
+    const state = React.useContext(Event.Ctx);
+    const dispatch = React.useContext(Event.DispatchCtx);
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
     const eventsLength = state.events.length;
-    const itemCount = eventsLength + (atHistoryEnd || connection === "offline" ? 0 : 1);
+    const itemCount = eventsLength + (
+        atHistoryEnd || connection === "offline" || connection === "disconnected" ? 0 : 1);
 
     const listRef = React.useRef(null);
 
@@ -65,7 +66,7 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
         switch (event.ty) {
             case "localRoll":
             case "gameRoll":
-                return 74;
+                return 96;
             default:
                 return 40;
         }
@@ -112,6 +113,7 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
                         <List height={height} width={width}
                               itemCount={itemCount}
                               itemSize={itemSize}
+                              style={{overflowY: 'scroll'}}
                               onItemsRendered={onItemsRendered} ref={ref}>
                             {RenderRow}
                         </List>
@@ -129,13 +131,12 @@ const TitleBar = styled(UI.FlexRow)`
 `;
 
 type Props = {
-    +game: Game.State,
-    +eventList: Event.State,
-    +dispatch: Event.Dispatch,
     +connection: Server.Connection,
     +setConnection: Server.SetConnection,
 }
-export default function EventHistory({ game, eventList, dispatch, connection, setConnection }: Props) {
+export default function EventHistory({ connection, setConnection }: Props) {
+    const game = React.useContext(Game.Ctx);
+    const dispatch = React.useContext(Event.DispatchCtx);
     const gameID = game?.gameID;
     Server.useEvents(gameID, setConnection, dispatch);
 
@@ -152,9 +153,7 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
             </TitleBar>
-            <LoadingResultList
-                state={eventList} dispatch={dispatch}
-                connection={connection} />
+            <LoadingResultList connection={connection} />
         </UI.Card>
     );
 }

@@ -5,6 +5,15 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components/macro';
 
 import * as UI from 'style';
+import theme from 'style/theme';
+import * as icons from 'style/icon';
+
+import { ReactComponent as DieOne } from 'assets/die-1.svg';
+import { ReactComponent as DieTwo } from 'assets/die-2.svg';
+import { ReactComponent as DieThree } from 'assets/die-3.svg';
+import { ReactComponent as DieFour } from 'assets/die-4.svg';
+import { ReactComponent as DieFive } from 'assets/die-5.svg';
+import { ReactComponent as DieSix } from 'assets/die-6.svg';
 
 /*
 // The roll animations are non-random to save a few computing cycles and maybe
@@ -34,23 +43,82 @@ export const Die: StyledComponent<DieProps> = styled.b`
     line-height: 1;
     font-weight: 900;
     font-family: "source-code-pro";
-    ${({roll}) =>
+    ${({roll, theme}) =>
         `color: ${
-            roll === 1 ? '#811111c0' :
-            roll === 5 || roll === 6 ? '#4d703ec0' :
-            '#2e2e32c0'
+            roll === 1 ? theme.colors.dieOne :
+            roll === 5 || roll === 6 ? theme.colors.dieHit :
+            theme.colors.dieNone
         };`
     }
-    /*&::after {
-        ${({roll}) =>
-            `content: '${String.fromCharCode(0x267F + roll)}';`}
-    }*/
 
-    font-size: 8.4vw;
+    font-size: 10vw;
     @media all and (min-width: 768px) {
         font-size: 3.8rem;
     }
 `;
+
+const colorForRoll = (roll) =>
+            roll === 1 ? theme.colors.dieOne :
+            roll === 5 || roll === 6 ? theme.colors.dieHit :
+            theme.colors.dieNone;
+
+export function SRDie({roll, style}: {roll:number, style: any}) {
+    switch (roll) {
+        case 1: return <DieOne style={style} />;
+        case 2: return <DieTwo style={style}/>;
+        case 3: return <DieThree style={style}/>;
+        case 4: return <DieFour style={style}/>;
+        case 5: return <DieFive style={style}/>;
+        case 6: return <DieSix style={style}/>;
+        default: return <DieOne style={style}/>;
+    }
+}
+
+export function SRDice(props: Props) {
+    const style = {
+        fontSize: '20px',
+        height: '30px',
+        width: '30px',
+        margin: props.dice.length <= 12 ? '2px' : '2px 2px 4px',
+        flexShrink: '0',
+    }
+    const dice = props.dice.map((die, ix) => (
+        <SRDie style={{color: colorForRoll(die), ...style}} roll={die} key={ix} />
+    ));
+
+    return <ListWrapper>{dice}</ListWrapper>;
+}
+
+function iconForRoll(roll: number): any {
+    switch (roll) {
+        case 1: return icons.faDiceOne;
+        case 2: return icons.faDiceTwo;
+        case 3: return icons.faDiceThree;
+        case 4: return icons.faDiceFour;
+        case 5: return icons.faDiceFive;
+        case 6: return icons.faDiceSix;
+        default: return null;
+    }
+}
+
+const DieSpan: StyledComponent<> = styled.span`
+    font-size: 8vw;
+    height: 1em;
+    width: 1em;
+
+    @media all and (min-width: 768px) {
+        font-size: 36px;
+    }
+`;
+
+export function FADie({roll}: {roll: number}) {
+    const color = roll === 1 ? theme.colors.dieOne :
+            roll === 5 || roll === 6 ? theme.colors.dieHit :
+            theme.colors.dieNone;
+    return <DieSpan>
+        <UI.FAIcon color={color} icon={iconForRoll(roll)} />
+    </DieSpan>
+}
 
 const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     width: 100%;
@@ -59,7 +127,7 @@ const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     overflow-x: auto; /* left-right overflow */
     overflow-y: hidden; /* up-down overflow */
 
-    /* Scrollbars! */
+    /* Scrollbars!
     scrollbar-width: thin;
     scrollbar-color: #81132add transparent;
 
@@ -76,6 +144,7 @@ const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
         border-radius: 6px;
         border: 3px solid #81132add;
     }
+    */
 `;
 
 type Props = { +dice: number[] };
@@ -89,4 +158,11 @@ export default function RollingDice(props: Props) {
                 {dice}
         </ListWrapper>
     );
+}
+
+export function FADice(props: Props) {
+    const dice = props.dice.map((die, ix) =>
+        <FADie key={ix} roll={die} />
+    );
+    return <ListWrapper>{dice}</ListWrapper>
 }
