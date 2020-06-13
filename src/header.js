@@ -8,7 +8,7 @@ import * as Game from 'game';
 import * as server from 'server';
 
 const SRHeader: StyledComponent<> = styled.header`
-    background-color: #222;
+    background-color: ${({theme}) => theme.colors.header};
     height: 3.4rem;
     color: white;
     display: flex;
@@ -28,12 +28,12 @@ const SRTitle = styled.h1`
 `;
 
 const JoinButtonUI = styled.button`
-    background: #222;
+    background: ${({theme}) => theme.colors.header};
     border: 3px solid white;
 
-    color: ${props => props.expanded ? '#222' : 'white'};
-    background: ${props =>props.expanded ? 'white' : '#222'};
-    border: 3px solid ${props=>props.expanded ? '#222' : 'white'};
+    color: ${({expanded, theme}) => expanded ? theme.colors.header : 'white'};
+    background: ${({expanded, theme}) => expanded ? 'white' : theme.colors.header};
+    border: 3px solid;
 
     font-size: 1rem;
     font-weight: 500;
@@ -59,13 +59,13 @@ const JoinButtonUI = styled.button`
 `;
 
 type Props = {
-    +game: Game.State,
     +connection: server.Connection,
     +menuShown: bool,
     +onClick: () => void
 }
 
-function JoinButton({ game, connection, menuShown, onClick }: Props) {
+function JoinButton({ connection, menuShown, onClick }: Props) {
+    const game = React.useContext(Game.Ctx);
     let disabled = false;
     let message: React.Node = "";
     if (!game) {

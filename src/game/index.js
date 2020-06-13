@@ -14,6 +14,8 @@ export type State = ?{|
     +players: Map<string, string>
 |};
 
+export const defaultState = null;
+
 export type Action =
 | { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
 | { +ty: "leave" }
@@ -85,7 +87,7 @@ else {
 
 export { reduce };
 export type Dispatch = (Action) => void;
-export const Ctx = React.createContext<State>();
+export const Ctx = React.createContext<State>(defaultState);
 export const DispatchCtx = React.createContext<Dispatch>((_) => {});
 
 export { JoinMenu } from './join-menu';

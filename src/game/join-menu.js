@@ -90,6 +90,14 @@ const ButtonZone = styled(UI.FlexRow)`
     }
 `;
 
+const SpacedFlavor = styled(UI.Flavor)`
+    margin-left: 1em;
+
+    @media all and (min-width: 768px) {
+        margin: 0 1.5em 0 1.5em;
+    }
+`;
+
 type Props = {
     +connection: server.Connection,
     +setConnection: server.SetConnection,
@@ -196,7 +204,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                     </InputRow>
                     </UI.ColumnToRow>
                     <ButtonZone>
-                        <UI.Flavor light warn={warn}>{flavor}</UI.Flavor>
+                        <SpacedFlavor light warn={warn}>{flavor}</SpacedFlavor>
                         {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                         <UI.Button id="join-game-submit" onClick={onSubmit}
                                    disabled={!ready}>

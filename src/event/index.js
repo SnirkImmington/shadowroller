@@ -191,5 +191,5 @@ else {
 }
 
 export { reduce };
-
-export const DispatchCtx = React.createContext<Dispatch>(() => {});
+export const Ctx = React.createContext<State>(defaultState);
+export const DispatchCtx = React.createContext<Dispatch>(null);

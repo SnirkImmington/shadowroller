@@ -40,12 +40,12 @@ const AppRight: StyledComponent<> = styled.div`
 `;
 
 export default function App(props: {}) {
-    const [game, gameDispatch] = React.useReducer(Game.reduce, undefined);
+    const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
     const [connection, setConnection] = React.useState<server.Connection>("offline");
 
-    React.useEffect(() =>
-        server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
+    React.useEffect(
+        () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
 
     const [menuShown, setMenuShown] = React.useState<bool>(false);
 
@@ -69,6 +69,7 @@ export default function App(props: {}) {
     return (
         <ThemeProvider theme={theme}>
         <Game.Ctx.Provider value={game}>
+        <Event.Ctx.Provider value={eventList}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
 
@@ -76,25 +77,23 @@ export default function App(props: {}) {
                 <DebugBar />
             }
 
-            <SRHeader game={game}
-                      connection={connection}
+            <SRHeader connection={connection}
                       menuShown={menuShown}
                       onClick={onGameButtonClick} />
             { menu }
             <UI.ColumnToRow grow>
                 <AppLeft>
-                    <RollDicePrompt connection={connection} dispatch={eventDispatch} />
+                    <RollDicePrompt connection={connection} />
                 </AppLeft>
                 <AppRight>
-                    <EventHistory game={game} connection={connection}
-                                  setConnection={setConnection}
-                                  eventList={eventList}
-                                  dispatch={eventDispatch} />
+                    <EventHistory connection={connection}
+                                  setConnection={setConnection} />
                 </AppRight>
             </UI.ColumnToRow>
 
         </Event.DispatchCtx.Provider>
         </Game.DispatchCtx.Provider>
+        </Event.Ctx.Provider>
         </Game.Ctx.Provider>
         </ThemeProvider>
     );
