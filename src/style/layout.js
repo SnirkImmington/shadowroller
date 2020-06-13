@@ -8,7 +8,8 @@ import flexbox from '@styled-system/flexbox';
 export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
     align-items: center;
-    ${(props) => props.maxWidth ? 'width: 100%;' : ''}
+    ${props => props.maxWidth ? 'width: 100%;' : ''}
+    ${props => props.wrap ? 'flex-wrap: wrap;' : ''}
 `;
 
 export const FlexColumn: StyledComponent<> = styled.div`
@@ -29,19 +30,19 @@ export const Menu: StyledComponent<> = styled.div`
     padding: 0.5em;
 `;
 
-export const ColumnToRow: StyledComponent<> = styled(FlexColumn)`
+export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
+    ${props => props?.grow ? 'height: 100%;' : ''}
     @media all and (min-width: 768px) {
         flex-direction: row;
     }
 `;
 
-export const CardWrapper: StyledComponent<{ grow?: bool }> = styled(FlexColumn)`
-    margin-bottom: 0.5em;
+export const CardWrapper: StyledComponent<{ grow?: bool, pad?: bool }> = styled(FlexColumn)`
+    ${props => props?.pad ? 'padding-bottom: 10px;' : ''}
     ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 
 const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled.div`
-    padding-top: 5px;
     ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 
@@ -54,6 +55,7 @@ export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
 
 type CardTitleProps = { +color: string };
 const CardTitle: StyledComponent<CardTitleProps> = styled(FlexRow)`
+    margin: 0.5rem;
     line-height: 1;
     padding-bottom: 0.25rem; /* Can't use line height because it pads the top too */
     border-bottom: 2px solid ${props => props.color};
