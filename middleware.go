@@ -28,12 +28,12 @@ type requestIDKeyType int
 var requestIDKey requestIDKeyType
 
 func withRequestID(ctx context.Context) context.Context {
-	id := rand.Intn(257)
+	id := fmt.Sprintf("%02x", rand.Intn(257))
 	return context.WithValue(ctx, requestIDKey, id)
 }
 
-func requestID(request *Request) int {
-	return request.Context().Value(requestIDKey).(int)
+func requestID(request *Request) string {
+	return request.Context().Value(requestIDKey).(string)
 }
 
 func requestIDMiddleware(wrapped http.Handler) http.Handler {

@@ -41,78 +41,76 @@ func writeBodyJSON(response Response, value interface{}) error {
 }
 
 func logRequest(request *Request, values ...string) {
-	id := requestID(request)
-	var message string
 	if config.IsProduction {
-		message = fmt.Sprintf(
-			"%x <- %v %v %v %v", id,
-			request.RemoteAddr, request.Proto, request.Method, request.RequestURI,
+		logf(request, "<- %v %v %v %v",
+			request.RemoteAddr, request.Proto, request.Method, request.URL,
 		)
 	} else {
-		message = fmt.Sprintf("%x <- %v %v", id, request.Method, request.RequestURI)
+		logf(request, "<- %v %v",
+			request.Method, request.URL,
+		)
 	}
-	log.Output(2, message)
 }
 
 func logf(request *Request, format string, values ...interface{}) {
-	log.Printf(fmt.Sprintf("%x ", requestID(request))+format, values...)
+	id := requestID(request)
+	err := log.Output(2, fmt.Sprintf(id+" "+format, values...))
+	if err != nil {
+		log.Printf(id+" [Output Error] "+format, values...)
+	}
 }
 
 func httpNotFound(response Response, request *Request) {
-	id := fmt.Sprintf("%x", requestID(request))
-	log.Output(2, id+" -> 404 not found")
-	http.Error(response, "Not found", 404)
+	logf(request, "-> 404 not found")
+	http.Error(response, "Not found", http.StatusNotFound)
 }
 
 func httpUnauthorized(response Response, request *Request, err error) {
-	message := fmt.Sprintf("%x -> 401 Unauthorized: %v", requestID(request), err)
-	log.Output(2, message)
+	logf(request, "-> 401 Unauthorized: %v", err)
 	http.Error(response, "Unauthorized", http.StatusUnauthorized)
 }
 
 func httpInternalError(response Response, request *Request, err error) {
-	id := fmt.Sprintf("%x", requestID(request))
-	logMessage := fmt.Sprintf(
-		"%v Internal error handling %v %v: %v",
-		id, request.Method, request.URL, err,
-	)
-	log.Output(2, logMessage)
 	if config.IsProduction {
-		log.Output(2, id+" -> 500 Internal Error")
+		logf(request, "Internal error handling %v %v %v %v: %v",
+			request.RemoteAddr, request.Proto, request.Method, request.URL, err,
+		)
+		logf(request, "-> 500 Internal Error")
 		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 	} else {
-		log.Output(2, id+" -> 500 "+err.Error())
-		http.Error(response, logMessage, http.StatusInternalServerError)
+		message := fmt.Sprintf("Internal error handling %v %v: %v",
+			request.Method, request.URL, err,
+		)
+		logf(request, message)
+		logf(request, " -> 500 Internal error: %v", err)
+		http.Error(response, message, http.StatusInternalServerError)
 	}
 }
 
 func httpInternalErrorMessage(response Response, request *Request, message interface{}) {
-	id := fmt.Sprintf("%x", requestID(request))
-	logMessage := fmt.Sprintf(
-		"%v Internal error handling %v %v: %v",
-		id, request.Method, request.URL, message,
-	)
-	log.Output(2, logMessage)
 	if config.IsProduction {
-		log.Output(2, id+" -> 500 Internal Server Error")
+		logf(request, "Internal error handling %v %v %v %v: %v",
+			request.RemoteAddr, request.Proto, request.Method, request.URL, message,
+		)
+		logf(request, "-> 500 Internal Server Error")
 		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 	} else {
-		log.Output(2, id+" -> 500 "+logMessage)
+		logMessage := fmt.Sprintf("Internal error handling %v %v %v: %v",
+			request.Method, request.URL, message,
+		)
+		logf(request, "-> 500 %v", logMessage)
 		http.Error(response, logMessage, http.StatusInternalServerError)
 	}
 }
 
 func httpInvalidRequest(response Response, request *Request, message string) {
-	id := fmt.Sprintf("%x", requestID(request))
-	logMessage := "Invalid request: " + message
-	log.Output(2, id+" -> 400 "+logMessage)
-	http.Error(response, logMessage, http.StatusBadRequest)
+	logf(request, "-> 400 Bad Request: ", message)
+	http.Error(response, message, http.StatusBadRequest)
 }
 
 func httpSuccess(response Response, request *Request, message ...interface{}) {
-	id := fmt.Sprintf("%x", requestID(request))
 	if len(message) == 0 {
 		message = []interface{}{"OK"}
 	}
-	log.Output(2, id+" -> 200 "+fmt.Sprint(message...))
+	logf(request, "-> 200 %v", fmt.Sprint(message...))
 }
