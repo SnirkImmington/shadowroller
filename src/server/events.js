@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import * as Event from 'event';
 import * as server from '../server';
+import type { SetConnection } from 'connection';
 
 function parseEvent(event: any): ?Event.ServerEvent {
     switch (event.ty) {
@@ -70,9 +71,9 @@ export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
 }
 
 export function useEvents(
-        gameID: ?string,
-        setConnection: server.SetConnection,
-        dispatch: Event.Dispatch
+    gameID: ?string,
+    setConnection: SetConnection,
+    dispatch: Event.Dispatch
 ): ?EventSource {
     const events = React.useRef<?EventSource>();
 
@@ -113,7 +114,7 @@ export function useEvents(
         };
         source.onerror = function(e) {
             console.error("Error reading /event!", e);
-            setConnection("offline");
+            setConnection("errored");
         };
         events.current = source;
         return; // Cleanup handled imperatively through use of ref

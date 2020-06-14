@@ -9,6 +9,7 @@ import * as Records from 'event/record';
 import NumericInput from 'numeric-input';
 
 import * as Event from 'event';
+import { ConnectionCtx } from 'connection';
 import * as server from 'server';
 import * as srutil from 'srutil';
 
@@ -135,10 +136,8 @@ const RollButton = styled.button`
 const RollToLabel = styled.label`
 `;
 
-type Props = {
-    +connection: server.Connection;
-};
-export default function RollDicePrompt({ connection }: Props) {
+export default function RollDicePrompt() {
+    const connection = React.useContext(ConnectionCtx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [rollLoading, setRollLoading] = React.useState(false);
@@ -218,51 +217,6 @@ export default function RollDicePrompt({ connection }: Props) {
                                   onChange={rollTitleChanged}
                                   value={title} />
                     </UI.FlexRow>
-                </UI.ColumnToRow>
-                <UI.ColumnToRow style={{padding: '2em'}} maxWidth>
-                    <span>
-                        <label htmlFor="roll-asdf-reroll">
-                            <input type="radio" style={{display: 'none'}} id="roll-asdf-reroll" />
-                            [ reroll failures ] &nbsp;
-                        </label>
-                        <label htmlFor="roll-asdf-push-limit">
-                            <input type="radio" style={{display: 'none'}} id="roll-asdf-push-limit" />
-                            push the limit &nbsp;
-                        </label>
-                        <label htmlFor="roll-asdf-negate-glitch" disabled>
-                        <input type="radio" style={{display: 'none'}} id="roll-asdf-negate-glitch" disabled />
-                            negate glitch &nbsp;
-                        </label>
-                        <label htmlFor="roll-asdf-remove" disabled>
-                            <input type="radio" style={{display: 'none'}} id="roll-asdf-remove" disabled />
-                            remove
-                        </label>
-                    </span>
-                </UI.ColumnToRow>
-                <UI.ColumnToRow>
-                    <Records.GameRollRecord
-                      style={{ height: '70px' }}
-                     event={{
-                         ty: "gameRoll",
-                         dice: [1,4,5,2,1,6,3,5,3,4,6,3,4,1,3],
-                         id: "adsfasdf",
-                         playerID: "asdf",
-                         playerName: "foo",
-                         title: "summon air spirit F4",
-                         }}
-                    />
-                    &nbsp;
-                    <Records.EditRollRecord
-                      style={{ height: '70px' }}
-                     event={{
-                         ty: "gameRoll",
-                         dice: [1,4,5,2,1,6,3,5,3,4,6,3,4,1,3],
-                         id: "adsfasdf",
-                         playerID: "asdf",
-                         playerName: "foo",
-                         title: "summon air spirit F4",
-                         }}
-                    />
                 </UI.ColumnToRow>
                 <ButtonRow>
                     {connected ?

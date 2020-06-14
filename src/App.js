@@ -8,13 +8,14 @@ import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as server from 'server';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
+import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
 import DebugBar from 'debug-bar';
-
-import * as server from 'server';
 
 const AppLeft: StyledComponent<> = styled.div`
     /* Phones: vertical margin included in cards. */
@@ -42,7 +43,7 @@ const AppRight: StyledComponent<> = styled.div`
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
-    const [connection, setConnection] = React.useState<server.Connection>("offline");
+    const [connection, setConnection] = React.useState<Connection>("offline");
 
     React.useEffect(
         () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
@@ -54,20 +55,15 @@ export default function App(props: {}) {
     let menu: React.Node = '';
     if (menuShown) {
         menu = connection !== "connected" ?
-            <Game.JoinMenu connection={connection}
-                           setConnection={setConnection}
-                           hide={() => setMenuShown(false)}
-                           dispatch={gameDispatch}
-                           eventDispatch={eventDispatch} />
-            : <Game.StatusMenu game={game}
-                               setConnection={setConnection}
-                               dispatch={gameDispatch}
-                               eventDispatch={eventDispatch} />;
+            <Game.JoinMenu hide={() => setMenuShown(false)} />
+            : <Game.StatusMenu />;
     }
 
     // Page should be a flexbox.
     return (
         <ThemeProvider theme={theme}>
+        <ConnectionCtx.Provider value={connection}>
+        <SetConnectionCtx.Provider value={setConnection}>
         <Game.Ctx.Provider value={game}>
         <Event.Ctx.Provider value={eventList}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
@@ -95,6 +91,8 @@ export default function App(props: {}) {
         </Game.DispatchCtx.Provider>
         </Event.Ctx.Provider>
         </Game.Ctx.Provider>
+        </SetConnectionCtx.Provider>
+        </ConnectionCtx.Provider>
         </ThemeProvider>
     );
 }

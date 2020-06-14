@@ -2,6 +2,7 @@
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as connection from 'connection';
 
 import * as events from './events';
 
@@ -9,35 +10,6 @@ export const BACKEND_URL = process.env.NODE_ENV === 'production' ?
     'https://shadowroller.immington.industries/'
     : document.location.toString().replace(':3000', ':3001');
 
-export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
-export type SetConnection = (Connection) => void;
-
-export function connectionFor(response: Response): Connection {
-    if (!response.status) {
-        return "disconnected";
-    }
-    else if (response.ok) {
-        return "connected";
-    }
-    return "errored";
-}
-
-export type ResponseStatus = | "success" | "badRequest" | "serverError" | "noConnection";
-
-export function statusFor(response: Response): ResponseStatus {
-    if (!response.status) {
-        return "noConnection";
-    }
-    else if (response.ok) {
-        return "success";
-    }
-    else if (response.status >= 500) {
-        return "serverError";
-    }
-    else {
-        return "badRequest";
-    }
-}
 
 // I don't wanna export these but this is the easist way to access from submodule
 
@@ -82,7 +54,11 @@ export function backendPost(path: string, body: any, confirm: bool = false): Pro
     });
 }
 
-export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Event.Dispatch, setConnection: SetConnection) {
+export function initialCookieCheck(
+    dispatch: Game.Dispatch,
+    eventsDispatch: Event.Dispatch,
+    setConnection: connection.SetConnection
+) {
     let authMatch, auth;
     try {
         authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
@@ -112,7 +88,7 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Even
             setConnection("connected");
         })
         .catch(response => {
-            setConnection(connectionFor(response));
+            setConnection(connection.connectionFor(response));
         });
     eventsDispatch({ ty: "setHistoryFetch", state: "fetching" });
     events.fetchEvents({})
@@ -123,7 +99,7 @@ export function initialCookieCheck(dispatch: Game.Dispatch, eventsDispatch: Even
             eventsDispatch({ ty: "mergeEvents", events: resp.events });
         })
         .catch(response => {
-            setConnection(connectionFor(response));
+            setConnection(connection.connectionFor(response));
         });
 }
 

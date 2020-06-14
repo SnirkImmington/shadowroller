@@ -8,6 +8,7 @@ import * as UI from 'style';
 import * as server from 'server';
 import * as Game from 'game';
 import * as Event from 'event';
+import { ConnectionCtx } from 'connection';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
     padding: 4px 8px;
@@ -21,6 +22,7 @@ const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
 
 export default function DebugBar() {
     const gameState = React.useContext(Game.Ctx);
+    const connection = React.useContext(ConnectionCtx);
     const game = !gameState ? gameState :
         {...gameState, player: undefined, players: undefined};
     const players = !gameState ? "N/A" : gameState.players.size;
@@ -39,11 +41,15 @@ export default function DebugBar() {
     return (
         <StyledBar>
             <UI.FlexRow wrap>
-                <div>
+                <div style={{flexGrow: '1'}}>
                     <b>
                         Shadowroller {process.env.NODE_ENV}&nbsp;
                     </b>
                     <tt>{server.BACKEND_URL}</tt>&nbsp;
+                </div>
+                <div style={{flexGrow: 1}}>
+                    <b>Connection:&nbsp;</b>
+                    <tt>{connection}</tt>
                 </div>
                 <div style={{marginLeft: 'auto' }}>
                     <b>Game:&nbsp;</b>

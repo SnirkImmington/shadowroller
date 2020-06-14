@@ -12,10 +12,12 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import * as Game from 'game';
 import * as Event from 'event';
 import * as Records from 'event/record';
-import * as Server from 'server';
+import * as server from 'server';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
+import type { Connection } from 'connection';
 
 type RecordProps = { +event: Event.Event, style?: any };
-function EventRecord({ event, style }: RecordProps) {
+const EventRecord = React.memo(({ event, style }: RecordProps) => {
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} style={style} />;
         case "gameRoll": return <Records.EditRollRecord event={event} style={style} />;
@@ -24,16 +26,14 @@ function EventRecord({ event, style }: RecordProps) {
             (event: empty); // eslint-disable-line no-unused-expressions
             return '';
     }
-}
+});
 
 type RowRenderProps = { +style: any, +index: number };
 
-type LoadingListProps = {
-    +connection: Server.Connection,
-};
-export function LoadingResultList({ connection }: LoadingListProps) {
+export function LoadingResultList() {
     const state = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
+    const connection = React.useContext(ConnectionCtx);
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
     const eventsLength = state.events.length;
@@ -92,7 +92,7 @@ export function LoadingResultList({ connection }: LoadingListProps) {
             return;
         }
         const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
-        const eventFetch = Server.fetchEvents({ oldest: oldestID }).then(resp => {
+        const eventFetch = server.fetchEvents({ oldest: oldestID }).then(resp => {
             dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
             dispatch({ ty: "mergeEvents", events: resp.events });
         });
@@ -130,15 +130,13 @@ const TitleBar = styled(UI.FlexRow)`
     justify-content: space-between;
 `;
 
-type Props = {
-    +connection: Server.Connection,
-    +setConnection: Server.SetConnection,
-}
-export default function EventHistory({ connection, setConnection }: Props) {
+export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
+    const connection = React.useContext(ConnectionCtx);
+    const setConnection = React.useContext(SetConnectionCtx);
     const gameID = game?.gameID;
-    Server.useEvents(gameID, setConnection, dispatch);
+    const events = server.useEvents(gameID, setConnection, dispatch);
 
     let title;
     if (game) {
