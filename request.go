@@ -41,11 +41,16 @@ func writeBodyJSON(response Response, value interface{}) error {
 }
 
 func logRequest(request *Request, values ...string) {
+	var message string
 	if config.IsProduction {
-		log.Output(2, fmt.Sprintf("%v %v %v", request.Proto, request.Method, request.RequestURI))
+		message = fmt.Sprintf(
+			"<- %v %v %v %v",
+			request.RemoteAddr, request.Proto, request.Method, request.RequestURI,
+		)
 	} else {
-		log.Output(2, fmt.Sprintf("%v %v", request.Method, request.URL))
+		message = fmt.Sprintf("<- %v %v", request.Method, request.RequestURI)
 	}
+	log.Output(2, message)
 }
 
 func httpNotFound(response Response) {
