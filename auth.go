@@ -5,6 +5,7 @@ package srserver
 import (
 	cryptoRand "crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	jwtRequest "github.com/dgrijalva/jwt-go/request"
 	"math/rand"
@@ -17,6 +18,12 @@ type AuthClaims struct {
 	PlayerID   string `json:"pid"`
 	PlayerName string `json:"pname"`
 	jwt.StandardClaims
+}
+
+func (auth *AuthClaims) String() string {
+	return fmt.Sprintf("%v (%v) in %v",
+		auth.PlayerID, auth.PlayerName, auth.GameID,
+	)
 }
 
 func GenUID() string {

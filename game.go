@@ -166,37 +166,45 @@ func handleRoll(response Response, request *Request) {
 		return
 	}
 
-	// Note that roll generation is possibly blocking
-	if roll.Edge {
-		rolls := explodingSixes(roll.Count)
-		logf(request, "%v (%v) pushed the limit: %v in %v",
-			auth.PlayerID, auth.PlayerName, rolls, auth.GameID,
-		)
-	} else {
-		rolls := make([]int, roll.Count)
-		fillRolls(rolls)
-	}
-
-	logf(request, "%v (%v) rolled %v in %v",
-		auth.PlayerID, auth.PlayerName, rolls, auth.GameID,
-	)
-
 	conn := redisPool.Get()
 	defer closeRedis(conn)
 
-	event := RollEvent{
-		EventCore:  EventCore{Type: "roll"},
-		PlayerID:   auth.PlayerID,
-		PlayerName: auth.PlayerName,
-		Roll:       rolls,
-		Title:      roll.Title,
+	var event Event
+	// Note that roll generation is possibly blocking
+	if roll.Edge {
+		rolls := explodingSixes(roll.Count)
+		logf(request, "%v: edge roll: %v",
+			auth, rolls,
+		)
+		event = EdgeRollEvent{
+			EventCore:  EventCore{Type: "edgeRoll"},
+			PlayerID:   auth.PlayerID,
+			PlayerName: auth.PlayerName,
+			Title:      roll.Title,
+			Rolls:      rolls,
+		}
+
+	} else {
+		rolls := make([]int, roll.Count)
+		fillRolls(rolls)
+		logf(request, "%v: roll: %v",
+			auth, rolls,
+		)
+		event = RollEvent{
+			EventCore:  EventCore{Type: "roll"},
+			PlayerID:   auth.PlayerID,
+			PlayerName: auth.PlayerName,
+			Roll:       rolls,
+			Title:      roll.Title,
+		}
 	}
-	_, err = postEvent(auth.GameID, event, conn)
+
+	id, err := postEvent(auth.GameID, event, conn)
 	if err != nil {
 		httpInternalError(response, request, err)
 		return
 	}
-	httpSuccess(response, request, "rolled ", len(rolls), " dice")
+	httpSuccess(response, request, "roll ", id, " posted")
 }
 
 // Hacky workaround for logs to show event type.
@@ -250,8 +258,8 @@ func handleEvents(response Response, request *Request) {
 		case event, open := <-events:
 			if open {
 				eventTy := eventParseRegex.FindString(event)
-				logf(request, "%v: Sending %v to %v (%v) in %v",
-					eventTy[5:], auth.PlayerID, auth.PlayerName, auth.GameID,
+				logf(request, "Sending %v to %v",
+					eventTy[5:], auth,
 				)
 				err := stream.WriteString(event)
 				if err != nil {
