@@ -9,8 +9,7 @@ import * as Game from 'game';
 import * as Event from 'event';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexRow)`
-    height: 2.5em;
-    padding: 0 8px;
+    padding: 4px 8px;
     color: white;
     background-color: ${({theme}) => theme.colors.primary}b0;
     font-size: 14px;
@@ -19,23 +18,26 @@ const StyledBar: StyledComponent<> = styled(UI.FlexRow)`
 
 export default function DebugBar() {
     const gameState = React.useContext(Game.Ctx);
+    const game = !gameState ? gameState :
+        {...gameState, players: undefined};
+    const players = !gameState ? [] : Object.fromEntries(gameState.players.entries());
     return (
         <StyledBar>
-            <b>Shadowroller development</b>
-            &nbsp;
-            <UI.Button>button</UI.Button>
-            &nbsp;
-            <UI.LinkButton>button</UI.LinkButton>
-            &nbsp;
-            <UI.LinkButton disabled>button</UI.LinkButton>
-            &nbsp;
-            <UI.LinkButton light>button</UI.LinkButton>
-            &nbsp;
-            <UI.LinkButton light disabled>button</UI.LinkButton>
+            <div>
+                <b>Shadowroller development</b>
+                &nbsp;
+                <UI.LinkButton light>button</UI.LinkButton>
+                &nbsp;
+                <UI.LinkButton light disabled>button</UI.LinkButton>
+            </div>
 
             <div style={{marginLeft: 'auto'}}>
                 <b>Game state:&nbsp;</b>
-                <tt>{JSON.stringify(gameState) ?? 'undefined'}</tt>
+                <tt>{JSON.stringify(game) ?? 'undefined'}</tt>
+            </div>
+            <div style={{marginLeft: 'auto'}}>
+                <b>Players:&nbsp;</b>
+                <tt>{JSON.stringify(players)}</tt>
             </div>
         </StyledBar>
     );
