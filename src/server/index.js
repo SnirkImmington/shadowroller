@@ -6,7 +6,8 @@ import * as Event from 'event';
 import * as events from './events';
 
 export const BACKEND_URL = process.env.NODE_ENV === 'production' ?
-    'https://shadowroller.immington.industries/' : 'http://localhost:3001/';
+    'https://shadowroller.immington.industries/'
+    : document.location.toString().replace(':3000', ':3001');
 
 export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
 export type SetConnection = (Connection) => void;
