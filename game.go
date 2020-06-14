@@ -4,8 +4,6 @@ import (
 	//"encoding/json"
 	"errors"
 	"github.com/gomodule/redigo/redis"
-	"log"
-	"math/rand"
 	"net/http"
 	"regexp"
 	"srserver/config"
@@ -31,7 +29,7 @@ func handleJoinGame(response Response, request *Request) {
 	var join gameJoinRequest
 	err := readBodyJSON(request, &join)
 	if err != nil {
-		httpInvalidRequest(response, "Invalid request")
+		httpInvalidRequest(response, request, "Invalid request")
 		return
 	}
 
@@ -45,7 +43,7 @@ func handleJoinGame(response Response, request *Request) {
 		return
 	}
 	if !gameExists {
-		httpUnauthorized(response, errGameNotFound)
+		httpUnauthorized(response, request, errGameNotFound)
 		return
 	}
 
@@ -90,7 +88,7 @@ func handleJoinGame(response Response, request *Request) {
 		return
 	}
 
-	log.Printf("%v (%v) has joined %v",
+	logf(request, "%v (%v) has joined %v",
 		playerID, join.PlayerName, join.GameID,
 	)
 
@@ -112,7 +110,7 @@ func handleJoinGame(response Response, request *Request) {
 		httpInternalError(response, request, err)
 		return
 	}
-	httpSuccess(response, "join ", join.GameID)
+	httpSuccess(response, request, "join ", join.GameID)
 }
 
 // $ GET /players => { <id>: <name> }
@@ -120,7 +118,7 @@ func handleGetPlayers(response Response, request *Request) {
 	logRequest(request)
 	auth, err := authForRequest(request)
 	if err != nil {
-		httpUnauthorized(response, err)
+		httpUnauthorized(response, request, err)
 		return
 	}
 
@@ -138,12 +136,13 @@ func handleGetPlayers(response Response, request *Request) {
 		httpInternalError(response, request, err)
 		return
 	}
-	httpSuccess(response, len(players), " players")
+	httpSuccess(response, request, len(players), " players")
 }
 
 type rollRequest struct {
 	Count int    `json:"count"`
 	Title string `json:"title"`
+	Edge  bool   `json:"edge"`
 }
 
 // $ POST /roll count
@@ -151,32 +150,39 @@ func handleRoll(response Response, request *Request) {
 	logRequest(request)
 	auth, err := authForRequest(request)
 	if err != nil {
-		httpUnauthorized(response, err)
+		httpUnauthorized(response, request, err)
 		return
 	}
 
 	var roll rollRequest
 	err = readBodyJSON(request, &roll)
 	if err != nil {
-		httpInvalidRequest(response, "Invalid request")
+		httpInvalidRequest(response, request, "Invalid request")
 		return
 	}
 
 	if roll.Count > config.MaxSingleRoll {
-		httpInvalidRequest(response, "Invalid Roll count")
+		httpInvalidRequest(response, request, "Invalid Roll count")
 		return
 	}
 
-	conn := redisPool.Get()
-	defer closeRedis(conn)
+	// Note that roll generation is possibly blocking
+	if roll.Edge {
+		rolls := explodingSixes(roll.Count)
+		logf(request, "%v (%v) pushed the limit: %v in %v",
+			auth.PlayerID, auth.PlayerName, rolls, auth.GameID,
+		)
+	} else {
+		rolls := make([]int, roll.Count)
+		fillRolls(rolls)
+	}
 
-	// Block here for the roll.
-	rolls := make([]int, roll.Count)
-	fillRolls(rolls)
-
-	log.Printf("%v (%v) rolled %v in %v",
+	logf(request, "%v (%v) rolled %v in %v",
 		auth.PlayerID, auth.PlayerName, rolls, auth.GameID,
 	)
+
+	conn := redisPool.Get()
+	defer closeRedis(conn)
 
 	event := RollEvent{
 		EventCore:  EventCore{Type: "roll"},
@@ -190,7 +196,7 @@ func handleRoll(response Response, request *Request) {
 		httpInternalError(response, request, err)
 		return
 	}
-	httpSuccess(response, "rolled ", len(rolls), " dice")
+	httpSuccess(response, request, "rolled ", len(rolls), " dice")
 }
 
 // Hacky workaround for logs to show event type.
@@ -203,10 +209,9 @@ func handleEvents(response Response, request *Request) {
 	logRequest(request)
 	auth, err := authForRequest(request)
 	if err != nil {
-		httpUnauthorized(response, err)
+		httpUnauthorized(response, request, err)
 		return
 	}
-	goID := rand.Intn(100)
 
 	// Upgrade to SSE stream
 	stream, err := sseUpgrader.Upgrade(response, request)
@@ -217,7 +222,7 @@ func handleEvents(response Response, request *Request) {
 
 	err = stream.WriteEvent("ping", []byte("hi"))
 	if err != nil {
-		log.Print(goID, " Could not say hello: ", err)
+		logf(request, " Could not say hello: %v", err)
 		return
 	}
 
@@ -225,7 +230,9 @@ func handleEvents(response Response, request *Request) {
 	conn := redisPool.Get()
 	defer closeRedis(conn)
 
-	log.Printf("%v: Retrieving events in %s for %s...", goID, auth.GameID, auth.PlayerID)
+	logf(request, "Retrieving events in %v for %v...",
+		auth.GameID, auth.PlayerID,
+	)
 
 	events, cancelled := receiveEvents(auth.GameID)
 	defer func() { cancelled <- true }()
@@ -233,7 +240,9 @@ func handleEvents(response Response, request *Request) {
 	selectInterval := time.Duration(config.SSEPingSecs) * time.Second
 	for {
 		if !stream.IsOpen() {
-			log.Print(goID, " ", auth.PlayerID, " disconnected.")
+			logf(request, "%v (%v) disconnected from %v",
+				auth.PlayerID, auth.PlayerName, auth.GameID,
+			)
 			return
 		}
 
@@ -241,12 +250,12 @@ func handleEvents(response Response, request *Request) {
 		case event, open := <-events:
 			if open {
 				eventTy := eventParseRegex.FindString(event)
-				log.Printf("%v: Sending %v to %v (%v) in %v",
-					goID, eventTy[5:], auth.PlayerID, auth.PlayerName, auth.GameID,
+				logf(request, "%v: Sending %v to %v (%v) in %v",
+					eventTy[5:], auth.PlayerID, auth.PlayerName, auth.GameID,
 				)
 				err := stream.WriteString(event)
 				if err != nil {
-					log.Print(goID, " Unable to write to stream: ", err)
+					logf(request, "Unable to write to stream: %v", err)
 					stream.Close()
 					return
 				}
@@ -257,7 +266,7 @@ func handleEvents(response Response, request *Request) {
 		case <-time.After(selectInterval):
 			err := stream.WriteEvent("ping", []byte("hi"))
 			if err != nil {
-				log.Print(goID, " Unable to ping stream: ", err)
+				logf(request, "Unable to ping stream: %v", err)
 				stream.Close()
 				return
 			}
@@ -286,7 +295,7 @@ func handleEventRange(response Response, request *Request) {
 	logRequest(request)
 	auth, err := authForRequest(request)
 	if err != nil {
-		httpUnauthorized(response, err)
+		httpUnauthorized(response, request, err)
 		return
 	}
 
@@ -296,11 +305,9 @@ func handleEventRange(response Response, request *Request) {
 	var eventsRange eventRangeRequest
 	err = readBodyJSON(request, &eventsRange)
 	if err != nil {
-		httpInvalidRequest(response, "Invalid request")
+		httpInvalidRequest(response, request, "Invalid request")
 		return
 	}
-
-	log.Printf("Retrieve events %v for %v (%v)", eventsRange, auth.PlayerID, auth.PlayerName)
 
 	// We want to be careful here because these IDs are user input!
 	//
@@ -308,18 +315,20 @@ func handleEventRange(response Response, request *Request) {
 	if eventsRange.Newest == "" {
 		eventsRange.Newest = "-"
 	} else if !validEventID(eventsRange.Newest) {
-		httpInvalidRequest(response, "Invalid newest ID")
+		httpInvalidRequest(response, request, "Invalid newest ID")
 		return
 	}
 
 	if eventsRange.Oldest == "" {
 		eventsRange.Oldest = "+"
 	} else if !validEventID(eventsRange.Oldest) {
-		httpInvalidRequest(response, "Invalid oldest ID")
+		httpInvalidRequest(response, request, "Invalid oldest ID")
 		return
 	}
 
-	log.Println("Parsed event range", eventsRange)
+	logf(request, "Retrieve events %v for %v (%v) in %v",
+		eventsRange, auth.PlayerID, auth.PlayerName, auth.GameID,
+	)
 
 	eventsData, err := redis.Values(conn.Do(
 		"XREVRANGE", "event:"+auth.GameID,
@@ -327,7 +336,7 @@ func handleEventRange(response Response, request *Request) {
 		"COUNT", config.MaxEventRange,
 	))
 	if err != nil {
-		log.Print("Unable to list events from redis")
+		logf(request, "Unable to list events from redis")
 		httpInternalError(response, request, err)
 		return
 	}
@@ -343,13 +352,13 @@ func handleEventRange(response Response, request *Request) {
 			httpInternalError(response, request, err)
 			return
 		}
-		httpSuccess(response, "0 events")
+		httpSuccess(response, request, "0 events")
 		return
 	}
 
 	events, err := scanEvents(eventsData)
 	if err != nil {
-		log.Print("Unable to parse events:", err)
+		logf(request, "Unable to parse events: %v", err)
 		httpInternalError(response, request, err)
 		return
 	}
@@ -366,5 +375,5 @@ func handleEventRange(response Response, request *Request) {
 		httpInternalError(response, request, err)
 		return
 	}
-	httpSuccess(response, firstID, " ... ", lastID, "; ", len(events), " events")
+	httpSuccess(response, request, firstID, " ... ", lastID, "; ", len(events), " events")
 }

@@ -1,9 +1,11 @@
 package srserver
 
 import (
+	"context"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"log"
+	"math/rand"
 	"net/http"
 	"runtime/debug"
 	"srserver/config"
@@ -18,6 +20,29 @@ func headersMiddleware(wrapped http.Handler) http.Handler {
 		response.Header().Set("Cache-Control", "no-cache")
 		response.Header().Set("X-Content-Type-Options", "nosniff")
 		wrapped.ServeHTTP(response, request)
+	})
+}
+
+type requestIDKeyType int
+
+var requestIDKey requestIDKeyType
+
+func withRequestID(ctx context.Context) context.Context {
+	id := rand.Intn(257)
+	return context.WithValue(ctx, requestIDKey, id)
+}
+
+func requestID(request *Request) int {
+	return request.Context().Value(requestIDKey).(int)
+}
+
+func requestIDMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
+		requestCtx := request.Context()
+		requestCtx = withRequestID(requestCtx)
+		requestWithID := request.WithContext(requestCtx)
+
+		wrapped.ServeHTTP(response, requestWithID)
 	})
 }
 
