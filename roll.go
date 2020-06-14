@@ -22,10 +22,32 @@ import (
 
 var rollsChan = make(chan int, config.RollBufferSize)
 
-func fillRolls(rolls []int) {
+func fillRolls(rolls []int) (hits int) {
 	for i := 0; i < len(rolls); i++ {
-		rolls[i] = <-rollsChan
+		roll := <-rollsChan
+		rolls[i] = roll
+		if roll == 5 || roll == 6 {
+			hits++
+		}
 	}
+	return
+}
+
+func explodingSixes(pool int) (results [][]int) {
+	for { // rounds
+		sixes := 0
+		rollRound := make([]int, pool)
+		for i := 0; i < pool; i++ {
+			roll := <-rollsChan
+			rollRound[i] = roll
+			if roll == 6 {
+				sixes++
+			}
+		}
+		pool = sixes
+		results = append(results, rollRound)
+	}
+	return
 }
 
 func BeginGeneratingRolls() {
