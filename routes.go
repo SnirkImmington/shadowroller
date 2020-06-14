@@ -31,6 +31,7 @@ func RegisterDefaultGames() {
 func MakeServerMux() *gorillaMux.Router {
 	mux := gorillaMux.NewRouter()
 	mux.Use(recoveryMiddleware)
+	mux.Use(requestIDMiddleware)
 	mux.Use(headersMiddleware)
 	mux.Use(rateLimitedMiddleware)
 
@@ -59,13 +60,13 @@ func MakeServerMux() *gorillaMux.Router {
 				httpInternalError(response, request, err)
 				return
 			}
-			httpSuccess(response, "page with link to frontend")
+			httpSuccess(response, request, "page with link to frontend")
 		}
 	}).Methods("GET")
 
 	mux.HandleFunc("/health-check", func(response Response, request *Request) {
 		logRequest(request)
-		httpSuccess(response)
+		httpSuccess(response, request)
 	}).Methods("GET")
 
 	return mux
