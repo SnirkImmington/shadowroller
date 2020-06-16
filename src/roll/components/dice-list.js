@@ -133,6 +133,11 @@ const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     overflow-x: auto; /* left-right overflow */
     overflow-y: hidden; /* up-down overflow */
 
+    &:nth-child(3n)::after {
+        margin-right: 4px;
+        content: 'f';
+    }
+
     /* Scrollbars!
     scrollbar-width: thin;
     scrollbar-color: #81132add transparent;
