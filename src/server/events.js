@@ -88,6 +88,12 @@ export function useEvents(
         }
 
         if (!gameID) {
+            if (process.env.NODE_ENV !== "production") {
+                document.title = `Shadowroller (${process.env.NODE_ENV})`;
+            }
+            else {
+                document.title = "Shadowroller";
+            }
             events.current = null;
             return;
         }
@@ -104,6 +110,12 @@ export function useEvents(
         source.onopen = function() {
             if (source.readyState === 1) {
                 setConnection("connected");
+                if (process.env.NODE_ENV !== "production") {
+                    document.title = `${gameID} - Shadowroller (${process.env.NODE_ENV})`;
+                }
+                else {
+                    document.title = gameID + " - Shadowroller";
+                }
             }
             else {
                 setConnection("connecting");
