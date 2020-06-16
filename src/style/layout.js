@@ -9,12 +9,14 @@ export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
     align-items: center;
     ${props => props.maxWidth ? 'width: 100%;' : ''}
-    ${props => props.wrap ? 'flex-wrap: wrap;' : ''}
+    ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
 `;
 
 export const FlexColumn: StyledComponent<> = styled.div`
     display: flex;
     flex-direction: column;
+    ${props => props.maxWidth ? 'width: 100%;' : ''}
+    ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
 `;
 
 export const Flex: StyledComponent<> = styled.div(
