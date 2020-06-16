@@ -32,34 +32,40 @@ type ValueState =
 const StyledInput = styled(UI.Input)`
     margin-left: 0;
     margin-right: 0;
-    border-left: none;
+
+    border: 0;
+    outline: 0;
 
     &:focus {
-        border-left: none;
+        border: 0;
+        outline: 0;
     }
 `;
 
 // Component covers making sure each part matches the height and border style.
 const Component = styled.div`
     padding: 5px;
-    border: 1px solid lightslategray;
     background: #eee;
     margin: 0;
 
-    /* There's no "previous sibling" selector, so it's all following. */
-    ${StyledInput}:focus ~ & {
-        border: 1px solid ${props => props.theme.colors.secondary};
-        outline: 1px solid ${props => props.theme.colors.secondary};
-    }
+    border: 0;
+    outline: 0;
 `;
 
 const Parent: StyledComponent<> = styled(UI.FlexRow)`
     font-family: "source-code-pro", monospace;
     margin-right: 0.5em;
+    margin-left: 0.5em;
     height: calc(1rem + 10px);
+
+    outline: 1px solid slategray;
 
     & > * {
         height: calc(1rem + 10px);
+    }
+
+    &:focus-within {
+        outline: 2px solid ${props => props.theme.colors.secondary};
     }
 `;
 
@@ -67,14 +73,8 @@ const CalcBox = styled(Component)`
     background: ${props => props.color ?? props.theme.colors.primary};
     color: white;
     width: calc(1.8em);
-    margin-left: 0.5em;
     padding: 0px;
     order: -1;
-
-    &:focus {
-        border-right: none;
-        outline-right: none;
-    }
 `;
 const ErrorBox = styled(Component)`
     background: ${props => props.theme.colors.warning};
