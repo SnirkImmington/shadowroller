@@ -122,7 +122,6 @@ export function useEvents(
             }
         };
         source.onerror = function(e) {
-            console.error("Error reading /event!", e);
             setConnection("errored");
         };
         events.current = source;
