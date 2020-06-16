@@ -47,9 +47,23 @@ func explodingSixes(pool int) (results [][]int) {
 		pool = sixes
 		results = append(results, rollRound)
 	}
-	return
+	return results
 }
 
+func reroll(original []int) []int {
+	pool := 0
+	for _, die := range original {
+		if die >= 5 {
+			pool++
+		}
+	}
+	result := make([]int, pool)
+	fillRolls(result)
+	return result
+
+}
+
+// BeginGeneratingRolls starts the roll server and channel
 func BeginGeneratingRolls() {
 	go func() {
 		log.Printf("Using PRNG roll seed source: %v", crypto.Reader)
