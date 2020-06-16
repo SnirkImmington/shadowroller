@@ -73,17 +73,15 @@ export default function App(props: {}) {
                 <DebugBar />
             }
 
-            <SRHeader connection={connection}
-                      menuShown={menuShown}
+            <SRHeader menuShown={menuShown}
                       onClick={onGameButtonClick} />
             { menu }
             <UI.ColumnToRow grow>
                 <AppLeft>
-                    <RollDicePrompt connection={connection} />
+                    <RollDicePrompt />
                 </AppLeft>
                 <AppRight>
-                    <EventHistory connection={connection}
-                                  setConnection={setConnection} />
+                    <EventHistory />
                 </AppRight>
             </UI.ColumnToRow>
 
