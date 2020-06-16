@@ -137,9 +137,6 @@ export function JoinMenu({ hide }: Props) {
         newConnecting();
         server.requestJoin(gameID, playerName)
             .then(resp => {
-                if (process.env.NODE_ENV !== "production") {
-                    console.log("Join success", resp);
-                }
                 dispatch({
                     ty: "join",
                     gameID: gameID,

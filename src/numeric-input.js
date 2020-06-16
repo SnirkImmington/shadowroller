@@ -99,7 +99,9 @@ export default function NumericInput(props: Props) {
         computed = state[1];
     }
 
-    console.log("NunericInput:", { text, state, round, computed });
+    if (process.env.NODE_ENV !== "production") {
+        console.log("NunericInput:", { text, state, round, computed });
+    }
 
     function onTextInput(event: SyntheticInputEvent<HTMLInputElement>) {
         setText(event.target.value);
@@ -113,7 +115,9 @@ export default function NumericInput(props: Props) {
         const parser = new Parser(event.target.value);
         const expr = parser.expression();
         const pos = parser.position();
-        console.log("Parsed:", parser.position(), parser, expr);
+        if (process.env.NODE_ENV !== "production") {
+            console.log("Parsed:", parser.position(), parser, expr);
+        }
         // On parsing failure, set error
         if (!expr) {
             setState(["error", pos]);

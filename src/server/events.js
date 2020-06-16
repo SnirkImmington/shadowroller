@@ -100,9 +100,6 @@ export function useEvents(
             onMessage(e, dispatch);
         };
         source.addEventListener("ping", function(event: mixed) {
-            if (process.env.NODE_ENV !== "production") {
-                console.log("Ping /events");
-            }
         });
         source.onopen = function() {
             if (source.readyState === 1) {

@@ -174,7 +174,9 @@ export default function RollDicePrompt() {
                     setRollLoading(false);
                 })
                 .catch((err: mixed) => {
-                    console.log("Error rolling:", err);
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log("Error rolling:", err);
+                    }
                     setRollLoading(false);
                 });
         }
