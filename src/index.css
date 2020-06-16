@@ -50,3 +50,16 @@ p {
 .input-group {
     width: auto !important;
 }
+
+.sr-die {
+    margin: 2px;
+    flex-shrink: 0;
+    width: 8vw;
+    height: 8vw;
+}
+@media all and (min-width: 768px) {
+    .sr-die {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+}

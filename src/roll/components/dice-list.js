@@ -62,16 +62,22 @@ const colorForRoll = (roll) =>
             roll === 5 || roll === 6 ? theme.colors.dieHit :
             theme.colors.dieNone;
 
-export function SRDie({roll, style}: {roll:number, style: any}) {
+export function SRDie({roll}: {roll:number}) {
+    let Die = DieOne;
+    let color = theme.colors.dieNone;
+
     switch (roll) {
-        case 1: return <DieOne style={style} />;
-        case 2: return <DieTwo style={style}/>;
-        case 3: return <DieThree style={style}/>;
-        case 4: return <DieFour style={style}/>;
-        case 5: return <DieFive style={style}/>;
-        case 6: return <DieSix style={style}/>;
-        default: return <DieOne style={style}/>;
+        case 1: color = theme.colors.dieOne; break;
+        case 2: Die = DieTwo; break;
+        case 3: Die = DieThree; break;
+        case 4: Die = DieFour; break;
+        case 5: Die =DieFive; color = theme.colors.dieHit; break;
+        case 6: Die = DieSix; color = theme.colors.dieHit; break;
+        default:
+            break;
     }
+
+    return <Die className="sr-die" width="32px" height="32px" color={color} />;
 }
 
 export function SRDice(props: Props) {
