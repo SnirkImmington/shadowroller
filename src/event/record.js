@@ -4,10 +4,10 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
+import * as dice from 'dice';
 
 import * as Event from 'event';
 
-import DiceList, { FADice, SRDice } from 'roll/components/dice-list';
 import RollResult from 'roll/result';
 import * as srutil from 'srutil';
 
@@ -60,7 +60,7 @@ export function LocalRollRecord({ event, style }: LocalRollProps) {
         <>&nbsp;to <b>{event.title}</b></> : '';
     const rollResult = new RollResult(event.dice);
     const diceList = React.useMemo(() => (
-        <SRDice dice={event.dice} showNumbers={false} />
+        <dice.List rolls={event.dice} />
     ), [event.dice]);
     return (
         <DoubleRecord color="slateGray" style={style}>
@@ -96,7 +96,7 @@ export function GameRollRecord({ event, style }: GameRollProps) {
                 </UI.HashColored>
                 : ''}
             </RollTitleRow>
-            <SRDice dice={event.dice} />
+            <dice.List rolls={event.dice} />
         </DoubleRecord>
     );
 }
@@ -123,7 +123,7 @@ export function EditRollRecord({ event, style }: GameRollProps) {
                 </UI.HashColored>
                 : ''}
             </RollTitleRow>
-            <SRDice dice={event.dice} />
+            <dice.List rolls={event.dice} />
             </div>
             <UI.FlexRow maxWidth>
                 <UI.LinkButton light>push the limit</UI.LinkButton>
