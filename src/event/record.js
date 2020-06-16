@@ -59,6 +59,9 @@ export function LocalRollRecord({ event, style }: LocalRollProps) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
     const rollResult = new RollResult(event.dice);
+    const diceList = React.useMemo(() => (
+        <SRDice dice={event.dice} showNumbers={false} />
+    ), [event.dice]);
     return (
         <DoubleRecord color="slateGray" style={style}>
             <RollTitleRow>
@@ -70,7 +73,7 @@ export function LocalRollRecord({ event, style }: LocalRollProps) {
                     {rollResult.toString()}
                 </b> : ''}
             </RollTitleRow>
-            <SRDice dice={event.dice} showNumbers={false} />
+            {diceList}
         </DoubleRecord>
     );
 }
