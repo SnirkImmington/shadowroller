@@ -121,10 +121,6 @@ const RollButton = styled.button`
         background-image: linear-gradient(180deg, #263427 0, #192423);
     }
 
-    &:focus {
-        outline: 1px solid ${props => props.theme.colors.secondary}dd;
-    }
-
     &[disabled] {
         pointer-events: none;
         cursor: not-allowed;
