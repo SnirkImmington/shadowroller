@@ -105,7 +105,7 @@ const FormLabel = styled.label`
 const RollButton = styled.button`
     font-size: 1.07em;
     font-weight: 600;
-    align-text: center;
+    text-align: center;
     cursor: pointer;
     padding: .3rem .7rem;
     border: 0;

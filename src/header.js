@@ -38,7 +38,7 @@ const JoinButtonUI = styled.button`
     font-size: 1rem;
     font-weight: 500;
     padding: 0.2em 0.75em;
-    align-text: center;
+    text-align: center;
     cursor: pointer;
 
     margin-left: auto;

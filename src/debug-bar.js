@@ -16,7 +16,6 @@ const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
     background-color: ${({theme}) => theme.colors.primary}b0;
     font-size: 14px;
     flex-wrap: wrap;
-    text-wrap: wrap;
     line-height: 1.25em;
 `;
 

@@ -133,10 +133,10 @@ const TitleBar = styled(UI.FlexRow)`
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
-    const connection = React.useContext(ConnectionCtx);
+    // Using connection is what lets us rerender when events DC
     const setConnection = React.useContext(SetConnectionCtx);
     const gameID = game?.gameID;
-    const events = server.useEvents(gameID, setConnection, dispatch);
+    server.useEvents(gameID, setConnection, dispatch);
 
     let title;
     if (game) {
@@ -151,7 +151,7 @@ export default function EventHistory() {
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
             </TitleBar>
-            <LoadingResultList connection={connection} />
+            <LoadingResultList />
         </UI.Card>
     );
 }
