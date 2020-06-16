@@ -34,7 +34,7 @@ export const NewButton: StyledComponent<{}, Theme> = styled.button`
     line-height: 1;
     font-weight: bold;
     padding: 0.2em;
-    align-text: center;
+    tex-align: enter;
     margin: 4px;
     cursor: pointer;
 
@@ -83,7 +83,7 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
     line-height: 1;
     font-weight: bold;
     padding: 0.1em 0;
-    align-text: center;
+    text-align: center;
     border: 0px;
     margin: 0;
     cursor: pointer;
