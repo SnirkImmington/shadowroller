@@ -13,6 +13,7 @@ export type LocalRoll = {|
 export type GameRoll = {|
     +ty: "gameRoll",
     +id: string,
+    +editable: bool,
     +playerID: string,
     +playerName: string,
     +title: string,
@@ -35,6 +36,8 @@ export type Event =
 | GameRoll
 | PlayerJoin
 ;
+
+export type EventRoll = LocalRoll | GameRoll ;
 
 export type HistoryFetchState = "ready" | "fetching" | "finished";
 

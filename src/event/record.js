@@ -125,13 +125,11 @@ export function EditRollRecord({ event, style }: GameRollProps) {
             </RollTitleRow>
             <dice.List rolls={event.dice} />
             </div>
-            <UI.FlexRow maxWidth>
+            <UI.LinkList>
                 <UI.LinkButton light>push the limit</UI.LinkButton>
-                &nbsp;|&nbsp;
                 <UI.LinkButton light>second chance</UI.LinkButton>
-                &nbsp;|&nbsp;
                 <UI.LinkButton light disabled>remove</UI.LinkButton>
-            </UI.FlexRow>
+            </UI.LinkList>
         </DoubleRecord>
     );
 }
