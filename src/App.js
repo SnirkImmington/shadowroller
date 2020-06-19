@@ -48,6 +48,29 @@ export default function App(props: {}) {
     React.useEffect(
         () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
 
+
+    // Page should be a flexbox.
+    return (
+        <ConnectionCtx.Provider value={connection}>
+        <SetConnectionCtx.Provider value={setConnection}>
+        <Game.Ctx.Provider value={game}>
+        <Event.Ctx.Provider value={eventList}>
+        <Game.DispatchCtx.Provider value={gameDispatch}>
+        <Event.DispatchCtx.Provider value={eventDispatch}>
+
+            <Shadowroller />
+
+        </Event.DispatchCtx.Provider>
+        </Game.DispatchCtx.Provider>
+        </Event.Ctx.Provider>
+        </Game.Ctx.Provider>
+        </SetConnectionCtx.Provider>
+        </ConnectionCtx.Provider>
+    );
+}
+
+function Shadowroller() {
+    const connection = React.useContext(ConnectionCtx);
     const [menuShown, setMenuShown] = React.useState<bool>(false);
 
     function onGameButtonClick() { setMenuShown((prev) => !prev); }
@@ -59,16 +82,8 @@ export default function App(props: {}) {
             : <Game.StatusMenu />;
     }
 
-    // Page should be a flexbox.
     return (
         <ThemeProvider theme={theme}>
-        <ConnectionCtx.Provider value={connection}>
-        <SetConnectionCtx.Provider value={setConnection}>
-        <Game.Ctx.Provider value={game}>
-        <Event.Ctx.Provider value={eventList}>
-        <Game.DispatchCtx.Provider value={gameDispatch}>
-        <Event.DispatchCtx.Provider value={eventDispatch}>
-
             {process.env.NODE_ENV !== "production" &&
                 <DebugBar />
             }
@@ -84,13 +99,6 @@ export default function App(props: {}) {
                     <EventHistory />
                 </AppRight>
             </UI.ColumnToRow>
-
-        </Event.DispatchCtx.Provider>
-        </Game.DispatchCtx.Provider>
-        </Event.Ctx.Provider>
-        </Game.Ctx.Provider>
-        </SetConnectionCtx.Provider>
-        </ConnectionCtx.Provider>
         </ThemeProvider>
     );
 }
