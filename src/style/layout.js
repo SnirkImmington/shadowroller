@@ -39,6 +39,16 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
     }
 `;
 
+export const LinkList: StyledComponent<> = styled(FlexRow)`
+    width: 100%;
+    & > * {
+        margin-right: 10px;
+    }
+    & :last-child {
+        margin-right: 0em;
+    }
+`;
+
 export const CardWrapper: StyledComponent<{ grow?: bool, pad?: bool }> = styled(FlexColumn)`
     ${props => props?.pad ? 'padding-bottom: 10px;' : ''}
     ${props => props?.grow ? 'height: 100%;' : ''}

@@ -60,7 +60,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
 
     &[disabled] {
         pointer-events: none;
-        cursor: not-allowed;
+        cursor: not-allowed !important;
         text-decoration: none;
         filter: grayscale(80%);
     }
@@ -70,11 +70,11 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     }
 
     &:active {
-        filter: brightness(70%);
+        filter: brightness(85%);
     }
 
     &:focus {
-        filter: brightness(75%);
+        filter: brightness(85%);
     }
 `;
 
