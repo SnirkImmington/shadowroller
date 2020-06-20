@@ -1,5 +1,5 @@
 // @flow
-import * as React from 'react';
+
 import * as Event from 'event';
 
 export type HitsResults = {

@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-//import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import { VariableSizeList as List } from 'react-window';
@@ -14,7 +13,6 @@ import * as Event from 'event';
 import * as Records from 'event/record';
 import * as server from 'server';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
-import type { Connection } from 'connection';
 
 type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {

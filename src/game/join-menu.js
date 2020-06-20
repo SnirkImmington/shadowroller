@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-// import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
 import * as icons from 'style/icon';

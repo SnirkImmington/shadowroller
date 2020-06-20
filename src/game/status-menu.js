@@ -2,12 +2,10 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-//import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import * as server from 'server';
 import { SetConnectionCtx } from 'connection';
 
 const Message = styled.p`

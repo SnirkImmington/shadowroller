@@ -2,10 +2,8 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-// import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
-import * as Records from 'event/record';
 import NumericInput from 'numeric-input';
 
 import * as Event from 'event';

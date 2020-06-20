@@ -4,7 +4,6 @@ import * as React from 'react';
 import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
 
-import * as UI from 'style';
 import * as Game from 'game';
 import { ConnectionCtx } from 'connection';
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
