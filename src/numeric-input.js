@@ -32,34 +32,40 @@ type ValueState =
 const StyledInput = styled(UI.Input)`
     margin-left: 0;
     margin-right: 0;
-    border-left: none;
+
+    border: 0;
+    outline: 0;
 
     &:focus {
-        border-left: none;
+        border: 0;
+        outline: 0;
     }
 `;
 
 // Component covers making sure each part matches the height and border style.
 const Component = styled.div`
     padding: 5px;
-    border: 1px solid lightslategray;
     background: #eee;
     margin: 0;
 
-    /* There's no "previous sibling" selector, so it's all following. */
-    ${StyledInput}:focus ~ & {
-        border: 1px solid ${props => props.theme.colors.secondary};
-        outline: 1px solid ${props => props.theme.colors.secondary};
-    }
+    border: 0;
+    outline: 0;
 `;
 
 const Parent: StyledComponent<> = styled(UI.FlexRow)`
     font-family: "source-code-pro", monospace;
     margin-right: 0.5em;
+    margin-left: 0.5em;
     height: calc(1rem + 10px);
+
+    outline: 1px solid slategray;
 
     & > * {
         height: calc(1rem + 10px);
+    }
+
+    &:focus-within {
+        outline: 2px solid ${props => props.theme.colors.secondary};
     }
 `;
 
@@ -67,29 +73,24 @@ const CalcBox = styled(Component)`
     background: ${props => props.color ?? props.theme.colors.primary};
     color: white;
     width: calc(1.8em);
-    margin-left: 0.5em;
     padding: 0px;
     order: -1;
-
-    &:focus {
-        border-right: none;
-        outline-right: none;
-    }
 `;
 const ErrorBox = styled(Component)`
     background: ${props => props.theme.colors.warning};
 `;
+/*
 const RoundingBox = styled(Component)`
-    color: white; /* ?? */
+    color: white; / ?? /
     background: ${props => props.theme.colors.secondary};
 `;
-
+*/
 
 export default function NumericInput(props: Props) {
     const [text, setText] = React.useState<string>("");
     const [state, setState] = React.useState<ValueState>("empty");
-    const [round, setRound] = React.useState<RoundingMode>(props.round ?? "up");
-    const [showInfo, setInfoShown] = React.useState<bool>(false);
+    const [round] = React.useState<RoundingMode>(props.round ?? "up");
+    //const [showInfo, setInfoShown] = React.useState<bool>(false);
 
     let computed: number = 0;
     if (props.value != null) {
@@ -99,7 +100,9 @@ export default function NumericInput(props: Props) {
         computed = state[1];
     }
 
-    console.log("NunericInput:", { text, state, round, computed });
+    if (process.env.NODE_ENV !== "production") {
+        console.log("NunericInput:", { text, state, round, computed });
+    }
 
     function onTextInput(event: SyntheticInputEvent<HTMLInputElement>) {
         setText(event.target.value);
@@ -113,7 +116,9 @@ export default function NumericInput(props: Props) {
         const parser = new Parser(event.target.value);
         const expr = parser.expression();
         const pos = parser.position();
-        console.log("Parsed:", parser.position(), parser, expr);
+        if (process.env.NODE_ENV !== "production") {
+            console.log("Parsed:", parser.position(), parser, expr);
+        }
         // On parsing failure, set error
         if (!expr) {
             setState(["error", pos]);
@@ -162,9 +167,9 @@ export default function NumericInput(props: Props) {
         props.onSelect(value);
     }
 
-    function roundingModeToggle(event: SyntheticInputEvent<HTMLButtonElement>) {
+    /*function roundingModeToggle(event: SyntheticInputEvent<HTMLButtonElement>) {
         setRound(round => round === 'up' ? 'down' : 'up');
-    }
+    }*/
 
     let components: React.Node[] = [
         <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"

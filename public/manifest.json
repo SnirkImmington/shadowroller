@@ -1,10 +1,20 @@
 {
-  "short_name": "Shadowroller",
-  "name": "Shadowroller",
-  "icons": [
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+    "short_name": "Shadowroller",
+    "name": "Shadowroller",
+    "icons": [
+        {
+            "sizes": "200x200",
+            "src": "logo-200px.png",
+            "type": "image/png"
+        },
+        {
+            "sizes": "800x800",
+            "src": "logo-800px.png",
+            "type": "image/png"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
 }

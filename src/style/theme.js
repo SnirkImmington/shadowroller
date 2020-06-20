@@ -7,9 +7,9 @@ export const GREENB = "#10fe5c"; // #01f34f
 
 export default {
     colors: {
-        primary: "hsl(347, 74%, 30%)",
+        primary: "#85142C",
         primaryLight: "#c14b4e",
-        primaryDesaturated: "hsv(347, 40, 51)",
+        primaryDesaturated: "#783442",
         primaryDesaturated2: "hsv(347, 20, 51)",
 
         warning: "hsl(60, 50%, 50%)",
@@ -22,6 +22,11 @@ export default {
         secondaryDark: "#1d605b",
         green: "#228422",
         gray: "#000022",
+        header: "#222222",
+
+        dieOne:  '#601010',
+        dieHit:  '#4d804e',
+        dieNone: '#4e4e62',
 
         primary2: "#CC3645",
         secondary2: "#36CCBD",

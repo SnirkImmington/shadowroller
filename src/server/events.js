@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import * as Event from 'event';
 import * as server from '../server';
+import type { SetConnection } from 'connection';
 
 function parseEvent(event: any): ?Event.ServerEvent {
     switch (event.ty) {
@@ -70,9 +71,9 @@ export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
 }
 
 export function useEvents(
-        gameID: ?string,
-        setConnection: server.SetConnection,
-        dispatch: Event.Dispatch
+    gameID: ?string,
+    setConnection: SetConnection,
+    dispatch: Event.Dispatch
 ): ?EventSource {
     const events = React.useRef<?EventSource>();
 
@@ -87,6 +88,12 @@ export function useEvents(
         }
 
         if (!gameID) {
+            if (process.env.NODE_ENV !== "production") {
+                document.title = `Shadowroller (${process.env.NODE_ENV})`;
+            }
+            else {
+                document.title = "Shadowroller";
+            }
             events.current = null;
             return;
         }
@@ -99,21 +106,23 @@ export function useEvents(
             onMessage(e, dispatch);
         };
         source.addEventListener("ping", function(event: mixed) {
-            if (process.env.NODE_ENV !== "production") {
-                console.log("Ping /events");
-            }
         });
         source.onopen = function() {
             if (source.readyState === 1) {
                 setConnection("connected");
+                if (process.env.NODE_ENV !== "production") {
+                    document.title = `${gameID} - Shadowroller (${process.env.NODE_ENV})`;
+                }
+                else {
+                    document.title = gameID + " - Shadowroller";
+                }
             }
             else {
                 setConnection("connecting");
             }
         };
         source.onerror = function(e) {
-            console.error("Error reading /event!", e);
-            setConnection("offline");
+            setConnection("errored");
         };
         events.current = source;
         return; // Cleanup handled imperatively through use of ref

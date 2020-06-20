@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-//import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import { VariableSizeList as List } from 'react-window';
@@ -12,7 +11,8 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import * as Game from 'game';
 import * as Event from 'event';
 import * as Records from 'event/record';
-import * as Server from 'server';
+import * as server from 'server';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
 
 type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {
@@ -28,16 +28,15 @@ function EventRecord({ event, style }: RecordProps) {
 
 type RowRenderProps = { +style: any, +index: number };
 
-type LoadingListProps = {
-    +state: Event.State,
-    +connection: Server.Connection,
-    +dispatch: Event.Dispatch,
-};
-export function LoadingResultList({ state, connection, dispatch }: LoadingListProps) {
+export function LoadingResultList() {
+    const state = React.useContext(Event.Ctx);
+    const dispatch = React.useContext(Event.DispatchCtx);
+    const connection = React.useContext(ConnectionCtx);
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
     const eventsLength = state.events.length;
-    const itemCount = eventsLength + (atHistoryEnd || connection === "offline" ? 0 : 1);
+    const itemCount = eventsLength + (
+        atHistoryEnd || connection === "offline" || connection === "disconnected" ? 0 : 1);
 
     const listRef = React.useRef(null);
 
@@ -65,7 +64,7 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
         switch (event.ty) {
             case "localRoll":
             case "gameRoll":
-                return 74;
+                return 96;
             default:
                 return 40;
         }
@@ -91,7 +90,7 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
             return;
         }
         const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
-        const eventFetch = Server.fetchEvents({ oldest: oldestID }).then(resp => {
+        const eventFetch = server.fetchEvents({ oldest: oldestID }).then(resp => {
             dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
             dispatch({ ty: "mergeEvents", events: resp.events });
         });
@@ -112,6 +111,7 @@ export function LoadingResultList({ state, connection, dispatch }: LoadingListPr
                         <List height={height} width={width}
                               itemCount={itemCount}
                               itemSize={itemSize}
+                              style={{overflowY: 'scroll'}}
                               onItemsRendered={onItemsRendered} ref={ref}>
                             {RenderRow}
                         </List>
@@ -128,16 +128,13 @@ const TitleBar = styled(UI.FlexRow)`
     justify-content: space-between;
 `;
 
-type Props = {
-    +game: Game.State,
-    +eventList: Event.State,
-    +dispatch: Event.Dispatch,
-    +connection: Server.Connection,
-    +setConnection: Server.SetConnection,
-}
-export default function EventHistory({ game, eventList, dispatch, connection, setConnection }: Props) {
+export default function EventHistory() {
+    const game = React.useContext(Game.Ctx);
+    const dispatch = React.useContext(Event.DispatchCtx);
+    // Using connection is what lets us rerender when events DC
+    const setConnection = React.useContext(SetConnectionCtx);
     const gameID = game?.gameID;
-    Server.useEvents(gameID, setConnection, dispatch);
+    server.useEvents(gameID, setConnection, dispatch);
 
     let title;
     if (game) {
@@ -152,9 +149,7 @@ export default function EventHistory({ game, eventList, dispatch, connection, se
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
             </TitleBar>
-            <LoadingResultList
-                state={eventList} dispatch={dispatch}
-                connection={connection} />
+            <LoadingResultList />
         </UI.Card>
     );
 }

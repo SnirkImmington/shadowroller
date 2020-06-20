@@ -3,47 +3,29 @@
 import * as React from 'react';
 import styled, { ThemeProvider } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
+import * as UI from 'style';
 import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as server from 'server';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
+import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
-
-import * as server from 'server';
-
-const AppPadding: StyledComponent<> = styled.div`
-    /* Phones: margin near the side of the screen */
-    height: 100%; /* */
-    padding: 0.5em;
-    display: flex;
-    flex-direction: column;
-
-    /*color: white;
-    background: rgb(80, 120, 120);
-
-    & input {
-        color: white
-        background: rgb(100, 100, 100);
-    }*/
-
-    /* Tablet+: more margin on the sides */
-    @media all and (min-width: 768px) {
-        padding: 1.2em;
-        flex-direction: row;
-        align-items: stretch;
-    }
-`;
+import DebugBar from 'debug-bar';
 
 const AppLeft: StyledComponent<> = styled.div`
     /* Phones: vertical margin included in cards. */
 
+    padding-left: 0.5em;
+
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
-        margin-right: 1.5em;
         flex-grow: 1; /* Grows out */
+        padding-right: 14px;
     }
 `;
 
@@ -51,19 +33,15 @@ const AppRight: StyledComponent<> = styled.div`
     /* Phones: no padding needed. */
     height: 100%; /* Always go as high as possible. */
 
+    padding-left: 2px;
+
     @media all and (min-width: 768px) {
-        width: 30em;
+        width: 36rem;
     }
 `;
 
-export default function App(props: {}) {
-    const [game, gameDispatch] = React.useReducer(Game.reduce, undefined);
-    const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
-    const [connection, setConnection] = React.useState<server.Connection>("offline");
-
-    React.useEffect(() =>
-        server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
-
+function Shadowroller() {
+    const connection = React.useContext(ConnectionCtx);
     const [menuShown, setMenuShown] = React.useState<bool>(false);
 
     function onGameButtonClick() { setMenuShown((prev) => !prev); }
@@ -71,44 +49,56 @@ export default function App(props: {}) {
     let menu: React.Node = '';
     if (menuShown) {
         menu = connection !== "connected" ?
-            <Game.JoinMenu connection={connection}
-                           setConnection={setConnection}
-                           hide={() => setMenuShown(false)}
-                           dispatch={gameDispatch}
-                           eventDispatch={eventDispatch} />
-            : <Game.StatusMenu game={game}
-                               setConnection={setConnection}
-                               dispatch={gameDispatch}
-                               eventDispatch={eventDispatch} />;
+            <Game.JoinMenu hide={() => setMenuShown(false)} />
+            : <Game.StatusMenu />;
     }
+
+    return (
+        <ThemeProvider theme={theme}>
+            {process.env.NODE_ENV !== "production" &&
+                <DebugBar />
+            }
+
+            <SRHeader menuShown={menuShown}
+                      onClick={onGameButtonClick} />
+            { menu }
+            <UI.ColumnToRow grow>
+                <AppLeft>
+                    <RollDicePrompt />
+                </AppLeft>
+                <AppRight>
+                    <EventHistory />
+                </AppRight>
+            </UI.ColumnToRow>
+        </ThemeProvider>
+    );
+}
+
+export default function App(props: {}) {
+    const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
+    const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
+    const [connection, setConnection] = React.useState<Connection>("offline");
+
+    React.useEffect(
+        () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
+
 
     // Page should be a flexbox.
     return (
-        <ThemeProvider theme={theme}>
+        <ConnectionCtx.Provider value={connection}>
+        <SetConnectionCtx.Provider value={setConnection}>
         <Game.Ctx.Provider value={game}>
+        <Event.Ctx.Provider value={eventList}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
 
-            <SRHeader game={game}
-                      connection={connection}
-                      menuShown={menuShown}
-                      onClick={onGameButtonClick} />
-            { menu }
-            <AppPadding>
-                <AppLeft>
-                    <RollDicePrompt connection={connection} dispatch={eventDispatch} />
-                </AppLeft>
-                <AppRight>
-                    <EventHistory game={game} connection={connection}
-                                  setConnection={setConnection}
-                                  eventList={eventList}
-                                  dispatch={eventDispatch} />
-                </AppRight>
-            </AppPadding>
+            <Shadowroller />
 
         </Event.DispatchCtx.Provider>
         </Game.DispatchCtx.Provider>
+        </Event.Ctx.Provider>
         </Game.Ctx.Provider>
-        </ThemeProvider>
+        </SetConnectionCtx.Provider>
+        </ConnectionCtx.Provider>
     );
 }

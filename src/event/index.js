@@ -36,6 +36,8 @@ export type Event =
 | PlayerJoin
 ;
 
+export type EventRoll = LocalRoll | GameRoll ;
+
 export type HistoryFetchState = "ready" | "fetching" | "finished";
 
 export type Action =
@@ -115,7 +117,6 @@ export type Reducer = (State, Action) => State;
 // Assuming that the state's events and the new events are both sorted, combine
 // the new events into the old events.
 function appendEventsReduce(state: State, newEvents: Event[]): State {
-    console.log("Reducing", state.events, "with", newEvents);
     const oldEvents = state.events;
     const events = [];
 
@@ -191,5 +192,5 @@ else {
 }
 
 export { reduce };
-
-export const DispatchCtx = React.createContext<Dispatch>(() => {});
+export const Ctx = React.createContext<State>(defaultState);
+export const DispatchCtx = React.createContext<Dispatch>(null);

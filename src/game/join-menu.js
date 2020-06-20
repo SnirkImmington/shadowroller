@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-// import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import { statusFor, connectionFor, ConnectionCtx, SetConnectionCtx } from 'connection';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
@@ -90,14 +90,23 @@ const ButtonZone = styled(UI.FlexRow)`
     }
 `;
 
+const SpacedFlavor = styled(UI.Flavor)`
+    margin-left: 1em;
+
+    @media all and (min-width: 768px) {
+        margin: 0 1.5em 0 1.5em;
+    }
+`;
+
 type Props = {
-    +connection: server.Connection,
-    +setConnection: server.SetConnection,
     +hide: () => void,
-    +dispatch: Game.Dispatch,
-    +eventDispatch: Event.Dispatch,
 };
-export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispatch }: Props) {
+export function JoinMenu({ hide }: Props) {
+    const dispatch = React.useContext(Game.DispatchCtx);
+    const eventDispatch = React.useContext(Event.DispatchCtx);
+    const connection = React.useContext(ConnectionCtx);
+    const setConnection = React.useContext(SetConnectionCtx);
+
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
 
@@ -127,9 +136,6 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
         newConnecting();
         server.requestJoin(gameID, playerName)
             .then(resp => {
-                if (process.env.NODE_ENV !== "production") {
-                    console.log("Join success", resp);
-                }
                 dispatch({
                     ty: "join",
                     gameID: gameID,
@@ -151,7 +157,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                 });
             })
             .catch((resp: Response) => {
-                switch (server.statusFor(resp)) {
+                switch (statusFor(resp)) {
                     case "badRequest":
                         setFlavor(notFoundFlavor);
                         newNotFound();
@@ -166,7 +172,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                         break;
                     default:
                 }
-                setConnection(server.connectionFor(resp));
+                setConnection(connectionFor(resp));
             });
     }
 
@@ -196,7 +202,7 @@ export function JoinMenu({ connection, setConnection, hide, dispatch, eventDispa
                     </InputRow>
                     </UI.ColumnToRow>
                     <ButtonZone>
-                        <UI.Flavor light warn={warn}>{flavor}</UI.Flavor>
+                        <SpacedFlavor light warn={warn}>{flavor}</SpacedFlavor>
                         {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                         <UI.Button id="join-game-submit" onClick={onSubmit}
                                    disabled={!ready}>

@@ -5,21 +5,34 @@ import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
 
 import * as Game from 'game';
-import * as server from 'server';
+import { ConnectionCtx } from 'connection';
+import { ReactComponent as DieOne } from 'assets/die-1.svg';
 
 const SRHeader: StyledComponent<> = styled.header`
-    background-color: #222;
+    background-color: ${({theme}) => theme.colors.header};
     height: 3.4rem;
     color: white;
     display: flex;
     align-items: center;
 `;
 
+const StyledDie = styled(DieOne)`
+    height: 1em;
+    width: 1em;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: .25em;
+    color: ${({theme}) => theme.colors.primaryLight};
+`;
+
 const SRTitle = styled.h1`
     font-size: 2em;
     font-style: oblique;
     font-weight: 900;
-    letter-spacing: 1.2px;
+    letter-spacing: 1px;
+    align-text: center;
+    display: flex;
+
 
     margin-left: .5rem;
     @media all and (min-width: 768px) {
@@ -28,17 +41,17 @@ const SRTitle = styled.h1`
 `;
 
 const JoinButtonUI = styled.button`
-    background: #222;
+    background: ${({theme}) => theme.colors.header};
     border: 3px solid white;
 
-    color: ${props => props.expanded ? '#222' : 'white'};
-    background: ${props =>props.expanded ? 'white' : '#222'};
-    border: 3px solid ${props=>props.expanded ? '#222' : 'white'};
+    color: ${({expanded, theme}) => expanded ? theme.colors.header : 'white'};
+    background: ${({expanded, theme}) => expanded ? 'white' : theme.colors.header};
+    border: 3px solid;
 
     font-size: 1rem;
     font-weight: 500;
     padding: 0.2em 0.75em;
-    align-text: center;
+    text-align: center;
     cursor: pointer;
 
     margin-left: auto;
@@ -59,13 +72,14 @@ const JoinButtonUI = styled.button`
 `;
 
 type Props = {
-    +game: Game.State,
-    +connection: server.Connection,
     +menuShown: bool,
     +onClick: () => void
 }
 
-function JoinButton({ game, connection, menuShown, onClick }: Props) {
+function JoinButton({ menuShown, onClick }: Props) {
+    const game = React.useContext(Game.Ctx);
+    const connection = React.useContext(ConnectionCtx);
+
     let disabled = false;
     let message: React.Node = "";
     if (!game) {
@@ -119,7 +133,10 @@ function JoinButton({ game, connection, menuShown, onClick }: Props) {
 export default function Header(props: Props) {
     return (
         <SRHeader>
-            <SRTitle>Shadowroller</SRTitle>
+                <SRTitle>
+                    <StyledDie />
+                    Shadowroller
+                </SRTitle>
             <JoinButton {...props} />
         </SRHeader>
     );

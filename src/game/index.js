@@ -8,11 +8,12 @@ export type Player = {
 };
 
 export type State = ?{|
-    +connected: bool,
     +gameID: string,
     +player: Player,
     +players: Map<string, string>
 |};
+
+export const defaultState = null;
 
 export type Action =
 | { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
@@ -26,7 +27,6 @@ function gameReduce(state: State, action: Action): State {
     switch (action.ty) {
         case "join":
             return {
-                connected: true,
                 gameID: action.gameID,
                 player: action.player,
                 players: action.players
@@ -85,8 +85,9 @@ else {
 
 export { reduce };
 export type Dispatch = (Action) => void;
-export const Ctx = React.createContext<State>();
+export const Ctx = React.createContext<State>(defaultState);
 export const DispatchCtx = React.createContext<Dispatch>((_) => {});
 
 export { JoinMenu } from './join-menu';
 export { StatusMenu } from './status-menu';
+export { ReconnectMenu } from './reconnect-menu';

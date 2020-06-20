@@ -2,13 +2,11 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-//import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as Game from 'game';
 import * as Event from 'event';
-
-import * as server from 'server';
+import { SetConnectionCtx } from 'connection';
 
 const Message = styled.p`
     margin: 0 0.5em;
@@ -26,13 +24,12 @@ const LeaveButton = styled(UI.Button)`
     }
 `;
 
-type Props = {
-    game: Game.State,
-    dispatch: Game.Dispatch,
-    eventDispatch: Event.Dispatch,
-    setConnection: server.SetConnection
-};
-export function StatusMenu({ game, dispatch, eventDispatch, setConnection}: Props) {
+export function StatusMenu() {
+    const game = React.useContext(Game.Ctx);
+    const dispatch = React.useContext(Game.DispatchCtx);
+    const eventDispatch = React.useContext(Event.DispatchCtx);
+    const setConnection = React.useContext(SetConnectionCtx);
+
     if (!game) {
         return 'Something messed up, maybe press the join button again?';
     }

@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-// import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import NumericInput from 'numeric-input';
 
 import * as Event from 'event';
+import { ConnectionCtx } from 'connection';
 import * as server from 'server';
 import * as srutil from 'srutil';
 
@@ -103,7 +103,7 @@ const FormLabel = styled.label`
 const RollButton = styled.button`
     font-size: 1.07em;
     font-weight: 600;
-    align-text: center;
+    text-align: center;
     cursor: pointer;
     padding: .3rem .7rem;
     border: 0;
@@ -119,10 +119,6 @@ const RollButton = styled.button`
         background-image: linear-gradient(180deg, #263427 0, #192423);
     }
 
-    &:focus {
-        outline: 1px solid ${props => props.theme.colors.secondary}dd;
-    }
-
     &[disabled] {
         pointer-events: none;
         cursor: not-allowed;
@@ -134,11 +130,9 @@ const RollButton = styled.button`
 const RollToLabel = styled.label`
 `;
 
-type Props = {
-    +connection: server.Connection;
-    +dispatch: Event.Dispatch;
-};
-export default function RollDicePrompt({ connection, dispatch }: Props) {
+export default function RollDicePrompt() {
+    const connection = React.useContext(ConnectionCtx);
+    const dispatch = React.useContext(Event.DispatchCtx);
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [localRoll, setLocalRoll] = React.useState(false);
@@ -174,7 +168,9 @@ export default function RollDicePrompt({ connection, dispatch }: Props) {
                     setRollLoading(false);
                 })
                 .catch((err: mixed) => {
-                    console.log("Error rolling:", err);
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log("Error rolling:", err);
+                    }
                     setRollLoading(false);
                 });
         }

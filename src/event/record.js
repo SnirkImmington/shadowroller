@@ -4,11 +4,11 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
+import * as dice from 'dice';
 
 import * as Event from 'event';
 
-import DiceList from 'roll/components/dice-list';
-import RollResult from 'roll/result';
+import * as rollStats from 'rollStats';
 import * as srutil from 'srutil';
 
 type RecordProps = {| +style: any |};
@@ -29,10 +29,10 @@ const SingleRecord: StyledComponent<SingleRecordProps> = styled(UI.FlexRow).attr
         }
     })
 )`
+    line-height: 1.5;
     padding: 3px 4px;
     ${props => props?.color ? `
         border-left: 4px solid ${props.color};
-        border-right: 4px solid ${props.color};
     ` : ''
     }
 `;
@@ -56,31 +56,31 @@ export function EventsLoadingIndicator({ style }: any) {
 }
 
 type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
-export function LocalRollRecord({ event, style }: LocalRollProps) {
+export const LocalRollRecord = React.memo<LocalRollProps>(function LocalRollRecord({ event, style }) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
-    const rollResult = new RollResult(event.dice);
+    const rollInfo = rollStats.results(event);
     return (
         <DoubleRecord color="slateGray" style={style}>
             <RollTitleRow>
             <span>
                 {`Rolled ${event.dice.length} dice`}{title}
             </span>
-            {rollResult.shouldDisplay ?
+            {rollInfo.shouldDisplay ?
                 <b style={{ 'color': "slateGray" }}>
-                    {rollResult.toString()}
+                    {rollStats.resultMessage(rollInfo)}
                 </b> : ''}
             </RollTitleRow>
-            <DiceList dice={event.dice} showNumbers={false} />
+            <dice.List rolls={event.dice} />
         </DoubleRecord>
     );
-}
+});
 
 type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
-export function GameRollRecord({ event, style }: GameRollProps) {
+export const GameRollRecord = React.memo<GameRollProps>(function GameRollRecord({ event, style }) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
-    const rollResult = new RollResult(event.dice);
+    const rollInfo = rollStats.results(event);
     return (
         <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
             <RollTitleRow>
@@ -88,19 +88,19 @@ export function GameRollRecord({ event, style }: GameRollProps) {
                 <UI.PlayerName id={event.playerID} name={event.playerName} />
                 {` rolls ${event.dice.length} dice`}{title}
             </span>
-            {rollResult.shouldDisplay ?
+            {rollInfo.shouldDisplay ?
                 <UI.HashColored id={event.playerID}>
-                    {rollResult.toString()}
+                    {rollStats.resultMessage(rollInfo)}
                 </UI.HashColored>
                 : ''}
             </RollTitleRow>
-            <DiceList dice={event.dice} />
+            <dice.List rolls={event.dice} />
         </DoubleRecord>
     );
-}
+});
 
 type PlayerJoinProps = { +event: Event.PlayerJoin, ...RecordProps };
-export function PlayerJoinRecord({ event, style }: PlayerJoinProps) {
+export const PlayerJoinRecord = React.memo<PlayerJoinProps>(function PlayerJoinRecord({ event, style }) {
     const name = <UI.PlayerName id={event.player.id} name={event.player.name} />
     return (
         <SingleRecord color={srutil.hashedColor(event.player.id)} style={style}>
@@ -109,4 +109,4 @@ export function PlayerJoinRecord({ event, style }: PlayerJoinProps) {
             </span>
         </SingleRecord>
     );
-}
+});
