@@ -13,7 +13,6 @@ export type LocalRoll = {|
 export type GameRoll = {|
     +ty: "gameRoll",
     +id: string,
-    +editable: bool,
     +playerID: string,
     +playerName: string,
     +title: string,

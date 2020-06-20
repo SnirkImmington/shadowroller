@@ -17,16 +17,16 @@ import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import type { Connection } from 'connection';
 
 type RecordProps = { +event: Event.Event, style?: any };
-const EventRecord = React.memo(({ event, style }: RecordProps) => {
+function EventRecord({ event, style }: RecordProps) {
     switch (event.ty) {
         case "localRoll": return <Records.LocalRollRecord event={event} style={style} />;
-        case "gameRoll": return <Records.EditRollRecord event={event} style={style} />;
+        case "gameRoll": return <Records.GameRollRecord event={event} style={style} />;
         case "playerJoin": return <Records.PlayerJoinRecord event={event} style={style} />;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
             return '';
     }
-});
+}
 
 type RowRenderProps = { +style: any, +index: number };
 
