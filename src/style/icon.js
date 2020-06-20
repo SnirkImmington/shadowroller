@@ -2,7 +2,7 @@
 
 export {
     // Angles and arrows
-    faAngleRight, // faArrowUp, faArrowDown,
+    // faAngleRight, // faArrowUp, faArrowDown,
     // NumericInput icons
     faPlus, faMinus, faTimes, faDivide,
     // user join icons
@@ -10,5 +10,5 @@ export {
     // Icons for in game/GC/local rolls
     faUser, faUsers, faUserFriends, faUserSecret,
     // dice
-    faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo,
+    // faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo,
 } from "@fortawesome/free-solid-svg-icons";

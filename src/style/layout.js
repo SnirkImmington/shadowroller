@@ -68,8 +68,7 @@ export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
 type CardTitleProps = { +color: string };
 const CardTitle: StyledComponent<CardTitleProps> = styled(FlexRow)`
     margin: 0.5rem;
-    line-height: 1;
-    padding-bottom: 0.25rem; /* Can't use line height because it pads the top too */
+    padding .25rem 0;
     border-bottom: 2px solid ${props => props.color};
     /*width: 50%*/;
 `;

@@ -130,12 +130,6 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
     ${color}
 `;
 
-const StyledRadiolist: StyledComponent<> = styled.div`
-    & input {
-        display: none;
-    }
-`;
-
 export const NoButtionRadio: StyledComponent<> = styled.input.attrs(props => ({
     type: "radio",
     ...props
