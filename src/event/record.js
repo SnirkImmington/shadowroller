@@ -8,7 +8,7 @@ import * as dice from 'dice';
 
 import * as Event from 'event';
 
-import RollResult from 'roll/result';
+import * as rollStats from 'rollStats';
 import * as srutil from 'srutil';
 
 type RecordProps = {| +style: any |};
@@ -59,16 +59,16 @@ type LocalRollProps = { +event: Event.LocalRoll, ...RecordProps };
 export const LocalRollRecord = React.memo<LocalRollProps>(function LocalRollRecord({ event, style }) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
-    const rollResult = new RollResult(event.dice);
+    const rollInfo = rollStats.results(event);
     return (
         <DoubleRecord color="slateGray" style={style}>
             <RollTitleRow>
             <span>
                 {`Rolled ${event.dice.length} dice`}{title}
             </span>
-            {rollResult.shouldDisplay ?
+            {rollInfo.shouldDisplay ?
                 <b style={{ 'color': "slateGray" }}>
-                    {rollResult.toString()}
+                    {rollStats.resultMessage(rollInfo)}
                 </b> : ''}
             </RollTitleRow>
             <dice.List rolls={event.dice} />
@@ -80,7 +80,7 @@ type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
 export const GameRollRecord = React.memo<GameRollProps>(function GameRollRecord({ event, style }) {
     const title = event.title !== '' ?
         <>&nbsp;to <b>{event.title}</b></> : '';
-    const rollResult = new RollResult(event.dice);
+    const rollInfo = rollStats.results(event);
     return (
         <DoubleRecord color={srutil.hashedColor(event.playerID)} style={style}>
             <RollTitleRow>
@@ -88,9 +88,9 @@ export const GameRollRecord = React.memo<GameRollProps>(function GameRollRecord(
                 <UI.PlayerName id={event.playerID} name={event.playerName} />
                 {` rolls ${event.dice.length} dice`}{title}
             </span>
-            {rollResult.shouldDisplay ?
+            {rollInfo.shouldDisplay ?
                 <UI.HashColored id={event.playerID}>
-                    {rollResult.toString()}
+                    {rollStats.resultMessage(rollInfo)}
                 </UI.HashColored>
                 : ''}
             </RollTitleRow>
