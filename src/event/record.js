@@ -74,7 +74,7 @@ export const LocalRollRecord = React.memo<LocalRollProps>(function LocalRollReco
             <dice.List rolls={event.dice} />
         </DoubleRecord>
     );
-}, (prev, next) => prev.event.ts === next.event.ts);
+});
 
 type GameRollProps = { +event: Event.GameRoll, ...RecordProps };
 export const GameRollRecord = React.memo<GameRollProps>(function GameRollRecord({ event, style }) {
@@ -97,7 +97,7 @@ export const GameRollRecord = React.memo<GameRollProps>(function GameRollRecord(
             <dice.List rolls={event.dice} />
         </DoubleRecord>
     );
-}, (prev, next) => prev.event.id === next.event.id);
+});
 
 type PlayerJoinProps = { +event: Event.PlayerJoin, ...RecordProps };
 export const PlayerJoinRecord = React.memo<PlayerJoinProps>(function PlayerJoinRecord({ event, style }) {
@@ -109,4 +109,4 @@ export const PlayerJoinRecord = React.memo<PlayerJoinProps>(function PlayerJoinR
             </span>
         </SingleRecord>
     );
-}, (prev, next) => prev.event.player.id === next.event.player.id);
+});
