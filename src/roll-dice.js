@@ -15,36 +15,39 @@ const ROLL_TITLE_FLAVOR = [
     "look good in a suit",
     "swipe the key card",
     "negotiate for more pay",
-    "dodge", "dodge", "dodge",
+    "eavesdrop on the business meeting",
+    "maniuplate the exec into revealing her plans",
+
+    "dodge some bullets",
+    "take cover from a grenade",
+    "catch a knife in midair",
+    "avoid the oncoming shrapnel",
+    "duck out of the way of the troll",
+
     "recover from last night's party",
     "geek the mage",
     "not freak out",
     "sneak past the guards",
-    "lie to the cops",
+    "convince the cops I'm just passing through",
     "hack the vending machine",
     "palm the data chip",
-    "hack the planet",
-    "punch this guy",
     "acquire target lock",
     "break target lock",
 
     "punch a hole in the wall",
     "punch a hole in the door",
-    "punch a hole in the floor",
-    "punch a hole through the window",
     "punch a hole in the elf",
     "repair the hole in the wall",
     "repair the hole in the door",
-    "repair my cyberarm",
 
     "swipe the statue",
     "aim the torpedos",
     "avoid looking at the explosion",
     "hack the planet",
 
+    "gamble on the virtual horse racing",
     "backflip out of the plane",
     "pilot my drone under the door",
-    "gamble",
     "place explosives",
     "peer into the depths",
     "repair the juggernaut",
@@ -52,12 +55,12 @@ const ROLL_TITLE_FLAVOR = [
     "hack the grenade",
 
     "hack the cleaning drone",
+    "grapple off of the ship",
     "pick a Hawaiian shirt",
     "shoot through the water tank",
     "connoiseur: alcohol",
     "not die to the spirit",
     "animate objects",
-    "turn invisible",
     "hack the cupcake",
 
     "drive through the storm",
@@ -128,6 +131,16 @@ const RollButton = styled.button`
 `;
 
 const RollToLabel = styled.label`
+`;
+
+const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
+    height: calc(1em + 10px);
+    /* Mobile: full width - "name rolls to" */
+    width: calc(100vw - 5em);
+
+    @media all and (min-width: 768px) {
+        width: 23em;
+    }
 `;
 
 export default function RollDicePrompt() {
@@ -207,11 +220,10 @@ export default function RollDicePrompt() {
                         <RollToLabel htmlFor="roll-title">
                             to
                         </RollToLabel>
-                        <UI.Input id="roll-title"
-                                  maxWidth size={32}
-                                  placeholder={titleFlavor}
-                                  onChange={rollTitleChanged}
-                                  value={title} />
+                        <RollTitleInput id="roll-title"
+                                        placeholder={titleFlavor}
+                                        onChange={rollTitleChanged}
+                                        value={title} />
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <ButtonRow>
