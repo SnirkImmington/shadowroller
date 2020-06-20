@@ -46,20 +46,16 @@ p {
     box-sizing: border-box;
 }
 
-.input-group {
-    width: auto !important;
-}
-
 .sr-die {
     margin: 2px;
     flex-shrink: 0;
-    width: 8vw;
-    height: 8vw;
+    width: 7.5vw;
+    height: 7.5vw;
 }
 @media all and (min-width: 768px) {
     .sr-die {
-        width: 2.1rem;
-        height: 2.1rem;
+        width: 2.55rem;
+        height: 2.55rem;
     }
 }
 
