@@ -14,8 +14,8 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
 }))`
     ${color}
     font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
-    max-width: ${(props) => props.size ? '100%' : '12em'};
-    max-height: calc(1em + 12px);
+    max-width: ${(props) => props.expand ? '100%' : '14em'};
+    height: calc(1em + 10px);
 
     margin: 0px 0.5em;
     border: 1px solid lightslategray;
