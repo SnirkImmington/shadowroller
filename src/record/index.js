@@ -8,9 +8,16 @@ import * as dice from 'dice';
 
 import * as Event from 'event';
 
+import { RollRecord } from './roll';
+import { PlayerJoin } from './otherEvents';
 
-type RecordProps = { +style: any, children: any };
+type RecordProps = {
+    +style: any,
+    +event: Event.Event,
+    +eventDispatch: Event.Dispatch,
+};
 
+// Spacing between event records
 const GUTTER_SIZE = 4;
 
 export const StyledRecord: StyledComponent<RecordProps> = styled.div.attrs(

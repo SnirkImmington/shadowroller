@@ -8,7 +8,7 @@ import * as Event from 'event';
 type PlayerJoinProps = {
     +event: Event.PlayerJoin,
 };
-export const PlayerJoin = React.memo<PlayerJoinProps>(function PlayerJoin({ event }: PlayerJoinProps) {
+export const PlayerJoin = React.memo<PlayerJoinProps>(function PlayerJoin({ event }) {
     const name = <UI.PlayerName id={event.player.id} name={event.player.name} />
     return (
         <span>

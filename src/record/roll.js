@@ -2,14 +2,11 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import * as dice from 'dice';
 
 import * as Event from 'event';
 
-import { StyledRecord } from 'record';
-import type { RecordProps } from 'record';
 import * as srutil from 'srutil';
 import * as rollStats from 'rollStats';
 
@@ -33,6 +30,41 @@ function RollActionsRow({onPush, onSecondChance, onRemove}: RollActionsProps) {
             </UI.LinkButton>
         </UI.LinkList>
     );
+}
+
+function localRollActions(event: Event.LocalRoll, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
+    return {
+        onPush: function() {
+            dispatch({
+                ty: "edgePush", ix: eventIx,
+            });
+        },
+        onSecondChance: function() {
+            dispatch({
+                ty: "edgeReroll", ix: eventIx,
+            });
+        },
+        onRemove: function() {
+            dispatch({
+                ty: "removeLocal", ix: eventIx,
+            });
+        }
+    };
+}
+
+function gameRollActions(event: Event.GameRoll, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
+    return {
+        onPush: function() {
+            dispatch({
+                ty: "edgePush", ix: eventIx,
+            });
+        },
+        onSecondChance: function() {
+            dispatch({
+                ty: "edgeReroll", ix: eventIx,
+            });
+        },
+    };
 }
 
 const StyledResults = styled.b`
@@ -69,10 +101,11 @@ const RollScrollable = styled(UI.FlexColumn)`
 
 type RollProps = {
     +event: Event.EventRoll,
+    +eventIx: number,
     ...RollActionsProps,
 };
 export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...actions }: RollProps) {
-    console.log("Rendering", event.id, event.ts);
+    console.log("Rendering", arguments[0], event.id, event.ts);
     const color = event.id ? srutil.hashedColor(event.id) : 'slategray';
     let intro: React.Node = event.id ? (
         <span>
@@ -112,4 +145,7 @@ export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...
                             onRemove={actions.onRemove} />
         </UI.FlexColumn>
     );
-});
+}, (prev, next) =>
+    prev.event.id === next.event.id
+        && prev.event.ts === next.event.ts
+        && prev.style === next.style);
