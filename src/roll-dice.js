@@ -6,6 +6,7 @@ import * as UI from 'style';
 
 import NumericInput from 'numeric-input';
 
+import * as Game from 'game';
 import * as Event from 'event';
 import { ConnectionCtx } from 'connection';
 import * as server from 'server';
@@ -84,7 +85,11 @@ const ROLL_TITLE_FLAVOR = [
 
 const ButtonRow = styled(UI.FlexRow)`
     margin: .75rem .5rem;
-    justify-content: flex-end;
+
+    & > *:last-child {
+        margin-left: auto;
+        margin-right: 0.5em;
+    }
 `;
 
 const RollInputRow = styled(UI.FlexRow)`
@@ -145,10 +150,13 @@ const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
 
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
+    const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
+
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [localRoll, setLocalRoll] = React.useState(false);
+    const [edge, setEdge] = React.useState(false);
     const [title, setTitle] = React.useState('');
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
 
@@ -156,6 +164,7 @@ export default function RollDicePrompt() {
     const rollDisabled = (
         rollLoading || !diceCount || diceCount < 1 || diceCount > 100
     );
+
     function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
     }
@@ -163,6 +172,12 @@ export default function RollDicePrompt() {
     function rollLocalClicked(event: SyntheticInputEvent<HTMLInputElement>) {
         setLocalRoll(prev => !prev);
     }
+
+    const onEdgeClicked = React.useCallback(
+        (event: SyntheticInputEvent<HTMLInputElement>) => {
+            setEdge(event.target.checked);
+        }, [setEdge]
+    );
 
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
@@ -216,7 +231,7 @@ export default function RollDicePrompt() {
                             dice
                         </FormLabel>
                     </RollInputRow>
-                    <UI.FlexRow maxWidth>
+                    <UI.FlexRow>
                         <RollToLabel htmlFor="roll-title">
                             to
                         </RollToLabel>
@@ -225,16 +240,26 @@ export default function RollDicePrompt() {
                                         onChange={rollTitleChanged}
                                         value={title} />
                     </UI.FlexRow>
+                    <UI.FlexRow maxWidth>
+                        <UI.RadioLink id="roll-enable-edge"
+                                      type="checkbox" light
+                                      checked={edge}
+                                      onChange={onEdgeClicked}>
+                            Push the limit
+                        </UI.RadioLink>
+                    </UI.FlexRow>
                 </UI.ColumnToRow>
                 <ButtonRow>
                     {connected ?
                         <>
-                            <input type="checkbox" id="toggle-local-roll"
-                                   checked={localRoll} onChange={rollLocalClicked} />
-                            <label htmlFor="toggle-local-roll"
-                                   style={{marginBottom: 0, marginLeft: ".25em", marginRight: ".25em"}}>
-                                Roll locally
-                            </label>
+                            <UI.RadioLink id="roll-set-in-game" type="radiobox" light
+                                          checked={!localRoll} onChange={rollLocalClicked}>
+                                in&nbsp;<tt>{game?.gameID ?? "game"}</tt>
+                            </UI.RadioLink>
+                            <UI.RadioLink id="roll-set-local" type="radiobox" light
+                                          checked={localRoll} onChange={rollLocalClicked}>
+                                locally
+                            </UI.RadioLink>
                         </>
                     : ''}
                     <RollButton id="roll-button-submit" type="submit"
