@@ -42,5 +42,8 @@ export default {
 
         gray1: "#2b3137",
         gray2: "#47353b",
+    },
+    fonts: {
+        monospace: '"source-code-pro", Menlo, Calibri, monospace',
     }
 }
