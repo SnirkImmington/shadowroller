@@ -79,17 +79,18 @@ const CalcBox = styled(Component)`
 const ErrorBox = styled(Component)`
     background: ${props => props.theme.colors.warning};
 `;
+/*
 const RoundingBox = styled(Component)`
-    color: white; /* ?? */
+    color: white; / ?? /
     background: ${props => props.theme.colors.secondary};
 `;
-
+*/
 
 export default function NumericInput(props: Props) {
     const [text, setText] = React.useState<string>("");
     const [state, setState] = React.useState<ValueState>("empty");
-    const [round, setRound] = React.useState<RoundingMode>(props.round ?? "up");
-    const [showInfo, setInfoShown] = React.useState<bool>(false);
+    const [round] = React.useState<RoundingMode>(props.round ?? "up");
+    //const [showInfo, setInfoShown] = React.useState<bool>(false);
 
     let computed: number = 0;
     if (props.value != null) {
@@ -166,9 +167,9 @@ export default function NumericInput(props: Props) {
         props.onSelect(value);
     }
 
-    function roundingModeToggle(event: SyntheticInputEvent<HTMLButtonElement>) {
+    /*function roundingModeToggle(event: SyntheticInputEvent<HTMLButtonElement>) {
         setRound(round => round === 'up' ? 'down' : 'up');
-    }
+    }*/
 
     let components: React.Node[] = [
         <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
