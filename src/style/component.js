@@ -46,7 +46,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     font-family: "source-code-pro", monospace;
     font-weight: bold;
     font-size: 1em;
-
+    user-select: none;
     cursor: pointer;
     text-decoration: underline;
 
@@ -128,12 +128,6 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
         color: ${props=>props.theme.colors.secondaryDesaturated2};
     }
     ${color}
-`;
-
-export const NoButtionRadio: StyledComponent<> = styled.input.attrs(props => ({
-    type: "radio",
-    ...props
-}))`
 `;
 
 const diceFrames = keyframes`

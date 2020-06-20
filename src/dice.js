@@ -20,7 +20,7 @@ export function colorForRoll(roll: number): string {
 }
 
 type DieProps = { roll: number };
-export const Die = React.memo(function Die({ roll }: DieProps) {
+export const Die = React.memo<DieProps>(function Die({ roll }: DieProps) {
     let Die = DieOne;
     let color = theme.colors.dieNone;
 
@@ -40,6 +40,7 @@ export const Die = React.memo(function Die({ roll }: DieProps) {
 
 const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
     width: 100%;
+    user-select: all;
 
     overflow-x: auto; /* left-right overflow */
     overflow-y: hidden; /* up-down overflow */
