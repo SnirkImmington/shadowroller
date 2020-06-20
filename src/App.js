@@ -40,35 +40,6 @@ const AppRight: StyledComponent<> = styled.div`
     }
 `;
 
-export default function App(props: {}) {
-    const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
-    const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
-    const [connection, setConnection] = React.useState<Connection>("offline");
-
-    React.useEffect(
-        () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
-
-
-    // Page should be a flexbox.
-    return (
-        <ConnectionCtx.Provider value={connection}>
-        <SetConnectionCtx.Provider value={setConnection}>
-        <Game.Ctx.Provider value={game}>
-        <Event.Ctx.Provider value={eventList}>
-        <Game.DispatchCtx.Provider value={gameDispatch}>
-        <Event.DispatchCtx.Provider value={eventDispatch}>
-
-            <Shadowroller />
-
-        </Event.DispatchCtx.Provider>
-        </Game.DispatchCtx.Provider>
-        </Event.Ctx.Provider>
-        </Game.Ctx.Provider>
-        </SetConnectionCtx.Provider>
-        </ConnectionCtx.Provider>
-    );
-}
-
 function Shadowroller() {
     const connection = React.useContext(ConnectionCtx);
     const [menuShown, setMenuShown] = React.useState<bool>(false);
@@ -100,5 +71,34 @@ function Shadowroller() {
                 </AppRight>
             </UI.ColumnToRow>
         </ThemeProvider>
+    );
+}
+
+export default function App(props: {}) {
+    const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
+    const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
+    const [connection, setConnection] = React.useState<Connection>("offline");
+
+    React.useEffect(
+        () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
+
+
+    // Page should be a flexbox.
+    return (
+        <ConnectionCtx.Provider value={connection}>
+        <SetConnectionCtx.Provider value={setConnection}>
+        <Game.Ctx.Provider value={game}>
+        <Event.Ctx.Provider value={eventList}>
+        <Game.DispatchCtx.Provider value={gameDispatch}>
+        <Event.DispatchCtx.Provider value={eventDispatch}>
+
+            <Shadowroller />
+
+        </Event.DispatchCtx.Provider>
+        </Game.DispatchCtx.Provider>
+        </Event.Ctx.Provider>
+        </Game.Ctx.Provider>
+        </SetConnectionCtx.Provider>
+        </ConnectionCtx.Provider>
     );
 }
