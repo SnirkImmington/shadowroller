@@ -33,6 +33,36 @@ export function useFlavor(options: React.Node[]): [React.Node, () => void] {
     return [flavor, () => setFlavor(() => pickRandom(options))];
 }
 
+// This shallow comparison seems to be what react is using.
+// Seen in react-redux and gaeron's react-pure-render.
+
+export function shallowEqual(a: any, b: any) {
+    if (a === b) {
+        return true;
+    }
+
+    if (typeof a !== 'object' || a === null
+        || typeof b !== 'object' || b === null) {
+        return false;
+    }
+
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+
+    if (aKeys.length !== bKeys.length) {
+        return false;
+    }
+
+    const bHasOwnProperty = Object.prototype.hasOwnProperty.bind(b);
+    for (let i = 0; i < aKeys.length; i++) {
+        if (!bHasOwnProperty(aKeys[i]) || a[aKeys[i]] !== b[bKeys[i]]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Color generation taken from:
 // https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 
