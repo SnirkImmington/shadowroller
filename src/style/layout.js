@@ -54,7 +54,7 @@ export const CardWrapper: StyledComponent<{ grow?: bool, pad?: bool }> = styled(
     ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 
-const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled.div`
+const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled(FlexColumn)`
     ${props => props?.grow ? 'height: 100%;' : ''}
 `;
 

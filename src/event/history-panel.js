@@ -12,7 +12,14 @@ import * as Game from 'game';
 import * as Event from 'event';
 import * as Records from 'event/record';
 import * as server from 'server';
+import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
+
+const DO_SOME_ROLLS_FLAVOR = [
+    "You have to press that roll button first, chummer.",
+    "You gotta roll those dice first.",
+    "Hit that roll button and we'll show you the glitches."
+];
 
 type RecordProps = { +event: Event.Event, style?: any };
 function EventRecord({ event, style }: RecordProps) {
@@ -46,7 +53,8 @@ export function LoadingResultList() {
     // but that's okay. And when we are pushing items to the top, it's just
     // recalculating the first ~9.
     React.useEffect(() => {
-        if (listRef.current != null && listRef.current._listRef != null) {
+        if (listRef.current && listRef.current._listRef) {
+            console.log('List ref', listRef.current._listRef);
             listRef.current._listRef.resetAfterIndex(0);
         }
     }, [ eventsLength ]);
@@ -128,12 +136,20 @@ const TitleBar = styled(UI.FlexRow)`
     justify-content: space-between;
 `;
 
+const HistoryFlavor = styled(UI.Flavor)`
+    margin: 1em auto;
+`;
+
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
+    const events = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     // Using connection is what lets us rerender when events DC
     const setConnection = React.useContext(SetConnectionCtx);
+
+    const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
     const gameID = game?.gameID;
+    const hasRolls = events.events.length > 0;
     server.useEvents(gameID, setConnection, dispatch);
 
     let title;
@@ -149,7 +165,10 @@ export default function EventHistory() {
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
             </TitleBar>
-            <LoadingResultList />
+            {hasRolls ?
+                <LoadingResultList />
+                : <HistoryFlavor>{rollFlavor}</HistoryFlavor>
+            }
         </UI.Card>
     );
 }
