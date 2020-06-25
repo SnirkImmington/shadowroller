@@ -9,7 +9,9 @@ import typeof Theme from './theme';
 import { FlexRow } from './layout';
 import * as srutil from 'srutil';
 
-const HiddenInput = styled.input`
+const HiddenInput = styled.input.attrs(props => ({
+    checked: props.checked, name: props.name, id: props.id, value: props.value,
+}))`
     position: absolute;
     opacity: 0;
     height: 0;
@@ -32,52 +34,55 @@ const RadioSelector = styled.span`
     margin-left: 0.5em;
     margin-right: 0.25em;
     color: ${({light, theme}) =>
-        light ? theme.colors.secondary : theme.colors.primaryDesaturated
+        light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
     };
     white-space: pre;
 `;
 
 const RadioLabel: StyledComponent<> = styled.label`
     display: flex;
-    margin: 0.5em;
+    margin-right: 0.5em;
     line-height: 1.5;
     font-size: 1em;
     cursor: pointer !important;
     user-select: none;
 
     color: ${({light, theme}) =>
-        light ? theme.colors.secondary : theme.colors.primaryDesaturated
+        light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
     };
 
     &:hover {
-        filter: brightness(120%);
+        filter: brightness(130%);
     }
 
-    & input:checked {
+    & > *:checked {
         filter: brightness(50%);
+        text-decoration: underline;
     }
 
 `;
 
 type RadioLinkProps = {
     id: string,
+    name?: string,
     edgy?: bool,
     light?: bool,
-    type: "checkbox" | "radiobox",
+    type: "checkbox" | "radio",
     checked: bool,
     onChange: (SyntheticInputEvent<HTMLInputElement>) => void,
     children?: React.Node,
 };
-export function RadioLink({ id, light, edgy, type, checked, onChange, children }: RadioLinkProps) {
+export const RadioLink = React.memo<RadioLinkProps>(function RadioLink(props) {
     return (
-        <RadioLabel htmlFor={id} edgy={edgy} light={light}>
-            <HiddenInput id={id} type={type}
-                         checked={checked}
-                         onChange={onChange} />
-            <RadioSelector light={!light}>
-                {checked? 'X' : ' '}
+        <RadioLabel htmlFor={props.id} checked={props.checked} edgy={props.edgy} light={props.light}>
+            <HiddenInput id={props.id} type={props.type}
+                         value={props.id}
+                         checked={props.checked} name={props.name}
+                         onChange={props.onChange} />
+            <RadioSelector light={!props.light}>
+                {props.checked? 'X' : ' '}
             </RadioSelector>
-            {children}
+            {props.children}
         </RadioLabel>
     )
-}
+});
