@@ -10,17 +10,17 @@ export type Source =
 export type Roll = {|
     +ty: "roll",
     +id: string,
+    +source: Source,
     +title: string,
     +dice: number[],
-    +source: Source,
 |};
 
 export type EdgeRoll = {|
     +ty: "edgeRoll",
     +id: string,
+    +source: Source,
     +title: string,
     +rounds: number[][],
-    +source: Source,
 |};
 
 export type LocalRoll = {|
