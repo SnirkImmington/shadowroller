@@ -3,6 +3,26 @@
 import * as React from 'react';
 import * as Game from 'game';
 
+export type Source =
+| "local"
+| {| +id: string, +name: string |}
+
+export type Roll = {|
+    +ty: "roll",
+    +id: string,
+    +title: string,
+    +dice: number[],
+    +source: Source,
+|};
+
+export type EdgeRoll = {|
+    +ty: "edgeRoll",
+    +id: string,
+    +title: string,
+    +rounds: number[][],
+    +source: Source,
+|};
+
 export type LocalRoll = {|
     +ty: "localRoll",
     +ts: number,
@@ -27,16 +47,18 @@ export type PlayerJoin = {|
 
 export type ServerEvent =
 | GameRoll
+| Roll
+| EdgeRoll
 | PlayerJoin
 ;
 
 export type Event =
 | LocalRoll
 | GameRoll
+| Roll
+| EdgeRoll
 | PlayerJoin
 ;
-
-export type EventRoll = LocalRoll | GameRoll ;
 
 export type HistoryFetchState = "ready" | "fetching" | "finished";
 
@@ -103,12 +125,13 @@ function compareValue(event: Event): number {
         // milisecond, but this should be stable for server events.
         return event.id.split("-", 2).map(t => parseInt(t)).reduce((l, r) => l + r);
     }
-    else if (event.ts) {
-        return event.ts;
-    }
-    else { // Events always have an id or ts anyway
+    else {
         return 0;
     }
+}
+
+export function newID(): string {
+    return `${Date.now()}-${Math.floor(Math.random() * 10)}`;
 }
 
 export type Dispatch = (Action) => void;
@@ -132,6 +155,13 @@ function appendEventsReduce(state: State, newEvents: Event[]): State {
         }
         const oldEvent = oldEvents[oldIx];
         const newEvent = newEvents[newIx];
+
+        /*if (!oldEvent.id) {
+            oldEvent.id = newID();
+        }
+        if (!newEvent.id) {
+            newEvent.id = newID();
+        }*/
 
         // Same events: prefer the new one as it comes from server.
         if (newEvent.id && oldEvent.id && newEvent.id === oldEvent.id) {
@@ -164,6 +194,9 @@ function eventReduce(state: State, action: Action): State {
         case "setHistoryFetch":
             return { ...state, historyFetch: action.state };
         case "newEvent":
+            if (!action.event.id) {
+                //action.event.id = newID();
+            }
             return { ...state, events: [action.event, ...state.events] };
         case "mergeEvents":
             return appendEventsReduce(state, action.events);
