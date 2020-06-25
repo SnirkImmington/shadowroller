@@ -84,8 +84,9 @@ const ROLL_TITLE_FLAVOR = [
 ];
 
 const ButtonRow = styled(UI.FlexRow)`
-    margin: .75rem .5rem;
-
+    & > *:first-child {
+        margin-left: 0;
+    }
     & > *:last-child {
         margin-left: auto;
         margin-right: 0.5em;
@@ -153,30 +154,37 @@ export default function RollDicePrompt() {
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
-    const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [rollLoading, setRollLoading] = React.useState(false);
-    const [localRoll, setLocalRoll] = React.useState(false);
-    const [edge, setEdge] = React.useState(false);
-    const [title, setTitle] = React.useState('');
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
+
+    const [diceCount, setDiceCount] = React.useState<?number>(null);
+    const [title, setTitle] = React.useState('');
+    const [edge, setEdge] = React.useState(false);
+    const [localRoll, setLocalRoll] = React.useState(false);
 
     const connected = connection === "connected";
     const rollDisabled = (
         rollLoading || !diceCount || diceCount < 1 || diceCount > 100
     );
 
+    if (process.env.NODE_ENV !== "production") {
+        console.log("Roll dice:", {
+            diceCount, titleFlavor, title, edge,
+            localRoll, rollLoading, connected, rollDisabled,
+        });
+    }
+
     function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
     }
 
-    function rollLocalClicked(event: SyntheticInputEvent<HTMLInputElement>) {
-        setLocalRoll(prev => !prev);
-    }
+    const rollLocalClicked = React.useCallback(
+        (event) => setLocalRoll(l => !l)
+    );
+
 
     const onEdgeClicked = React.useCallback(
-        (event: SyntheticInputEvent<HTMLInputElement>) => {
-            setEdge(event.target.checked);
-        }, [setEdge]
+        (event) => setEdge(event.target.checked)
     );
 
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
@@ -185,13 +193,13 @@ export default function RollDicePrompt() {
         if (localRoll || !connected) {
             const dice = srutil.roll(diceCount);
             const localRoll: Event.LocalRoll = {
-                ty: "localRoll", ts: new Date().valueOf(), title, dice
+                ty: "localRoll", ts: new Date().valueOf(), title, dice, edge
             };
             dispatch({ ty: "newEvent", event: localRoll });
         }
         else {
             setRollLoading(true);
-            server.postRoll({ count: diceCount, title: title })
+            server.postRoll({ count: diceCount, title, edge })
                 .then(res => {
                     setRollLoading(false);
                 })
@@ -252,12 +260,18 @@ export default function RollDicePrompt() {
                 <ButtonRow>
                     {connected ?
                         <>
-                            <UI.RadioLink id="roll-set-in-game" type="radiobox" light
-                                          checked={!localRoll} onChange={rollLocalClicked}>
+                            <UI.RadioLink id="roll-set-in-game"
+                                          name="roll-location"
+                                          type="radio" light
+                                          checked={!localRoll}
+                                          onChange={rollLocalClicked}>
                                 in&nbsp;<tt>{game?.gameID ?? "game"}</tt>
                             </UI.RadioLink>
-                            <UI.RadioLink id="roll-set-local" type="radiobox" light
-                                          checked={localRoll} onChange={rollLocalClicked}>
+                            <UI.RadioLink id="roll-set-local"
+                                          name="roll-location"
+                                          type="radio" light
+                                          checked={localRoll}
+                                          onChange={rollLocalClicked}>
                                 locally
                             </UI.RadioLink>
                         </>
