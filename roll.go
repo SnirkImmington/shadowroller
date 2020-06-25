@@ -34,7 +34,7 @@ func fillRolls(rolls []int) (hits int) {
 }
 
 func explodingSixes(pool int) (results [][]int) {
-	for { // rounds
+	for pool > 0 { // rounds
 		sixes := 0
 		rollRound := make([]int, pool)
 		for i := 0; i < pool; i++ {
