@@ -41,6 +41,15 @@ const Item = styled.div`
         flex-grow: 1;
         ${({align}) => align &&
             `text-align: ${align};`}
+        ${({capped}) => capped &&
+            "width: 33vw; overflow-x: auto;"}
+    }
+`;
+
+const CappedItem = styled(Item)`
+    @media all and (min-width: 768px) {
+        width: 33vw;
+        overflow-x: auto;
     }
 `;
 
@@ -51,8 +60,8 @@ export default function DebugBar() {
 
     const game = !gameState ? gameState :
         {...gameState, player: undefined, players: undefined};
-    const players = !gameState ? "N/A" : gameState.players.size;
-    const events = { ...eventState, events: eventState.events.length };
+    const players = !gameState ? "N/A" : Array.from(gameState.players.values());
+    const events = { ...eventState, events: undefined };
 
     const cookie = document.cookie;
     const auth = React.useMemo(() => {
@@ -89,11 +98,17 @@ export default function DebugBar() {
                     <tt>{JSON.stringify(game) ?? 'undefined'}</tt>
                 </Item>
                 <Item align="middle">
-                    <b>Events:&nbsp;</b>
+                    <b>
+                        Events
+                        ({eventState.events.length}):&nbsp;
+                    </b>
                     <tt>{JSON.stringify(events)}</tt>
                 </Item>
                 <Item align="end">
-                    <b>Players:&nbsp;</b>
+                    <b>
+                        Players
+                        ({gameState?.players?.size ?? 0}):&nbsp;
+                    </b>
                     <tt>{JSON.stringify(players)}</tt>
                 </Item>
             </Group>
