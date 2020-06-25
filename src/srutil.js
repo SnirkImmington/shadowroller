@@ -2,12 +2,35 @@
 
 import * as React from 'react';
 
+function rollDie(): number {
+    return Math.floor(Math.random() * 6) + 1;
+}
+
 export function roll(count: number): number[] {
     const result = [];
     for (let i = 0; i < count; i++) {
-        result.push(Math.floor(Math.random() * 6) + 1);
+        result.push(rollDie());
     }
     return result;
+}
+
+export function rollExploding(pool: number): number[][] {
+    let remaining = pool;
+    const results = [];
+    while (remaining > 0) {
+        let sixes = 0;
+        const round = [];
+        for (let i = 0; i < remaining; i++) {
+            const die = rollDie();
+            if (die === 6) {
+                sixes++;
+            }
+            round.push(die);
+        }
+        remaining = sixes;
+        results.push(round);
+    }
+    return results;
 }
 
 /** Pluralizes a number in English. */
