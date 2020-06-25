@@ -191,10 +191,21 @@ export default function RollDicePrompt() {
         event.preventDefault();
         if (!diceCount) { return; }
         if (localRoll || !connected) {
-            const dice = srutil.roll(diceCount);
-            const localRoll: Event.LocalRoll = {
-                ty: "localRoll", ts: new Date().valueOf(), title, dice, edge
-            };
+            let localRoll: Event.Event;
+            if (edge) {
+                const rounds = srutil.rollExploding(diceCount);
+                localRoll = {
+                    ty: "edgeRoll", source: "local", id: Event.newID(),
+                    title, rounds,
+                };
+            }
+            else {
+                const dice = srutil.roll(diceCount);
+                localRoll = {
+                    ty: "roll", source: "local", id: Event.newID(),
+                    title, dice,
+                };
+            }
             dispatch({ ty: "newEvent", event: localRoll });
         }
         else {
