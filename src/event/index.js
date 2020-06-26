@@ -3,9 +3,10 @@
 import * as React from 'react';
 import * as Game from 'game';
 
+export type GameSource = {| +id: string, +name: string |};
 export type Source =
 | "local"
-| {| +id: string, +name: string |}
+| GameSource
 
 export type Roll = {|
     +ty: "roll",
@@ -23,38 +24,13 @@ export type EdgeRoll = {|
     +rounds: number[][],
 |};
 
-export type LocalRoll = {|
-    +ty: "localRoll",
-    +ts: number,
-    +dice: number[],
-    +title: string,
-|};
-
-export type GameRoll = {|
-    +ty: "gameRoll",
-    +id: string,
-    +playerID: string,
-    +playerName: string,
-    +title: string,
-    +dice: number[],
-|};
-
 export type PlayerJoin = {|
     +ty: "playerJoin",
     +id: string,
-    +player: Game.Player,
+    +source: GameSource,
 |};
 
-export type ServerEvent =
-| GameRoll
-| Roll
-| EdgeRoll
-| PlayerJoin
-;
-
 export type Event =
-| LocalRoll
-| GameRoll
 | Roll
 | EdgeRoll
 | PlayerJoin
@@ -195,13 +171,17 @@ function eventReduce(state: State, action: Action): State {
             return { ...state, historyFetch: action.state };
         case "newEvent":
             if (!action.event.id) {
-                //action.event.id = newID();
+                if (process.env.NODE_ENV !== "production") {
+                    console.log("Reducer assigning ID to ", action.event);
+                }
+                // flow-ignore-all-next-line
+                action.event.id = newID();
             }
             return { ...state, events: [action.event, ...state.events] };
         case "mergeEvents":
             return appendEventsReduce(state, action.events);
         case "clearEvents":
-            const localEvents = state.events.filter(e => e.ts ? true : false);
+            const localEvents = state.events.filter(e => e?.source === "local");
             return { ...state, events: localEvents };
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
@@ -226,4 +206,4 @@ else {
 
 export { reduce };
 export const Ctx = React.createContext<State>(defaultState);
-export const DispatchCtx = React.createContext<Dispatch>(null);
+export const DispatchCtx = React.createContext<Dispatch>(() => {});
