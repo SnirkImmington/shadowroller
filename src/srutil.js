@@ -108,6 +108,12 @@ export function hashedColor(id: string): string {
         sum += converted.charCodeAt(i);
     }
 
-    const hue = ((sum % 360) + fixedOffset) % 360;
+    const hue = sum % 360;
     return `hsl(${hue}, 80%, 56%)`;
+}
+
+export function genRandomID(): string {
+    const bytes = [0, 0, 0, 0, 0, 0].map(_ => Math.floor(Math.random() * 256));
+    const chars = bytes.map(b => String.fromCharCode(b));
+    return btoa(chars.join(''));
 }
