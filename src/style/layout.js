@@ -5,6 +5,11 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import flexbox from '@styled-system/flexbox';
 
+export const NoWrap: StyledComponent<> = styled.span`
+    white-space: nowrap;
+    flex-grow: 1;
+`;
+
 export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
     align-items: center;
@@ -18,13 +23,6 @@ export const FlexColumn: StyledComponent<> = styled.div`
     ${props => props.maxWidth ? 'width: 100%;' : ''}
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
 `;
-
-export const Flex: StyledComponent<> = styled.div(
-    {
-        display: "flex",
-    },
-    flexbox
-)
 
 export const Menu: StyledComponent<> = styled.div`
     background-color: ${props=>props.theme.colors.gray2};
