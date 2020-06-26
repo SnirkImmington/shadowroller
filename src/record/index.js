@@ -13,8 +13,8 @@ import { PlayerJoin } from './otherEvents';
 
 type RecordProps = {
     +style: any,
-    +event: Event.Event,
-    +eventDispatch: Event.Dispatch,
+    +color: string,
+    //+eventDispatch: Event.Dispatch,
 };
 
 // Spacing between event records
@@ -34,3 +34,6 @@ export const StyledRecord: StyledComponent<RecordProps> = styled.div.attrs(
         `border-left: 4px solid ${color};`
     }
 `;
+
+export * from './roll';
+export * from './otherEvents';
