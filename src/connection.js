@@ -6,7 +6,7 @@ export type Connection = "offline" | "connecting" | "connected" | "errored" | "d
 export type SetConnection = (Connection) => void;
 
 export const ConnectionCtx = React.createContext<Connection>("connected");
-export const SetConnectionCtx = React.createContext<SetConnection>(null);
+export const SetConnectionCtx = React.createContext<SetConnection>(() => {});
 
 export function connectionFor(response: Response): Connection {
     if (!response.status) {

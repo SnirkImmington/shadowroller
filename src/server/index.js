@@ -62,6 +62,7 @@ export function initialCookieCheck(
     let authMatch, auth;
     try {
         authMatch = document.cookie.match(/srAuth=[^.]+.([^.]+)/);
+        // flow-ignore-all-next-line
         auth = JSON.parse(atob(authMatch[1]));
     }
     catch {

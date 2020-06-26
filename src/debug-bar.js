@@ -67,6 +67,7 @@ export default function DebugBar() {
     const auth = React.useMemo(() => {
         try {
             const authMatch = cookie.match(/srAuth=[^.]+.([^.]+)/);
+            // flow-ignore-all-next-line
             return atob(authMatch[1]);
         }
         catch {
