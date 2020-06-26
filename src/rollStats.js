@@ -13,6 +13,7 @@ export type HitsResults = {
     rounds: number,
 };
 export function results(event: Event.Roll | Event.EdgeRoll): HitsResults {
+    console.log("Called results for", event);
     const dice = event.dice ? event.dice : event.rounds.flatMap(r => r);
     let hits = 0;
     let misses = 0;
@@ -30,7 +31,12 @@ export function results(event: Event.Roll | Event.EdgeRoll): HitsResults {
     const critical = glitched && hits === 0;
     const edged = event.dice ? true : false;
     const rounds = event.dice ? 1 : event.rounds.length;
-    const shouldDisplay = edged || glitched || dice.length > 12 || hits > 4;
+    const shouldDisplay = (
+        ((event?.rounds?.length ?? 1) > 1)
+        || glitched
+        || dice.length > 12
+        || hits > 4
+    );
 
     return {
         dice, hits, misses, edged, rounds,
