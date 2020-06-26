@@ -28,7 +28,7 @@ type EdgeRollEvent struct {
 	PlayerID   string  `json:"pID"`
 	PlayerName string  `json:"pName"`
 	Title      string  `json:"title"`
-	Rolls      [][]int `json:"rolls"`
+	Rounds     [][]int `json:"rounds"`
 }
 
 // PlayerJoinEvent is posted when a new player joins the game.

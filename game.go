@@ -181,7 +181,7 @@ func handleRoll(response Response, request *Request) {
 			PlayerID:   auth.PlayerID,
 			PlayerName: auth.PlayerName,
 			Title:      roll.Title,
-			Rolls:      rolls,
+			Rounds:     rolls,
 		}
 
 	} else {
