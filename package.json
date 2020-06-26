@@ -1,7 +1,7 @@
 {
     "name": "shadowroller",
     "description": "Roll dice from random.org",
-    "version": "0.8",
+    "version": "0.8.0",
     "author": "S. B. Immington",
     "license": "MIT",
     "homepage": "https://snirkimmington.github.io/shadowroller",
@@ -24,7 +24,6 @@
         "@fortawesome/free-solid-svg-icons": "^5.13.0",
         "@fortawesome/react-fontawesome": "^0.1.9",
         "react": "^16.13",
-        "react-bootstrap": "^1.0.0",
         "react-dom": "^16.13.1",
         "react-virtualized-auto-sizer": "^1.0.2",
         "react-window": "^1.8.5",
