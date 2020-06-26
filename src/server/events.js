@@ -6,21 +6,31 @@ import * as Event from 'event';
 import * as server from '../server';
 import type { SetConnection } from 'connection';
 
-function parseEvent(event: any): ?Event.ServerEvent {
+function parseEvent(event: any): ?Event.Event {
     switch (event.ty) {
         case "roll":
-            return ({
-                ty: "gameRoll", id: event.id,
-                playerID: event.pID,
-                playerName: event.pName,
+            return {
+                ty: "roll", id: event.id,
+                source: {
+                    id: event.pID, name: event.pName,
+                },
+                title: event.title ?? '',
                 dice: event.roll,
-                title: event.title ?? ''
-            }: Event.GameRoll);
+            };
+        case "edgeRoll":
+            return {
+                ty: "edgeRoll", id: event.id,
+                source: {
+                    id: event.pID, name: event.pName,
+                },
+                title: event.title ?? '',
+                rounds: event.rounds,
+            };
         case "playerJoin":
-            return ({
+            return {
                 ty: "playerJoin", id: event.id,
-                player: { id: event.pID, name: event.pName },
-            }: Event.PlayerJoin);
+                source: { id: event.pID, name: event.pName },
+            };
         default:
             if (process.env.NODE_ENV !== 'production') {
                 console.error("Invalid event", event);
@@ -32,6 +42,7 @@ function parseEvent(event: any): ?Event.ServerEvent {
 function onMessage(e, dispatch) {
     let eventData;
     try {
+        // flow-ignore-all-next-line
         eventData = JSON.parse(e.data);
     }
     catch (err) {
@@ -52,7 +63,7 @@ function onMessage(e, dispatch) {
 - (older-2)               // ...fetched[n]
 */
 type EventsParams = { oldest?: string, newest?: string };
-type EventsResponse = { events: Event.ServerEvent[], more: bool };
+type EventsResponse = { events: Event.Event[], more: bool };
 export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
     return server.backendPost("event-range", params).then(resp => {
         const events = [];
@@ -89,6 +100,7 @@ export function useEvents(
 
         if (!gameID) {
             if (process.env.NODE_ENV !== "production") {
+                // flow-ignore-all-next-line
                 document.title = `Shadowroller (${process.env.NODE_ENV})`;
             }
             else {
@@ -111,6 +123,7 @@ export function useEvents(
             if (source.readyState === 1) {
                 setConnection("connected");
                 if (process.env.NODE_ENV !== "production") {
+                    // flow-ignore-all-next-line
                     document.title = `${gameID} - Shadowroller (${process.env.NODE_ENV})`;
                 }
                 else {
