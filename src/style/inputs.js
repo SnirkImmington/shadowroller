@@ -47,12 +47,10 @@ const RadioLabel: StyledComponent<> = styled.label`
     cursor: pointer !important;
     user-select: none;
 
-    color: ${({light, theme}) =>
-        light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
-    };
+    color: #222;
 
     &:hover {
-        filter: brightness(130%);
+        filter: brightness(180%);
     }
 
     & > *:checked {
