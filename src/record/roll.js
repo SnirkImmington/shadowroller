@@ -121,12 +121,11 @@ const EdgeDiceRounds = styled(UI.FlexRow)`
 
 type RollProps = {
     +event: Event.Roll | Event.EdgeRoll,
-    +eventIx: number,
     //...RollActionsProps,
 };
 export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...actions }: RollProps) {
     console.log("Rendering", arguments[0], event.id);
-    const color = event.source !== "local" ? srutil.hashedColor(event.id) : 'slategray';
+    const color = event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
     const result = rollStats.results(event);
 
     let intro: React.Node = event.source !== "local" ? (
