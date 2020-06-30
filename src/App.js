@@ -36,7 +36,7 @@ const AppRight: StyledComponent<> = styled.div`
     padding-left: 2px;
 
     @media all and (min-width: 768px) {
-        width: 36rem;
+        width: 37rem;
     }
 `;
 

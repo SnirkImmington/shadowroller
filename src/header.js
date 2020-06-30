@@ -6,6 +6,7 @@ import styled from 'styled-components/macro';
 
 import * as Game from 'game';
 import { ConnectionCtx } from 'connection';
+// flow-ignore-all-next-line
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
 
 const SRHeader: StyledComponent<> = styled.header`

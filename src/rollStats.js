@@ -3,14 +3,18 @@
 import * as Event from 'event';
 
 export type HitsResults = {
+    dice: number[],
     hits: number,
     misses: number,
     glitched: bool,
     critical: bool,
     shouldDisplay: bool,
+    edged: bool,
+    rounds: number,
 };
-export function results(event: Event.EventRoll): HitsResults {
-    const dice = event.dice;
+export function results(event: Event.Roll | Event.EdgeRoll): HitsResults {
+    console.log("Called results for", event);
+    const dice = event.dice ? event.dice : event.rounds.flatMap(r => r);
     let hits = 0;
     let misses = 0;
 
@@ -25,10 +29,17 @@ export function results(event: Event.EventRoll): HitsResults {
 
     const glitched = misses >= Math.ceil(dice.length / 2);
     const critical = glitched && hits === 0;
-    const shouldDisplay = glitched || dice.length > 12 || hits > 4;
+    const edged = event.dice ? true : false;
+    const rounds = event.dice ? 1 : event.rounds.length;
+    const shouldDisplay = (
+        ((event?.rounds?.length ?? 1) > 1)
+        || glitched
+        || dice.length > 12
+        || hits > 4
+    );
 
     return {
-        hits, misses,
+        dice, hits, misses, edged, rounds,
         glitched, critical, shouldDisplay
     }
 }

@@ -36,6 +36,8 @@ const StyledInput = styled(UI.Input)`
     border: 0;
     outline: 0;
 
+    width: 8em;
+
     &:focus {
         border: 0;
         outline: 0;

@@ -7,6 +7,7 @@ import * as UI from 'style';
 
 import * as server from 'server';
 import * as Game from 'game';
+import * as Event from 'event';
 import { ConnectionCtx } from 'connection';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
@@ -37,20 +38,36 @@ const Item = styled.div`
     width: 100%;
     @media all and (min-width: 768px) {
         width: auto;
+        flex-grow: 1;
+        ${({align}) => align &&
+            `text-align: ${align};`}
+        ${({capped}) => capped &&
+            "width: 33vw; overflow-x: auto;"}
+    }
+`;
+
+const CappedItem = styled(Item)`
+    @media all and (min-width: 768px) {
+        width: 33vw;
+        overflow-x: auto;
     }
 `;
 
 export default function DebugBar() {
     const gameState = React.useContext(Game.Ctx);
     const connection = React.useContext(ConnectionCtx);
+    const eventState = React.useContext(Event.Ctx);
+
     const game = !gameState ? gameState :
         {...gameState, player: undefined, players: undefined};
-    const players = !gameState ? "N/A" : gameState.players.size;
+    const players = !gameState ? "N/A" : Array.from(gameState.players.values());
+    const events = { ...eventState, events: undefined };
 
     const cookie = document.cookie;
     const auth = React.useMemo(() => {
         try {
             const authMatch = cookie.match(/srAuth=[^.]+.([^.]+)/);
+            // flow-ignore-all-next-line
             return atob(authMatch[1]);
         }
         catch {
@@ -61,28 +78,38 @@ export default function DebugBar() {
     return (
         <StyledBar>
             <Group>
-                <Item>
+                <Item align="start">
                     <b>
                         Shadowroller {process.env.NODE_ENV}&nbsp;
                     </b>
                     <tt>{server.BACKEND_URL}</tt>&nbsp;
                 </Item>
-                <Item>
+                <Item align="middle">
                     <b>Connection:&nbsp;</b>
                     <tt>{connection}</tt>
                 </Item>
-                <Item>
+                <Item align="end">
                     <b>Auth:</b>&nbsp;
                     <tt>{auth}</tt>
                 </Item>
             </Group>
             <Group>
-                <Item>
+                <Item align="start">
                     <b>Game:&nbsp;</b>
                     <tt>{JSON.stringify(game) ?? 'undefined'}</tt>
                 </Item>
-                <Item>
-                    <b>Players:&nbsp;</b>
+                <Item align="middle">
+                    <b>
+                        Events
+                        ({eventState.events.length}):&nbsp;
+                    </b>
+                    <tt>{JSON.stringify(events)}</tt>
+                </Item>
+                <Item align="end">
+                    <b>
+                        Players
+                        ({gameState?.players?.size ?? 0}):&nbsp;
+                    </b>
                     <tt>{JSON.stringify(players)}</tt>
                 </Item>
             </Group>

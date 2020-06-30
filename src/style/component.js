@@ -14,8 +14,8 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
 }))`
     ${color}
     font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
-    max-width: ${(props) => props.size ? '100%' : '12em'};
-    max-height: calc(1em + 12px);
+    max-width: ${(props) => props.expand ? '100%' : '14em'};
+    height: calc(1em + 10px);
 
     margin: 0px 0.5em;
     border: 1px solid lightslategray;
@@ -46,7 +46,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     font-family: "source-code-pro", monospace;
     font-weight: bold;
     font-size: 1em;
-
+    user-select: none;
     cursor: pointer;
     text-decoration: underline;
 
@@ -128,12 +128,6 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
         color: ${props=>props.theme.colors.secondaryDesaturated2};
     }
     ${color}
-`;
-
-export const NoButtionRadio: StyledComponent<> = styled.input.attrs(props => ({
-    type: "radio",
-    ...props
-}))`
 `;
 
 const diceFrames = keyframes`

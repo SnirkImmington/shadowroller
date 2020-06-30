@@ -2,18 +2,15 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import * as dice from 'dice';
 
 import * as Event from 'event';
 
-import { StyledRecord } from 'record';
-import type { RecordProps } from 'record';
 import * as srutil from 'srutil';
 import * as rollStats from 'rollStats';
 
-
+/*
 type RollActionsProps = {|
     +onPush: () => void,
     +onSecondChance: () => void,
@@ -35,11 +32,57 @@ function RollActionsRow({onPush, onSecondChance, onRemove}: RollActionsProps) {
     );
 }
 
+function localRollActions(event: Event.LocalRoll, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
+    return {
+        onPush: function() {
+            dispatch({
+                ty: "edgePush", ix: eventIx,
+            });
+        },
+        onSecondChance: function() {
+            dispatch({
+                ty: "edgeReroll", ix: eventIx,
+            });
+        },
+        onRemove: function() {
+            dispatch({
+                ty: "removeLocal", ix: eventIx,
+            });
+        }
+    };
+}
+
+function gameRollActions(event: Event.GameRoll, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
+    return {
+        onPush: function() {
+            dispatch({
+                ty: "edgePush", ix: eventIx,
+            });
+        },
+        onSecondChance: function() {
+            dispatch({
+                ty: "edgeReroll", ix: eventIx,
+            });
+        },
+    };
+}*/
+
+const WrapperColumn = styled(UI.FlexColumn)``;
+
+const TitleRow = styled(UI.FlexRow)`
+    flex-grow: 1;
+`;
+
 const StyledResults = styled.b`
-    position: sticky;
-    top: 0;
-    left: 0;
     color: ${props => props.color};
+
+    position: sticky;
+    left: 0;
+
+    margin-left: auto;
+    padding-left: 1em;
+    flex-align: flex-end;
+    white-space: nowrap;
 `;
 
 type RollMessageProps = {
@@ -56,10 +99,12 @@ function ResultInfo({ color, result }: RollMessageProps) {
 }
 
 const RollScrollable = styled(UI.FlexColumn)`
-    width: 100%;
     overflow-x: auto; /* Left-right scroll */
+    flex-wrap: nowrap;
+    align-content: stretch;
 
     & > * {
+        flex-basis: max-content;
         margin-bottom: 4px;
     }
     & :last-child {
@@ -67,49 +112,71 @@ const RollScrollable = styled(UI.FlexColumn)`
     }
 `;
 
+const EdgeDiceRounds = styled(UI.FlexRow)`
+    flex-grow: 1;
+    & > * {
+        margin-right: 1.5em;
+    }
+`;
+
 type RollProps = {
-    +event: Event.EventRoll,
-    ...RollActionsProps,
+    +event: Event.Roll | Event.EdgeRoll,
+    //...RollActionsProps,
 };
 export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...actions }: RollProps) {
-    console.log("Rendering", event.id, event.ts);
-    const color = event.id ? srutil.hashedColor(event.id) : 'slategray';
-    let intro: React.Node = event.id ? (
+    console.log("Rendering", arguments[0], event.id);
+    const color = event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
+    const result = rollStats.results(event);
+
+    let intro: React.Node = event.source !== "local" ? (
         <span>
-            <UI.HashColored id={event.playerID}>
-                {event.playerName}
+            <UI.HashColored id={event.source.id}>
+                {event.source.name}
             </UI.HashColored>
-            rolls
+            {event.rounds ? (<b>&nbsp;pushes the limit</b>) : " rolls "}
         </span>
     ) : (
         <span>
-            Rolled
+            {event.rounds ?
+                (<b>Pushed the limit</b>) : "Rolled"}
         </span>
     );
     const title: React.Node = event.title ? (
-        <>
-            to
-            <b>{event.title}</b>
-        </>
-    ) : (
-        <>
+        <span>
+            to <b>{event.title}</b>
+        </span>
+    ) : event.dice ? (
+        <span>
             <tt>{event.dice.length}</tt> dice
-        </>
+        </span>
+    ) : (
+        <span>
+            on <tt>{event.rounds[0].length}</tt> dice
+            {event.rounds.length > 1 && (
+                <> in <tt>{result.rounds}</tt> rounds </>
+            )}
+        </span>
+    );
+    const diceList: React.Node = event.dice ? (
+        <dice.List rolls={event.dice} />
+    ) : (
+        <EdgeDiceRounds>
+            {event.rounds.map((rolls, ix) =>
+                <dice.List key={ix} rolls={rolls} />
+            )}
+        </EdgeDiceRounds>
     );
 
-    const result = rollStats.results(event);
-
     return (
-        <UI.FlexColumn>
+        <WrapperColumn>
             <RollScrollable>
-                <span>{intro} {title}</span>
-                {result.shouldDisplay &&
-                    <ResultInfo color={color} result={result} />}
-                <dice.List rolls={event.dice} />
+                <TitleRow>
+                    <UI.NoWrap>{intro} {title}</UI.NoWrap>
+                    {result.shouldDisplay &&
+                        <ResultInfo color={color} result={result} />}
+                </TitleRow>
+                {diceList}
             </RollScrollable>
-            <RollActionsRow onPush={actions.onPush}
-                            onSecondChance={actions.onSecondChance}
-                            onRemove={actions.onRemove} />
-        </UI.FlexColumn>
+        </WrapperColumn>
     );
 });

@@ -17,6 +17,3 @@ module.system.node.root_relative_dirname=src
 # Get edgy new javascript
 esproposal.optional_chaining=enable
 esproposal.nullish_coalescing=enable
-
-# This is just good practice
-experimental.const_params=true

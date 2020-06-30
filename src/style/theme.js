@@ -14,12 +14,12 @@ export default {
 
         warning: "hsl(60, 50%, 50%)",
 
-        secondary: "hsl(182,60%,48%)",
+        secondary: "#31bfc4",
         secondaryPressed: "hsl(182, 60%, 36%)",
         secondaryLight: "#88DFDF",
         secondaryDesaturated: "#94F5F5",
         secondaryDesaturated2: "hsl(182, 20%, 45%)",
-        secondaryDark: "#1d605b",
+        secondaryDark: "#1f777a",
         green: "#228422",
         gray: "#000022",
         header: "#222222",
@@ -42,5 +42,8 @@ export default {
 
         gray1: "#2b3137",
         gray2: "#47353b",
+    },
+    fonts: {
+        monospace: '"source-code-pro", Menlo, Calibri, monospace',
     }
 }

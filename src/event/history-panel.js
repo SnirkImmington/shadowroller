@@ -4,27 +4,52 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
 
-import { VariableSizeList as List } from 'react-window';
+import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import * as Records from 'event/record';
+import * as Record from 'record';
 import * as server from 'server';
+import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 
-type RecordProps = { +event: Event.Event, style?: any };
-function EventRecord({ event, style }: RecordProps) {
+const DO_SOME_ROLLS_FLAVOR = [
+    "You have to press that roll button first, chummer.",
+    "You gotta roll those dice first.",
+    "Hit that roll button and we'll show you the glitches."
+];
+
+type RecordProps = { +event: ?Event.Event, style?: any };
+const EventRecord = React.memo<RecordProps>(function EventRecord({ event, style }) {
+    if (!event) {
+        return (
+            <Record.StyledRecord color="white" style={style}>
+                <Record.Loading />
+            </Record.StyledRecord>
+        );
+    }
+    let inner: React.Node;
+    const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
     switch (event.ty) {
-        case "localRoll": return <Records.LocalRollRecord event={event} style={style} />;
-        case "gameRoll": return <Records.GameRollRecord event={event} style={style} />;
-        case "playerJoin": return <Records.PlayerJoinRecord event={event} style={style} />;
+        case "playerJoin":
+            inner = (<Record.PlayerJoin event={event} style={style} />);
+            break;
+        case "edgeRoll":
+        case "roll":
+            inner = (<Record.RollRecord event={event} eventIx={0} />);
+            break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
             return '';
     }
-}
+    return (
+        <Record.StyledRecord color={color} style={style}>
+            {inner}
+        </Record.StyledRecord>
+    );
+}, areEqual);
 
 type RowRenderProps = { +style: any, +index: number };
 
@@ -46,7 +71,8 @@ export function LoadingResultList() {
     // but that's okay. And when we are pushing items to the top, it's just
     // recalculating the first ~9.
     React.useEffect(() => {
-        if (listRef.current != null && listRef.current._listRef != null) {
+        if (listRef.current && listRef.current._listRef) {
+            console.log('List ref', listRef.current._listRef);
             listRef.current._listRef.resetAfterIndex(0);
         }
     }, [ eventsLength ]);
@@ -64,6 +90,8 @@ export function LoadingResultList() {
         switch (event.ty) {
             case "localRoll":
             case "gameRoll":
+            case "edgeRoll":
+            case "roll":
                 return 96;
             default:
                 return 40;
@@ -72,7 +100,7 @@ export function LoadingResultList() {
 
     let RenderRow = React.useMemo(() => ({ index, style }: RowRenderProps) => {
         if (!loadedAt(index)) {
-            return <Records.EventsLoadingIndicator style={style} />;
+            return <EventRecord event={null} style={style} />;
         }
         else {
             const event = state.events[index];
@@ -128,12 +156,20 @@ const TitleBar = styled(UI.FlexRow)`
     justify-content: space-between;
 `;
 
+const HistoryFlavor = styled(UI.Flavor)`
+    margin: 1em auto;
+`;
+
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
+    const events = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     // Using connection is what lets us rerender when events DC
     const setConnection = React.useContext(SetConnectionCtx);
+
+    const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
     const gameID = game?.gameID;
+    const hasRolls = events.events.length > 0;
     server.useEvents(gameID, setConnection, dispatch);
 
     let title;
@@ -149,7 +185,10 @@ export default function EventHistory() {
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
             </TitleBar>
-            <LoadingResultList />
+            {hasRolls ?
+                <LoadingResultList />
+                : <HistoryFlavor>{rollFlavor}</HistoryFlavor>
+            }
         </UI.Card>
     );
 }
