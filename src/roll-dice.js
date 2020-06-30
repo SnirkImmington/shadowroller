@@ -74,6 +74,8 @@ const ROLL_TITLE_FLAVOR = [
     "jump through the air duct",
     "fireball the door",
     "shoot between the hostages",
+    "aim at the hologram",
+    "pretend to be a chef",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",

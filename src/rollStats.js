@@ -13,7 +13,6 @@ export type HitsResults = {
     rounds: number,
 };
 export function results(event: Event.Roll | Event.EdgeRoll): HitsResults {
-    console.log("Called results for", event);
     const dice = event.dice ? event.dice : event.rounds.flatMap(r => r);
     let hits = 0;
     let misses = 0;
