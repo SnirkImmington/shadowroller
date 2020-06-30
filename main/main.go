@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// http://www.patorjk.com/software/taag/ "Small Slant"
+// SHADOWROLLER ascii art from  http://www.patorjk.com/software/taag/ "Small Slant"
 const SHADOWROLLER = `
    ____ __            __                         __ __
   / __// /  ___ _ ___/ /___  _    __ ____ ___   / // /___  ____
@@ -30,6 +30,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	srserver.BeginGeneratingRolls()
 	srserver.RegisterDefaultGames()
+	config.VerifyConfig()
 
 	siteMux := srserver.MakeServerMux()
 

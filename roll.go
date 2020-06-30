@@ -22,12 +22,48 @@ import (
 
 var rollsChan = make(chan int, config.RollBufferSize)
 
-func fillRolls(rolls []int) {
+func fillRolls(rolls []int) (hits int) {
 	for i := 0; i < len(rolls); i++ {
-		rolls[i] = <-rollsChan
+		roll := <-rollsChan
+		rolls[i] = roll
+		if roll == 5 || roll == 6 {
+			hits++
+		}
 	}
+	return
 }
 
+func explodingSixes(pool int) (results [][]int) {
+	for pool > 0 { // rounds
+		sixes := 0
+		rollRound := make([]int, pool)
+		for i := 0; i < pool; i++ {
+			roll := <-rollsChan
+			rollRound[i] = roll
+			if roll == 6 {
+				sixes++
+			}
+		}
+		pool = sixes
+		results = append(results, rollRound)
+	}
+	return results
+}
+
+func reroll(original []int) []int {
+	pool := 0
+	for _, die := range original {
+		if die >= 5 {
+			pool++
+		}
+	}
+	result := make([]int, pool)
+	fillRolls(result)
+	return result
+
+}
+
+// BeginGeneratingRolls starts the roll server and channel
 func BeginGeneratingRolls() {
 	go func() {
 		log.Printf("Using PRNG roll seed source: %v", crypto.Reader)

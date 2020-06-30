@@ -31,6 +31,7 @@ func RegisterDefaultGames() {
 func MakeServerMux() *gorillaMux.Router {
 	mux := gorillaMux.NewRouter()
 	mux.Use(recoveryMiddleware)
+	mux.Use(requestIDMiddleware)
 	mux.Use(headersMiddleware)
 	mux.Use(rateLimitedMiddleware)
 
@@ -45,28 +46,28 @@ func MakeServerMux() *gorillaMux.Router {
 	mux.HandleFunc("/roll", handleRoll).Methods("POST")
 
 	mux.HandleFunc("/", func(response Response, request *Request) {
+		logRequest(request)
 		if config.IsProduction {
-			log.Println(request.Proto, request.Method, request.RequestURI, "-> shadowroller")
+			log.Printf("%v -> snirkimmington.github.io/shadowroller", http.StatusSeeOther)
 			http.Redirect(
 				response, request,
 				"https://snirkimmington.github.io/shadowroller", http.StatusSeeOther,
 			)
 		} else {
-			log.Println(request.Method, request.URL, "-> shadowroller")
 			_, err := io.WriteString(response,
 				`<a href="`+config.FrontendAddress+`">Frontend</a>`)
 			if err != nil {
 				httpInternalError(response, request, err)
 				return
 			}
-			httpSuccess(response)
+			httpSuccess(response, request, "page with link to frontend")
 		}
 	}).Methods("GET")
 
 	mux.HandleFunc("/health-check", func(response Response, request *Request) {
 		logRequest(request)
-		httpSuccess(response)
-	})
+		httpSuccess(response, request)
+	}).Methods("GET")
 
 	return mux
 }

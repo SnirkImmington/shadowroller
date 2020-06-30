@@ -42,56 +42,75 @@ func writeBodyJSON(response Response, value interface{}) error {
 
 func logRequest(request *Request, values ...string) {
 	if config.IsProduction {
-		log.Output(2, fmt.Sprintf("%v %v %v", request.Proto, request.Method, request.RequestURI))
+		logf(request, "<- %v %v %v %v",
+			request.RemoteAddr, request.Proto, request.Method, request.URL,
+		)
 	} else {
-		log.Output(2, fmt.Sprintf("%v %v", request.Method, request.URL))
+		logf(request, "<- %v %v",
+			request.Method, request.URL,
+		)
 	}
 }
 
-func httpNotFound(response Response) {
-	log.Output(2, "-> 404 not found")
-	http.Error(response, "Not found", 404)
+func logf(request *Request, format string, values ...interface{}) {
+	id := requestID(request)
+	err := log.Output(2, fmt.Sprintf(id+" "+format, values...))
+	if err != nil {
+		log.Printf(id+" [Output Error] "+format, values...)
+	}
 }
 
-func httpUnauthorized(response Response, err error) {
-	message := fmt.Sprintf("-> 401 Unauthorized: %v", err)
-	log.Output(2, message)
+func httpNotFound(response Response, request *Request) {
+	logf(request, "-> 404 not found")
+	http.Error(response, "Not found", http.StatusNotFound)
+}
+
+func httpUnauthorized(response Response, request *Request, err error) {
+	logf(request, "-> 401 Unauthorized: %v", err)
 	http.Error(response, "Unauthorized", http.StatusUnauthorized)
 }
 
 func httpInternalError(response Response, request *Request, err error) {
-	logMessage := fmt.Sprintf("Internal error handling %s %s: %v", request.Method, request.URL, err)
-	log.Output(2, logMessage)
 	if config.IsProduction {
-		log.Output(2, "-> 500 Internal Error")
+		logf(request, "Internal error handling %v %v %v %v: %v",
+			request.RemoteAddr, request.Proto, request.Method, request.URL, err,
+		)
+		logf(request, "-> 500 Internal Error")
 		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 	} else {
-		log.Output(2, "-> 500 "+err.Error())
-		http.Error(response, logMessage, http.StatusInternalServerError)
+		message := fmt.Sprintf("Internal error handling %v %v: %v",
+			request.Method, request.URL, err,
+		)
+		logf(request, message)
+		logf(request, " -> 500 Internal error: %v", err)
+		http.Error(response, message, http.StatusInternalServerError)
 	}
 }
 
 func httpInternalErrorMessage(response Response, request *Request, message interface{}) {
-	logMessage := fmt.Sprintf("Internal error handling %s %s: %v", request.Method, request.URL, message)
-	log.Output(2, logMessage)
 	if config.IsProduction {
-		log.Output(2, "-> 500 Internal Server Error")
+		logf(request, "Internal error handling %v %v %v %v: %v",
+			request.RemoteAddr, request.Proto, request.Method, request.URL, message,
+		)
+		logf(request, "-> 500 Internal Server Error")
 		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
 	} else {
-		log.Output(2, "-> 500 "+logMessage)
+		logMessage := fmt.Sprintf("Internal error handling %v %v %v: %v",
+			request.Method, request.URL, message,
+		)
+		logf(request, "-> 500 %v", logMessage)
 		http.Error(response, logMessage, http.StatusInternalServerError)
 	}
 }
 
-func httpInvalidRequest(response Response, message string) {
-	logMessage := "Invalid request: " + message
-	log.Output(2, "-> 400 "+logMessage)
-	http.Error(response, logMessage, http.StatusBadRequest)
+func httpInvalidRequest(response Response, request *Request, message string) {
+	logf(request, "-> 400 Bad Request: ", message)
+	http.Error(response, message, http.StatusBadRequest)
 }
 
-func httpSuccess(response Response, message ...interface{}) {
+func httpSuccess(response Response, request *Request, message ...interface{}) {
 	if len(message) == 0 {
 		message = []interface{}{"OK"}
 	}
-	log.Output(2, "-> 200 "+fmt.Sprint(message...))
+	logf(request, "-> 200 %v", fmt.Sprint(message...))
 }

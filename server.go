@@ -2,10 +2,10 @@ package srserver
 
 import (
 	"crypto/tls"
-	"golang.org/x/crypto/acme/autocert"
-	//"log"
 	"github.com/janberktold/sse"
 	"github.com/rs/cors"
+	"golang.org/x/crypto/acme/autocert"
+	"log"
 	"net/http"
 	"srserver/config"
 	"time"
@@ -45,7 +45,9 @@ func makeServerFromHandler(handler http.Handler) *http.Server {
 func MakeHTTPRedirectServer(certManager *autocert.Manager) *http.Server {
 	mux := &http.ServeMux{}
 	mux.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
+		logRequest(request)
 		newURL := "https://" + request.Host + request.URL.String()
+		log.Printf("-> %v %v", http.StatusMovedPermanently, newURL)
 		http.Redirect(response, request, newURL, http.StatusMovedPermanently)
 	})
 	server := makeServerFromHandler(mux)
@@ -56,7 +58,14 @@ func MakeHTTPRedirectServer(certManager *autocert.Manager) *http.Server {
 
 func MakeLocalServer(mux http.Handler) *http.Server {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{config.FrontendAddress, config.StagingAddress},
+		// Note that this is insecure!
+		// The purpose is to allow
+		AllowOriginFunc: func(origin string) bool {
+			if config.IsProduction {
+				return origin == config.FrontendAddress
+			}
+			return true
+		},
 		AllowCredentials: true, // Needed for JWT
 		Debug:            config.CORSDebug,
 	})
