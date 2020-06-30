@@ -33,7 +33,17 @@ func withRequestID(ctx context.Context) context.Context {
 }
 
 func requestID(request *Request) string {
-	return request.Context().Value(requestIDKey).(string)
+	val := request.Context().Value(requestIDKey)
+	switch val.(type) {
+	case string:
+		return val.(string)
+	default:
+		log.Printf(
+			"Attempted to get request ID (%v) for %v %v from %v",
+			val, request.Method, request.RequestURI, request.Host,
+		)
+		return "??"
+	}
 }
 
 func requestIDMiddleware(wrapped http.Handler) http.Handler {
