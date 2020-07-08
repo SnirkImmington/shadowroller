@@ -6,6 +6,9 @@ import * as connection from 'connection';
 
 import * as events from './events';
 
+export * from './events';
+export * from './auth';
+
 export const BACKEND_URL = process.env.NODE_ENV === 'production' ?
     'https://shadowroller.immington.industries/'
     : document.location.toString().replace(':3000', ':3001');
@@ -141,5 +144,3 @@ type RollParams = { count: number, title: string };
 export function postRoll(roll: RollParams): Promise<bool> {
     return backendPost('roll', roll, true);
 }
-
-export * from './events';
