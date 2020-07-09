@@ -21,7 +21,6 @@ const ENTER_GAME_ID_FLAVOR = [
     <span><tt>aimattrees</tt> is not a Game ID.</span>,
     <span><tt>foofaraw</tt> is not a Game ID.</span>,
 
-    "Show some ID, chummer.",
     "Gimme a real one this time.",
 
     "Pull out your best SIN.",
@@ -31,10 +30,12 @@ const ENTER_GAME_ID_FLAVOR = [
     "We probably won't burn your SIN.",
 
     "Wow, so exclusive.",
+    "Or you're just curious, I guess.",
 ];
 const LOADING_FLAVOR = [
     "Hacking you in...",
     "Acquiring marks...",
+    "Accessing game node...",
     "Asking for permission...",
 ];
 const NOT_FOUND_FLAVOR = [
@@ -42,16 +43,18 @@ const NOT_FOUND_FLAVOR = [
     "You put in the right Game ID?",
     "Game ID first, then player name.",
     "That's not a game ID, chummer.",
-    "That's no Game ID!",
-    "SIN scanner caught you on that one."
+    "That's no Game ID.",
+    "Access denied! SIN burned!",
 ];
 const SERVER_ERROR_FLAVOR = [
     "Something went wrong with the server.",
     "The server is having an issue.",
+    "The server is having issues, okay?",
     "Server glitched attempting to check your ID.",
 ];
 const NO_CONNECTION_FLAVOR = [
     "Can't connect to the server.",
+    "Too much Noise to connect.",
 ];
 
 const MenuLayout = styled(UI.ColumnToRow)`
@@ -82,17 +85,16 @@ const JoinText = styled.span`
 
 const ButtonZone = styled(UI.FlexRow)`
     /* Mobile: last row, button on the right */
-    justify-content: space-between;
-    margin-top: .5em;
+    margin-left: auto;
+    padding: 0.5em;
     @media all and (min-width: 768px) {
         margin-top: 0px;
-        margin-left: 2rem;
     }
 `;
 
 const SpacedFlavor = styled(UI.Flavor)`
-    margin-left: 1em;
-
+    line-height: 1.5;
+    margin-bottom: .5em;
     @media all and (min-width: 768px) {
         margin: 0 1.5em 0 1.5em;
     }
@@ -182,27 +184,33 @@ export function JoinMenu({ hide }: Props) {
         <UI.Menu>
             <form id="join-game-menu">
                 <MenuLayout>
-                    <JoinText>
-                        Join a game if you've been given a Game ID.
-                    </JoinText>
                     <UI.ColumnToRow>
-                    <InputRow>
-                        <UI.FAIcon fixedWidth icon={icons.faKey} transform="grow-5" color={theme.colors.secondary} />
-                        <UI.Input monospace id="join-game-id"
-                                  placeholder={"Game ID"}
-                                  value={gameID} onChange={onGameIDChange}
-                                  disabled={connection === "connecting"} />
-                    </InputRow>
-                    <InputRow>
-                        <UI.FAIcon fixedWidth icon={icons.faUser} transform="grow-5" color={theme.colors.secondary} />
-                        <UI.Input id="join-player-name"
-                                  placeholder={"Player name"}
-                                  value={playerName} onChange={onPlayerNameChange}
-                                  disabled={connection === "connecting"} />
-                    </InputRow>
+                        <JoinText>
+                            Join a game if you've been given a Game ID.
+                            </JoinText>
+                            <SpacedFlavor light warn={warn}>{flavor}</SpacedFlavor>
+                    </UI.ColumnToRow>
+                    <UI.ColumnToRow>
+                        <InputRow>
+                            <UI.FAIcon icon={icons.faKey}
+                                       color={theme.colors.secondary}
+                                       fixedWidth transform="grow-5" />
+                            <UI.Input monospace id="join-game-id"
+                                      placeholder={"Game ID"}
+                                      value={gameID} onChange={onGameIDChange}
+                                      disabled={connection === "connecting"} />
+                        </InputRow>
+                        <InputRow>
+                            <UI.FAIcon icon={icons.faUser}
+                                       color={theme.colors.secondary}
+                                       fixedWidth transform="grow-5" />
+                            <UI.Input id="join-player-name"
+                                      placeholder={"Player name"}
+                                      value={playerName} onChange={onPlayerNameChange}
+                                      disabled={connection === "connecting"} />
+                        </InputRow>
                     </UI.ColumnToRow>
                     <ButtonZone>
-                        <SpacedFlavor light warn={warn}>{flavor}</SpacedFlavor>
                         {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                         <UI.Button id="join-game-submit" onClick={onSubmit}
                                    disabled={!ready}>
