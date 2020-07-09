@@ -42,9 +42,16 @@ const AppRight: StyledComponent<> = styled.div`
 
 function Shadowroller() {
     const connection = React.useContext(ConnectionCtx);
+    const setConnection = React.useContext(SetConnectionCtx);
     const [menuShown, setMenuShown] = React.useState<bool>(false);
 
-    function onGameButtonClick() { setMenuShown((prev) => !prev); }
+    function onGameButtonClick() {
+        setMenuShown(shown => !shown);
+        //
+        setConnection(conn =>
+            conn === "disconnected" || conn === "errored" ? "offline" : conn
+        );
+    }
 
     let menu: React.Node = '';
     if (menuShown) {
