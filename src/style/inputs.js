@@ -9,6 +9,116 @@ import typeof Theme from './theme';
 import { FlexRow } from './layout';
 import * as srutil from 'srutil';
 
+type InputProps = { monospace? : bool };
+export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(props => ({
+    type: props.type ?? "text",
+}))`
+    ${color}
+    font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
+    max-width: ${(props) => props.expand ? '100%' : '14em'};
+    height: calc(1em + 10px);
+
+    margin: 0px 0.5em;
+    border: 1px solid lightslategray;
+    padding: 5px;
+    line-height: 1;
+    font-size: 1em;
+
+    &:focus {
+        outline: 1px solid ${props => props.theme.colors.secondary};
+        border: 1px solid ${props => props.theme.colors.secondary};
+    }
+`;
+
+export const LinkButton: StyledComponent<{}, Theme> = styled.button`
+    display: inline;
+    font-family: "source-code-pro", monospace;
+    font-weight: bold;
+    font-size: 1em;
+    user-select: none;
+    cursor: pointer;
+    text-decoration: underline;
+
+    color: ${({light, theme}) =>
+        light ? theme.colors.secondary : theme.colors.primaryLight
+    };
+    background-color: transparent;
+    border: 0;
+    outline: 0;
+    padding: 2px;
+    white-space: pre;
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed !important;
+        text-decoration: none;
+        filter: grayscale(80%);
+    }
+
+    &:hover {
+        filter: brightness(115%);
+    }
+
+    &:active {
+        filter: brightness(85%);
+    }
+
+    &:focus {
+        filter: brightness(85%);
+    }
+`;
+
+export const Button: StyledComponent<{}, Theme> = styled.button`
+    font-size: 1.05em;
+    line-height: 1;
+    font-weight: bold;
+    padding: 0.1em 0;
+    text-align: center;
+    border: 0px;
+    margin: 0;
+    cursor: pointer;
+    color: ${props => props.theme.colors.secondary};
+    background-color: transparent;
+    white-space: pre;
+
+    &:before {
+        content: "[";
+        margin: 0 0.01em 0 0.1em;
+        font-family: "source-code-pro", monospace;
+    }
+    &:after {
+        content: "]";
+        margin: 0 0.1em 0 0.01em;
+        font-family: "source-code-pro", monospace;
+    }
+
+    &:hover {
+        &:before {
+            content: "[";
+        }
+
+        &:after {
+            content: "]";
+        }
+    }
+    &:focus {
+        &:before { content: "["; }
+        &:after { content: "]"; }
+    }
+
+    &:active {
+        color: ${props => props.theme.colors.secondaryPressed};
+        &:before { content: "[" }
+        &:after { content: "]" }
+    }
+
+    &[disabled] {
+        pointer-events: none;
+        cursor: not-allowed;
+        color: ${props=>props.theme.colors.secondaryDesaturated2};
+    }
+    ${color}
+`;
 const HiddenInput = styled.input.attrs(props => ({
     checked: props.checked, name: props.name, id: props.id, value: props.value,
 }))`
