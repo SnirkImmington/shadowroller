@@ -37,7 +37,7 @@ const SRTitle = styled.h1`
 
     margin-left: .5rem;
     @media all and (min-width: 768px) {
-        margin-left: 8rem;
+        margin-left: 4rem;
     }
 `;
 
