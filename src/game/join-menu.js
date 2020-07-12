@@ -14,24 +14,27 @@ import * as server from 'server';
 import * as srutil from 'srutil';
 
 const ENTER_GAME_ID_FLAVOR = [
-    "I hope you've got a good fake.",
-    <span><tt>password12345</tt> is not a Game ID.</span>,
-    <span><tt>deckerpizza</tt> is not a Game ID.</span>,
-    <span><tt>bikinitrolls</tt> is not a Game ID.</span>,
-    <span><tt>aimattrees</tt> is not a Game ID.</span>,
-    <span><tt>foofaraw</tt> is not a Game ID.</span>,
-
-    "Gimme a real one this time.",
+    <span><tt>deckerpizza</tt> isn't a Game ID.</span>,
+    <span><tt>bikinitrolls</tt> isn't a Game ID.</span>,
+    <span><tt>aimattrees</tt> isn't a Game ID.</span>,
+    <span><tt>foofaraw</tt> isn't a Game ID.</span>,
 
     "Pull out your best SIN.",
-    "You'll need at least an R4 SIN.",
+    "Gimme a real one this time.",
+    "I hope you've got a good fake.",
+    "You'll need at least an R4 fake.",
     "I dare you to use your real SIN.",
     "Corporate SINs not accepted.",
     "We probably won't burn your SIN.",
-
-    "Wow, so exclusive.",
-    "Or you're just curious, I guess.",
 ];
+
+const REMEMBER_FLAVOR = [
+    "Remember me",
+    "Remember me",
+    "Remember me",
+    "Save my mark",
+];
+
 const LOADING_FLAVOR = [
     "Hacking you in...",
     "Acquiring marks...",
@@ -58,45 +61,70 @@ const NO_CONNECTION_FLAVOR = [
 ];
 
 const MenuLayout = styled(UI.ColumnToRow)`
-    padding: 0px 0.25rem;
     @media all and (min-width: 768px) {
-        padding: 0px 1em;
+        padding: 0 0.5em;
         align-items: center;
-        margin-left: 2rem;
+    }
+
+    & > *:first-child {
+        @media all and (min-width: 768px) {
+            flex-grow: 1;
+            justify-content: flex-start;
+        }
     }
 `;
 
-const InputRow = styled.div`
-    margin-bottom: 0.5rem;
+const InputRow = styled(UI.FlexRow)`
+    white-space: pre;
+    margin-top: 0.75em;
+    justify-content: center;
     @media all and (min-width: 768px) {
-        margin-bottom: 0;
+        margin-top: 0;
+        justify-content: flex-start;
+    }
+`;
+
+const ButtonZone = styled(UI.FlexRow)`
+    /* Mobile: last row, button on right */
+    justify-content: space-between;
+    margin: 0.75em 11% 0 15%;
+
+    @media all and (min-width: 768px) {
+        margin: 0;
+        & > *:last-child {
+            margin-left: 1.25em;
+            margin-right: 0.5em;
+        }
+    }
+
+    /* Laptop: spacing between remember and button... */
+    & > *:last-child @media all and (min-width: 768px) {
     }
 `;
 
 const JoinText = styled.span`
-    line-height: 1.25;
     margin-right: auto;
 
     margin-bottom: 0.5rem;
     @media all and (min-width: 768px) {
         margin-bottom: 0;
+        margin-left: 0.25em;
+        margin-right: .5em;
     }
 `;
 
-const ButtonZone = styled(UI.FlexRow)`
-    /* Mobile: last row, button on the right */
-    margin-left: auto;
-    padding: 0.5em;
+const MenuInput = styled(UI.Input)`
+    width: 70%;
+    max-width: 70%;
     @media all and (min-width: 768px) {
-        margin-top: 0px;
+        width: 200px;
+        max-width: 200px;
     }
 `;
 
-const SpacedFlavor = styled(UI.Flavor)`
-    line-height: 1.5;
-    margin-bottom: .5em;
+const DesktopSpacing = styled.div`
     @media all and (min-width: 768px) {
-        margin: 0 1.5em 0 1.5em;
+        flex-grow: 1;
     }
 `;
 
@@ -111,7 +139,9 @@ export function JoinMenu({ hide }: Props) {
 
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
+    const [remember, setRemember] = React.useState(false);
 
+    const [rememberFlavor] = srutil.useFlavor(REMEMBER_FLAVOR);
     const [enterIDFlavor] = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
     const [connectingFlavor, newConnecting] = srutil.useFlavor(LOADING_FLAVOR);
     const [noConnectionFlavor, newNoConnection] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
@@ -186,36 +216,43 @@ export function JoinMenu({ hide }: Props) {
                 <MenuLayout>
                     <UI.ColumnToRow>
                         <JoinText>
-                            Join a game if you've been given a Game ID.
-                            </JoinText>
-                            <SpacedFlavor light warn={warn}>{flavor}</SpacedFlavor>
+                            Have you been given a Game ID?
+                        </JoinText>
+                        <UI.Flavor light warn={warn}>{flavor}</UI.Flavor>
                     </UI.ColumnToRow>
                     <UI.ColumnToRow>
                         <InputRow>
                             <UI.FAIcon icon={icons.faKey}
                                        color={theme.colors.secondary}
                                        fixedWidth transform="grow-5" />
-                            <UI.Input monospace id="join-game-id"
-                                      placeholder={"Game ID"}
-                                      value={gameID} onChange={onGameIDChange}
-                                      disabled={connection === "connecting"} />
+                            <MenuInput monospace id="join-game-id"
+                                       placeholder={"Game ID"}
+                                       value={gameID} onChange={onGameIDChange}
+                                       disabled={connection === "connecting"} />
                         </InputRow>
                         <InputRow>
                             <UI.FAIcon icon={icons.faUser}
                                        color={theme.colors.secondary}
                                        fixedWidth transform="grow-5" />
-                            <UI.Input id="join-player-name"
-                                      placeholder={"Player name"}
-                                      value={playerName} onChange={onPlayerNameChange}
-                                      disabled={connection === "connecting"} />
+                            <MenuInput id="join-player-name"
+                                       placeholder={"Player name"}
+                                       value={playerName} onChange={onPlayerNameChange}
+                                       disabled={connection === "connecting"} />
                         </InputRow>
                     </UI.ColumnToRow>
                     <ButtonZone>
+                        <UI.RadioLink type="checkbox" id="join-game-remember"
+                                      name="Remember this gameID"
+                                      checked={remember} onChange={e => setRemember(e.target.checked)}
+                                      disabled={!ready}>
+                            {rememberFlavor}
+                        </UI.RadioLink>
                         {connection === "connecting" ? <UI.DiceSpinner /> : ''}
-                        <UI.Button id="join-game-submit" onClick={onSubmit}
-                                   disabled={!ready}>
+                        <UI.LinkButton light id="join-game-submit"
+                                       onClick={onSubmit}
+                                       disabled={!ready}>
                             Join
-                        </UI.Button>
+                        </UI.LinkButton>
                     </ButtonZone>
                 </MenuLayout>
             </form>
