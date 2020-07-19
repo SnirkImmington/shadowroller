@@ -19,6 +19,7 @@ export function connectionFor(response: Response): Connection {
 }
 
 export type ResponseStatus = | "success" | "badRequest" | "serverError" | "noConnection";
+export type SetResponse = (ResponseStatus) => void;
 
 export function statusFor(response: Response): ResponseStatus {
     if (!response.status) {
