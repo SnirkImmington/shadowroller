@@ -21,6 +21,12 @@ const DO_SOME_ROLLS_FLAVOR = [
     "Hit that roll button and we'll show you the glitches."
 ];
 
+const GAME_EMPTY_FLAVOR = [
+    "Looks like nothing much has happened here.",
+    "Looks like you've joined a really boring game.",
+    "Be the first one to roll!",
+];
+
 type RecordProps = { +event: ?Event.Event, style?: any };
 const EventRecord = React.memo<RecordProps>(function EventRecord({ event, style }) {
     if (!event) {
@@ -168,6 +174,7 @@ export default function EventHistory() {
     const setConnection = React.useContext(SetConnectionCtx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
+    const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);
     const gameID = game?.gameID;
     const hasRolls = events.events.length > 0;
     server.useEvents(gameID, setConnection, dispatch);
@@ -187,7 +194,9 @@ export default function EventHistory() {
             </TitleBar>
             {hasRolls ?
                 <LoadingResultList />
-                : <HistoryFlavor>{rollFlavor}</HistoryFlavor>
+                : gameID ?
+                    <HistoryFlavor>{emptyGameFlavor}</HistoryFlavor>
+                    : <HistoryFlavor>{rollFlavor}</HistoryFlavor>
             }
         </UI.Card>
     );
