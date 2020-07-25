@@ -6,6 +6,18 @@ import * as Event from 'event';
 import * as server from '../server';
 import type { SetConnection } from 'connection';
 
+export function normalizeEvent(event: any) {
+    if (!event.source) {
+        event.source = { id: event.pID, name: event.pName };
+        delete event.pID;
+        delete event.pName;
+    }
+    if (event.roll && !event.dice) {
+        event.dice = event.roll;
+        event.roll = undefined;
+    }
+}
+
 function parseEvent(event: any): ?Event.Event {
     switch (event.ty) {
         case "roll":
@@ -111,14 +123,16 @@ export function useEvents(
         }
 
         setConnection("connecting");
-        const source = new EventSource(server.BACKEND_URL + "events", {
-            withCredentials: true
+        const headers = new Headers();
+        const source = new EventSource(
+            // flow-ignore-all-next-line
+            `${server.BACKEND_URL}/game/subscription?session=${server.session}`, {
+            withCredentials: true,
         });
         source.onmessage = function(e) {
             onMessage(e, dispatch);
         };
-        source.addEventListener("ping", function(event: mixed) {
-        });
+        source.addEventListener("ping", function(event: mixed) { });
         source.onopen = function() {
             if (source.readyState === 1) {
                 setConnection("connected");
