@@ -27,7 +27,7 @@ export type EdgeRoll = {|
 export type PlayerJoin = {|
     +ty: "playerJoin",
     +id: string,
-    +source: GameSource,
+    source: GameSource,
 |};
 
 export type Event =

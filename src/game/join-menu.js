@@ -12,9 +12,9 @@ import { statusFor, connectionFor, ConnectionCtx, SetConnectionCtx } from 'conne
 
 import * as server from 'server';
 import * as srutil from 'srutil';
+import routes from 'routes';
 
 const ENTER_GAME_ID_FLAVOR = [
-    <span><tt>deckerpizza</tt> isn't a Game ID.</span>,
     <span><tt>bikinitrolls</tt> isn't a Game ID.</span>,
     <span><tt>aimattrees</tt> isn't a Game ID.</span>,
     <span><tt>foofaraw</tt> isn't a Game ID.</span>,
@@ -22,7 +22,6 @@ const ENTER_GAME_ID_FLAVOR = [
     "Pull out your best SIN.",
     "Gimme a real one this time.",
     "I hope you've got a good fake.",
-    "You'll need at least an R4 fake.",
     "I dare you to use your real SIN.",
     "Corporate SINs not accepted.",
     "We probably won't burn your SIN.",
@@ -81,6 +80,7 @@ const InputRow = styled(UI.FlexRow)`
     @media all and (min-width: 768px) {
         margin-top: 0;
         justify-content: flex-start;
+        margin-right: 0.25em;
     }
 `;
 
@@ -139,9 +139,9 @@ export function JoinMenu({ hide }: Props) {
 
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
-    const [remember, setRemember] = React.useState(false);
+    const [persist, setPersist] = React.useState(false);
 
-    const [rememberFlavor] = srutil.useFlavor(REMEMBER_FLAVOR);
+    const [persistFlavor] = srutil.useFlavor(REMEMBER_FLAVOR);
     const [enterIDFlavor] = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
     const [connectingFlavor, newConnecting] = srutil.useFlavor(LOADING_FLAVOR);
     const [noConnectionFlavor, newNoConnection] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
@@ -163,48 +163,44 @@ export function JoinMenu({ hide }: Props) {
         event.preventDefault();
         if (!ready) { return; }
 
-        setConnection("connecting");
         setFlavor(connectingFlavor);
         newConnecting();
-        server.requestJoin(gameID, playerName)
-            .then(resp => {
+
+        routes.auth.login({ gameID, playerName, persist })
+            .onConnection(setConnection)
+            .onResponse(resp => {
+                const players = new Map<string, string>();
+                for (let [k, v] of Object.entries(resp.game.players)) {
+                    // flow-ignore-all-next-line it's being weird about Object.entries
+                    players.set(k, v);
+                }
                 dispatch({
                     ty: "join",
                     gameID: gameID,
                     player: { id: resp.playerID, name: playerName },
-                    players: resp.players
+                    players,
                 });
-                setConnection("connected");
-                hide();
-                eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
-                // flow-ignore-all-next-line
-                return server.fetchEvents({ oldest: resp.newestID });
-            })
-            .then(resp => {
-                eventDispatch({
-                    ty: "setHistoryFetch", state: resp.more ? "ready" : "finished"
-                });
-                eventDispatch({
-                    ty: "mergeEvents", events: resp.events
-                });
-            })
-            .catch((resp: Response) => {
-                switch (statusFor(resp)) {
-                    case "badRequest":
-                        setFlavor(notFoundFlavor);
-                        newNotFound();
-                        break;
-                    case "serverError":
-                        setFlavor(serverErrorFlavor);
-                        newServerError();
-                        break;
-                    case "noConnection":
-                        setFlavor(noConnectionFlavor);
-                        newNoConnection();
-                        break;
-                    default:
+                if (persist) {
+                    server.saveAuthCredentials(resp.authToken);
                 }
-                setConnection(connectionFor(resp));
+                server.saveSession(resp.session);
+
+                eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
+                routes.game.getEvents({ oldest: resp.lastEvent })
+                    .onConnection(setConnection)
+                    .onResponse(events => {
+                        events.events.forEach(server.normalizeEvent);
+                        eventDispatch({
+                            ty: "setHistoryFetch", state: events.more ? "ready" : "finished"
+                        });
+                        eventDispatch({
+                            ty: "mergeEvents", events: events.events
+                        });
+                    })
+                    .onAnyError(eventsErr => {
+                        console.error("Error fetching events:", eventsErr);
+                    });
+                hide();
             });
     }
 
@@ -241,11 +237,11 @@ export function JoinMenu({ hide }: Props) {
                         </InputRow>
                     </UI.ColumnToRow>
                     <ButtonZone>
-                        <UI.RadioLink type="checkbox" id="join-game-remember"
+                        <UI.RadioLink type="checkbox" id="join-game-persist"
                                       name="Remember this gameID"
-                                      checked={remember} onChange={e => setRemember(e.target.checked)}
+                                      checked={persist} onChange={e => setPersist(e.target.checked)}
                                       disabled={!ready}>
-                            {rememberFlavor}
+                            {persistFlavor}
                         </UI.RadioLink>
                         {connection === "connecting" ? <UI.DiceSpinner /> : ''}
                         <UI.LinkButton light id="join-game-submit"
