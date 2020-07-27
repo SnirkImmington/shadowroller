@@ -41,9 +41,11 @@ export default {
         purpleGray: "#2a272e",
 
         gray1: "#2b3137",
-        gray2: "#47353b",
+        oldgray2: "#47353b",
+        gray3: "#2b1a20",
+        gray2: "#261a1e"
     },
     fonts: {
-        monospace: '"source-code-pro", Menlo, Calibri, monospace',
+        monospace: '"Source Code Pro", Menlo, Calibri, monospace',
     }
 }

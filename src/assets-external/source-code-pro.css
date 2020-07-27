@@ -1,0 +1,77 @@
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-regular.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-regular.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-it.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-it.otf) format('opentype');
+}
+
+/*
+                Not unused yet
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 500;
+    font-style: normal;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-medium.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-medium.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 500;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-medium-it.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-medium-it.otf) format('opentype');
+}
+*/
+
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-bold.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-bold.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 700;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-bold-it.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-bold-it.otf) format('opentype');
+}
+
+/*
+                    Not used yet
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 900;
+    font-style: normal;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-black.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-black.otf) format('opentype');
+}
+
+@font-face {
+    font-family: 'Source Code Pro';
+    font-weight: 900;
+    font-style: italic;
+    font-stretch: normal;
+    src: url(./woff2/source-code-pro-black-it.otf.woff2) format('woff2'),
+         url(./otf/source-code-pro-black-it.otf) format('opentype');
+}
+*/
