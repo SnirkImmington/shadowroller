@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import * as Event from 'event';
 import * as server from '../server';
-import type { SetConnection } from 'connection';
+import type { Connection, SetConnection } from 'connection';
 
 export function normalizeEvent(event: any) {
     if (!event.source) {
@@ -107,6 +107,9 @@ export function useEvents(
     // When the gameID does change, we close the connection and re-create.
     React.useEffect(() => {
         if (events.current) {
+            if (process.env.NODE_ENV !== "production") {
+                console.log("Closing subscription!");
+            }
             events.current.close();
         }
 
@@ -121,9 +124,10 @@ export function useEvents(
             events.current = null;
             return;
         }
-
+        if (process.env.NODE_ENV !== "production") {
+            console.log("Connecting event stream");
+        }
         setConnection("connecting");
-        const headers = new Headers();
         const source = new EventSource(
             // flow-ignore-all-next-line
             `${server.BACKEND_URL}/game/subscription?session=${server.session}`, {
@@ -134,7 +138,7 @@ export function useEvents(
         };
         source.addEventListener("ping", function(event: mixed) { });
         source.onopen = function() {
-            if (source.readyState === 1) {
+            if (source.readyState === source.OPEN) {
                 setConnection("connected");
                 if (process.env.NODE_ENV !== "production") {
                     // flow-ignore-all-next-line
@@ -149,6 +153,9 @@ export function useEvents(
             }
         };
         source.onerror = function(e) {
+            if (process.env.NODE_ENV !== "production") {
+                console.error("EventStream error", e);
+            }
             setConnection("errored");
         };
         events.current = source;

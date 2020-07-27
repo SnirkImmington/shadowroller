@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
-export type SetConnection = (Connection) => void;
+export type SetConnection = (Connection | (Connection => Connection)) => void;
 
 export const ConnectionCtx = React.createContext<Connection>("connected");
 export const SetConnectionCtx = React.createContext<SetConnection>(() => {});

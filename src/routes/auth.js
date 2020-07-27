@@ -17,13 +17,20 @@ export type LoginRequest = {|
 |};
 export type LoginResponse = {|
     playerID: string,
+    playerName: string,
     game: GameInfo,
-    authToken: string,
     session: string,
     lastEvent: string,
 |};
 export function login(request: LoginRequest): BackendRequest<LoginResponse> {
     return post<LoginRequest, LoginResponse>("auth/login", request);
+}
+
+export type ReauthRequest = {|
+    session: string,
+|};
+export function reauth(request: ReauthRequest): BackendRequest<LoginResponse> {
+    return post<ReauthRequest, LoginResponse>("auth/reauth", request);
 }
 
 export function logout(): BackendRequest<void> {

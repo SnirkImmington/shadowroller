@@ -9,6 +9,7 @@ import theme from 'style/theme';
 import * as Game from 'game';
 import * as Event from 'event';
 import * as server from 'server';
+import routes from 'routes';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import type { Connection } from 'connection';
 
@@ -16,6 +17,8 @@ import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
 import EventHistory from 'event/history-panel';
 import DebugBar from 'debug-bar';
+
+import 'assets-external/source-code-pro.css';
 
 const AppLeft: StyledComponent<> = styled.div`
     /* Phones: vertical margin included in cards. */
@@ -41,23 +44,51 @@ const AppRight: StyledComponent<> = styled.div`
 `;
 
 function Shadowroller() {
+    const gameDispatch = React.useContext(Game.DispatchCtx);
+    const eventDispatch = React.useContext(Event.DispatchCtx);
+
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
     const [menuShown, setMenuShown] = React.useState<bool>(false);
+    const hide = React.useCallback(() => setMenuShown(false));
+
+    React.useEffect(() => {
+        window.onblur = function() {
+            console.log("Window bluring");
+        };
+        server.loadCredentials();
+        if (server.session) {
+            routes.auth.reauth({ session: server.session })
+                .onConnection(setConnection)
+                .onResponse(resp => {
+                    server.handleLogin(
+                        true, resp,
+                        setConnection, gameDispatch, eventDispatch
+                    )
+                });
+            setConnection("disconnected");
+        }
+    }, []);
 
     function onGameButtonClick() {
         setMenuShown(shown => !shown);
         //
-        setConnection(conn =>
+        setConnection((conn: Connection) =>
             conn === "disconnected" || conn === "errored" ? "offline" : conn
         );
     }
 
     let menu: React.Node = '';
     if (menuShown) {
-        menu = connection !== "connected" ?
-            <Game.JoinMenu hide={() => setMenuShown(false)} />
-            : <Game.StatusMenu />;
+        if (connection === "connected") {
+            menu = <Game.StatusMenu />;
+        }
+        else if (server.session) {
+            menu = <Game.ReconnectMenu hide={hide} />;
+        }
+        else {
+            menu = <Game.JoinMenu hide={hide} />
+        }
     }
 
     return (
@@ -86,11 +117,6 @@ export default function App(props: {}) {
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
     const [connection, setConnection] = React.useState<Connection>("offline");
 
-    React.useEffect(
-        () => server.initialCookieCheck(gameDispatch, eventDispatch, setConnection), []);
-
-
-    // Page should be a flexbox.
     return (
         <ConnectionCtx.Provider value={connection}>
         <SetConnectionCtx.Provider value={setConnection}>

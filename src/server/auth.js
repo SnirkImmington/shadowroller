@@ -1,61 +1,79 @@
 // @flow
 
+import * as Event from 'event';
 import * as Game from 'game';
-import * as connection from 'connection';
-import localforage from 'localforage';
+import routes from 'routes';
+import type { BackendRequest } from 'server';
+import type { SetConnection } from 'connection';
+import * as server from 'server';
 
 export type ACCESS_STATE = "loading" | "found";
 export type SAVING_STATE = "saving" | "saved";
 
-export let credentials: ?Credentials = null;
 export let session: ?string = null;
 
 export function loadCredentials() {
-    const credentialsJWT = localStorage.getItem("authCredentials");
-    if (credentialsJWT) {
-        credentials = parseCredentials(credentialsJWT);
+    session = sessionStorage.getItem("session");
+    if (!session) {
+        session = localStorage.getItem("session");
     }
-    session = localStorage.getItem("session");
 }
 
-export type Credentials = {|
-    gameID: string,
-    playerID: string,
-    playerName: string,
-    version: number,
-|};
-export function parseCredentials(credentials: string): ?Credentials {
-    if (!credentials) {
-        return null;
-    }
-    let auth: any;
-    try {
-        // flow-ignore-all-next-line
-        auth = JSON.parse(atob(credentials.match(/[^.]+([^.]+)/)));
-    } catch {
-        return null;
-    }
-
-    return {
-        gameID: auth.gID,
-        playerID: auth.pID,
-        version: auth.v,
-        playerName: auth.pName
-    };
+export function clearSession() {
+    session = null;
+    sessionStorage.removeItem("session");
+    localStorage.removeItem("session");
 }
 
-export function saveAuthCredentials(newCredentials: string): bool {
-    const parsed = parseCredentials(newCredentials);
-    if (!parsed) {
-        return false;
-    }
-    credentials = parsed;
-    // We save the full JWT
-    localStorage.setItem("authCredentials", newCredentials);
-    return true;
-}
-
-export function saveSession(newSession: string) {
+export function saveSession(newSession: string, persist: bool) {
     session = newSession;
     sessionStorage.setItem("session", newSession);
+    if (persist) {
+        localStorage.setItem("session", newSession);
+    }
+}
+
+export function handleLogout(gameDispatch: Game.Dispatch, eventDispatch: Event.Dispatch) {
+    gameDispatch({ ty: "leave" });
+    eventDispatch({ ty: "clearEvents" });
+    clearSession();
+}
+
+export function handleLogin(
+    persist: bool,
+    response: routes.auth.LoginResponse,
+    setConnection: SetConnection,
+    gameDispatch: Game.Dispatch,
+    eventDispatch: Event.Dispatch
+): BackendRequest<any> {
+    // Prepare the players and game state
+    const players = new Map<string, string>();
+    for (let [k, v] of Object.entries(response.game.players)) {
+        // flow-ignore-all-next-line it's being weird about Object.entries
+        players.set(k, v);
+    }
+    gameDispatch({
+        ty: "join",
+        gameID: response.game.id,
+        player: { id: response.playerID, name: response.playerName },
+        players,
+    });
+    saveSession(response.session, persist);
+
+    eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
+    return routes.game.getEvents({ oldest: response.lastEvent })
+        .onConnection(setConnection)
+        .onResponse(events => {
+            events.events.forEach(server.normalizeEvent);
+            eventDispatch({
+                ty: "setHistoryFetch",
+                state: events.more ? "ready" : "finished"
+            });
+            eventDispatch({
+                ty: "mergeEvents", events: events.events
+            });
+        })
+        .onAnyError(eventsErr => {
+            console.error("Error fetching events:", eventsErr);
+        });
 }

@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-export type Player = {
+export type Player = {|
     +id: string,
     +name: string
-};
+|};
 
 export type State = ?{|
     +gameID: string,
@@ -13,7 +13,7 @@ export type State = ?{|
     +players: Map<string, string>
 |};
 
-export const defaultState = null;
+export const defaultState: State = null;
 
 export type Action =
 | { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
@@ -32,9 +32,6 @@ function gameReduce(state: State, action: Action): State {
                 players: action.players
             };
         case "leave":
-            if (state) {
-                document.cookie ="srAuth=00; Max-Age=1";
-            }
             return null;
         case "playerName":
             if (!state) { return state; }
@@ -62,7 +59,7 @@ function gameReduce(state: State, action: Action): State {
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
             if (process.env.NODE_ENV !== 'production') {
-                console.error("GameReduce: invalid action ", action);
+                console.error("GameReduce: invalid action", action);
             }
             return state;
     }

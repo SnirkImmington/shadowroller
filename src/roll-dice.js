@@ -9,6 +9,7 @@ import NumericInput from 'numeric-input';
 import * as Game from 'game';
 import * as Event from 'event';
 import { ConnectionCtx } from 'connection';
+import routes from 'routes';
 import * as server from 'server';
 import * as srutil from 'srutil';
 
@@ -170,24 +171,19 @@ export default function RollDicePrompt() {
         rollLoading || !diceCount || diceCount < 1 || diceCount > 100
     );
 
-    if (process.env.NODE_ENV !== "production") {
-        console.log("Roll dice:", {
-            diceCount, titleFlavor, title, edge,
-            localRoll, rollLoading, connected, rollDisabled,
-        });
-    }
-
     function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
     }
 
     const rollLocalClicked = React.useCallback(
-        (event) => setLocalRoll(l => !l)
+        (event) => setLocalRoll(l => !l),
+        [setLocalRoll]
     );
 
 
     const onEdgeClicked = React.useCallback(
-        (event) => setEdge(event.target.checked)
+        (event) => setEdge(event.target.checked),
+        [setEdge]
     );
 
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
@@ -213,15 +209,12 @@ export default function RollDicePrompt() {
         }
         else {
             setRollLoading(true);
-            server.postRoll({ count: diceCount, title, edge })
-                .then(res => {
+            routes.game.roll({ count: diceCount, title, edge })
+                .onDone((res, full) => {
                     setRollLoading(false);
-                })
-                .catch((err: mixed) => {
-                    if (process.env.NODE_ENV !== "production") {
-                        console.log("Error rolling:", err);
+                    if (!res && process.env.NODE_ENV !== "production") {
+                        console.log("Error rolling:", full);
                     }
-                    setRollLoading(false);
                 });
         }
         setTitle('');

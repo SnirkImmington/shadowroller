@@ -21,12 +21,31 @@ export class BackendRequest<O> {
             if (response.ok) {
                 this.setConnection("connected");
                 this.setResponse("success");
-                response.json()
-                    .then(j => this.handleSuccess(j, response))
-                    .catch(err => {
-                        console.log("Caught json error", err, response);
-                        this.handleSuccess(null, response);
-                    });
+
+                if (this.handleResponse) {
+                    response.json()
+                        .then(j => {
+                            try {
+                                this.handleResponse(j, response);
+                            }
+                            catch (ex) {
+                                if (process.env.NODE_ENV !== "production") {
+                                    console.error("Error handing response", response, ex);
+                                }
+                                throw ex;
+                            }
+                        }).catch(err => {
+                            this.setConnection("errored");
+                            this.setResponse("badRequest");
+                            this.handleClientError(response);
+                        });
+                }
+                else if (this.handleSuccess) {
+                    this.handleSuccess(true, response);
+                }
+                else if (process.env.NODE_ENV !== "production") {
+                    console.log("No handler to handle", this.request, response);
+                }
             }
             else if (response.status >= 400 && response.status < 500) {
                 this.setConnection("errored");
@@ -135,9 +154,6 @@ function backendFetch<B, P>({ method, path, body, params }: FetchArgs<B, P>): Pr
     headers.append("Content-Type", "text/json");
     if (auth.session) {
         headers.append("Authentication", `Bearer ${auth.session}`);
-    }
-    else if (process.env.NODE_ENV !== "production") {
-        console.log("Requesting", path, "with no auth.");
     }
 
     return fetch(url, {

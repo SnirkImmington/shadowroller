@@ -169,37 +169,7 @@ export function JoinMenu({ hide }: Props) {
         routes.auth.login({ gameID, playerName, persist })
             .onConnection(setConnection)
             .onResponse(resp => {
-                const players = new Map<string, string>();
-                for (let [k, v] of Object.entries(resp.game.players)) {
-                    // flow-ignore-all-next-line it's being weird about Object.entries
-                    players.set(k, v);
-                }
-                dispatch({
-                    ty: "join",
-                    gameID: gameID,
-                    player: { id: resp.playerID, name: playerName },
-                    players,
-                });
-                if (persist) {
-                    server.saveAuthCredentials(resp.authToken);
-                }
-                server.saveSession(resp.session);
-
-                eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
-                routes.game.getEvents({ oldest: resp.lastEvent })
-                    .onConnection(setConnection)
-                    .onResponse(events => {
-                        events.events.forEach(server.normalizeEvent);
-                        eventDispatch({
-                            ty: "setHistoryFetch", state: events.more ? "ready" : "finished"
-                        });
-                        eventDispatch({
-                            ty: "mergeEvents", events: events.events
-                        });
-                    })
-                    .onAnyError(eventsErr => {
-                        console.error("Error fetching events:", eventsErr);
-                    });
+                server.handleLogin(persist, resp, setConnection, dispatch, eventDispatch);
                 hide();
             });
     }
