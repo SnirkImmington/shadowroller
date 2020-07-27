@@ -90,11 +90,9 @@ function JoinButton({ menuShown, onClick }: Props) {
                 message = menuShown ? "Cancel" : "Join";
                 break;
             case "connecting":
+            case "connected": // If we don't have a game yet
                 message = menuShown ? "Cancel" : "Connecting";
                 disabled = !menuShown;
-                break;
-            case "connected": // We should have a game if we're connected.
-                message = "Error!";
                 break;
             case "errored":
                 message = "Try again";
@@ -109,12 +107,10 @@ function JoinButton({ menuShown, onClick }: Props) {
             case "disconnected":
                 message = menuShown ? "Close" : "Disconnected";
                 break;
-            case "connecting":
-                message = menuShown ? "Cancel" : "Reconnecting";
-                disabled = !menuShown;
-                break;
             case "connected":
+            case "connecting":
                 message = menuShown ? "Close" : game.player.name;
+                disabled = connection == "connecting" && !menuShown;
                 break;
             case "errored":
                 message = "Error";
