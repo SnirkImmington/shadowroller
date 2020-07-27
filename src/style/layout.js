@@ -57,7 +57,7 @@ const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled(FlexCo
 `;
 
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
-    font-family: "source-code-pro", monospace;
+    font-family: "Source Code Pro", monospace;
     color: ${props => props.color};
     font-size: 1.3rem;
     margin-left: 0.4em;

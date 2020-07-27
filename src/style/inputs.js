@@ -3,7 +3,7 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import { color } from 'styled-system';
+import { color, layout } from 'styled-system';
 import typeof Theme from './theme';
 
 import { FlexRow } from './layout';
@@ -14,7 +14,8 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
     type: props.type ?? "text",
 }))`
     ${color}
-    font-family: ${props => props.monospace ? '"source-code-pro", monospace' : "inherit"};
+    ${layout}
+    font-family: ${props => props.monospace ? '"Source Code Pro", monospace' : "inherit"};
     max-width: ${(props) => props.expand ? '100%' : '14em'};
     height: calc(1em + 10px);
 
@@ -32,7 +33,6 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
 
 export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     display: inline;
-    font-family: "source-code-pro", monospace;
     font-weight: bold;
     font-size: 1em;
     user-select: none;
@@ -84,12 +84,12 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
     &:before {
         content: "[";
         margin: 0 0.01em 0 0.1em;
-        font-family: "source-code-pro", monospace;
+        font-family: "Source Code Pro", monospace;
     }
     &:after {
         content: "]";
         margin: 0 0.1em 0 0.01em;
-        font-family: "source-code-pro", monospace;
+        font-family: "Source Code Pro", monospace;
     }
 
     &:hover {
@@ -132,12 +132,12 @@ const RadioSelector = styled.span`
     font-family: ${({theme}) => theme.fonts.monospace};
     &:before {
         content: '[';
-        color: black;
+        color: ${({light}) => light ? "#eef" : "#222"};
         font-weight: 400;
     }
     &:after {
         content: ']';
-        color: black;
+        color: ${({light}) => light ? "#eef" : "#222"};
         font-weight: 400;
     }
     font-weight: bold;
@@ -146,7 +146,6 @@ const RadioSelector = styled.span`
     color: ${({light, theme}) =>
         light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
     };
-    white-space: pre;
 `;
 
 const RadioLabel: StyledComponent<> = styled.label`
@@ -156,8 +155,9 @@ const RadioLabel: StyledComponent<> = styled.label`
     font-size: 1em;
     cursor: pointer !important;
     user-select: none;
+    white-space: pre;
 
-    color: #222;
+    color: ${({light}) => light ? "#222" : "#eef"};
 
     &:hover {
         filter: brightness(180%);
