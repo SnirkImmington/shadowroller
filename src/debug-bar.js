@@ -8,6 +8,9 @@ import * as UI from 'style';
 import * as server from 'server';
 import * as Game from 'game';
 import * as Event from 'event';
+import { Die } from 'dice';
+// flow-ignore-all-next-line
+import { ReactComponent as DieOne } from 'assets/die-1.svg';
 import { ConnectionCtx } from 'connection';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
@@ -16,6 +19,7 @@ const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
     background-color: ${({theme}) => theme.colors.primary}b0;
     font-size: 14px;
     line-height: 1.25em;
+    white-space: pre;
     width: 100%;
 
     height: 6.25em;
@@ -37,7 +41,7 @@ const Group = styled(UI.ColumnToRow).attrs(() => ({
 const Item = styled.div`
     width: 100%;
     @media all and (min-width: 768px) {
-        width: auto;
+        width: 33%;
         flex-grow: 1;
         ${({align}) => align &&
             `text-align: ${align};`}
@@ -58,58 +62,72 @@ export default function DebugBar() {
     const connection = React.useContext(ConnectionCtx);
     const eventState = React.useContext(Event.Ctx);
 
-    const game = !gameState ? gameState :
-        {...gameState, player: undefined, players: undefined};
+    const game: any = !gameState ? gameState : {
+        ...gameState, players: undefined,
+        player: undefined, ...gameState.player,
+    }
     const players = !gameState ? "N/A" : Array.from(gameState.players.values());
     const events = { ...eventState, events: undefined };
 
-    const cookie = document.cookie;
-    const auth = React.useMemo(() => {
-        try {
-            const authMatch = cookie.match(/srAuth=[^.]+.([^.]+)/);
-            // flow-ignore-all-next-line
-            return atob(authMatch[1]);
+    const eventsClicked = React.useCallback(() => {
+        if (eventState.events.length === 0) {
+            console.log("Debug bar: No events.");
         }
-        catch {
-            return "N/A";
+        else {
+            // flow-ignore-all-next-line It doesn't like console.table
+            console.table(eventState.events);
         }
-    }, [cookie]);
+    }, [eventState]);
+
+    const playersClicked = React.useCallback(() => {
+        if (players.length === 0) {
+            console.log("Debug bar: no players");
+        }
+        else {
+            // flow-ignore-all-next-line console.table
+            console.table(players);
+        }
+    }, [players]);
 
     return (
         <StyledBar>
             <Group>
                 <Item align="start">
-                    <b>
-                        Shadowroller {process.env.NODE_ENV}&nbsp;
+                    <b style={{ "textTransform": "capitalize" }}>
+                        {process.env.NODE_ENV}:&nbsp;
                     </b>
                     <tt>{server.BACKEND_URL}</tt>&nbsp;
                 </Item>
-                <Item align="middle">
+                <Item align="center">
                     <b>Connection:&nbsp;</b>
                     <tt>{connection}</tt>
                 </Item>
                 <Item align="end">
-                    <b>Auth:</b>&nbsp;
-                    <tt>{auth}</tt>
+                    <b>Session:&nbsp;</b>
+                    <tt>{server.session ?? 'N/A'}</tt>
                 </Item>
             </Group>
             <Group>
                 <Item align="start">
                     <b>Game:&nbsp;</b>
-                    <tt>{JSON.stringify(game) ?? 'undefined'}</tt>
+                    <tt>{JSON.stringify(game) ?? 'N/A'}</tt>
                 </Item>
-                <Item align="middle">
-                    <b>
-                        Events
-                        ({eventState.events.length}):&nbsp;
-                    </b>
+                <Item align="center">
+                    <UI.LinkButton light onClick={eventsClicked}>
+                        <b>
+                            Events
+                            ({eventState.events.length}):&nbsp;
+                        </b>
+                    </UI.LinkButton>
                     <tt>{JSON.stringify(events)}</tt>
                 </Item>
                 <Item align="end">
-                    <b>
-                        Players
-                        ({gameState?.players?.size ?? 0}):&nbsp;
-                    </b>
+                    <UI.LinkButton light onClick={playersClicked}>
+                        <b>
+                            Players
+                            ({gameState?.players?.size ?? 0}):
+                            </b>
+                    </UI.LinkButton>
                     <tt>{JSON.stringify(players)}</tt>
                 </Item>
             </Group>
