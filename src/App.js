@@ -53,9 +53,6 @@ function Shadowroller() {
     const hide = React.useCallback(() => setMenuShown(false));
 
     React.useEffect(() => {
-        window.onblur = function() {
-            console.log("Window bluring");
-        };
         server.loadCredentials();
         if (server.session) {
             routes.auth.reauth({ session: server.session })
