@@ -178,7 +178,7 @@ export function JoinMenu({ hide }: Props) {
 
     return (
         <UI.Menu>
-            <form id="join-game-menu">
+            <form id="join-game-menu" autocomplete="on">
                 <MenuLayout>
                     <UI.ColumnToRow>
                         <JoinText>
@@ -193,6 +193,8 @@ export function JoinMenu({ hide }: Props) {
                                        fixedWidth transform="grow-5" />
                             <MenuInput monospace id="join-game-id"
                                        placeholder={"Game ID"}
+                                       autocomplete="on" autocapitalize="none"
+                                       spellcheck="false"
                                        value={gameID} onChange={onGameIDChange}
                                        disabled={connection === "connecting"} />
                         </InputRow>
@@ -202,6 +204,8 @@ export function JoinMenu({ hide }: Props) {
                                        fixedWidth transform="grow-5" />
                             <MenuInput id="join-player-name"
                                        placeholder={"Player name"}
+                                       autocomplete="on" autocapitalize="words"
+                                       spellcheck="false"
                                        value={playerName} onChange={onPlayerNameChange}
                                        disabled={connection === "connecting"} />
                         </InputRow>
