@@ -81,7 +81,7 @@ const StyledResults = styled.b`
 
     margin-left: auto;
     padding-left: 1em;
-    flex-align: flex-end;
+    justify-content: flex-end;
     white-space: nowrap;
 `;
 
