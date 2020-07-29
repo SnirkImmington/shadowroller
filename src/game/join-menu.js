@@ -87,7 +87,7 @@ const InputRow = styled(UI.FlexRow)`
 const ButtonZone = styled(UI.FlexRow)`
     /* Mobile: last row, button on right */
     justify-content: space-between;
-    margin: 0.75em 11% 0 15%;
+    margin: 0.75em 7% 0 11%;
 
     @media all and (min-width: 768px) {
         margin: 0;
@@ -114,8 +114,8 @@ const JoinText = styled.span`
 `;
 
 const MenuInput = styled(UI.Input)`
-    width: 70%;
-    max-width: 70%;
+    width: 80%;
+    max-width: 80%;
     @media all and (min-width: 768px) {
         width: 200px;
         max-width: 200px;
@@ -193,7 +193,7 @@ export function JoinMenu({ hide }: Props) {
                                        fixedWidth transform="grow-5" />
                             <MenuInput monospace id="join-game-id"
                                        placeholder={"Game ID"}
-                                       autocomplete="on" autocapitalize="none"
+                                       autoComplete="on" autocapitalize="none"
                                        spellcheck="false"
                                        value={gameID} onChange={onGameIDChange}
                                        disabled={connection === "connecting"} />
@@ -204,7 +204,7 @@ export function JoinMenu({ hide }: Props) {
                                        fixedWidth transform="grow-5" />
                             <MenuInput id="join-player-name"
                                        placeholder={"Player name"}
-                                       autocomplete="on" autocapitalize="words"
+                                       autoComplete="on" autocapitalize="words"
                                        spellcheck="false"
                                        value={playerName} onChange={onPlayerNameChange}
                                        disabled={connection === "connecting"} />
