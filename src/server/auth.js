@@ -36,6 +36,8 @@ export function saveSession(newSession: string, persist: bool) {
 export function handleLogout(gameDispatch: Game.Dispatch, eventDispatch: Event.Dispatch) {
     gameDispatch({ ty: "leave" });
     eventDispatch({ ty: "clearEvents" });
+    // Log out POST is best effort
+    routes.auth.logout();
     clearSession();
 }
 
