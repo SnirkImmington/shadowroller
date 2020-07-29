@@ -17,12 +17,12 @@ var (
 	// CORSDebug toggles debugging from the github/rs/cors library.
 	CORSDebug = readBool("CORS_DEBUG", false)
 
-    // RedisDebug toggles logging every Redis command.
-    RedisDebug = readBool("REDIS_DEBUG", false)
+	// RedisDebug toggles logging every Redis command.
+	RedisDebug = readBool("REDIS_DEBUG", false)
 
-    // SlowResponsesDebug adds 5s to each response handler for debugging purposes.
-    // This value is ignored on production.
-    SlowResponsesDebug = readBool("SLOW_RESPONSES_DEBUG", false)
+	// SlowResponsesDebug adds 5s to each response handler for debugging purposes.
+	// This value is ignored on production.
+	SlowResponsesDebug = readBool("SLOW_RESPONSES_DEBUG", false)
 
 	// Go Server Configuration
 	// The dev server/prod server/redirect server can be configured to run on
@@ -46,10 +46,10 @@ var (
 	// load balancer or port forwarding mechanism.
 	// This value is ignored in production.
 	HostHTTPS = readString("HOST_HTTPS", ":443")
-	// FrontendAddress is used to redirect users from "/" to a domain from where the
-	// frontend HTTPS is served.
-	// In production, this is used as the CORS origin.
-	FrontendAddress = readString("FRONTEND_ADDRESS", "http://localhost:3000")
+	// FrontendDomain is the origin domain of the frontend, used for CORS requests
+	FrontendDomain = readString("FRONTEND_DOMAIN", "http://localhost:3000")
+	// FrontendAddress is the redirect address that / should redirect to.
+	FrontendAddress = readString("FRONTEND_ADDRESS", FrontendDomain)
 
 	// Keys
 	// In development, these are hardcoded to known values for testing.
@@ -100,13 +100,13 @@ var (
 	// For details, see `middleware.go`.
 	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 16)
 
-    // TempSessionTTLSecs is the amount of time a temporary session is stored
-    // in redis after the subscription disconnects.
+	// TempSessionTTLSecs is the amount of time a temporary session is stored
+	// in redis after the subscription disconnects.
 	TempSessionTTLSecs = readInt("TEMP_SESSION_TTL_SECS", 15*60)
-    /// PersistSessionTTLDays is the amount of time persistent sessions last.
-    PersistSessionTTLDays = readInt("PERSIST_SESSION_TTL_DAYS", 30)
+	/// PersistSessionTTLDays is the amount of time persistent sessions last.
+	PersistSessionTTLDays = readInt("PERSIST_SESSION_TTL_DAYS", 30)
 
-    // Library Options
+	// Library Options
 
 	// RedisURL is the URI used to dial redis.
 	RedisURL = readString("REDIS_URL", "redis://:6379")
@@ -129,6 +129,7 @@ func readString(name string, defaultValue string) string {
 	if !ok {
 		return defaultValue
 	}
+	log.Print("config: read env string SR_", name)
 	return val
 }
 
@@ -137,6 +138,7 @@ func readInt(name string, defaultValue int) int {
 	if !ok {
 		return defaultValue
 	}
+	log.Print("config: read env int SR_", name)
 	val, err := strconv.Atoi(envVal)
 	if err != nil {
 		panic("Unable to read " + name + ": " + envVal)
@@ -149,6 +151,7 @@ func readBool(name string, defaultValue bool) bool {
 	if !ok {
 		return defaultValue
 	}
+	log.Print("config: read env bool SR_", name)
 	val, err := strconv.ParseBool(envVal)
 	if err != nil {
 		panic("Unable to read " + name + ": " + envVal)
@@ -185,10 +188,10 @@ func VerifyConfig() {
 			log.Print("Config normalization: Overriding TLSEnable")
 			TLSEnable = true
 		}
-        if SlowResponsesDebug {
-            log.Print("Config normalization: Overriding SlowResponsesDebug")
-            SlowResponsesDebug = false
-        }
+		if SlowResponsesDebug {
+			log.Print("Config normalization: Overriding SlowResponsesDebug")
+			SlowResponsesDebug = false
+		}
 	}
 	if len(JWTSecretKey) == 0 {
 		panic("No JWT key given!")

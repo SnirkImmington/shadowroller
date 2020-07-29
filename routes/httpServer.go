@@ -138,7 +138,7 @@ func MakeHTTPSSiteServer() http.Server {
 		GetCertificate: certManager.GetCertificate,
 	}
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{config.FrontendAddress, "https://" + config.TLSHostname},
+		AllowedOrigins:   []string{config.FrontendDomain, "https://" + config.TLSHostname},
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Authentication", "Content-Type"},
 		Debug:            config.CORSDebug,
