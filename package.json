@@ -9,7 +9,10 @@
         "type": "git",
         "url": "https://github.com/snirkimmington/shadowroller.git"
     },
-    "keywords": [ "dice", "rolling" ],
+    "keywords": [
+        "dice",
+        "rolling"
+    ],
     "bugs": {
         "url": "https://github.com/snirkimmington/shadowroller/issues"
     },

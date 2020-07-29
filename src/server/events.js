@@ -6,6 +6,18 @@ import * as Event from 'event';
 import * as server from '../server';
 import type { SetConnection } from 'connection';
 
+export function normalizeEvent(event: any) {
+    if (!event.source) {
+        event.source = { id: event.pID, name: event.pName };
+        delete event.pID;
+        delete event.pName;
+    }
+    if (event.roll && !event.dice) {
+        event.dice = event.roll;
+        event.roll = undefined;
+    }
+}
+
 function parseEvent(event: any): ?Event.Event {
     switch (event.ty) {
         case "roll":
@@ -83,6 +95,7 @@ export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
 
 export function useEvents(
     gameID: ?string,
+    session: ?string,
     setConnection: SetConnection,
     dispatch: Event.Dispatch
 ): ?EventSource {
@@ -95,10 +108,13 @@ export function useEvents(
     // When the gameID does change, we close the connection and re-create.
     React.useEffect(() => {
         if (events.current) {
+            if (process.env.NODE_ENV !== "production") {
+                console.log("Closing subscription!");
+            }
             events.current.close();
         }
 
-        if (!gameID) {
+        if (!server.session || !gameID) {
             if (process.env.NODE_ENV !== "production") {
                 // flow-ignore-all-next-line
                 document.title = `Shadowroller (${process.env.NODE_ENV})`;
@@ -109,18 +125,21 @@ export function useEvents(
             events.current = null;
             return;
         }
-
+        if (process.env.NODE_ENV !== "production") {
+            console.log("Connecting to event stream:", gameID, server.session);
+        }
         setConnection("connecting");
-        const source = new EventSource(server.BACKEND_URL + "events", {
-            withCredentials: true
+        const source = new EventSource(
+            // flow-ignore-all-next-line
+            `${server.BACKEND_URL}game/subscription?session=${server.session}`, {
+            withCredentials: true,
         });
         source.onmessage = function(e) {
             onMessage(e, dispatch);
         };
-        source.addEventListener("ping", function(event: mixed) {
-        });
+        source.addEventListener("ping", function(event: mixed) { });
         source.onopen = function() {
-            if (source.readyState === 1) {
+            if (source.readyState === source.OPEN) {
                 setConnection("connected");
                 if (process.env.NODE_ENV !== "production") {
                     // flow-ignore-all-next-line
@@ -134,13 +153,34 @@ export function useEvents(
                 setConnection("connecting");
             }
         };
-        source.onerror = function(e) {
-            setConnection("errored");
+        source.onerror = function(event) {
+            if (process.env.NODE_ENV !== "production") {
+                console.error("EventStream error", event);
+            }
+            switch (event.target.readyState) {
+                case source.OPEN:
+                    setConnection("connected");
+                    return;
+                case source.CONNECTING:
+                    setConnection("connecting");
+                    return;
+                case source.CLOSED:
+                    setConnection("errored");
+                    return;
+                default:
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log(
+                            "Reached unknown event target error:", event
+                        );
+                    }
+                    setConnection("errored");
+                    return;
+            }
         };
         events.current = source;
         return; // Cleanup handled imperatively through use of ref
         // and to account for program logic and EventSource specifics.
-    }, [gameID, setConnection, dispatch]);
+    }, [gameID, session, setConnection, dispatch]);
 
     return events.current;
 }

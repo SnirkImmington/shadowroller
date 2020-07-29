@@ -3,7 +3,6 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import flexbox from '@styled-system/flexbox';
 
 export const NoWrap: StyledComponent<> = styled.span`
     white-space: nowrap;
@@ -22,12 +21,6 @@ export const FlexColumn: StyledComponent<> = styled.div`
     flex-direction: column;
     ${props => props.maxWidth ? 'width: 100%;' : ''}
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
-`;
-
-export const Menu: StyledComponent<> = styled.div`
-    background-color: ${props=>props.theme.colors.gray2};
-    color: white;
-    padding: 0.5em;
 `;
 
 export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
@@ -57,7 +50,7 @@ const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled(FlexCo
 `;
 
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
-    font-family: "source-code-pro", monospace;
+    font-family: "Source Code Pro", monospace;
     color: ${props => props.color};
     font-size: 1.3rem;
     margin-left: 0.4em;

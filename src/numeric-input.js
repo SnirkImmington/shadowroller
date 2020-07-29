@@ -55,7 +55,7 @@ const Component = styled.div`
 `;
 
 const Parent: StyledComponent<> = styled(UI.FlexRow)`
-    font-family: "source-code-pro", monospace;
+    font-family: "Source Code Pro", monospace;
     margin-right: 0.5em;
     margin-left: 0.5em;
     height: calc(1rem + 10px);

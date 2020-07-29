@@ -31,13 +31,13 @@ const SRTitle = styled.h1`
     font-style: oblique;
     font-weight: 900;
     letter-spacing: 1px;
-    align-text: center;
+    text-align: center;
     display: flex;
 
 
     margin-left: .5rem;
     @media all and (min-width: 768px) {
-        margin-left: 8rem;
+        margin-left: 4rem;
     }
 `;
 
@@ -86,15 +86,15 @@ function JoinButton({ menuShown, onClick }: Props) {
     if (!game) {
         switch (connection) {
             case "offline":
-            case "disconnected":
                 message = menuShown ? "Cancel" : "Join";
                 break;
+            case "disconnected":
+                message = menuShown ? "Cancel" : "Reconnect";
+                break;
             case "connecting":
+            case "connected": // If we don't have a game yet
                 message = menuShown ? "Cancel" : "Connecting";
                 disabled = !menuShown;
-                break;
-            case "connected": // We should have a game if we're connected.
-                message = "Error!";
                 break;
             case "errored":
                 message = "Try again";
@@ -109,12 +109,10 @@ function JoinButton({ menuShown, onClick }: Props) {
             case "disconnected":
                 message = menuShown ? "Close" : "Disconnected";
                 break;
-            case "connecting":
-                message = menuShown ? "Cancel" : "Reconnecting";
-                disabled = !menuShown;
-                break;
             case "connected":
+            case "connecting":
                 message = menuShown ? "Close" : game.player.name;
+                disabled = connection === "connecting" && !menuShown;
                 break;
             case "errored":
                 message = "Error";

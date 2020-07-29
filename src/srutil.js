@@ -89,9 +89,6 @@ export function shallowEqual(a: any, b: any) {
 // Color generation taken from:
 // https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 
-// Color generator guy claims 1/golden ratio is useful to improve distribution.
-const fixedOffset = Math.floor(0.618033988749895 * 360);
-
 /// Produces a random HSL color from IDs which are base64 ecoded random bytes.
 export function hashedColor(id: string): string {
     let converted: string;

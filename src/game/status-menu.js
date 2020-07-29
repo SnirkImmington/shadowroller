@@ -6,6 +6,7 @@ import * as UI from 'style';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as server from 'server';
 import { SetConnectionCtx } from 'connection';
 
 const Message = styled.p`
@@ -16,7 +17,7 @@ const Message = styled.p`
     }
 `;
 
-const LeaveButton = styled(UI.Button)`
+const LeaveButton = styled(UI.LinkButton)`
     margin-left: auto;
     margin-right: .5rem;
     @media all and (min-width: 768px) {
@@ -24,7 +25,10 @@ const LeaveButton = styled(UI.Button)`
     }
 `;
 
-export function StatusMenu() {
+type Props = {
+    hide: () => void;
+}
+export function StatusMenu({ hide }: Props) {
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
@@ -35,8 +39,7 @@ export function StatusMenu() {
     }
 
     function handleLeave() {
-        dispatch({ ty: "leave" });
-        eventDispatch({ ty: "clearEvents" });
+        server.handleLogout(dispatch, eventDispatch);
         setConnection("offline");
     }
 
@@ -49,8 +52,8 @@ export function StatusMenu() {
                         {game.player.name}
                     </UI.HashColored>.
                 </Message>
-                <LeaveButton onClick={handleLeave}>
-                    Leave
+                <LeaveButton light onClick={handleLeave}>
+                    Log Out
                 </LeaveButton>
             </UI.FlexRow>
         </UI.Menu>

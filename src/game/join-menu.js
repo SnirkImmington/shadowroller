@@ -8,93 +8,117 @@ import * as icons from 'style/icon';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import { statusFor, connectionFor, ConnectionCtx, SetConnectionCtx } from 'connection';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
+import routes from 'routes';
 
 const ENTER_GAME_ID_FLAVOR = [
-    "I hope you've got a good fake.",
-    <span><tt>password12345</tt> is not a Game ID.</span>,
-    <span><tt>deckerpizza</tt> is not a Game ID.</span>,
-    <span><tt>bikinitrolls</tt> is not a Game ID.</span>,
-    <span><tt>aimattrees</tt> is not a Game ID.</span>,
-    <span><tt>foofaraw</tt> is not a Game ID.</span>,
-
-    "Show some ID, chummer.",
-    "Gimme a real one this time.",
+    <span><tt>bikinitrolls</tt> isn't a Game ID.</span>,
+    <span><tt>aimattrees</tt> isn't a Game ID.</span>,
+    <span><tt>foofaraw</tt> isn't a Game ID.</span>,
 
     "Pull out your best SIN.",
-    "You'll need at least an R4 SIN.",
+    "Gimme a real one this time.",
+    "I hope you've got a good fake.",
     "I dare you to use your real SIN.",
     "Corporate SINs not accepted.",
     "We probably won't burn your SIN.",
-
-    "Wow, so exclusive.",
 ];
+
+const REMEMBER_FLAVOR = [
+    "Remember me",
+    "Remember me",
+    "Remember me",
+    "Save my mark",
+];
+
 const LOADING_FLAVOR = [
     "Hacking you in...",
     "Acquiring marks...",
+    "Accessing game node...",
     "Asking for permission...",
 ];
-const NOT_FOUND_FLAVOR = [
+const CLIENT_ERROR_FLAVOR = [
     "I don't think that Game ID exists.",
     "You put in the right Game ID?",
     "Game ID first, then player name.",
     "That's not a game ID, chummer.",
-    "That's no Game ID!",
-    "SIN scanner caught you on that one."
+    "That's no Game ID.",
+    "Access denied! SIN burned!",
 ];
 const SERVER_ERROR_FLAVOR = [
     "Something went wrong with the server.",
     "The server is having an issue.",
+    "The server is having issues, okay?",
     "Server glitched attempting to check your ID.",
 ];
 const NO_CONNECTION_FLAVOR = [
     "Can't connect to the server.",
+    "Too much Noise to connect.",
 ];
 
 const MenuLayout = styled(UI.ColumnToRow)`
-    padding: 0px 0.25rem;
     @media all and (min-width: 768px) {
-        padding: 0px 1em;
+        padding: 0 0.5em;
         align-items: center;
-        margin-left: 2rem;
+    }
+
+    & > *:first-child {
+        @media all and (min-width: 768px) {
+            flex-grow: 1;
+            justify-content: flex-start;
+        }
     }
 `;
 
-const InputRow = styled.div`
-    margin-bottom: 0.5rem;
+const InputRow = styled(UI.FlexRow)`
+    white-space: pre;
+    margin-top: 0.75em;
+    justify-content: center;
     @media all and (min-width: 768px) {
-        margin-bottom: 0;
+        margin-top: 0;
+        justify-content: flex-start;
+        margin-right: 0.25em;
+    }
+`;
+
+const ButtonZone = styled(UI.FlexRow)`
+    /* Mobile: last row, button on right */
+    justify-content: space-between;
+    margin: 0.75em 7% 0 11%;
+
+    @media all and (min-width: 768px) {
+        margin: 0;
+        & > *:last-child {
+            margin-left: 1.25em;
+            margin-right: 0.5em;
+        }
+    }
+
+    /* Laptop: spacing between remember and button... */
+    & > *:last-child @media all and (min-width: 768px) {
     }
 `;
 
 const JoinText = styled.span`
-    line-height: 1.25;
     margin-right: auto;
 
     margin-bottom: 0.5rem;
     @media all and (min-width: 768px) {
         margin-bottom: 0;
+        margin-left: 0.25em;
+        margin-right: .5em;
     }
 `;
 
-const ButtonZone = styled(UI.FlexRow)`
-    /* Mobile: last row, button on the right */
-    justify-content: space-between;
-    margin-top: .5em;
+const MenuInput = styled(UI.Input)`
+    width: 80%;
+    max-width: 80%;
     @media all and (min-width: 768px) {
-        margin-top: 0px;
-        margin-left: 2rem;
-    }
-`;
-
-const SpacedFlavor = styled(UI.Flavor)`
-    margin-left: 1em;
-
-    @media all and (min-width: 768px) {
-        margin: 0 1.5em 0 1.5em;
+        width: 200px;
+        max-width: 200px;
     }
 `;
 
@@ -109,12 +133,14 @@ export function JoinMenu({ hide }: Props) {
 
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
+    const [persist, setPersist] = React.useState(false);
 
+    const [persistFlavor] = srutil.useFlavor(REMEMBER_FLAVOR);
     const [enterIDFlavor] = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
     const [connectingFlavor, newConnecting] = srutil.useFlavor(LOADING_FLAVOR);
-    const [noConnectionFlavor, newNoConnection] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
-    const [notFoundFlavor, newNotFound] = srutil.useFlavor(NOT_FOUND_FLAVOR);
-    const [serverErrorFlavor, newServerError] = srutil.useFlavor(SERVER_ERROR_FLAVOR);
+    const [networkErrorFlavor, newNetworkErrorFlavor] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
+    const [clientErrorFlavor, newClientErrorFlavor] = srutil.useFlavor(CLIENT_ERROR_FLAVOR);
+    const [serverErrorFlavor, newServerErrorFlavor] = srutil.useFlavor(SERVER_ERROR_FLAVOR);
 
     const [flavor, setFlavor] = React.useState<React.Node>(enterIDFlavor);
 
@@ -131,48 +157,26 @@ export function JoinMenu({ hide }: Props) {
         event.preventDefault();
         if (!ready) { return; }
 
-        setConnection("connecting");
         setFlavor(connectingFlavor);
         newConnecting();
-        server.requestJoin(gameID, playerName)
-            .then(resp => {
-                dispatch({
-                    ty: "join",
-                    gameID: gameID,
-                    player: { id: resp.playerID, name: playerName },
-                    players: resp.players
-                });
-                setConnection("connected");
+
+        routes.auth.login({ gameID, playerName, persist })
+            .onConnection(setConnection)
+            .onResponse(resp => {
+                server.handleLogin(persist, resp, setConnection, dispatch, eventDispatch);
                 hide();
-                eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
-                // flow-ignore-all-next-line
-                return server.fetchEvents({ oldest: resp.newestID });
             })
-            .then(resp => {
-                eventDispatch({
-                    ty: "setHistoryFetch", state: resp.more ? "ready" : "finished"
-                });
-                eventDispatch({
-                    ty: "mergeEvents", events: resp.events
-                });
+            .onClientError(resp => {
+                setFlavor(clientErrorFlavor);
+                newClientErrorFlavor()
             })
-            .catch((resp: Response) => {
-                switch (statusFor(resp)) {
-                    case "badRequest":
-                        setFlavor(notFoundFlavor);
-                        newNotFound();
-                        break;
-                    case "serverError":
-                        setFlavor(serverErrorFlavor);
-                        newServerError();
-                        break;
-                    case "noConnection":
-                        setFlavor(noConnectionFlavor);
-                        newNoConnection();
-                        break;
-                    default:
-                }
-                setConnection(connectionFor(resp));
+            .onServerError(resp => {
+                setFlavor(serverErrorFlavor);
+                newServerErrorFlavor();
+            })
+            .onNetworkError(resp => {
+                setFlavor(networkErrorFlavor);
+                newNetworkErrorFlavor();
             });
     }
 
@@ -180,34 +184,51 @@ export function JoinMenu({ hide }: Props) {
 
     return (
         <UI.Menu>
-            <form id="join-game-menu">
+            <form id="join-game-menu" autocomplete="on">
                 <MenuLayout>
-                    <JoinText>
-                        Join a game if you've been given a Game ID.
-                    </JoinText>
                     <UI.ColumnToRow>
-                    <InputRow>
-                        <UI.FAIcon fixedWidth icon={icons.faKey} transform="grow-5" color={theme.colors.secondary} />
-                        <UI.Input monospace id="join-game-id"
-                                  placeholder={"Game ID"}
-                                  value={gameID} onChange={onGameIDChange}
-                                  disabled={connection === "connecting"} />
-                    </InputRow>
-                    <InputRow>
-                        <UI.FAIcon fixedWidth icon={icons.faUser} transform="grow-5" color={theme.colors.secondary} />
-                        <UI.Input id="join-player-name"
-                                  placeholder={"Player name"}
-                                  value={playerName} onChange={onPlayerNameChange}
-                                  disabled={connection === "connecting"} />
-                    </InputRow>
+                        <JoinText>
+                            Have you been given a Game ID?
+                        </JoinText>
+                        <UI.Flavor light warn={warn}>{flavor}</UI.Flavor>
+                    </UI.ColumnToRow>
+                    <UI.ColumnToRow>
+                        <InputRow>
+                            <UI.FAIcon icon={icons.faKey}
+                                       color={theme.colors.secondary}
+                                       fixedWidth transform="grow-5" />
+                            <MenuInput monospace id="join-game-id"
+                                       placeholder={"Game ID"}
+                                       autoComplete="on" autocapitalize="none"
+                                       spellcheck="false"
+                                       value={gameID} onChange={onGameIDChange}
+                                       disabled={connection === "connecting"} />
+                        </InputRow>
+                        <InputRow>
+                            <UI.FAIcon icon={icons.faUser}
+                                       color={theme.colors.secondary}
+                                       fixedWidth transform="grow-5" />
+                            <MenuInput id="join-player-name"
+                                       placeholder={"Player name"}
+                                       autoComplete="on" autocapitalize="words"
+                                       spellcheck="false"
+                                       value={playerName} onChange={onPlayerNameChange}
+                                       disabled={connection === "connecting"} />
+                        </InputRow>
                     </UI.ColumnToRow>
                     <ButtonZone>
-                        <SpacedFlavor light warn={warn}>{flavor}</SpacedFlavor>
+                        <UI.RadioLink type="checkbox" id="join-game-persist"
+                                      name="Remember this gameID"
+                                      checked={persist} onChange={e => setPersist(e.target.checked)}
+                                      disabled={!ready}>
+                            {persistFlavor}
+                        </UI.RadioLink>
                         {connection === "connecting" ? <UI.DiceSpinner /> : ''}
-                        <UI.Button id="join-game-submit" onClick={onSubmit}
-                                   disabled={!ready}>
+                        <UI.LinkButton light id="join-game-submit"
+                                       onClick={onSubmit}
+                                       disabled={!ready}>
                             Join
-                        </UI.Button>
+                        </UI.LinkButton>
                     </ButtonZone>
                 </MenuLayout>
             </form>

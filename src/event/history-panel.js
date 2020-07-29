@@ -12,6 +12,7 @@ import * as Game from 'game';
 import * as Event from 'event';
 import * as Record from 'record';
 import * as server from 'server';
+import routes from 'routes';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 
@@ -19,6 +20,12 @@ const DO_SOME_ROLLS_FLAVOR = [
     "You have to press that roll button first, chummer.",
     "You gotta roll those dice first.",
     "Hit that roll button and we'll show you the glitches."
+];
+
+const GAME_EMPTY_FLAVOR = [
+    "Looks like nothing much has happened here.",
+    "Looks like you've joined a really boring game.",
+    "Be the first one to roll!",
 ];
 
 type RecordProps = { +event: ?Event.Event, style?: any };
@@ -57,6 +64,7 @@ export function LoadingResultList() {
     const state = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
+
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
     const eventsLength = state.events.length;
@@ -72,10 +80,9 @@ export function LoadingResultList() {
     // recalculating the first ~9.
     React.useEffect(() => {
         if (listRef.current && listRef.current._listRef) {
-            console.log('List ref', listRef.current._listRef);
             listRef.current._listRef.resetAfterIndex(0);
         }
-    }, [ eventsLength ]);
+    }, [eventsLength]);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
     const loadedAt = React.useCallback((index: number) => {
@@ -112,21 +119,27 @@ export function LoadingResultList() {
         if (fetchingEvents || connection === "offline") {
             return;
         }
-        dispatch({ ty: "setHistoryFetch", state: "fetching" });
         const event = state.events[oldestIx - 1];
         if (!event) {
             return;
         }
+        dispatch({ ty: "setHistoryFetch", state: "fetching" });
         const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
-        const eventFetch = server.fetchEvents({ oldest: oldestID }).then(resp => {
-            dispatch({ ty: "setHistoryFetch", state: resp.more ? "ready" : "finished" });
-            dispatch({ ty: "mergeEvents", events: resp.events });
-        });
-        if (process.env.NODE_ENV !== 'production') {
-            eventFetch.catch(err => console.error('Error fetching events: ', err));
-        }
+        routes.game.getEvents({ oldest: oldestID })
+            .onResponse(resp => {
+                dispatch({
+                    ty: "setHistoryFetch",
+                    state: resp.more ? "ready" : "finished"
+                });
+                resp.events.forEach(server.normalizeEvent);
+                dispatch({ ty: "mergeEvents", events: resp.events });
+            })
+            .onAnyError(err => {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.error('Error fetching events: ', err);
+                }
+            });
     }
-
     return (
         <AutoSizer>
             {({height, width}) => (
@@ -164,20 +177,32 @@ export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const events = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
-    // Using connection is what lets us rerender when events DC
     const setConnection = React.useContext(SetConnectionCtx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
+    const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);
+
     const gameID = game?.gameID;
     const hasRolls = events.events.length > 0;
-    server.useEvents(gameID, setConnection, dispatch);
+    server.useEvents(gameID, server.session, setConnection, dispatch);
 
     let title;
-    if (game) {
+    if (gameID) {
         title = gameID;
     }
     else {
         title = "Results";
+    }
+
+    let body = '';
+    if (!hasRolls && game && events.historyFetch === "finished") {
+        body = (<HistoryFlavor>{emptyGameFlavor}</HistoryFlavor>);
+    }
+    else if (!hasRolls && !game) {
+        body = (<HistoryFlavor>{rollFlavor}</HistoryFlavor>);
+    }
+    else {
+        body = (<LoadingResultList />);
     }
 
     return (
@@ -185,10 +210,7 @@ export default function EventHistory() {
             <TitleBar>
                 <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
             </TitleBar>
-            {hasRolls ?
-                <LoadingResultList />
-                : <HistoryFlavor>{rollFlavor}</HistoryFlavor>
-            }
+            {body}
         </UI.Card>
     );
 }
