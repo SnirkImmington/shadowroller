@@ -187,7 +187,7 @@ export default function EventHistory() {
 
     const gameID = game?.gameID;
     const hasRolls = events.events.length > 0;
-    server.useEvents(gameID, setConnection, dispatch);
+    server.useEvents(gameID, server.session, setConnection, dispatch);
 
     let title;
     if (gameID) {

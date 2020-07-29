@@ -95,6 +95,7 @@ export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
 
 export function useEvents(
     gameID: ?string,
+    session: ?string,
     setConnection: SetConnection,
     dispatch: Event.Dispatch
 ): ?EventSource {
@@ -113,7 +114,7 @@ export function useEvents(
             events.current.close();
         }
 
-        if (!gameID) {
+        if (!server.session || !gameID) {
             if (process.env.NODE_ENV !== "production") {
                 // flow-ignore-all-next-line
                 document.title = `Shadowroller (${process.env.NODE_ENV})`;
@@ -125,12 +126,12 @@ export function useEvents(
             return;
         }
         if (process.env.NODE_ENV !== "production") {
-            console.log("Connecting event stream");
+            console.log("Connecting to event stream:", gameID, server.session);
         }
         setConnection("connecting");
         const source = new EventSource(
             // flow-ignore-all-next-line
-            `${server.BACKEND_URL}/game/subscription?session=${server.session}`, {
+            `${server.BACKEND_URL}game/subscription?session=${server.session}`, {
             withCredentials: true,
         });
         source.onmessage = function(e) {
@@ -161,7 +162,7 @@ export function useEvents(
         events.current = source;
         return; // Cleanup handled imperatively through use of ref
         // and to account for program logic and EventSource specifics.
-    }, [gameID, setConnection, dispatch]);
+    }, [gameID, session, setConnection, dispatch]);
 
     return events.current;
 }
