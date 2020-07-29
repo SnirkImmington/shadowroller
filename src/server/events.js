@@ -153,11 +153,21 @@ export function useEvents(
                 setConnection("connecting");
             }
         };
-        source.onerror = function(e) {
+        source.onerror = function(event) {
             if (process.env.NODE_ENV !== "production") {
-                console.error("EventStream error", e);
+                console.error("EventStream error", event);
             }
-            setConnection("errored");
+            switch (event.target.readyState) {
+                case source.OPEN:
+                    setConnection("connected");
+                    return;
+                case source.CONNECTING:
+                    setConnection("connecting");
+                    return;
+                case source.CLOSED:
+                    setConnection("errored");
+                    return;
+            }
         };
         events.current = source;
         return; // Cleanup handled imperatively through use of ref
