@@ -75,10 +75,10 @@ export class BackendRequest<O> {
 
     onSuccess(handler: (bool) => void): BackendRequest<O> {
         if (this.handleResponse) {
-            throw [
+            throw new Error([
                 "Already have a handleSuccess registered",
                 this.handleResponse
-            ];
+            ]);
         }
         this.handleSuccess = handler;
         return this;
@@ -86,10 +86,10 @@ export class BackendRequest<O> {
 
     onResponse(handler: (O) => void): BackendRequest<O> {
         if (this.handleSuccess) {
-            throw [
+            throw new Error([
                 "Already have a handleSuccess registered",
                 this.handleSuccess
-            ];
+            ]);
         }
         this.handleResponse = handler;
         return this;
@@ -119,7 +119,10 @@ export class BackendRequest<O> {
 
     onDone(handler: (bool, any) => void): BackendRequest<O> {
         if (this.handleSuccess) {
-            throw "Already have a handleSuccess registered";
+            throw new Error([
+                "Already have a handleSuccess registered",
+                this.handleSuccess
+            ]);
         }
         this.handleSuccess = handler;
         this.onAnyError(e => handler(false, e));

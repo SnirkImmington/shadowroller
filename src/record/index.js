@@ -1,15 +1,7 @@
 // @flow
 
-import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import * as UI from 'style';
-import * as dice from 'dice';
-
-import * as Event from 'event';
-
-import { RollRecord } from './roll';
-import { PlayerJoin } from './otherEvents';
 
 type RecordProps = {
     +style: any,

@@ -8,9 +8,6 @@ import * as UI from 'style';
 import * as server from 'server';
 import * as Game from 'game';
 import * as Event from 'event';
-import { Die } from 'dice';
-// flow-ignore-all-next-line
-import { ReactComponent as DieOne } from 'assets/die-1.svg';
 import { ConnectionCtx } from 'connection';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
@@ -47,13 +44,6 @@ const Item = styled.div`
             `text-align: ${align};`}
         ${({capped}) => capped &&
             "width: 33vw; overflow-x: auto;"}
-    }
-`;
-
-const CappedItem = styled(Item)`
-    @media all and (min-width: 768px) {
-        width: 33vw;
-        overflow-x: auto;
     }
 `;
 

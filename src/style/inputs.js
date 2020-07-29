@@ -1,13 +1,10 @@
 // @flow
 
 import * as React from 'react';
-import styled, { keyframes } from 'styled-components/macro';
+import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import { color, layout } from 'styled-system';
 import typeof Theme from './theme';
-
-import { FlexRow } from './layout';
-import * as srutil from 'srutil';
 
 type InputProps = { monospace? : bool };
 export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(props => ({

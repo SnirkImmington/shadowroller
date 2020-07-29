@@ -1,7 +1,6 @@
 // @flow
 
 import { get, post } from 'server';
-import type { GameInfo } from 'routes';
 import type { BackendRequest } from 'server/request';
 import type { Event } from 'event';
 

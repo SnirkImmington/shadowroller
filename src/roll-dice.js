@@ -10,7 +10,6 @@ import * as Game from 'game';
 import * as Event from 'event';
 import { ConnectionCtx } from 'connection';
 import routes from 'routes';
-import * as server from 'server';
 import * as srutil from 'srutil';
 
 const ROLL_TITLE_FLAVOR = [

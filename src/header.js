@@ -112,7 +112,7 @@ function JoinButton({ menuShown, onClick }: Props) {
             case "connected":
             case "connecting":
                 message = menuShown ? "Close" : game.player.name;
-                disabled = connection == "connecting" && !menuShown;
+                disabled = connection === "connecting" && !menuShown;
                 break;
             case "errored":
                 message = "Error";

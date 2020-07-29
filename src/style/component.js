@@ -3,8 +3,6 @@
 import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import { color } from 'styled-system';
-import typeof Theme from './theme';
 
 import * as srutil from 'srutil';
 

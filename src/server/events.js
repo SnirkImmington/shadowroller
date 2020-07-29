@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import * as Event from 'event';
 import * as server from '../server';
-import type { Connection, SetConnection } from 'connection';
+import type { SetConnection } from 'connection';
 
 export function normalizeEvent(event: any) {
     if (!event.source) {
@@ -165,6 +165,14 @@ export function useEvents(
                     setConnection("connecting");
                     return;
                 case source.CLOSED:
+                    setConnection("errored");
+                    return;
+                default:
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log(
+                            "Reached unknown event target error:", event
+                        );
+                    }
                     setConnection("errored");
                     return;
             }

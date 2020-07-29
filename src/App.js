@@ -50,8 +50,9 @@ function Shadowroller() {
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
     const [menuShown, setMenuShown] = React.useState<bool>(false);
-    const hide = React.useCallback(() => setMenuShown(false));
+    const hide = React.useCallback(() => setMenuShown(false), [setMenuShown]);
 
+    const session = server.session;
     React.useEffect(() => {
         server.loadCredentials();
         if (server.session) {
@@ -65,7 +66,7 @@ function Shadowroller() {
                 });
             setConnection("disconnected");
         }
-    }, []);
+    }, [session, setConnection, gameDispatch, eventDispatch]);
 
     function onGameButtonClick() {
         setMenuShown(shown => !shown);

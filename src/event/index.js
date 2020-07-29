@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from 'react';
-import * as Game from 'game';
 
 export type GameSource = {| +id: string, +name: string |};
 export type Source =

@@ -1,9 +1,7 @@
 // @flow
 
-import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import flexbox from '@styled-system/flexbox';
 
 import { ColumnToRow } from './';
 

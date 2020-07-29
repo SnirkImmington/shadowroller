@@ -3,39 +3,12 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
-import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import { statusFor, connectionFor, ConnectionCtx, SetConnectionCtx } from 'connection';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import * as server from 'server';
-import * as srutil from 'srutil';
 import routes from 'routes';
-
-const ERROR_FLAVOR = [
-    "Looks like we're having some issues",
-];
-
-const MenuLayout = styled(UI.FlexRow)`
-    @media all and (min-width: 768px) {
-        padding: 0 0 0.5em;
-        align-items: center;
-    }
-
-    & > * {
-        @media all and (min-width: 768px) {
-            margin-top: auto;
-            margin-bottom: auto;
-        }
-    }
-
-    & > *:first-child {
-        @media all and (min-width: 768px) {
-            flex-grow: 1;
-            justify-content: flex-start;
-        }
-    }
-`;
 
 const ButtonsRow = styled(UI.FlexRow)`
     /* Mobile: buttons on right */
@@ -54,7 +27,6 @@ type Props = {
     +hide: () => void,
 }
 export function ReconnectMenu({ hide }: Props) {
-    const game = React.useContext(Game.Ctx);
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
     const gameDispatch = React.useContext(Game.DispatchCtx);

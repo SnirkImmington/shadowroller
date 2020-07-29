@@ -3,7 +3,6 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import flexbox from '@styled-system/flexbox';
 
 export const NoWrap: StyledComponent<> = styled.span`
     white-space: nowrap;

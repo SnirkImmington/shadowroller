@@ -65,8 +65,6 @@ export function LoadingResultList() {
     const dispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
 
-    const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);
-
     const atHistoryEnd = state.historyFetch === "finished";
     const fetchingEvents = state.historyFetch === "fetching";
     const eventsLength = state.events.length;
@@ -84,7 +82,7 @@ export function LoadingResultList() {
         if (listRef.current && listRef.current._listRef) {
             listRef.current._listRef.resetAfterIndex(0);
         }
-    }, [ eventsLength ]);
+    }, [eventsLength]);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
     const loadedAt = React.useCallback((index: number) => {
@@ -179,7 +177,6 @@ export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const events = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
-    const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
@@ -198,7 +195,7 @@ export default function EventHistory() {
     }
 
     let body = '';
-    if (!hasRolls && game && events.historyFetch == "finished") {
+    if (!hasRolls && game && events.historyFetch === "finished") {
         body = (<HistoryFlavor>{emptyGameFlavor}</HistoryFlavor>);
     }
     else if (!hasRolls && !game) {
