@@ -1,0 +1,48 @@
+* Shadowroller Server "Architecture"
+
+Shadowroller is split into three packages:
+- ~sr~ is the base package which implements game functionality.
+- ~sr/config~ is used by other packages for configuration.
+- ~sr/routes~ contains a REST API used by the frontend.
+- ~main~ creates the HTTP server(s).
+
+Given those descriptions, there are some import paths:
+- ~config -> sr, routes~: config is used by all packages, may not import them.
+- ~sr -> routes~: routes may import sr, not the other way around.
+- ~sr, config -> main~: main uses exports from the rest of the program.
+
+There are basic guidelines to keeping things well-architectured:
+- ~rotues~ should not perform redis commands directly
+- ~sr~ should not perform HTTP/request management
+- ~config~ should do nothing besides get config data
+- ~main~ should call some functions from ~sr~ in a simple manner
+
+** ~sr~ package: business logic
+
+Although Shadowroller is very small and doesn't do much, I'm trying to maintain
+a basic amount of separation between this core package and ~routes~.
+
+- ~auth~: create accounts, check authorization on first login.
+- ~session~: create temporary sessions in Redis, check authorization per-request.
+- ~game~:
+- ~event~: create events, subscribe to events
+- ~roll~: roll dice according to Shadowrun rules
+- ~server~: create
+
+** ~routes~ package: a REST API
+
+This started as an idea to keep endpoint files in a folder, but turned into an API
+boundary. Shadowroller may have alternate APIs in the future (i.e. a Discord bot)
+so making the split more serious doesn't hurt.
+
+This package includes the HTTP handlers for API endpoints and the Gorilla routers
+they're registered on.
+
+- ~httpAuth~: convert between HTTP request headers and ~sr.Auth~ s.
+- ~httpSession~: get session info from HTTP requests
+- ~middleware~: router middleware including rate limiting and panic catching.
+- ~redirectServer~: Simple HTTP -> HTTPS redirect server which is mostly used by spammers
+- ~request~: HTTP request handler utilities
+
+- ~auth~: log in and refresh sessions
+- ~game~: get info about games, perform actions (i.e. rolls)

@@ -1,11 +1,11 @@
-package srserver
+package sr
 
 import (
 	crypto "crypto/rand"
 	"encoding/binary"
 	"log"
 	"math/rand"
-	"srserver/config"
+	"sr/config"
 )
 
 /*
@@ -22,7 +22,9 @@ import (
 
 var rollsChan = make(chan int, config.RollBufferSize)
 
-func fillRolls(rolls []int) (hits int) {
+// FillRolls performs standard rolls for the given buffer.
+// Returns the number of hits obtained.
+func FillRolls(rolls []int) (hits int) {
 	for i := 0; i < len(rolls); i++ {
 		roll := <-rollsChan
 		rolls[i] = roll
@@ -33,7 +35,8 @@ func fillRolls(rolls []int) (hits int) {
 	return
 }
 
-func explodingSixes(pool int) (results [][]int) {
+// ExplodingSixes rolls a pool applying the Rule of Six.
+func ExplodingSixes(pool int) (results [][]int) {
 	for pool > 0 { // rounds
 		sixes := 0
 		rollRound := make([]int, pool)
@@ -50,7 +53,8 @@ func explodingSixes(pool int) (results [][]int) {
 	return results
 }
 
-func reroll(original []int) []int {
+// Reroll re-rolls misses in a roll.
+func Reroll(original []int) []int {
 	pool := 0
 	for _, die := range original {
 		if die >= 5 {
@@ -58,7 +62,7 @@ func reroll(original []int) []int {
 		}
 	}
 	result := make([]int, pool)
-	fillRolls(result)
+	FillRolls(result)
 	return result
 
 }

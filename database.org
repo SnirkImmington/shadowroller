@@ -5,7 +5,7 @@ Most of this will be transitioned over to a persistent SQL DB.
 
 ** Concepts
 
-*Game ID*: each game will have a unique ID (dev environment creates ~testgame1~ and ~testgame2~)
+*Game ID*: each game will have a unique ID (dev environment creates ~test1~ and ~test2~)
 which the players use to connect to the game. This ID should be kept secret.
 
 *Player ID*: with the game ID, a player types in a name. Players in a game may have the same name.
@@ -39,3 +39,8 @@ which contain the player ID, type of the event, and {roll, dice rolled} or {join
 - *Roll events*
   + ~player_id~ number: player ID
   + ~roll~ []number: the dice rolled
+
+* New DB
+
+** Sessions ~session:sessionID~ hash
+- ~playerID~, ~gameID~, ... ~playerName~

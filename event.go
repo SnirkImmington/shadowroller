@@ -1,10 +1,9 @@
-package srserver
+package sr
 
 import (
 	"encoding/json"
 	"github.com/gomodule/redigo/redis"
 	"log"
-	"math/rand"
 	"regexp"
 )
 
@@ -23,6 +22,7 @@ type RollEvent struct {
 	Title      string `json:"title",redis:"title"`
 }
 
+// EdgeRollEvent is posted when a player pushes the limit to roll dice.
 type EdgeRollEvent struct {
 	EventCore
 	PlayerID   string  `json:"pID"`
@@ -39,10 +39,10 @@ type PlayerJoinEvent struct {
 }
 
 // Event interface determines what is sent to postEvent
-type Event interface {
-}
+type Event interface{}
 
-func postEvent(gameID string, event Event, conn redis.Conn) (string, error) {
+// PostEvent posts an event to Redis and returns the generated ID.
+func PostEvent(gameID string, event Event, conn redis.Conn) (string, error) {
 	bytes, err := json.Marshal(event)
 	if err != nil {
 		return "", err
@@ -56,31 +56,29 @@ func postEvent(gameID string, event Event, conn redis.Conn) (string, error) {
 
 var idRegex = regexp.MustCompile(`^([\d]{13})-([\d]+)$`)
 
-func validEventID(id string) bool {
+func ValidEventID(id string) bool {
 	return idRegex.MatchString(id)
 }
 
-func receiveEvents(gameID string) (<-chan string, chan<- bool) {
-	// Due to an implicit cast going on, I can't just use return vars here.
+func ReceiveEvents(gameID string, requestID string) (<-chan string, chan<- bool) {
 	// Events channel is buffered: if there are too many events for our consumer,
-	// we will block on the channel push, and we backpressure redis to hold onto
-	// events for us.
+    // we will block on channel send.
 	eventsChan := make(chan string, 10)
 	okChan := make(chan bool)
 	go func() {
-		goID := rand.Intn(100)
-
 		defer close(eventsChan)
 
-		conn := redisPool.Get()
-		defer closeRedis(conn)
-		log.Print(goID, " Begin reading events for ", gameID)
+		conn := RedisPool.Get()
+		defer CloseRedis(conn)
+
+		log.Printf("%vE Begin reading events for %v", requestID, gameID)
 
 		for {
 			// See if we've been canceled.
 			select {
 			case <-okChan:
-				log.Printf("%v: Canceling event read for %v", goID, gameID)
+				log.Printf("%vE: Received cancel signal", requestID)
+                log.Printf("%vE << close: signal", requestID)
 				return
 			default:
 			}
@@ -89,7 +87,11 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 				"XREAD", "BLOCK", 0, "STREAMS", "event:"+gameID, "$",
 			))
 			if err != nil {
-				log.Print(goID, " Error reading stream from ", gameID, ": ", err)
+				log.Printf(
+                    "%vE Error reading stream for %v: %v",
+                    requestID, gameID, err,
+                )
+                log.Printf("%vE << close error: %v", requestID, err)
 				return
 			}
 
@@ -97,25 +99,30 @@ func receiveEvents(gameID string) (<-chan string, chan<- bool) {
 			eventKeyInfo := data[0].([]interface{})
 			eventList := eventKeyInfo[1].([]interface{})
 
-			events, err := scanEvents(eventList)
+			events, err := ScanEvents(eventList)
 			if err != nil {
-				log.Print(goID, " Unable to deserialize event: ", err)
+				log.Printf("%vE Unable to deserialize event: %v", requestID, err)
+                log.Printf("%vE << close: redis error: %v", requestID, err)
 				return
 			}
 			for _, event := range events {
 				reStringed, err := json.Marshal(event)
 				if err != nil {
-					log.Print(goID, " Unable to write event back to string: ", err)
+					log.Printf(
+                        "%vE Unable to write event back to string: %v",
+                        requestID, err,
+                    )
 					continue
 				}
 				eventsChan <- string(reStringed)
+                // We don't log sending the event on this side of the channel.
 			}
 		}
 	}()
 	return eventsChan, okChan
 }
 
-func scanEvents(eventsData []interface{}) ([]map[string]interface{}, error) {
+func ScanEvents(eventsData []interface{}) ([]map[string]interface{}, error) {
 	events := make([]map[string]interface{}, len(eventsData))
 
 	for i := 0; i < len(eventsData); i++ {

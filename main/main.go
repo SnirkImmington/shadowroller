@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
-	"srserver"
-	"srserver/config"
+	"sr"
+	"sr/config"
+	"sr/routes"
 	"time"
 )
 
@@ -17,65 +20,63 @@ const SHADOWROLLER = `
 /___//_//_/\_._/ \___/ \___/|__.__//_/   \___//_//_/ \__//_/
 `
 
+func runServer(name string, server http.Server, tls bool) {
+	log.Print("Running ", name, " server at ", server.Addr, "...")
+
+	for {
+		var err error
+		if tls {
+			err = server.ListenAndServeTLS("", "")
+		} else {
+			err = server.ListenAndServe()
+		}
+
+		if err != nil {
+			log.Print(name, ": Server failed! Restarting in 10s.", err)
+			time.Sleep(time.Duration(10) * time.Second)
+			log.Print(name, ": Restarting.")
+		}
+	}
+}
+
 func main() {
 	log.SetOutput(os.Stdout)
 	if config.IsProduction {
 		log.SetFlags(
-			log.Ldate | log.Ltime | log.LUTC | log.Lmicroseconds | log.Lshortfile,
+			log.Ldate | log.Ltime | log.LUTC | log.Lmicroseconds,
 		)
 	} else {
 		log.SetFlags(log.Ltime | log.Lshortfile)
 	}
-	log.Println("Starting up...")
+
+	log.Print("Starting up...")
+
 	rand.Seed(time.Now().UnixNano())
-	srserver.BeginGeneratingRolls()
-	srserver.RegisterDefaultGames()
+	sr.BeginGeneratingRolls()
+	sr.SetupRedis()
 	config.VerifyConfig()
 
-	siteMux := srserver.MakeServerMux()
+	log.Print("Shadowroller:", SHADOWROLLER, "\n")
+
+	err := routes.DisplaySiteRoutes()
+	if err != nil {
+		panic(fmt.Sprintf("Unable to walk routes: %v", err))
+	}
+
+	log.Print(config.HardcodedGameNames)
 
 	// Run http->https and main servers in loops.
 	if config.IsProduction {
-		log.Println(SHADOWROLLER, "\n",
-			"* Running in production *\n",
-			"* At: ", config.ServerAddress, " *\n")
-		certManager := srserver.MakeCertManager()
-		redirectServer := srserver.MakeHTTPRedirectServer(certManager)
-		mainServer := srserver.MakeProductionServer(certManager, siteMux)
+		redirectServer := routes.MakeHTTPRedirectServer()
+		siteServer := routes.MakeHTTPSSiteServer()
 
-		// Loop the main server in a goroutine.
-		go func() {
-			log.Println("Running production site server...")
-			for {
-				err := mainServer.ListenAndServeTLS("", "")
-				if err != nil {
-					log.Println("Production site server failed!", err)
-					log.Println("Waiting before restarting site...")
-					time.Sleep(time.Duration(10) * time.Second)
-					log.Println("Restarting production server.")
-				}
-			}
-		}()
-
-		// Loop the redirect server in this thread.
-		log.Println("Running production redirect server...")
-		for {
-			err := redirectServer.ListenAndServe()
-			if err != nil {
-				log.Println("Production redirect server failed!", err)
-				log.Println("Waiting before restarting redirect...")
-				time.Sleep(time.Duration(8) * time.Second)
-				log.Println("Restarting redirect server.")
-			}
-		}
+		go runServer("redirects", redirectServer, false)
+		runServer("main", siteServer, true)
 	} else {
-		log.Println(SHADOWROLLER, "\n",
-			"* Running in development *\n",
-			"* At: ", config.ServerAddress, " *\n")
 		// Run the local server unlooped in this thread.
-		mainServer := srserver.MakeLocalServer(siteMux)
+		mainServer := routes.MakeHTTPSiteServer()
 
-		log.Println("Running development site server...")
+		log.Print("Running dev server at ", mainServer.Addr, "...")
 		err := mainServer.ListenAndServe()
 		if err != nil {
 			log.Println("Development server error:", err)

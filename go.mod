@@ -1,4 +1,4 @@
-module srserver
+module sr
 
 go 1.14
 
