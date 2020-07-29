@@ -8,7 +8,7 @@ import * as icons from 'style/icon';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import { statusFor, connectionFor, ConnectionCtx, SetConnectionCtx } from 'connection';
+import { ConnectionCtx, SetConnectionCtx } from 'connection';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
@@ -40,7 +40,7 @@ const LOADING_FLAVOR = [
     "Accessing game node...",
     "Asking for permission...",
 ];
-const NOT_FOUND_FLAVOR = [
+const CLIENT_ERROR_FLAVOR = [
     "I don't think that Game ID exists.",
     "You put in the right Game ID?",
     "Game ID first, then player name.",
@@ -122,12 +122,6 @@ const MenuInput = styled(UI.Input)`
     }
 `;
 
-const DesktopSpacing = styled.div`
-    @media all and (min-width: 768px) {
-        flex-grow: 1;
-    }
-`;
-
 type Props = {
     +hide: () => void,
 };
@@ -144,9 +138,9 @@ export function JoinMenu({ hide }: Props) {
     const [persistFlavor] = srutil.useFlavor(REMEMBER_FLAVOR);
     const [enterIDFlavor] = srutil.useFlavor(ENTER_GAME_ID_FLAVOR);
     const [connectingFlavor, newConnecting] = srutil.useFlavor(LOADING_FLAVOR);
-    const [noConnectionFlavor, newNoConnection] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
-    const [notFoundFlavor, newNotFound] = srutil.useFlavor(NOT_FOUND_FLAVOR);
-    const [serverErrorFlavor, newServerError] = srutil.useFlavor(SERVER_ERROR_FLAVOR);
+    const [networkErrorFlavor, newNetworkErrorFlavor] = srutil.useFlavor(NO_CONNECTION_FLAVOR);
+    const [clientErrorFlavor, newClientErrorFlavor] = srutil.useFlavor(CLIENT_ERROR_FLAVOR);
+    const [serverErrorFlavor, newServerErrorFlavor] = srutil.useFlavor(SERVER_ERROR_FLAVOR);
 
     const [flavor, setFlavor] = React.useState<React.Node>(enterIDFlavor);
 
@@ -171,6 +165,18 @@ export function JoinMenu({ hide }: Props) {
             .onResponse(resp => {
                 server.handleLogin(persist, resp, setConnection, dispatch, eventDispatch);
                 hide();
+            })
+            .onClientError(resp => {
+                setFlavor(clientErrorFlavor);
+                newClientErrorFlavor()
+            })
+            .onServerError(resp => {
+                setFlavor(serverErrorFlavor);
+                newServerErrorFlavor();
+            })
+            .onNetworkError(resp => {
+                setFlavor(networkErrorFlavor);
+                newNetworkErrorFlavor();
             });
     }
 
