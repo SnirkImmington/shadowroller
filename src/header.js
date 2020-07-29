@@ -31,7 +31,7 @@ const SRTitle = styled.h1`
     font-style: oblique;
     font-weight: 900;
     letter-spacing: 1px;
-    align-text: center;
+    text-align: center;
     display: flex;
 
 
@@ -86,8 +86,10 @@ function JoinButton({ menuShown, onClick }: Props) {
     if (!game) {
         switch (connection) {
             case "offline":
-            case "disconnected":
                 message = menuShown ? "Cancel" : "Join";
+                break;
+            case "disconnected":
+                message = menuShown ? "Cancel" : "Reconnect";
                 break;
             case "connecting":
             case "connected": // If we don't have a game yet
