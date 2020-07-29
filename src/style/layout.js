@@ -24,12 +24,6 @@ export const FlexColumn: StyledComponent<> = styled.div`
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
 `;
 
-export const Menu: StyledComponent<> = styled.div`
-    background-color: ${props=>props.theme.colors.gray2};
-    color: white;
-    padding: 0.5em;
-`;
-
 export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
     ${props => props?.grow ? 'height: 100%;' : ''}
     @media all and (min-width: 768px) {
