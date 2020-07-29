@@ -16,9 +16,38 @@ const ERROR_FLAVOR = [
     "Looks like we're having some issues",
 ];
 
+const MenuLayout = styled(UI.FlexRow)`
+    @media all and (min-width: 768px) {
+        padding: 0 0 0.5em;
+        align-items: center;
+    }
+
+    & > * {
+        @media all and (min-width: 768px) {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+    }
+
+    & > *:first-child {
+        @media all and (min-width: 768px) {
+            flex-grow: 1;
+            justify-content: flex-start;
+        }
+    }
+`;
+
 const ButtonsRow = styled(UI.FlexRow)`
     /* Mobile: buttons on right */
+    margin-left: auto;
 
+    & > * {
+        margin-left: 0.5em;
+    }
+
+    @media all and (min-width: 768px) {
+        align-items: center;
+    }
 `;
 
 type Props = {
@@ -31,7 +60,7 @@ export function ReconnectMenu({ hide }: Props) {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
 
-    function handleReconnect(event: SyntheticInputEvent<HTMLInputElement>) {
+    function handleReconnect(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
 
         // This is the only way to close the event stream
@@ -48,31 +77,36 @@ export function ReconnectMenu({ hide }: Props) {
         setConnection("connecting");
     }
 
-    function handleLeave() {
+    function handleLeave(event: SyntheticInputEvent<HTMLButtonElement>) {
+        event.preventDefault();
 
+        server.handleLogout(gameDispatch, eventDispatch);
+        setConnection("offline");
     }
 
     const buttonsEnabled = connection !== "connecting";
 
     return (
         <UI.Menu>
-            <UI.ColumnToRow>
-            <span>
+            <form id="reconnect-menu-form">
+            <UI.MenuBody>
+                <span>
                 There was a problem connecting to the server.
-            </span>
-            <ButtonsRow>
-                <UI.LinkButton light id="reconnect-to-game"
-                               onClick={handleReconnect}
-                               disabled={!buttonsEnabled}>
-                    Reconnect
-                </UI.LinkButton>
-                <UI.LinkButton light id="leave-game"
-                               onClick={handleLeave}
-                               disabled={!buttonsEnabled}>
-                    Log out
-                </UI.LinkButton>
-            </ButtonsRow>
-            </UI.ColumnToRow>
+                </span>
+                <ButtonsRow>
+                    <UI.LinkButton light id="reconnect-to-game"
+                                   onClick={handleReconnect}
+                                   disabled={!buttonsEnabled}>
+                        Reconnect
+                    </UI.LinkButton>
+                    <UI.LinkButton light id="leave-game"
+                                   onClick={handleLeave}
+                                   disabled={!buttonsEnabled}>
+                        Log out
+                    </UI.LinkButton>
+                </ButtonsRow>
+            </UI.MenuBody>
+            </form>
         </UI.Menu>
     );
 }
