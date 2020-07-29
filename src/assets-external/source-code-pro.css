@@ -3,8 +3,7 @@
     font-weight: 400;
     font-style: normal;
     font-stretch: normal;
-    src: local('Source Code Pro') local('source-code-pro')
-         url(./woff2/source-code-pro-regular.otf.woff2) format('woff2'),
+    src: url(./woff2/source-code-pro-regular.otf.woff2) format('woff2'),
          url(./otf/source-code-pro-regular.otf) format('opentype');
     font-display: swap;
 }
@@ -14,8 +13,7 @@
     font-weight: 400;
     font-style: italic;
     font-stretch: normal;
-    src: local('Source Code Pro') local('source-code-pro')
-         url(./woff2/source-code-pro-it.otf.woff2) format('woff2'),
+    src: url(./woff2/source-code-pro-it.otf.woff2) format('woff2'),
          url(./otf/source-code-pro-it.otf) format('opentype');
     font-display: swap;
 }
@@ -46,8 +44,7 @@
     font-weight: 700;
     font-style: normal;
     font-stretch: normal;
-    src: local('Source Code Pro') local('source-code-pro')
-         url(./woff2/source-code-pro-bold.otf.woff2) format('woff2'),
+    src: url(./woff2/source-code-pro-bold.otf.woff2) format('woff2'),
          url(./otf/source-code-pro-bold.otf) format('opentype');
     font-display: swap;
 }
@@ -57,8 +54,7 @@
     font-weight: 700;
     font-style: italic;
     font-stretch: normal;
-    src: local('Source Code Pro') local('source-code-pro')
-         url(./woff2/source-code-pro-bold-it.otf.woff2) format('woff2'),
+    src: url(./woff2/source-code-pro-bold-it.otf.woff2) format('woff2'),
          url(./otf/source-code-pro-bold-it.otf) format('opentype');
     font-display: swap;
 }
