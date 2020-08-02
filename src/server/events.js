@@ -38,6 +38,15 @@ function parseEvent(event: any): ?Event.Event {
                 title: event.title ?? '',
                 rounds: event.rounds,
             };
+        case "rerollFailures":
+            return {
+                ty: "rerollFailures", id: event.id,
+                source: {
+                    id: event.pID, name: event.pName,
+                },
+                title: event.title ?? '',
+                rounds: event.rounds,
+            };
         case "playerJoin":
             return {
                 ty: "playerJoin", id: event.id,
