@@ -1,6 +1,7 @@
 // @flow
 
 import * as React from 'react';
+import * as srutil from 'srutil';
 
 export type GameSource = {| +id: string, +name: string |};
 export type Source =
@@ -23,6 +24,14 @@ export type EdgeRoll = {|
     +rounds: number[][],
 |};
 
+export type RerollFailures = {|
+    +ty: "rerollFailures",
+    +id: string,
+    +source: Source,
+    +title: string,
+    +rounds: number[][],
+|}
+
 export type PlayerJoin = {|
     +ty: "playerJoin",
     +id: string,
@@ -32,8 +41,11 @@ export type PlayerJoin = {|
 export type Event =
 | Roll
 | EdgeRoll
+| RerollFailures
 | PlayerJoin
 ;
+
+export type DiceEvent = Roll | EdgeRoll | RerollFailures;
 
 export type HistoryFetchState = "ready" | "fetching" | "finished";
 
@@ -103,6 +115,14 @@ function compareValue(event: Event): number {
     else {
         return 0;
     }
+}
+
+export function colorOf(event: Event): string {
+    return event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
+}
+
+export function canModify(event: Event, playerID: ?string): bool {
+    return event.source === "local" || (playerID != null && event.source.id === playerID);
 }
 
 export function newID(): string {

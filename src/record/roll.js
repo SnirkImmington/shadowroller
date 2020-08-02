@@ -5,67 +5,65 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 import * as dice from 'dice';
 
+import * as Game from 'game';
 import * as Event from 'event';
-
+import routes from 'routes';
 import * as srutil from 'srutil';
 import * as rollStats from 'rollStats';
 
-/*
-type RollActionsProps = {|
+type RollActionsProps = {
+    +edgeActions: bool,
     +onPush: () => void,
     +onSecondChance: () => void,
     +onRemove?: () => void,
-|}
-function RollActionsRow({onPush, onSecondChance, onRemove}: RollActionsProps) {
+}
+function RollActionsRow({edgeActions, onPush, onSecondChance, onRemove}: RollActionsProps) {
     return (
         <UI.LinkList>
-            <UI.LinkButton onClick={onPush}>
+            {/*<UI.LinkButton disabled={!edgeActions} onClick={onPush}>
                 push the limit
-            </UI.LinkButton>
-            <UI.LinkButton onClick={onSecondChance}>
+            </UI.LinkButton>*/}
+            <UI.LinkButton disabled={!edgeActions} onClick={onSecondChance}>
                 second chance
             </UI.LinkButton>
-            <UI.LinkButton disabled={!onRemove} onClick={onRemove}>
+            {/*<UI.LinkButton disabled={!onRemove} onClick={onRemove}>
                 remove
-            </UI.LinkButton>
+            </UI.LinkButton>*/}
         </UI.LinkList>
     );
 }
 
-function localRollActions(event: Event.LocalRoll, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
-    return {
-        onPush: function() {
-            dispatch({
-                ty: "edgePush", ix: eventIx,
-            });
-        },
-        onSecondChance: function() {
-            dispatch({
-                ty: "edgeReroll", ix: eventIx,
-            });
-        },
-        onRemove: function() {
-            dispatch({
-                ty: "removeLocal", ix: eventIx,
-            });
-        }
-    };
-}
+function rollActions(event: Event.DiceEvent, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
+    if (event.ty === "rerollFailures" || event.rounds) {
+        return { edgeActions: false, onPush: () => {}, onSecondChance: () => {} };
+    }
 
-function gameRollActions(event: Event.GameRoll, eventIx: number, dispatch: Event.Dispatch): RollActionsProps {
-    return {
-        onPush: function() {
-            dispatch({
-                ty: "edgePush", ix: eventIx,
-            });
-        },
-        onSecondChance: function() {
-            dispatch({
-                ty: "edgeReroll", ix: eventIx,
-            });
-        },
-    };
-}*/
+    if (event.source === "local") {
+        return {
+            edgeActions: true,
+            onPush: () => {},
+            onSecondChance: function() {
+                const rerolled: Event.RerollFailures = {
+                    ty: "rerollFailures",
+                    id: Event.newID(),
+                    source: "local",
+                    title: event.title,
+                    rounds: [srutil.rerollFailures(event.dice), event.dice]
+                };
+                dispatch({ ty: "newEvent", event: rerolled });
+            },
+        };
+    }
+    else {
+        return {
+            edgeActions: true,
+            onPush: () => {},
+            onSecondChance: function() {
+                routes.game.reroll({ rerollType: "rerollFailures", rollID: event.id });
+            }
+        }
+    }
+}
 
 const WrapperColumn = styled(UI.FlexColumn)``;
 
@@ -120,24 +118,39 @@ const EdgeDiceRounds = styled(UI.FlexRow)`
 `;
 
 type RollProps = {
-    +event: Event.Roll | Event.EdgeRoll,
-    //...RollActionsProps,
+    +event: Event.Roll | Event.EdgeRoll | Event.RerollFailures,
+    +eventIx: number,
 };
-export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...actions }: RollProps) {
-    const color = event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
+export const RollRecord = React.memo<RollProps>(function RollRecord({ event, eventIx }: RollProps) {
+    const eventDispatch = React.useContext(Event.DispatchCtx);
+    const game = React.useContext(Game.Ctx);
+
+    const color = Event.colorOf(event);
     const result = rollStats.results(event);
+    const canModify = Event.canModify(event, game?.player?.id);
+    const actions = rollActions(event, eventIx, eventDispatch);
+
+    let eventAction = " rolls ";
+    let eventIntro = "Rolled";
+    if (result.rerolled) {
+        eventAction = (<b>&nbsp;rerolls failures</b>);
+        eventIntro = (<b>Rerolled failures</b>);
+    }
+    else if (result.edged) {
+        eventAction = (<b>&nbsp;pushes the limit</b>);
+        eventIntro = (<b>Pushed the limit</b>);
+    }
 
     let intro: React.Node = event.source !== "local" ? (
         <span>
             <UI.HashColored id={event.source.id}>
                 {event.source.name}
             </UI.HashColored>
-            {event.rounds ? (<b>&nbsp;pushes the limit</b>) : " rolls "}
+            {eventAction}
         </span>
     ) : (
         <span>
-            {event.rounds ?
-                (<b>Pushed the limit</b>) : "Rolled"}
+            {eventIntro}
         </span>
     );
     const title: React.Node = event.title ? (
@@ -146,12 +159,13 @@ export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...
         </span>
     ) : event.dice ? (
         <span>
-            <tt>{event.dice.length}</tt> dice
+            <tt>{event.dice.length}</tt> {event.dice.length === 1 ? "die" : "dice"}
         </span>
     ) : (
         <span>
-            on <tt>{event.rounds[0].length}</tt> dice
-            {event.rounds.length > 1 && (
+            {result.rerolled ? "with " : "on "}
+            <tt>{event.rounds[0].length}</tt> {event.rounds[0].length === 1 ? "die" : "dice"}
+            {result.rounds > 1 && (
                 <> in <tt>{result.rounds}</tt> rounds </>
             )}
         </span>
@@ -176,6 +190,8 @@ export const RollRecord = React.memo<RollProps>(function RollRecord({ event, ...
                 </TitleRow>
                 {diceList}
             </RollScrollable>
+            {canModify && !result.edged &&
+                <RollActionsRow edgeActions={!result.edged} {...actions} />}
         </WrapperColumn>
     );
 });

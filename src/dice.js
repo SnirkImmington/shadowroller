@@ -5,6 +5,7 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
+import 'index.css';
 
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
 import { ReactComponent as DieTwo } from 'assets/die-2.svg';

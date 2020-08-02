@@ -63,6 +63,13 @@ function Shadowroller() {
                         true, resp,
                         setConnection, gameDispatch, eventDispatch
                     )
+                })
+                .onClientError(resp => {
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log("Got client error for reauth: ", resp);
+                    }
+                    server.clearSession();
+                    setConnection("offline");
                 });
             setConnection("disconnected");
         }
