@@ -9,11 +9,6 @@ import (
 	"time"
 )
 
-var _ = restRouter.HandleFunc("/players", func(response Response, request *Request) {
-	logRequest(request)
-	httpSuccess(response, request)
-})
-
 var gameRouter = restRouter.PathPrefix("/game").Subrouter()
 
 var _ = gameRouter.HandleFunc("/info", handleInfo).Methods("GET")
@@ -97,6 +92,65 @@ func handleRoll(response Response, request *Request) {
 	)
 }
 
+type rerollRequest struct {
+	RollID string `json:"rollID"`
+	Type   string `json:"rerollType"`
+}
+
+var _ = gameRouter.HandleFunc("/reroll", handleReroll).Methods("POST")
+
+func handleReroll(response Response, request *Request) {
+	logRequest(request)
+	sess, conn, err := requestSession(request)
+	httpUnauthorizedIf(response, request, err)
+	defer sr.CloseRedis(conn)
+
+	var reroll rerollRequest
+	err = readBodyJSON(request, &reroll)
+	httpInternalErrorIf(response, request, err)
+
+	if !sr.ValidRerollType(reroll.Type) {
+        logf(request, "Got invalid roll type %v", reroll)
+		httpBadRequest(response, request, "Invalid reroll type")
+	}
+
+	previousRoll, err := sr.EventByID(sess.GameID, reroll.RollID, conn)
+    httpInternalErrorIf(response, request, err)
+
+    if previousRoll["type"] != "roll" {
+        httpBadRequest(response, request, "Invalid previous roll")
+    }
+    var previousDice []int
+    switch previousRoll["dice"].(type) {
+    case []int:
+        previousDice = previousRoll["dice"].([]int)
+        break;
+    default:
+        logf(request, "Expected prior roll to have dice: %v", previousRoll)
+        httpBadRequest(response, request, "Invalid previous roll")
+    }
+
+
+    if reroll.Type == sr.RerollTypeRerollFailures {
+        newDice := sr.RerollFailures(previousDice)
+        rounds := [][]int{ previousDice, newDice }
+        rerollEvent := sr.RerollFailuresEvent{
+            EventCore: sr.EventCore{"rerollFailures"},
+            PrevID: reroll.RollID,
+            PlayerID: string(sess.PlayerID),
+            PlayerName: sess.PlayerName,
+            Title: previousRoll["title"].(string),
+            Rounds: rounds,
+        }
+        id, err := sr.PostEvent(sess.GameID, rerollEvent, conn)
+        httpInternalErrorIf(response, request, err)
+        httpSuccess(
+            response, request,
+            "OK; reroll ", id, " posted",
+        )
+    }
+}
+
 // Hacky workaround for logs to show event type.
 // A user couldn't actually write "ty":"foo" in the field, though,
 // as it'd come back escaped.
@@ -123,8 +177,8 @@ func handleSubscription(response Response, request *Request) {
 
 	// Subscribe to redis
 	logf(request, "Retrieving events for %s...", sess.LogInfo())
-    sr.UnexpireSession(&sess, conn)
-    defer sr.ExpireSession(&sess, conn)
+	sr.UnexpireSession(&sess, conn)
+	defer sr.ExpireSession(&sess, conn)
 
 	events, cancelled := sr.ReceiveEvents(sess.GameID, requestID(request))
 	defer func() { cancelled <- true }()
@@ -174,9 +228,9 @@ func handleSubscription(response Response, request *Request) {
 }
 
 type eventRangeResponse struct {
-	Events []map[string]interface{} `json:"events"`
-	LastID string                   `json:"lastId"`
-	More   bool                     `json:"more"`
+	Events []sr.EventOut `json:"events"`
+	LastID string     `json:"lastId"`
+	More   bool       `json:"more"`
 }
 
 var _ = gameRouter.HandleFunc("/events", handleEvents).Methods("GET")
@@ -230,7 +284,7 @@ func handleEvents(response Response, request *Request) {
 
 	if len(eventsData) == 0 {
 		eventRange = eventRangeResponse{
-			Events: make([]map[string]interface{}, 0),
+			Events: make([]sr.EventOut, 0),
 			LastID: "",
 			More:   false,
 		}

@@ -111,6 +111,7 @@ func MakeHTTPSiteServer() http.Server {
 		AllowCredentials: true,
 		Debug:            config.CORSDebug,
 	})
+    restRouter.Handle("/task", taskRouter)
 	restRouter.NewRoute().HandlerFunc(notFoundHandler)
 	router := c.Handler(restRouter)
 	server := makeServerFromRouter(router)

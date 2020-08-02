@@ -25,7 +25,7 @@ func GenUID() UID {
 
 // GenSessionID generates a session UID, longer than the default.
 func GenSessionID() UID {
-    return UID(encodeBytes(12))
+	return UID(encodeBytes(12))
 }
 
 func encodeBytes(size uint) string {

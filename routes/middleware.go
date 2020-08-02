@@ -51,6 +51,23 @@ func requestIDMiddleware(wrapped http.Handler) http.Handler {
 	})
 }
 
+func localhostOnlyMiddleware(wrapped http.Handler) http.Handler {
+    return http.HandlerFunc(func(response Response, request *Request) {
+        remoteAddr := strings.Split(request.RemoteAddr, ":")[0]
+        allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1"
+        message := "disallowed"
+        if allowed {
+            message = "allowed"
+        }
+        logf(request, "localhostOnly: %v %v", request.RemoteAddr, message)
+        if !allowed {
+            httpNotFound(response, request, "Not found")
+            return
+        }
+        wrapped.ServeHTTP(response, request)
+    })
+}
+
 func recoveryMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		defer func() {

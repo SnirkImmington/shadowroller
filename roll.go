@@ -8,6 +8,14 @@ import (
 	"sr/config"
 )
 
+// RerollTypeRerollFailures represents the "Reroll Failures" use of post-roll edge.
+const RerollTypeRerollFailures = "reroll"
+
+// ValidRerollType determines if the requested reroll type is valid.
+func ValidRerollType(ty string) bool {
+	return ty == RerollTypeRerollFailures
+}
+
 /*
    Roll Generation
 
@@ -53,8 +61,8 @@ func ExplodingSixes(pool int) (results [][]int) {
 	return results
 }
 
-// Reroll re-rolls misses in a roll.
-func Reroll(original []int) []int {
+// RerollFailures re-rolls misses in a roll.
+func RerollFailures(original []int) []int {
 	pool := 0
 	for _, die := range original {
 		if die >= 5 {

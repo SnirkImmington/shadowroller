@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"log"
+	"os"
 	"sr/config"
 	"strings"
 	"time"
-    "os"
 )
 
 var redisLogger *log.Logger
@@ -18,10 +18,10 @@ var RedisPool = &redis.Pool{
 	IdleTimeout: time.Duration(60) * time.Second,
 	Dial: func() (redis.Conn, error) {
 		conn, err := redis.DialURL(config.RedisURL)
-        if config.RedisDebug && err == nil {
-            return redis.NewLoggingConn(conn, redisLogger, "redis"), nil
-        }
-        return conn, err
+		if config.RedisDebug && err == nil {
+			return redis.NewLoggingConn(conn, redisLogger, "redis"), nil
+		}
+		return conn, err
 	},
 }
 
@@ -34,9 +34,9 @@ func CloseRedis(conn redis.Conn) {
 }
 
 func SetupRedis() {
-    if config.RedisDebug {
-        redisLogger = log.New(os.Stdout, "", log.Ltime | log.Lshortfile)
-    }
+	if config.RedisDebug {
+		redisLogger = log.New(os.Stdout, "", log.Ltime|log.Lshortfile)
+	}
 
 	conn := RedisPool.Get()
 	defer CloseRedis(conn)

@@ -21,17 +21,30 @@ const tuidNoiseSub = 1 << tuidNoiseShift
 // TUID is a timestamped unique ID inspired by Twitter's Snowflake IDs.
 type TUID int64
 
-// GenTUID constructs a new TUID using the current timestamp and crypto/rand.
+// GenTUID generates a new TUID using the current timestamp and crypto/rand noise.
 func GenTUID() TUID {
 	nowNanos := time.Now().UnixNano()
-	nowDecis := nowNanos / tuidMultiplier
-	log.Print("TUID: starting with 0x%x", nowDecis)
-	noise := tuidNoise()
-	log.Print("TUID: adding noise 0x%x", noise)
+	noise := TUIDNoise()
+	return BuildTUID(nowNanos, noise)
+}
 
-	tuid := (nowDecis << tuidNoiseShift) + noise
-	log.Print("TUID: 0x%x", tuid)
-	return TUID(tuid)
+// TUIDForNanos generates a TUID for the given timeframe using crypto/rand noise.
+func TUIDForNanos(nanos int64) TUID {
+	noise := TUIDNoise()
+	return BuildTUID(nanos, noise)
+}
+
+// TUIDWithNoise generates a TUID using the current timestamp and the given noise.
+func TUIDWithNoise(noise int64) TUID {
+	nowNanos := time.Now().UnixNano()
+	return BuildTUID(nowNanos, noise)
+}
+
+// BuildTUID produces a TUID for the closest timeframe using the given timestamp
+// and noise.
+func BuildTUID(nanos int64, noise int64) TUID {
+	decis := nanos / tuidMultiplier
+	return TUID((decis << tuidNoiseShift) + noise)
 }
 
 // Timestamp retrieves the timestamp information from the given TUID.
@@ -47,6 +60,7 @@ func (tuid TUID) String() string {
 // ErrInvalidTUID indicates a redis input with an invalid TUID was given
 var ErrInvalidTUID = errors.New("tuid: invalid redis value given")
 
+// RedisScan scans a TUID from a redis int64.
 func (tuid TUID) RedisScan(src interface{}) error {
 	switch src.(type) {
 	case int64:
@@ -58,6 +72,7 @@ func (tuid TUID) RedisScan(src interface{}) error {
 	}
 }
 
+// UnmarshalJSON parses an int64 JSON TUID.
 func (tuid TUID) UnmarshalJSON(input []byte) error {
 	var value int64
 	err := json.Unmarshal(input, &value)
@@ -68,11 +83,13 @@ func (tuid TUID) UnmarshalJSON(input []byte) error {
 	return nil
 }
 
+// MashalJSON encodes a TUID as an int64.
 func (tuid TUID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int64(tuid))
 }
 
-func tuidNoise() int64 {
+// TUIDNoise produces a random value for a TUID.
+func TUIDNoise() int64 {
 	bytes := make([]byte, tuidNoiseBytes)
 	rand.Read(bytes)
 	n, _ := binary.Varint(bytes)

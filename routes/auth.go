@@ -99,6 +99,7 @@ func handleReauth(response Response, request *Request) {
 	gameExists, err := sr.GameExists(session.GameID, conn)
 	httpInternalErrorIf(response, request, err)
 	if !gameExists {
+        logf(request, "Game %v does not exist", session.GameID)
 		_, err = sr.RemoveSession(&session, conn)
         httpInternalErrorIf(response, request, err)
         logf(request, "Removed session for deleted game %v", session.GameID)
