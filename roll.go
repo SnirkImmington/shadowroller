@@ -9,7 +9,7 @@ import (
 )
 
 // RerollTypeRerollFailures represents the "Reroll Failures" use of post-roll edge.
-const RerollTypeRerollFailures = "reroll"
+const RerollTypeRerollFailures = "rerollFailures"
 
 // ValidRerollType determines if the requested reroll type is valid.
 func ValidRerollType(ty string) bool {
@@ -65,7 +65,7 @@ func ExplodingSixes(pool int) (results [][]int) {
 func RerollFailures(original []int) []int {
 	pool := 0
 	for _, die := range original {
-		if die >= 5 {
+		if die < 5 {
 			pool++
 		}
 	}

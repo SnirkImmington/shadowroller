@@ -117,23 +117,17 @@ func handleReroll(response Response, request *Request) {
 	previousRoll, err := sr.EventByID(sess.GameID, reroll.RollID, conn)
     httpInternalErrorIf(response, request, err)
 
-    if previousRoll["type"] != "roll" {
-        httpBadRequest(response, request, "Invalid previous roll")
-    }
-    var previousDice []int
-    switch previousRoll["dice"].(type) {
-    case []int:
-        previousDice = previousRoll["dice"].([]int)
-        break;
-    default:
-        logf(request, "Expected prior roll to have dice: %v", previousRoll)
+    if previousRoll["ty"] != "roll" {
+        logf(request, "Expecting ty=roll, got %v", previousRoll)
         httpBadRequest(response, request, "Invalid previous roll")
     }
 
+    previousDice, err := collectRolls(previousRoll["roll"])
+    httpInternalErrorIf(response, request, err)
 
     if reroll.Type == sr.RerollTypeRerollFailures {
         newDice := sr.RerollFailures(previousDice)
-        rounds := [][]int{ previousDice, newDice }
+        rounds := [][]int{ newDice, previousDice }
         rerollEvent := sr.RerollFailuresEvent{
             EventCore: sr.EventCore{"rerollFailures"},
             PrevID: reroll.RollID,
@@ -149,6 +143,22 @@ func handleReroll(response Response, request *Request) {
             "OK; reroll ", id, " posted",
         )
     }
+}
+
+func collectRolls(in interface{}) ([]int, error) {
+    rolls, ok := in.([]interface{})
+    if !ok {
+        return nil, fmt.Errorf("Unable to parse %v as []interface{}", in)
+    }
+    out := make([]int, len(rolls))
+    for i, val := range(rolls) {
+        floatVal, ok := val.(float64)
+        if !ok {
+            return nil, fmt.Errorf("unable to parse value %v (%T) as float", i, i)
+        }
+        out[i] = int(floatVal)
+    }
+    return out, nil
 }
 
 // Hacky workaround for logs to show event type.

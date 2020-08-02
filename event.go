@@ -70,11 +70,7 @@ func PostEvent(gameID string, event Event, conn redis.Conn) (string, error) {
 // EventByID retrieves a single event from Redis via its ID.
 func EventByID(gameID string, eventID string, conn redis.Conn) (EventOut, error) {
 	data, err := conn.Do("XRANGE", "event:"+gameID, eventID, eventID)
-	// data is an array of key, eventlist. We only subscribed to 1 key.
-	eventKeyInfo := data.([]interface{})[0].([]interface{})
-	eventList := eventKeyInfo[1].([]interface{})
-
-	events, err := ScanEvents(eventList)
+	events, err := ScanEvents(data.([]interface{}))
 	if err != nil {
 		return nil, err
 	}
