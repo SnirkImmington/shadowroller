@@ -14,6 +14,14 @@ export function roll(count: number): number[] {
     return result;
 }
 
+export function rerollFailures(original: number[]): number[] {
+    const toRoll = original.reduce(
+        (curr, die) => curr + (die < 5 ? 1 : 0),
+        0
+    );
+    return roll(toRoll);
+}
+
 export function rollExploding(pool: number): number[][] {
     let remaining = pool;
     const results = [];

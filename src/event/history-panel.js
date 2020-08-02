@@ -28,8 +28,8 @@ const GAME_EMPTY_FLAVOR = [
     "Be the first one to roll!",
 ];
 
-type RecordProps = { +event: ?Event.Event, style?: any };
-const EventRecord = React.memo<RecordProps>(function EventRecord({ event, style }) {
+type RecordProps = { +event: ?Event.Event, +eventIx: number, style?: any };
+const EventRecord = React.memo<RecordProps>(function EventRecord({ event, eventIx, style }) {
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
@@ -45,7 +45,8 @@ const EventRecord = React.memo<RecordProps>(function EventRecord({ event, style 
             break;
         case "edgeRoll":
         case "roll":
-            inner = (<Record.RollRecord event={event} eventIx={0} />);
+        case "rerollFailures":
+            inner = (<Record.RollRecord event={event} eventIx={eventIx} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -58,9 +59,9 @@ const EventRecord = React.memo<RecordProps>(function EventRecord({ event, style 
     );
 }, areEqual);
 
-type RowRenderProps = { +style: any, +index: number };
+type RowRenderProps = { +style: any, +index: number, +data: Event.Event[] };
 
-export function LoadingResultList() {
+export function LoadingResultList({ playerID }: { playerID: ?string }) {
     const state = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
@@ -89,7 +90,7 @@ export function LoadingResultList() {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = React.useMemo(() => (index: number) => {
+    const itemSize = React.useMemo(() => (index: number, data: Event.Event) => {
         if (index >= eventsLength) {
             return 40;
         }
@@ -99,21 +100,33 @@ export function LoadingResultList() {
             case "gameRoll":
             case "edgeRoll":
             case "roll":
-                return 96;
+                if (Event.canModify(event, playerID)) {
+                    return 112;
+                }
+                return 100;
+            case "rerollFailures":
+                return 100;
             default:
                 return 40;
         }
-    }, [eventsLength, state.events]);
+    }, [playerID, eventsLength, state.events]);
 
-    let RenderRow = React.useMemo(() => ({ index, style }: RowRenderProps) => {
+    function itemKey(index: number, data: Event.Event[]): any {
+        if (!data || !data[index]) {
+            return index;
+        }
+        return data[index].id;
+    }
+
+    let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         if (!loadedAt(index)) {
             return <EventRecord event={null} style={style} />;
         }
         else {
-            const event = state.events[index];
-            return <EventRecord event={event} style={style} />;
+            const event = data[index];
+            return <EventRecord event={event} eventIx={index} style={style} />;
         }
-    }, [loadedAt, state.events]);
+    }, [loadedAt]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline") {
@@ -151,6 +164,8 @@ export function LoadingResultList() {
                     {({ onItemsRendered, ref}) => (
                         <List height={height} width={width}
                               itemCount={itemCount}
+                              itemKey={itemKey}
+                              itemData={state.events}
                               itemSize={itemSize}
                               style={{overflowY: 'scroll'}}
                               onItemsRendered={onItemsRendered} ref={ref}>
@@ -202,7 +217,7 @@ export default function EventHistory() {
         body = (<HistoryFlavor>{rollFlavor}</HistoryFlavor>);
     }
     else {
-        body = (<LoadingResultList />);
+        body = (<LoadingResultList playerID={game?.player?.id} />);
     }
 
     return (
