@@ -142,19 +142,11 @@ func RemoveSession(session *Session, conn redis.Conn) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	err = conn.Send("EXEC")
+	results, err := redis.Ints(conn.Do("EXEC"))
 	if err != nil {
 		return false, err
 	}
-	sessionDeleted, err := redis.Bool(conn.Receive())
-	if err != nil {
-		return false, err
-	}
-	playerDeleted, err := redis.Bool(conn.Receive())
-	if err != nil {
-		return false, err
-	}
-	return playerDeleted && sessionDeleted, nil
+	return results[0] == 1 && results[1] == 1, nil
 }
 
 // ExpireSession sets the session to expire in `config.SesssionExpirySecs`.
