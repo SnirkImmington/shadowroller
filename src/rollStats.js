@@ -28,7 +28,7 @@ export function results(event: Event.DiceEvent): HitsResults {
         }
     }
 
-    const glitched = misses >= Math.ceil(dice.length / 2);
+    const glitched = misses > Math.ceil(dice.length / 2);
     const critical = glitched && hits === 0;
     const edged = event.rounds != null;
     let rounds = 1;
