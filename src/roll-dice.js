@@ -217,6 +217,7 @@ export default function RollDicePrompt() {
                 });
         }
         setTitle('');
+        setEdge(false);
         if (Math.floor(Math.random() * 2.6) === 0) {
             newTitleFlavor();
         }
