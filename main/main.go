@@ -26,15 +26,29 @@ func runServer(name string, server http.Server, tls bool) {
 	for {
 		var err error
 		if tls {
-			err = server.ListenAndServeTLS("", "")
+			var pemFile, keyFile string
+			if len(config.TLSCertFiles) != 2 {
+				pemFile = ""
+				keyFile = ""
+				log.Print("TLS server with autocert started.")
+			} else {
+				pemFile = config.TLSCertFiles[0]
+				keyFile = config.TLSCertFiles[1]
+				log.Print(
+					"TLS server with cert files ", pemFile, ", ",
+					keyFile, " started.",
+				)
+			}
+			err = server.ListenAndServeTLS(pemFile, keyFile)
 		} else {
+			log.Print("HTTP server started.")
 			err = server.ListenAndServe()
 		}
 
 		if err != nil {
-			log.Print(name, ": Server failed! Restarting in 10s.", err)
+			log.Print(name, " server failed! Restarting in 10s.", err)
 			time.Sleep(time.Duration(10) * time.Second)
-			log.Print(name, ": Restarting.")
+			log.Print(name, " server restarting.")
 		}
 	}
 }
@@ -65,22 +79,16 @@ func main() {
 
 	log.Print(config.HardcodedGameNames)
 
-	// Run http->https and main servers in loops.
-	if config.IsProduction {
+	if config.PublishRedirect != "" {
 		redirectServer := routes.MakeHTTPRedirectServer()
-		siteServer := routes.MakeHTTPSSiteServer()
+		go runServer("redirect", redirectServer, false)
+	}
 
-		go runServer("redirects", redirectServer, false)
-		runServer("main", siteServer, true)
+	if config.PublishHTTP != "" {
+		siteServer := routes.MakeHTTPSiteServer()
+		runServer("API", siteServer, false)
 	} else {
-		// Run the local server unlooped in this thread.
-		mainServer := routes.MakeHTTPSiteServer()
-
-		log.Print("Running dev server at ", mainServer.Addr, "...")
-		err := mainServer.ListenAndServe()
-		if err != nil {
-			log.Println("Development server error:", err)
-			os.Exit(1)
-		}
+		siteServer := routes.MakeHTTPSSiteServer()
+		runServer("API", siteServer, true)
 	}
 }

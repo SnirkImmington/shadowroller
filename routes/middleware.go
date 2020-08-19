@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
+	"log"
 	"math/rand"
 	"net/http"
 	"runtime/debug"
@@ -13,11 +14,15 @@ import (
 	"time"
 )
 
+func tlsHeadersMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
+		response.Header().Set("Strict-Transport-Security", "max-age=31536000")
+		wrapped.ServeHTTP(response, request)
+	})
+}
+
 func headersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		if config.TLSEnable {
-			response.Header().Set("Strict-Transport-Security", "max-age=31536000")
-		}
 		response.Header().Set("Cache-Control", "no-cache")
 		response.Header().Set("X-Content-Type-Options", "nosniff")
 		wrapped.ServeHTTP(response, request)
@@ -52,20 +57,20 @@ func requestIDMiddleware(wrapped http.Handler) http.Handler {
 }
 
 func localhostOnlyMiddleware(wrapped http.Handler) http.Handler {
-    return http.HandlerFunc(func(response Response, request *Request) {
-        remoteAddr := strings.Split(request.RemoteAddr, ":")[0]
-        allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1"
-        message := "disallowed"
-        if allowed {
-            message = "allowed"
-        }
-        logf(request, "localhostOnly: %v %v", request.RemoteAddr, message)
-        if !allowed {
-            httpNotFound(response, request, "Not found")
-            return
-        }
-        wrapped.ServeHTTP(response, request)
-    })
+	return http.HandlerFunc(func(response Response, request *Request) {
+		remoteAddr := strings.Split(request.RemoteAddr, ":")[0]
+		allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1"
+		message := "disallowed"
+		if allowed {
+			message = "allowed"
+		}
+		logf(request, "localhostOnly: %v %v", request.RemoteAddr, message)
+		if !allowed {
+			httpNotFound(response, request, "Not found")
+			return
+		}
+		wrapped.ServeHTTP(response, request)
+	})
 }
 
 func recoveryMiddleware(wrapped http.Handler) http.Handler {
@@ -96,8 +101,8 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 
 		remoteAddr := strings.Split(request.RemoteAddr, ":")[0]
 
-        ts := time.Now().Unix()
-		rateLimitKey := fmt.Sprintf("ratelimit:%v:%v", remoteAddr, ts - ts%10)
+		ts := time.Now().Unix()
+		rateLimitKey := fmt.Sprintf("ratelimit:%v:%v", remoteAddr, ts-ts%10)
 
 		current, err := redis.Int(conn.Do("get", rateLimitKey))
 		if err == redis.ErrNil {
@@ -130,8 +135,8 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 
 func slowResponsesMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-        logf(request, "Waiting 3 seconds to respond...")
-        time.Sleep(3 * time.Second)
+		logf(request, "Waiting 3 seconds to respond...")
+		time.Sleep(3 * time.Second)
 		wrapped.ServeHTTP(response, request)
 	})
 }

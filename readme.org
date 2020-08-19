@@ -58,3 +58,11 @@ are intentionally kept secret.
 - ~Dockerfile~ builds a ~reflex~ runner for development
 - ~docker-compose.yml~ runs the app with redis on ~localhost:3001~
 -
+
+* Credits
+
+Let's Encrypt TLS server inspired by: https://blog.kowalczyk.info/article/Jl3G/https-for-free-in-go-with-little-help-of-lets-encrypt.html
+
+Gist: https://github.com/kjk/go-cookbook/blob/master/free-ssl-certificates/main.go
+
+TLS hardening options copied from: https://blog.cloudflare.com/exposing-go-on-the-internet/

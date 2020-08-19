@@ -7,12 +7,15 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var (
 	// IsProduction toggles a variety of safety checks, logs, and the deployment of
 	// an HTTPS server. **Set this to true if exposing yourself to the internet.**
 	IsProduction = readBool("IS_PRODUCTION", false)
+
+	// Debugging flags
 
 	// CORSDebug toggles debugging from the github/rs/cors library.
 	CORSDebug = readBool("CORS_DEBUG", false)
@@ -25,54 +28,67 @@ var (
 	SlowResponsesDebug = readBool("SLOW_RESPONSES_DEBUG", false)
 
 	// Go Server Configuration
-	// The dev server/prod server/redirect server can be configured to run on
-	// different ports, so the server can run non-root behind a reverse proxy or
-	// load balancer.
+	//
+	// Shadowroller's API can run on either an HTTP or HTTPS server (both cannot
+	// be set). An HTTP redirect server which redirects requests to HTTPS can be
+	// run. If you are running on production behind a SSL-terminating reverse
+	// proxy, you will need to set ReverseProxied to true. Otherwise, all options
+	// are available in non-production environments.
 
-	// HostAddress is the address the non-production server binds to.
-	// Set this to `localhost:port` to prevent publishing the server outside of
-	// loopback/127.0.0.1. This publishing is required using Docker, or if you
-	// want to access shadowroller from another device on the LAN.
-	// This value is ignored in production.
-	HostAddress = readString("HOST_ADDRESS", ":3001")
-	// HostHTTP is the port the production server uses for the "http redirect"
-	// server.
-	// It is configurable to allow sr-server to be run unpriveledged behind a
-	// load balancer or port forwarding mechanism.
-	// This value is ignored in production.
-	HostHTTP = readString("HOST_HTTP", ":80")
-	// HostHTTPS is the port the production server uses for the main API server.
-	// It is configurable to allow sr-server to be run unpriveledged behind a
-	// load balancer or port forwarding mechanism.
-	// This value is ignored in production.
-	HostHTTPS = readString("HOST_HTTPS", ":443")
-	// FrontendDomain is the origin domain of the frontend, used for CORS requests
+	// PublishHTTPS sets a port at which an HTTPS server will run the REST API.
+	// Alternatively, an HTTP server may be used (in development or if proxied).
+	// This is required on production if ReverseProxied is not set.
+	PublishHTTPS = readString("PUBLISH_HTTPS", "")
+	// PublishRedirect sets a port at which a server will run an HTTP->HTTPS
+	// redirect server (giving a 307 response to HTTP requests).
+	PublishRedirect = readString("PUBLISH_REDIRECT", "")
+	// PublishHTTP sets a port at which an HTTP server will run the REST API.
+	// Alternatively, an HTTPS server may be used.
+	// If used on production, ReverseProxied must be set to true.
+	PublishHTTP = readString("PUBLISH_HTTP", ":3001")
+	// ReverseProxied must be set to true if an HTTP API server is used on
+	// production. It is ignored otherwise.
+	ReverseProxied = readBool("REVERSE_PROXIED", false)
+
+	// TLS configuration (if PublishHTTPS is set)
+	//
+	// TLS can be provided from one of two methods: Let's Encrypt or pem&key files.
+	// Let's Encrypt is suggested for production use if you don't have certs from
+	// another source.
+	// If you want to use a non-HTTP challenge system for LE, either set this up
+	// using an external system to update your pem&key files, or submit an issue
+	// or pull request.
+
+	// TLSHostname is the domain name of the server, used for HTTP redirects and
+	// HTTPS configuration.
+	// This must be set if PublishHTTPS is used.
+	TLSHostname = readString("TLS_HOSTNAME", "localhost")
+	// TLSAutocertDir is the directory where Let's Encrypt certificates are kept.
+	TLSAutocertDir = readString("TLS_AUTOCERT_CERT_DIR", "")
+	// TLSCertFiles is a list of the file names for the pem, private key cert files.
+	TLSCertFiles = readStringArray("TLS_CERT_FILES", "")
+
+	// Frontend Configuration
+	// These options allow the frontend to be deployed on a separate server or
+	// domain from the server. These values are used locally and in production.
+
+	// FrontendDomain is the origin domain of the frontend, used for CORS requests.
 	FrontendDomain = readString("FRONTEND_DOMAIN", "http://localhost:3000")
 	// FrontendAddress is the redirect address that / should redirect to.
+	// This is a full URL, useful for i.e. Github project sites.
+	// If unset, the root URL will not redirect.
 	FrontendAddress = readString("FRONTEND_ADDRESS", FrontendDomain)
 
 	// Keys
 	// In development, these are hardcoded to known values for testing.
 	// In production, these must point to keyfiles containing base64 encoded keys.
 
-	// JWTSecretKey is the secure key/key file used to encrypt JWT auth tokens.
+	// JWTSecretKey is the secure key/key file used to encrypt JWT tokens.
 	JWTSecretKey = readKeyFile("KEYFILE_JWT", "133713371337")
 	// HealthCheckSecretKey allows for sending debug info with health checks.
 	// If the contents of this key are passed to /health-check, debug info is sent.
 	// This is always done in development. Leave blank to disable in production.
 	HealthCheckSecretKey = readKeyFile("KEYFILE_HEALTHCHECK", "")
-
-	// Authentication config
-
-	// TLS configuration
-
-	// TLSEnable toggles whether TLS is used for non-production server.
-	// (It is set to true when in production.)
-	TLSEnable = readBool("TLS_ENABLE", false)
-	// TLSHostname is the domain name of the server.
-	TLSHostname = readString("TLS_HOSTNAME", "shadowroller.immington.industries")
-	// CertDir is the directory where Let's Encrypt certificates are kept.
-	CertDir = readString("CERT_DIR", "/var/sr-server/cert/")
 
 	// Timeouts
 
@@ -103,7 +119,7 @@ var (
 	// TempSessionTTLSecs is the amount of time a temporary session is stored
 	// in redis after the subscription disconnects.
 	TempSessionTTLSecs = readInt("TEMP_SESSION_TTL_SECS", 15*60)
-	/// PersistSessionTTLDays is the amount of time persistent sessions last.
+	// PersistSessionTTLDays is the amount of time persistent sessions last.
 	PersistSessionTTLDays = readInt("PERSIST_SESSION_TTL_DAYS", 30)
 
 	// Library Options
@@ -131,6 +147,17 @@ func readString(name string, defaultValue string) string {
 	}
 	log.Print("config: read env string SR_", name)
 	return val
+}
+
+func readStringArray(name string, defaultValue string) []string {
+	val, ok := os.LookupEnv("SR_" + name)
+	if ok {
+		log.Print("config: read env string array SR_", name)
+	} else {
+		val = defaultValue
+	}
+
+	return strings.Split(val, ",")
 }
 
 func readInt(name string, defaultValue int) int {
@@ -172,6 +199,7 @@ func readKeyFile(name string, defaultValue string) []byte {
 		contents = string(fileContent)
 	}
 	if contents == "" {
+		log.Print("config: empty key ", name, " used!")
 		return []byte(contents)
 	}
 	val, err := base64.StdEncoding.DecodeString(contents)
@@ -184,16 +212,40 @@ func readKeyFile(name string, defaultValue string) []byte {
 // VerifyConfig performs sanity checks and normalizes config settings.
 func VerifyConfig() {
 	if IsProduction {
-		if !TLSEnable {
-			log.Print("Config normalization: Overriding TLSEnable")
-			TLSEnable = true
-		}
 		if SlowResponsesDebug {
-			log.Print("Config normalization: Overriding SlowResponsesDebug")
+			log.Print("Config normalization: set SlowResponsesDebug = false")
 			SlowResponsesDebug = false
+		}
+		if PublishHTTP != "" && !ReverseProxied {
+			panic("Must set ReverseProxied if using an HTTP server on production")
+		}
+		if TLSHostname == "localhost" {
+			log.Print("Warning: TLSHostname set to localhost on production")
+		}
+		if len(JWTSecretKey) < 256 {
+			panic("JWTSecretKey should be longer")
+		}
+		if len(HealthCheckSecretKey) != 0 && len(HealthCheckSecretKey) < 256 {
+			panic("HealthcheckSecretKey should be longer")
+		}
+	}
+	if PublishRedirect == PublishHTTPS && PublishHTTPS != "" {
+		panic("Cannot publish HTTP redirect and HTTPS servers on the same port!")
+	}
+	if (PublishHTTP == "") == (PublishHTTPS == "") {
+		panic("Must set one of PublishHTTP and PublishHTTPS!")
+	}
+	if PublishRedirect != "" {
+		if PublishHTTP == PublishRedirect {
+			panic("Cannot publish HTTP server and redirect server on the same port!")
+		} else if PublishHTTP != "" {
+			log.Print("Warning: publishing HTTP server and HTTP redirect server.")
 		}
 	}
 	if len(JWTSecretKey) == 0 {
 		panic("No JWT key given!")
+	}
+	if (TLSAutocertDir == "") == (len(TLSCertFiles) == 0) {
+		panic("Must set one of TLSAutocertDir and TLSCertFiles!")
 	}
 }
