@@ -19,9 +19,6 @@ const ROLL_TITLE_FLAVOR = [
     "eavesdrop on the business meeting",
     "maniuplate the exec into revealing her plans",
 
-    "dodge some bullets",
-    "take cover from a grenade",
-    "catch a knife in midair",
     "avoid the oncoming shrapnel",
     "duck out of the way of the troll",
 
@@ -77,6 +74,7 @@ const ROLL_TITLE_FLAVOR = [
     "pretend to be a chef",
     "smuggle in handcuffs",
     "remember the cocktail list",
+    "practice blooood magic",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",
@@ -84,6 +82,11 @@ const ROLL_TITLE_FLAVOR = [
     "swipe George's ID card",
     "pretend to be George",
     "throw a knife",
+    "brick the security system",
+    "shoot down the bugs",
+    "inspire the intern",
+    "wave a sword cane helpfully",
+    "summon the zeppelin",
 ];
 
 const ButtonRow = styled(UI.FlexRow)`
