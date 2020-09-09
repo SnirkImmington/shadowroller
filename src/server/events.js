@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import * as Event from 'event';
+import * as routes from 'routes';
 import * as server from '../server';
 import type { SetConnection } from 'connection';
 
@@ -60,14 +61,16 @@ function parseEvent(event: any): ?Event.Event {
     }
 }
 
-function onMessage(e, dispatch) {
+function onMessage(e: MessageEvent, dispatch) {
+    console.log("Received message", e);
+    if (e.data === "hi" || e.data === "") { return; }
     let eventData;
     try {
         // flow-ignore-all-next-line
         eventData = JSON.parse(e.data);
     }
     catch (err) {
-        console.error("Invalid response from server", err, e);
+        console.error("Invalid response from server:", err, e);
         return;
     }
     const event = parseEvent(eventData);
@@ -146,7 +149,9 @@ export function useEvents(
         source.onmessage = function(e) {
             onMessage(e, dispatch);
         };
-        source.addEventListener("ping", function(event: mixed) { });
+        source.addEventListener("event", function(e: MessageEvent) {
+            onMessage(e, dispatch);
+        });
         source.onopen = function() {
             if (source.readyState === source.OPEN) {
                 setConnection("connected");
