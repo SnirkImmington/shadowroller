@@ -81,30 +81,6 @@ function onMessage(e: MessageEvent, dispatch) {
     dispatch({ ty: "newEvent", event });
 }
 
-/*
-- player-joined <- lastID // fetched[0]
-- (older-1)
-- (older-2)               // ...fetched[n]
-*/
-type EventsParams = { oldest?: string, newest?: string };
-type EventsResponse = { events: Event.Event[], more: bool };
-export function fetchEvents(params: EventsParams): Promise<EventsResponse> {
-    return server.backendPost("event-range", params).then(resp => {
-        const events = [];
-        for (const eventData of resp.events) {
-            const event = parseEvent(eventData);
-            if (!event) {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.error("Could not parse event", eventData);
-                }
-                continue;
-            }
-            events.push(event);
-        }
-        return { events, more: resp.more };
-    });
-}
-
 export function useEvents(
     gameID: ?string,
     session: ?string,

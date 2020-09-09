@@ -150,6 +150,7 @@ type FetchArgs<B, P> = {
 function backendFetch<B, P>({ method, path, body, params }: FetchArgs<B, P>): Promise<Response> {
     let url = server.BACKEND_URL + path;
     if (params) {
+        // flow-ignore-all-next-line
         url = `${url}?${new URLSearchParams(params).toString()}`;
     }
 
