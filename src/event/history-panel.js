@@ -90,7 +90,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = React.useMemo(() => (index: number, data: Event.Event) => {
+    const itemSize = React.useMemo(() => (index: number, data: Event.Event): number => {
         if (index >= eventsLength) {
             return 40;
         }
@@ -120,7 +120,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
 
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         if (!loadedAt(index)) {
-            return <EventRecord event={null} style={style} />;
+            return <EventRecord event={null} eventIx={index} style={style} />;
         }
         else {
             const event = data[index];
@@ -137,7 +137,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             return;
         }
         dispatch({ ty: "setHistoryFetch", state: "fetching" });
-        const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
+        const oldestID = event.id ? event.id : Date.now().valueOf();
         routes.game.getEvents({ oldest: oldestID })
             .onResponse(resp => {
                 dispatch({

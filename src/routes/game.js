@@ -24,12 +24,12 @@ export function reroll(request: RerollRequest): BackendRequest<void> {
 }
 
 export type EventsRequest = {|
-    newest?: string,
-    oldest?: string
+    newest?: number,
+    oldest?: number
 |};
 export type EventsResponse = {|
     events: Event[],
-    lastID: string,
+    lastID: number,
     more: bool
 |};
 
