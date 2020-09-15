@@ -47,6 +47,7 @@ function rollActions(event: Event.DiceEvent, eventIx: number, dispatch: Event.Di
                     ty: "rerollFailures",
                     id: Event.newID(),
                     source: "local",
+                    rollID: event.id,
                     title: event.title,
                     rounds: [srutil.rerollFailures(event.dice), event.dice]
                 };
