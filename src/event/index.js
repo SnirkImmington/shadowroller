@@ -28,6 +28,7 @@ export type RerollFailures = {|
     +ty: "rerollFailures",
     +id: number,
     +source: Source,
+    +rollID: number,
     +title: string,
     +rounds: number[][],
 |}

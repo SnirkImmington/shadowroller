@@ -12,6 +12,7 @@ import * as Game from 'game';
 import * as Event from 'event';
 import * as Record from 'record';
 import * as server from 'server';
+import * as Stream from 'stream';
 import routes from 'routes';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
@@ -90,7 +91,8 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = React.useMemo(() => (index: number, data: Event.Event): number => {
+    const itemSize = React.useMemo(() => (index: number): number => {
+        console.log("ItemSize called with", index);
         if (index >= eventsLength) {
             return 40;
         }
@@ -138,7 +140,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         }
         dispatch({ ty: "setHistoryFetch", state: "fetching" });
         const oldestID = event.id ? event.id : Date.now().valueOf();
-        routes.game.getEvents({ oldest: oldestID })
+        routes.game.getEvents({ newest: oldestID })
             .onResponse(resp => {
                 dispatch({
                     ty: "setHistoryFetch",
@@ -151,6 +153,10 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.error('Error fetching events: ', err);
                 }
+                dispatch({
+                    ty: "setHistoryFetch",
+                    state: "finished",
+                })
             });
     }
     return (
@@ -193,13 +199,47 @@ export default function EventHistory() {
     const events = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
+    const stream = React.useContext(Stream.Ctx);
+    const setStream = React.useContext(Stream.SetterCtx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
     const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);
 
-    const gameID = game?.gameID;
+    const gameID = game?.gameID || "";
+    const session = server.session || "";
     const hasRolls = events.events.length > 0;
     server.useEvents(gameID, server.session, setConnection, dispatch);
+
+    React.useEffect(
+        () => {
+            if (!gameID) {
+                if (process.env.NODE_ENV !== "production") {
+                    console.log("Closing stream from useEffect");
+                }
+                if (stream) {
+                    console.log("Stream exists with no game ID, closing");
+                    stream.close();
+                }
+                setStream(null);
+            }
+            else if (stream) {
+                if (process.env.NODE_ENV !== "production") {
+                    console.log("useEffect called but stream is already there");
+                }
+                return;
+            }
+
+            const eventStream = Stream.open(gameID, session, setConnection);
+            setStream(eventStream);
+
+            return function() {
+                eventStream.close();
+                setStream(null);
+            }
+
+        },
+        [gameID, stream, session, setConnection, setStream]
+    );
 
     let title;
     if (gameID) {
