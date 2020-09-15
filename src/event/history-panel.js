@@ -210,37 +210,6 @@ export default function EventHistory() {
     const hasRolls = events.events.length > 0;
     server.useEvents(gameID, server.session, setConnection, dispatch);
 
-    React.useEffect(
-        () => {
-            if (!gameID) {
-                if (process.env.NODE_ENV !== "production") {
-                    console.log("Closing stream from useEffect");
-                }
-                if (stream) {
-                    console.log("Stream exists with no game ID, closing");
-                    stream.close();
-                }
-                setStream(null);
-            }
-            else if (stream) {
-                if (process.env.NODE_ENV !== "production") {
-                    console.log("useEffect called but stream is already there");
-                }
-                return;
-            }
-
-            const eventStream = Stream.open(gameID, session, setConnection);
-            setStream(eventStream);
-
-            return function() {
-                eventStream.close();
-                setStream(null);
-            }
-
-        },
-        [gameID, stream, session, setConnection, setStream]
-    );
-
     let title;
     if (gameID) {
         title = gameID;
