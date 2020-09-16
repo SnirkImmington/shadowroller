@@ -17,7 +17,6 @@ export class BackendRequest<O> {
     constructor(request: Promise<Response>) {
         this.request = request;
         this.request.then(response => {
-            console.log("Analyzing response", response);
             if (response.ok) {
                 this.setConnection("connected");
                 this.setResponse("success");

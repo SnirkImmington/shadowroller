@@ -19,7 +19,7 @@ export function normalizeEvent(event: any) {
     }
 }
 
-function parseEvent(event: any): ?Event.Event {
+export function parseEvent(event: any): ?Event.Event {
     switch (event.ty) {
         case "roll":
             return {
@@ -45,7 +45,8 @@ function parseEvent(event: any): ?Event.Event {
                 source: {
                     id: event.pID, name: event.pName,
                 },
-                title: event.title ?? '',
+                rollID: event.rollID,
+                title: event.title ?? "",
                 rounds: event.rounds,
             };
         case "playerJoin":

@@ -19,15 +19,32 @@ function onMessage(event: MessageEvent) {
     }
 }
 
-function onEvent(event: MessageEvent) {
-    console.log("EventSource Event", event);
+function onEvent(streamEvent: MessageEvent, eventDispatch: Event.Dispatch) {
+    let eventData;
+    try {
+        // flow-ignore-all-next-line
+        eventData = JSON.parse(streamEvent.data);
+    }
+    catch (err) {
+        console.error("Invalid Event received from server", err, streamEvent);
+        return;
+    }
+    const event = server.parseEvent(eventData);
+    if (!event) {
+        console.error("Unable to parse event from server", eventData);
+        return;
+    }
+    eventDispatch({ ty: "newEvent", event });
 }
 
 function onUpdate(event: MessageEvent) {
-    console.log("EventSource Update", event);
 }
 
-export function open(gameID: string, session: string, setConnection: SetConnection): EventSource {
+export function open(
+    gameID: string, session: string,
+    setConnection: SetConnection,
+    eventDispatch: Event.Dispatch,
+): EventSource {
     if (process.env.NODE_ENV !== "production") {
         console.log("Connecting to", gameID, "via session", session);
     }
@@ -36,7 +53,7 @@ export function open(gameID: string, session: string, setConnection: SetConnecti
         { withCredentials: true, }
     );
     source.onmessage = onMessage;
-    source.addEventListener("event", onEvent);
+    source.addEventListener("event", (e: MessageEvent) => onEvent(e, eventDispatch));
     source.addEventListener("update", onUpdate);
     source.onopen = function() {
         if (process.env.NODE_ENV !== "production") {

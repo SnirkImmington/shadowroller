@@ -75,7 +75,10 @@ export function handleLogin(
     });
     saveSession(response.session, persist);
 
-    const stream = Stream.open(response.game.id, response.session, setConnection);
+    const stream = Stream.open(
+        response.game.id, response.session,
+        setConnection, eventDispatch
+    );
     setStream(stream);
 
     eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
