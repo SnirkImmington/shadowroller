@@ -2,6 +2,7 @@
 
 import * as Event from 'event';
 import * as Game from 'game';
+import * as Stream from '../stream';
 import routes from 'routes';
 import type { BackendRequest } from 'server';
 import type { SetConnection } from 'connection';
@@ -33,18 +34,30 @@ export function saveSession(newSession: string, persist: bool) {
     }
 }
 
-export function handleLogout(gameDispatch: Game.Dispatch, eventDispatch: Event.Dispatch) {
+export function handleLogout(
+    stream: Stream.State,
+    setStream: Stream.Setter,
+    setConnection: SetConnection,
+    gameDispatch: Game.Dispatch,
+    eventDispatch: Event.Dispatch,
+): BackendRequest<any> {
+    if (stream) {
+        stream.close();
+    }
+    setStream(null);
     gameDispatch({ ty: "leave" });
     eventDispatch({ ty: "clearEvents" });
+    setConnection("offline");
     // Log out POST is best effort
-    routes.auth.logout();
     clearSession();
+    return routes.auth.logout();
 }
 
 export function handleLogin(
     persist: bool,
     response: routes.auth.LoginResponse,
     setConnection: SetConnection,
+    setStream: Stream.Setter,
     gameDispatch: Game.Dispatch,
     eventDispatch: Event.Dispatch
 ): BackendRequest<any> {
@@ -61,6 +74,9 @@ export function handleLogin(
         players,
     });
     saveSession(response.session, persist);
+
+    const stream = Stream.open(response.game.id, response.session, setConnection);
+    setStream(stream);
 
     eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
     return routes.game.getEvents({ oldest: response.lastEvent })

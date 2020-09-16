@@ -6,6 +6,7 @@ import * as UI from 'style';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as Stream from '../stream';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import * as server from 'server';
 import routes from 'routes';
@@ -29,6 +30,8 @@ type Props = {
 export function ReconnectMenu({ hide }: Props) {
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
+    const stream = React.useContext(Stream.Ctx);
+    const setStream = React.useContext(Stream.SetterCtx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
 
@@ -43,7 +46,11 @@ export function ReconnectMenu({ hide }: Props) {
             .onResponse(resp => {
                 hide();
                 server.handleLogin(
-                    false, resp, setConnection, gameDispatch, eventDispatch
+                    false, resp,
+                    setConnection,
+                    setStream,
+                    gameDispatch,
+                    eventDispatch
                 );
             })
             .onClientError(resp => {
@@ -59,8 +66,7 @@ export function ReconnectMenu({ hide }: Props) {
     function handleLeave(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
 
-        server.handleLogout(gameDispatch, eventDispatch);
-        setConnection("offline");
+        server.handleLogout(stream, setStream, setConnection, gameDispatch, eventDispatch);
     }
 
     const buttonsEnabled = connection !== "connecting";

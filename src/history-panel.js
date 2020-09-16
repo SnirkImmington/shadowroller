@@ -12,7 +12,7 @@ import * as Game from 'game';
 import * as Event from 'event';
 import * as Record from 'record';
 import * as server from 'server';
-import * as Stream from 'stream';
+import * as Stream from './stream';
 import routes from 'routes';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
@@ -92,7 +92,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }, [atHistoryEnd, eventsLength]);
 
     const itemSize = React.useMemo(() => (index: number): number => {
-        console.log("ItemSize called with", index);
+        console.log("Calculate itemSize", index);
         if (index >= eventsLength) {
             return 40;
         }
@@ -197,25 +197,15 @@ const HistoryFlavor = styled(UI.Flavor)`
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const events = React.useContext(Event.Ctx);
-    const dispatch = React.useContext(Event.DispatchCtx);
-    const setConnection = React.useContext(SetConnectionCtx);
-    const stream = React.useContext(Stream.Ctx);
-    const setStream = React.useContext(Stream.SetterCtx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
     const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);
 
-    const gameID = game?.gameID || "";
-    const session = server.session || "";
     const hasRolls = events.events.length > 0;
-    server.useEvents(gameID, server.session, setConnection, dispatch);
 
-    let title;
-    if (gameID) {
-        title = gameID;
-    }
-    else {
-        title = "Results";
+    let title = "Results";
+    if (game?.gameID) {
+        title = game.gameID;
     }
 
     let body = '';

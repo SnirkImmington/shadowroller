@@ -16,7 +16,7 @@ import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
-import EventHistory from 'event/history-panel';
+import EventHistory from 'history-panel';
 import DebugBar from 'debug-bar';
 
 import 'assets-external/source-code-pro.css';
@@ -47,13 +47,14 @@ const AppRight: StyledComponent<> = styled.div`
 function Shadowroller() {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
-
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
+    const setStream = React.useContext(Stream.SetterCtx);
+
     const [menuShown, setMenuShown] = React.useState<bool>(false);
     const hide = React.useCallback(() => setMenuShown(false), [setMenuShown]);
 
-    const session = server.session;
+    // On first load, read credentials from localStorage and log in.
     React.useEffect(() => {
         server.loadCredentials();
         if (server.session) {
@@ -62,7 +63,10 @@ function Shadowroller() {
                 .onResponse(resp => {
                     server.handleLogin(
                         true, resp,
-                        setConnection, gameDispatch, eventDispatch
+                        setConnection,
+                        setStream,
+                        gameDispatch,
+                        eventDispatch
                     )
                 })
                 .onClientError(resp => {
@@ -74,7 +78,7 @@ function Shadowroller() {
                 });
             setConnection("disconnected");
         }
-    }, [session, setConnection, gameDispatch, eventDispatch]);
+    }, []);
 
     function onGameButtonClick() {
         setMenuShown(shown => !shown);
