@@ -117,6 +117,12 @@ export function canModify(event: Event, playerID: ?string): bool {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
 }
 
+export function wouldScroll(event: DiceEvent): bool {
+    return (event?.dice && event.dice.length >= 12)
+    // flow-ignore-all-next-line this check works fine
+        || (event?.rounds && event.rounds.flatMap(r => r).length >= 10);
+}
+
 export function newID(): number {
     return Date.now().valueOf();
 }

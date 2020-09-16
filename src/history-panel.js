@@ -87,14 +87,13 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }, [eventsLength]);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
-    const loadedAt = React.useCallback((index: number) => {
+    const loadedAt = React.useCallback((index: number): bool => {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = React.useMemo(() => (index: number): number => {
-        console.log("Calculate itemSize", index);
+    const itemSize = React.useCallback((index: number): number => {
         if (index >= eventsLength) {
-            return 40;
+            return 34;
         }
         const event = state.events[index];
         switch (event.ty) {
@@ -105,13 +104,13 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
                 if (Event.canModify(event, playerID)) {
                     return 112;
                 }
-                return 100;
+                return Event.wouldScroll(event) ? 98 : 90;
             case "rerollFailures":
-                return 100;
+                return Event.wouldScroll(event) ? 98 : 90;
             default:
-                return 40;
+                return 34;
         }
-    }, [playerID, eventsLength, state.events]);
+    }, [playerID, eventsLength, state, state.events]);
 
     function itemKey(index: number, data: Event.Event[]): any {
         if (!data || !data[index]) {
@@ -222,7 +221,10 @@ export default function EventHistory() {
     return (
         <UI.Card grow color="#81132a">
             <TitleBar>
-                <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
+                <UI.CardTitleText color="#842222">
+                    {title}
+                    {events.historyFetch == "fetching" && "..."}
+                </UI.CardTitleText>
             </TitleBar>
             {body}
         </UI.Card>
