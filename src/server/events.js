@@ -28,7 +28,7 @@ export function parseEvent(event: any): ?Event.Event {
                     id: event.pID, name: event.pName,
                 },
                 title: event.title ?? '',
-                dice: event.roll,
+                dice: event.dice,
             };
         case "edgeRoll":
             return {
