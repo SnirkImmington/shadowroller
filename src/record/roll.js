@@ -47,6 +47,7 @@ function rollActions(event: Event.DiceEvent, eventIx: number, dispatch: Event.Di
                     ty: "rerollFailures",
                     id: Event.newID(),
                     source: "local",
+                    rollID: event.id,
                     title: event.title,
                     rounds: [srutil.rerollFailures(event.dice), event.dice]
                 };
@@ -69,6 +70,7 @@ const WrapperColumn = styled(UI.FlexColumn)``;
 
 const TitleRow = styled(UI.FlexRow)`
     flex-grow: 1;
+    padding-left: 2px;
 `;
 
 const StyledResults = styled.b`

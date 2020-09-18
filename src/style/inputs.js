@@ -32,6 +32,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     display: inline;
     font-weight: bold;
     font-size: 1em;
+    line-height: 1;
     user-select: none;
     cursor: pointer;
     text-decoration: underline;

@@ -14,7 +14,7 @@ import * as Record from 'record';
 import * as server from 'server';
 import routes from 'routes';
 import * as srutil from 'srutil';
-import { ConnectionCtx, SetConnectionCtx } from 'connection';
+import { ConnectionCtx } from 'connection';
 
 const DO_SOME_ROLLS_FLAVOR = [
     "You have to press that roll button first, chummer.",
@@ -86,13 +86,13 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }, [eventsLength]);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
-    const loadedAt = React.useCallback((index: number) => {
+    const loadedAt = React.useCallback((index: number): bool => {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = React.useMemo(() => (index: number, data: Event.Event) => {
+    const itemSize = React.useCallback((index: number): number => {
         if (index >= eventsLength) {
-            return 40;
+            return 34;
         }
         const event = state.events[index];
         switch (event.ty) {
@@ -101,13 +101,13 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             case "edgeRoll":
             case "roll":
                 if (Event.canModify(event, playerID)) {
-                    return 112;
+                    return Event.wouldScroll(event) ? 120 : 110;
                 }
-                return 100;
+                return Event.wouldScroll(event) ? 100 : 84;
             case "rerollFailures":
-                return 100;
+                return Event.wouldScroll(event) ? 100 : 84;
             default:
-                return 40;
+                return 32;
         }
     }, [playerID, eventsLength, state.events]);
 
@@ -120,7 +120,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
 
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         if (!loadedAt(index)) {
-            return <EventRecord event={null} style={style} />;
+            return <EventRecord event={null} eventIx={index} style={style} />;
         }
         else {
             const event = data[index];
@@ -137,8 +137,8 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             return;
         }
         dispatch({ ty: "setHistoryFetch", state: "fetching" });
-        const oldestID = event.id ? event.id : `${new Date().valueOf()}-0`;
-        routes.game.getEvents({ oldest: oldestID })
+        const oldestID = event.id ? event.id : Date.now().valueOf();
+        routes.game.getEvents({ newest: oldestID })
             .onResponse(resp => {
                 dispatch({
                     ty: "setHistoryFetch",
@@ -151,6 +151,10 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.error('Error fetching events: ', err);
                 }
+                dispatch({
+                    ty: "setHistoryFetch",
+                    state: "finished",
+                })
             });
     }
     return (
@@ -191,22 +195,15 @@ const HistoryFlavor = styled(UI.Flavor)`
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const events = React.useContext(Event.Ctx);
-    const dispatch = React.useContext(Event.DispatchCtx);
-    const setConnection = React.useContext(SetConnectionCtx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
     const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);
 
-    const gameID = game?.gameID;
     const hasRolls = events.events.length > 0;
-    server.useEvents(gameID, server.session, setConnection, dispatch);
 
-    let title;
-    if (gameID) {
-        title = gameID;
-    }
-    else {
-        title = "Results";
+    let title = "Results";
+    if (game?.gameID) {
+        title = game.gameID;
     }
 
     let body = '';
@@ -223,7 +220,10 @@ export default function EventHistory() {
     return (
         <UI.Card grow color="#81132a">
             <TitleBar>
-                <UI.CardTitleText color="#842222">{title}</UI.CardTitleText>
+                <UI.CardTitleText color="#842222">
+                    {title}
+                    {events.historyFetch === "fetching" && "..."}
+                </UI.CardTitleText>
             </TitleBar>
             {body}
         </UI.Card>

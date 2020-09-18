@@ -94,18 +94,6 @@ export default function NumericInput(props: Props) {
     const [round] = React.useState<RoundingMode>(props.round ?? "up");
     //const [showInfo, setInfoShown] = React.useState<bool>(false);
 
-    let computed: number = 0;
-    if (props.value != null) {
-        computed = props.value;
-    }
-    if (typeof state !== "string" && state[0] !== "error") {
-        computed = state[1];
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-        console.log("NunericInput:", { text, state, round, computed });
-    }
-
     function onTextInput(event: SyntheticInputEvent<HTMLInputElement>) {
         setText(event.target.value);
         // Handle empty field - this is not an error condition
@@ -118,9 +106,6 @@ export default function NumericInput(props: Props) {
         const parser = new Parser(event.target.value);
         const expr = parser.expression();
         const pos = parser.position();
-        if (process.env.NODE_ENV !== "production") {
-            console.log("Parsed:", parser.position(), parser, expr);
-        }
         // On parsing failure, set error
         if (!expr) {
             setState(["error", pos]);

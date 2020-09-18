@@ -52,10 +52,9 @@ export default function DebugBar() {
     const connection = React.useContext(ConnectionCtx);
     const eventState = React.useContext(Event.Ctx);
 
-    const game: any = !gameState ? gameState : {
-        ...gameState, players: undefined,
-        player: undefined, ...gameState.player,
-    }
+    const game: any[] = !gameState ? [] : [
+        gameState.gameID, gameState.player.name, gameState.player.id
+    ];
     const players = !gameState ? "N/A" : Array.from(gameState.players.values());
     const events = { ...eventState, events: undefined };
 

@@ -17,7 +17,6 @@ export class BackendRequest<O> {
     constructor(request: Promise<Response>) {
         this.request = request;
         this.request.then(response => {
-            console.log("Analyzing response", response);
             if (response.ok) {
                 this.setConnection("connected");
                 this.setResponse("success");
@@ -150,6 +149,7 @@ type FetchArgs<B, P> = {
 function backendFetch<B, P>({ method, path, body, params }: FetchArgs<B, P>): Promise<Response> {
     let url = server.BACKEND_URL + path;
     if (params) {
+        // flow-ignore-all-next-line
         url = `${url}?${new URLSearchParams(params).toString()}`;
     }
 

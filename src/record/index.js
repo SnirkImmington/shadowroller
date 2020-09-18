@@ -1,6 +1,7 @@
 // @flow
 
 import styled from 'styled-components/macro';
+import * as UI from 'style';
 import type { StyledComponent } from 'styled-components';
 
 type RecordProps = {
@@ -12,19 +13,20 @@ type RecordProps = {
 // Spacing between event records
 const GUTTER_SIZE = 4;
 
-export const StyledRecord: StyledComponent<RecordProps> = styled.div.attrs(
+export const StyledRecord: StyledComponent<RecordProps> = styled(UI.FlexColumn).attrs(
     props => ({
         style: {
             ...props.style,
-            top: props.style.top + GUTTER_SIZE,
             height: props.style.height - GUTTER_SIZE,
+            bottom: props.style.bottom - GUTTER_SIZE,
         }
     })
 )`
-    padding: 4px;
+    padding-left: 5px;
     ${({color}) =>
-        `border-left: 4px solid ${color};`
+        `border-left: 5px solid ${color};`
     }
+    line-height: 1;
 `;
 
 export * from './roll';

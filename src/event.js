@@ -10,7 +10,7 @@ export type Source =
 
 export type Roll = {|
     +ty: "roll",
-    +id: string,
+    +id: number,
     +source: Source,
     +title: string,
     +dice: number[],
@@ -18,7 +18,7 @@ export type Roll = {|
 
 export type EdgeRoll = {|
     +ty: "edgeRoll",
-    +id: string,
+    +id: number,
     +source: Source,
     +title: string,
     +rounds: number[][],
@@ -26,15 +26,16 @@ export type EdgeRoll = {|
 
 export type RerollFailures = {|
     +ty: "rerollFailures",
-    +id: string,
+    +id: number,
     +source: Source,
+    +rollID: number,
     +title: string,
     +rounds: number[][],
 |}
 
 export type PlayerJoin = {|
     +ty: "playerJoin",
-    +id: string,
+    +id: number,
     source: GameSource,
 |};
 
@@ -104,19 +105,6 @@ export const defaultState: State = {
     historyFetch: "ready",
 };
 
-function compareValue(event: Event): number {
-    if (event.id) {
-        // If we have server events with different offsets, they should be
-        // sequential in the initial lists anyway. This means that local events
-        // in the same milisecond come before all server events in that
-        // milisecond, but this should be stable for server events.
-        return event.id.split("-", 2).map(t => parseInt(t)).reduce((l, r) => l + r);
-    }
-    else {
-        return 0;
-    }
-}
-
 export function colorOf(event: Event): string {
     return event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
 }
@@ -125,8 +113,14 @@ export function canModify(event: Event, playerID: ?string): bool {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
 }
 
-export function newID(): string {
-    return `${Date.now()}-${Math.floor(Math.random() * 10)}`;
+export function wouldScroll(event: DiceEvent): bool {
+    return (event?.dice && event.dice.length > 12)
+    // flow-ignore-all-next-line this check works fine
+        || (event?.rounds && event.rounds.flatMap(r => r).length > 10);
+}
+
+export function newID(): number {
+    return Date.now().valueOf();
 }
 
 export type Dispatch = (Action) => void;
@@ -164,10 +158,8 @@ function appendEventsReduce(state: State, newEvents: Event[]): State {
             newIx++;
             oldIx++;
         }
-        // uh, comparing arrays is totally fine, don't worry about it
-        // LARGER event ids are on the TOP
-        // flow-ignore-all-next-line
-        else if (compareValue(newEvent) > compareValue(oldEvent)) {
+        // Events are sorted by [timestamp] IDs.
+        else if (newEvent.id  > oldEvent.id) {
             events.push(newEvent);
             newIx++;
         }

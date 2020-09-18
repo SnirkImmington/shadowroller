@@ -8,6 +8,7 @@ import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as Stream from './stream';
 import * as server from 'server';
 import routes from 'routes';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
@@ -15,7 +16,7 @@ import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
-import EventHistory from 'event/history-panel';
+import EventHistory from 'history-panel';
 import DebugBar from 'debug-bar';
 
 import 'assets-external/source-code-pro.css';
@@ -46,13 +47,14 @@ const AppRight: StyledComponent<> = styled.div`
 function Shadowroller() {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
-
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
+    const setStream = React.useContext(Stream.SetterCtx);
+
     const [menuShown, setMenuShown] = React.useState<bool>(false);
     const hide = React.useCallback(() => setMenuShown(false), [setMenuShown]);
 
-    const session = server.session;
+    // On first load, read credentials from localStorage and log in.
     React.useEffect(() => {
         server.loadCredentials();
         if (server.session) {
@@ -61,7 +63,10 @@ function Shadowroller() {
                 .onResponse(resp => {
                     server.handleLogin(
                         true, resp,
-                        setConnection, gameDispatch, eventDispatch
+                        setConnection,
+                        setStream,
+                        gameDispatch,
+                        eventDispatch
                     )
                 })
                 .onClientError(resp => {
@@ -73,7 +78,9 @@ function Shadowroller() {
                 });
             setConnection("disconnected");
         }
-    }, [session, setConnection, gameDispatch, eventDispatch]);
+        // We want this to only run on startup.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     function onGameButtonClick() {
         setMenuShown(shown => !shown);
@@ -86,7 +93,7 @@ function Shadowroller() {
     let menu: React.Node = '';
     if (menuShown) {
         if (connection === "connected") {
-            menu = <Game.StatusMenu />;
+            menu = <Game.StatusMenu hide={hide} />;
         }
         else if (server.session) {
             menu = <Game.ReconnectMenu hide={hide} />;
@@ -121,6 +128,7 @@ export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
     const [connection, setConnection] = React.useState<Connection>("offline");
+    const [stream, setStream] = React.useState<Stream.State>(null);
 
     return (
         <ConnectionCtx.Provider value={connection}>
@@ -129,9 +137,13 @@ export default function App(props: {}) {
         <Event.Ctx.Provider value={eventList}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
+        <Stream.Ctx.Provider value={stream}>
+        <Stream.SetterCtx.Provider value={setStream}>
 
             <Shadowroller />
 
+        </Stream.SetterCtx.Provider>
+        </Stream.Ctx.Provider>
         </Event.DispatchCtx.Provider>
         </Game.DispatchCtx.Provider>
         </Event.Ctx.Provider>

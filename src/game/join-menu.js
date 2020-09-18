@@ -8,6 +8,7 @@ import * as icons from 'style/icon';
 
 import * as Game from 'game';
 import * as Event from 'event';
+import * as Stream from '../stream';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 
 import * as server from 'server';
@@ -15,8 +16,6 @@ import * as srutil from 'srutil';
 import routes from 'routes';
 
 const ENTER_GAME_ID_FLAVOR = [
-    <span><tt>bikinitrolls</tt> isn't a Game ID.</span>,
-    <span><tt>aimattrees</tt> isn't a Game ID.</span>,
     <span><tt>foofaraw</tt> isn't a Game ID.</span>,
 
     "Pull out your best SIN.",
@@ -130,6 +129,7 @@ export function JoinMenu({ hide }: Props) {
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
+    const setStream = React.useContext(Stream.SetterCtx);
 
     const [gameID, setGameID] = React.useState('');
     const [playerName, setPlayerName] = React.useState('');
@@ -163,7 +163,7 @@ export function JoinMenu({ hide }: Props) {
         routes.auth.login({ gameID, playerName, persist })
             .onConnection(setConnection)
             .onResponse(resp => {
-                server.handleLogin(persist, resp, setConnection, dispatch, eventDispatch);
+                server.handleLogin(persist, resp, setConnection, setStream, dispatch, eventDispatch);
                 hide();
             })
             .onClientError(resp => {
