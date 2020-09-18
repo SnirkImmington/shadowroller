@@ -46,6 +46,12 @@ var (
 	// Alternatively, an HTTPS server may be used.
 	// If used on production, ReverseProxied must be set to true.
 	PublishHTTP = readString("PUBLISH_HTTP", ":3001")
+	// ClientIPHeader sets a header to use for client IP addresses instead
+	// of just using the request's RemoteAddr. If the header is not found,
+	// RemoteAddr is used.
+	ClientIPHeader = readString("CLIENT_IP_HEADER", "")
+	// LogExtraHeaders allows for more headers to be logged with each request
+	LogExtraHeaders = readStringArray("LOG_EXTRA_HEADERS", "")
 	// ReverseProxied must be set to true if an HTTP API server is used on
 	// production. It is ignored otherwise.
 	ReverseProxied = readBool("REVERSE_PROXIED", false)
@@ -78,17 +84,6 @@ var (
 	// This is a full URL, useful for i.e. Github project sites.
 	// If unset, the root URL will not redirect.
 	FrontendAddress = readString("FRONTEND_ADDRESS", FrontendDomain)
-
-	// Keys
-	// In development, these are hardcoded to known values for testing.
-	// In production, these must point to keyfiles containing base64 encoded keys.
-
-	// JWTSecretKey is the secure key/key file used to encrypt JWT tokens.
-	JWTSecretKey = readKeyFile("KEYFILE_JWT", "133713371337")
-	// HealthCheckSecretKey allows for sending debug info with health checks.
-	// If the contents of this key are passed to /health-check, debug info is sent.
-	// This is always done in development. Leave blank to disable in production.
-	HealthCheckSecretKey = readKeyFile("KEYFILE_HEALTHCHECK", "")
 
 	// Timeouts
 
@@ -129,9 +124,23 @@ var (
 
 	// Backend options
 
+	// HealthCheckSecretKey allows for sending debug info with health checks.
+	// If the contents of this key are passed to /health-check, debug info is sent.
+	// This is always done in development. Leave blank to disable in production.
+	HealthCheckSecretKey = readKeyFile("KEYFILE_HEALTHCHECK", "")
+
+	// EnableTasks enables the /task route, which includes administrative commands.
+	// It is recommended you run a separate sr-server instance with this enabled to
+	// perform administrative tasks.
+	EnableTasks = readBool("ENABLE_TASKS", false)
+	// TasksLocalhostOnly enables the localhost filter on the tasks route.
+	// Don't use this to conceal /task from the internet! Shadowroller cannot guarantee
+	// you won't receive a request pretending to be from localhost.
+	TasksLocalhostOnly = readBool("TASKS_LOCALHOST_ONLY", true)
+
 	// HardcodedGameNames is a comma-separated list of GameIDs which the server
 	// creates on startup.
-	HardcodedGameNames = readString("GAME_NAMES", "test1,test2")
+	HardcodedGameNames = readStringArray("GAME_NAMES", "test1,test2")
 	// RollBufferSize is the size of the channel buffer from the roll goroutine.
 	RollBufferSize = readInt("ROLL_BUFFER_SIZE", 200)
 	// MaxSingleRoll is the largest roll request the server will handle at once.
@@ -156,7 +165,9 @@ func readStringArray(name string, defaultValue string) []string {
 	} else {
 		val = defaultValue
 	}
-
+	if val == "" {
+		return []string{}
+	}
 	return strings.Split(val, ",")
 }
 
@@ -196,7 +207,8 @@ func readKeyFile(name string, defaultValue string) []byte {
 		if err != nil {
 			panic(fmt.Sprintf("Unable to read key %v from file %v: %v", name, envVal, err))
 		}
-		contents = string(fileContent)
+		// Allow for a trailing newline in the file
+		contents = strings.TrimSpace(string(fileContent))
 	}
 	if contents == "" {
 		log.Print("config: empty key ", name, " used!")
@@ -222,11 +234,12 @@ func VerifyConfig() {
 		if TLSHostname == "localhost" {
 			log.Print("Warning: TLSHostname set to localhost on production")
 		}
-		if len(JWTSecretKey) < 256 {
-			panic("JWTSecretKey should be longer")
-		}
 		if len(HealthCheckSecretKey) != 0 && len(HealthCheckSecretKey) < 256 {
 			panic("HealthcheckSecretKey should be longer")
+		}
+	} else {
+		if !EnableTasks {
+			EnableTasks = true
 		}
 	}
 	if PublishRedirect == PublishHTTPS && PublishHTTPS != "" {
@@ -242,10 +255,7 @@ func VerifyConfig() {
 			log.Print("Warning: publishing HTTP server and HTTP redirect server.")
 		}
 	}
-	if len(JWTSecretKey) == 0 {
-		panic("No JWT key given!")
-	}
-	if (TLSAutocertDir == "") == (len(TLSCertFiles) == 0) {
+	if PublishHTTPS != "" && ((TLSAutocertDir == "") == (len(TLSCertFiles) == 0)) {
 		panic("Must set one of TLSAutocertDir and TLSCertFiles!")
 	}
 }

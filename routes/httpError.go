@@ -11,87 +11,61 @@ func abortRequest() {
 	panic(abortedRequestPanicMessage)
 }
 
-func httpBadRequestIf(response Response, request *Request, err error) {
+func httpDoErrorIf(message string, status int, response Response, request *Request, err error) {
 	if err != nil {
-		rawLog(request, ">> 400 Bad Request: "+err.Error())
-		http.Error(response, "Bad Request", http.StatusBadRequest)
+		http.Error(response, message, status)
+		dur := displayRequestDuration(request.Context())
+		rawLog(2, request, ">> %v %v: %v (%v)", status, message, err.Error(), dur)
 		abortRequest()
 	}
+}
+
+func httpDoMessage(template string, status int, response Response, request *Request, message string) {
+	if message == "" {
+		message = template
+	}
+	http.Error(response, message, status)
+	dur := displayRequestDuration(request.Context())
+	rawLog(2, request, ">> %v %v (%v)", status, message, dur)
+	abortRequest()
+}
+
+func httpBadRequestIf(response Response, request *Request, err error) {
+	httpDoErrorIf("Bad Request", http.StatusBadRequest, response, request, err)
 }
 
 func httpBadRequest(response Response, request *Request, message string) {
-	if message == "" {
-		message = "Bad Request"
-	}
-	rawLog(request, ">> 400 "+message)
-	http.Error(response, message, http.StatusBadRequest)
-	abortRequest()
+	httpDoMessage("Bad Request", http.StatusBadRequest, response, request, message)
 }
 
 func httpForbiddenIf(response Response, request *Request, err error) {
-	if err != nil {
-		rawLog(request, ">> 403 Forbidden: "+err.Error())
-		http.Error(response, "Forbidden", http.StatusForbidden)
-		abortRequest()
-	}
+	httpDoErrorIf("Forbidden", http.StatusForbidden, response, request, err)
 }
 
 func httpForbidden(response Response, request *Request, message string) {
-	if message == "" {
-		message = "Forbidden"
-	}
-	rawLog(request, ">> 403 "+message)
-	http.Error(response, message, http.StatusForbidden)
-	abortRequest()
+	httpDoMessage("Forbidden", http.StatusForbidden, response, request, message)
 }
 
 func httpNotFoundIf(response Response, request *Request, err error) {
-	if err != nil {
-		rawLog(request, ">> 404 Not Found: "+err.Error())
-		http.Error(response, "Not Found", http.StatusNotFound)
-		abortRequest()
-	}
+	httpDoErrorIf("Not Found", http.StatusNotFound, response, request, err)
 }
 
 func httpNotFound(response Response, request *Request, message string) {
-	if message == "" {
-		message = "Not Found"
-	}
-	rawLog(request, ">> 404 "+message)
-	http.Error(response, message, http.StatusNotFound)
-	abortRequest()
+	httpDoMessage("Not Found", http.StatusNotFound, response, request, message)
 }
 
 func httpUnauthorizedIf(response Response, request *Request, err error) {
-	if err != nil {
-		rawLog(request, ">> 401 Unauthorized: "+err.Error())
-		http.Error(response, "Unauthorized", http.StatusUnauthorized)
-		abortRequest()
-	}
+	httpDoErrorIf("Unauthorized", http.StatusUnauthorized, response, request, err)
 }
 
 func httpUnauthorized(response Response, request *Request, message string) {
-	if message == "" {
-		message = "Unauthorized"
-	}
-	rawLog(request, ">> 401 "+message)
-	http.Error(response, message, http.StatusUnauthorized)
-	abortRequest()
+	httpDoMessage("Unauthorized", http.StatusUnauthorized, response, request, message)
 }
 
 func httpInternalErrorIf(response Response, request *Request, err error) {
-	if err != nil {
-		rawLog(request, ">> 500 Internal Server Error: "+err.Error())
-		http.Error(response, "Internal Server Error", http.StatusInternalServerError)
-		abortRequest()
-	}
+	httpDoErrorIf("Internal Server Error", http.StatusInternalServerError, response, request, err)
 }
 
 func httpInternalError(response Response, request *Request, message string) {
-	if message == "" {
-		message = "Internal Server Error"
-	}
-	rawLog(request, ">> 500 "+message)
-	http.Error(response, message, http.StatusInternalServerError)
-	abortRequest()
+	httpDoMessage("Internal Server Error", http.StatusInternalServerError, response, request, message)
 }

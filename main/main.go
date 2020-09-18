@@ -69,6 +69,7 @@ func main() {
 	sr.BeginGeneratingRolls()
 	sr.SetupRedis()
 	config.VerifyConfig()
+	routes.RegisterTasksViaConfig()
 
 	log.Print("Shadowroller:", SHADOWROLLER, "\n")
 

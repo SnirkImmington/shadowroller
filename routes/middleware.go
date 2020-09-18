@@ -1,11 +1,8 @@
 package routes
 
 import (
-	"context"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
-	"log"
-	"math/rand"
 	"net/http"
 	"runtime/debug"
 	"sr"
@@ -23,33 +20,15 @@ func tlsHeadersMiddleware(wrapped http.Handler) http.Handler {
 
 func headersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		response.Header().Set("Cache-Control", "no-cache")
+		response.Header().Set("Cache-Control", "no-store")
 		response.Header().Set("X-Content-Type-Options", "nosniff")
 		wrapped.ServeHTTP(response, request)
 	})
 }
 
-type requestIDKeyType int
-
-var requestIDKey requestIDKeyType
-
-func withRequestID(ctx context.Context) context.Context {
-	id := fmt.Sprintf("%02x", rand.Intn(256))
-	return context.WithValue(ctx, requestIDKey, id)
-}
-
-func requestID(request *Request) string {
-	val := request.Context().Value(requestIDKey)
-	if val == nil {
-		return "??"
-	}
-	return val.(string)
-}
-
-func requestIDMiddleware(wrapped http.Handler) http.Handler {
+func requestContextMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		requestCtx := request.Context()
-		requestCtx = withRequestID(requestCtx)
+		requestCtx := withConnectedNow(withRequestID(request.Context()))
 		requestWithID := request.WithContext(requestCtx)
 
 		wrapped.ServeHTTP(response, requestWithID)
@@ -58,13 +37,14 @@ func requestIDMiddleware(wrapped http.Handler) http.Handler {
 
 func localhostOnlyMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		remoteAddr := strings.Split(request.RemoteAddr, ":")[0]
+		// Not sure if this should just be remote addr.
+		remoteAddr := strings.Split(requestRemoteAddr(request), ":")[0]
 		allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1"
 		message := "disallowed"
 		if allowed {
 			message = "allowed"
 		}
-		logf(request, "localhostOnly: %v %v", request.RemoteAddr, message)
+		logf(request, "localhostOnly: %v %v", remoteAddr, message)
 		if !allowed {
 			httpNotFound(response, request, "Not found")
 			return
@@ -85,7 +65,8 @@ func recoveryMiddleware(wrapped http.Handler) http.Handler {
 				)
 				logf(request, string(debug.Stack()))
 				http.Error(response, "Internal Server Error", http.StatusInternalServerError)
-				logf(request, ">> 500 Internal Server Error")
+				dur := displayRequestDuration(request.Context())
+				logf(request, ">> 500 Internal Server Error (%v)", dur)
 			}
 		}()
 		wrapped.ServeHTTP(response, request)
@@ -99,15 +80,15 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 
 		// Taken from https://redis.io/commands/incr#pattern-rate-limiter-1
 
-		remoteAddr := strings.Split(request.RemoteAddr, ":")[0]
-
+		remoteAddr := requestRemoteIP(request)
 		ts := time.Now().Unix()
 		rateLimitKey := fmt.Sprintf("ratelimit:%v:%v", remoteAddr, ts-ts%10)
 
 		current, err := redis.Int(conn.Do("get", rateLimitKey))
 		if err == redis.ErrNil {
 			current = 0
-		} else {
+		} else if err != nil {
+			logf(request, "Unable to get rate limit key: %v", err)
 			httpInternalErrorIf(response, request, err)
 		}
 
@@ -124,7 +105,7 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 		httpInternalErrorIf(response, request, err)
 		err = conn.Send("expire", rateLimitKey, "15")
 		httpInternalErrorIf(response, request, err)
-		err = conn.Send("exec")
+		_, err = conn.Do("exec")
 		httpInternalErrorIf(response, request, err)
 
 		if !limited {

@@ -1,8 +1,4 @@
-# JUST IN CASE
+# Just in case
 prod*
-
-# Builds?
-build/
-
 # Redis db
-dump.rdb
+*.rdb

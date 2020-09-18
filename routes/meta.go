@@ -15,6 +15,7 @@ var _ = restRouter.HandleFunc("/", handleRoot).Methods("GET")
 func handleRoot(response Response, request *Request) {
 	logRequest(request)
 	http.Redirect(response, request, config.FrontendAddress, http.StatusSeeOther)
+	cacheIndefinitely(request, response)
 	logf(request, ">> 307 %v", config.FrontendAddress)
 }
 
@@ -25,7 +26,8 @@ func handleRobots(response Response, request *Request) {
 	// No bots in the API please
 	_, err := response.Write([]byte("user-agent: *\ndisallow: *"))
 	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request, "user-agent: * disallow *")
+	cacheIndefinitely(request, response)
+	httpSuccess(response, request, "user-agent: * disallow: *")
 }
 
 var _ = restRouter.HandleFunc("/coffee", handleCoffee).Methods("GET")
@@ -33,6 +35,7 @@ var _ = restRouter.HandleFunc("/coffee", handleCoffee).Methods("GET")
 func handleCoffee(response Response, request *Request) {
 	logRequest(request)
 	http.Error(response, "Soy coffee only", http.StatusTeapot)
+	cacheIndefinitely(request, response)
 	logf(request, ">> 418 Soy coffee only")
 }
 

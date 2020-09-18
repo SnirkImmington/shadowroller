@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"sr/config"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,30 @@ type Request = http.Request
 type Response = http.ResponseWriter
 
 var errExtraBody = errors.New("encountered additional data after end of JSON body")
+
+func requestRemoteAddr(request *Request) string {
+	if config.ClientIPHeader != "" {
+		res := request.Header.Get(config.ClientIPHeader)
+		if res != "" {
+			return res
+		}
+	}
+	return request.RemoteAddr
+}
+
+func requestRemoteIP(request *Request) string {
+	addr := requestRemoteAddr(request)
+	portIx := strings.LastIndex(addr, ":")
+	if portIx == -1 {
+		return addr
+	}
+	return addr[:portIx]
+}
+
+func cacheIndefinitely(request *Request, response Response) {
+	rawLog(1, request, "Caching for 24 hours")
+	response.Header().Set("Cache-Control", "max-age=86400")
+}
 
 func readBodyJSON(request *Request, value interface{}) error {
 	decoder := json.NewDecoder(request.Body)
@@ -43,25 +68,42 @@ func writeBodyJSON(response Response, value interface{}) error {
 
 func logRequest(request *Request, values ...string) {
 	if config.IsProduction {
-		rawLog(request, fmt.Sprintf(
-			"<< %v %v %v %v",
-			request.RemoteAddr, request.Proto, request.Method, request.URL,
+		extra := ""
+		if len(config.LogExtraHeaders) != 0 {
+			grabbed := make([]string, len(config.LogExtraHeaders))
+			for i, header := range config.LogExtraHeaders {
+				found := request.Header.Get(header)
+				if found != "" {
+					grabbed[i] = found
+				} else {
+					grabbed[i] = "??"
+				}
+			}
+			extra = fmt.Sprintf(" %v", grabbed)
+		}
+		rawLog(1, request, fmt.Sprintf(
+			"<< %v%v %v %v %v",
+			requestRemoteIP(request),
+			extra,
+			request.Proto,
+			request.Method,
+			request.URL,
 		))
 	} else {
-		rawLog(request, fmt.Sprintf("<< %v %v",
+		rawLog(1, request, fmt.Sprintf("<< %v %v",
 			request.Method, request.URL,
 		))
 	}
 }
 
 func logf(request *Request, format string, values ...interface{}) {
-	message := fmt.Sprintf(format, values...)
-	rawLog(request, message)
+	rawLog(1, request, format, values...)
 }
 
-func rawLog(request *Request, message string) {
-	id := requestID(request)
-	err := log.Output(3, id+" "+message)
+func rawLog(stack int, request *Request, format string, values ...interface{}) {
+	id := requestID(request.Context())
+	message := fmt.Sprintf(format, values...)
+	err := log.Output(2+stack, id+" "+message)
 	if err != nil {
 		log.Print(id, " [Output Error] ", message)
 	}
@@ -71,5 +113,6 @@ func httpSuccess(response Response, request *Request, message ...interface{}) {
 	if len(message) == 0 {
 		message = []interface{}{"OK"}
 	}
-	rawLog(request, fmt.Sprintf(">> 200 %v", fmt.Sprint(message...)))
+	dur := displayRequestDuration(request.Context())
+	rawLog(1, request, fmt.Sprintf(">> 200 %v (%v)", fmt.Sprint(message...), dur))
 }
