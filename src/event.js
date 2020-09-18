@@ -114,9 +114,9 @@ export function canModify(event: Event, playerID: ?string): bool {
 }
 
 export function wouldScroll(event: DiceEvent): bool {
-    return (event?.dice && event.dice.length >= 12)
+    return (event?.dice && event.dice.length > 12)
     // flow-ignore-all-next-line this check works fine
-        || (event?.rounds && event.rounds.flatMap(r => r).length >= 10);
+        || (event?.rounds && event.rounds.flatMap(r => r).length > 10);
 }
 
 export function newID(): number {

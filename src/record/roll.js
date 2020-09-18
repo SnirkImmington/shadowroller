@@ -70,6 +70,7 @@ const WrapperColumn = styled(UI.FlexColumn)``;
 
 const TitleRow = styled(UI.FlexRow)`
     flex-grow: 1;
+    padding-left: 2px;
 `;
 
 const StyledResults = styled.b`

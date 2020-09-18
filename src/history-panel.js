@@ -101,13 +101,13 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             case "edgeRoll":
             case "roll":
                 if (Event.canModify(event, playerID)) {
-                    return 112;
+                    return Event.wouldScroll(event) ? 120 : 110;
                 }
-                return Event.wouldScroll(event) ? 98 : 90;
+                return Event.wouldScroll(event) ? 100 : 84;
             case "rerollFailures":
-                return Event.wouldScroll(event) ? 98 : 90;
+                return Event.wouldScroll(event) ? 100 : 84;
             default:
-                return 34;
+                return 32;
         }
     }, [playerID, eventsLength, state.events]);
 
