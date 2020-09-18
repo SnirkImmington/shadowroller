@@ -1,11 +1,5 @@
 // @flow
 
-import * as Game from 'game';
-import * as Event from 'event';
-import * as connection from 'connection';
-
-import * as events from './events';
-
 export * from './events';
 export * from './auth';
 export * from './request';

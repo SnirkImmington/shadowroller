@@ -105,10 +105,6 @@ export const defaultState: State = {
     historyFetch: "ready",
 };
 
-function compareValue(event: Event): number {
-    return event.id || 0;
-}
-
 export function colorOf(event: Event): string {
     return event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
 }

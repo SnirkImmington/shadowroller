@@ -12,10 +12,9 @@ import * as Game from 'game';
 import * as Event from 'event';
 import * as Record from 'record';
 import * as server from 'server';
-import * as Stream from './stream';
 import routes from 'routes';
 import * as srutil from 'srutil';
-import { ConnectionCtx, SetConnectionCtx } from 'connection';
+import { ConnectionCtx } from 'connection';
 
 const DO_SOME_ROLLS_FLAVOR = [
     "You have to press that roll button first, chummer.",
@@ -110,7 +109,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             default:
                 return 34;
         }
-    }, [playerID, eventsLength, state, state.events]);
+    }, [playerID, eventsLength, state.events]);
 
     function itemKey(index: number, data: Event.Event[]): any {
         if (!data || !data[index]) {
@@ -223,7 +222,7 @@ export default function EventHistory() {
             <TitleBar>
                 <UI.CardTitleText color="#842222">
                     {title}
-                    {events.historyFetch == "fetching" && "..."}
+                    {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>
             </TitleBar>
             {body}

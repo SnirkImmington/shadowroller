@@ -94,14 +94,6 @@ export default function NumericInput(props: Props) {
     const [round] = React.useState<RoundingMode>(props.round ?? "up");
     //const [showInfo, setInfoShown] = React.useState<bool>(false);
 
-    let computed: number = 0;
-    if (props.value != null) {
-        computed = props.value;
-    }
-    if (typeof state !== "string" && state[0] !== "error") {
-        computed = state[1];
-    }
-
     function onTextInput(event: SyntheticInputEvent<HTMLInputElement>) {
         setText(event.target.value);
         // Handle empty field - this is not an error condition

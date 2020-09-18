@@ -2,10 +2,9 @@
 
 import * as React from 'react';
 
-import * as Game from 'game';
 import * as Event from 'event';
 import * as server from 'server';
-import type { Connection, SetConnection } from 'connection';
+import type { SetConnection } from 'connection';
 
 export type State = ?EventSource;
 export type Setter = (State) => void;
@@ -74,19 +73,4 @@ export function open(
 
     setConnection("connecting");
     return source;
-}
-
-export function SubscriptionHolder(props: { children: React.Node }) {
-    const game = React.useContext(Game.Ctx);
-    const eventDispatch = React.useContext(Event.DispatchCtx);
-
-    const [stream, setStream] = React.useState<?EventSource>(null);
-
-    return (
-        <Ctx.Provider value={stream}>
-        <SetterCtx.Provider value={setStream}>
-            {props.children}
-        </SetterCtx.Provider>
-        </Ctx.Provider>
-    );
 }
