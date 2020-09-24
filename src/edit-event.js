@@ -15,6 +15,9 @@ const TitleBar = styled(UI.FlexRow)`
 `;
 
 export default function EditEvent() {
+    const game = React.useContext(Game.Ctx);
+    const source = game?.gameID ? { id: game.player.id, name: game.player.name } : "local";
+
     const [title, setTitle] = React.useState("heroes never die");
     return (
         <UI.Card color="#81132a">
@@ -30,7 +33,7 @@ export default function EditEvent() {
                             flexGrow: 1,
                         }} event={{
                         ty: "roll", id: 69,
-                        source: { id: "nygVKSrQYuV9", name: "smark" },
+                        source: source,
                         dice: [1, 5, 4, 3, 2, 6, 2, 5],
                         title: title,
                     }} />
