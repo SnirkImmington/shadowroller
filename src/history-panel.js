@@ -51,24 +51,14 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
 
     const ref = React.useRef<?Element>();
     React.useLayoutEffect(() => {
-        if (!ref.current) {
-            return () => {};
+        if (ref.current) {
+            setHeight(ref.current.getBoundingClientRect().height);
         }
-        console.log("Creating observer", eventIx);
-        const observer = new ResizeObserver(function(entries) {
-            console.log("Observed", entries, eventIx);
-            setHeight(entries[0].target.getBoundingClientRect().height);
-        });
-        observer.observe(ref.current);
-        return () => {
-            console.log("Disconnecting observer", eventIx);
-            observer.disconnect();
-        }
-    }, [ref]);
+    }, [ref, eventIx, setHeight]);
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
-                <Record.Loading />
+                <Record.Loading ref={ref}/>
             </Record.StyledRecord>
         );
     }
@@ -80,9 +70,13 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
             inner = (<Record.PlayerJoin ref={ref} event={event} />);
             break;
         case "edgeRoll":
-        case "roll":
+            inner = (<Record.EdgeRoll ref={ref} event={event} eventIx={eventIx} />);
+            break;
         case "rerollFailures":
-            inner = (<Record.RollRecord ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.Reroll ref={ref} event={event} eventIx={eventIx} />);
+            break;
+        case "roll":
+            inner = (<Record.Roll ref={ref} event={event} eventIx={eventIx} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -120,6 +114,17 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         if (listRef.current && listRef.current._listRef) {
             listRef.current._listRef.resetAfterIndex(0);
         }
+        else {
+            setTimeout(function resetLength() {
+                console.log("Resetting length...");
+                if (listRef.current && listRef.current._listRef) {
+                    listRef.current._listRef.resetAfterIndex(0);
+                }
+                else {
+                    setTimeout(resetLength);
+                }
+            })
+        }
     }, [eventsLength]);
 
     // TODO this should take event ID into account.. we can do `<` on IDs though
@@ -128,12 +133,10 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }, [atHistoryEnd, eventsLength]);
 
     const itemSize = (index: number): number => {
-        console.log("Checking size of", index, "against", itemSizes.current);
         if (itemSizes.current[index]) {
-            console.log("Passing cached value for item size");
-            return itemSizes.current[index];
+            return itemSizes.current[index] + 6;
         }
-        return 69;
+        return 0;
     };
 
     function itemKey(index: number, data: Event.Event[]): any {
@@ -143,13 +146,18 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         return data[index].id;
     }
 
-    let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
-        function setHeight(height: number) {
-            itemSizes.current[index] = height;
-            console.log("Updated itemSizes at", index, itemSizes);
+    function setIndexHeight(height: number, index) {
+        if (itemSizes.current[index] == height) {
+            return;
+        }
+        itemSizes.current[index] = height;
+        if (listRef.current && listRef.current._listRef) {
             listRef.current._listRef.resetAfterIndex(index);
         }
+    }
 
+    let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
+        const setHeight = (height) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
             return <EventRecord event={null} setHeight={setHeight} eventIx={index} style={style} />;
         }
