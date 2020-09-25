@@ -1,27 +1,21 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
 import * as UI from 'style';
-import theme from 'style/theme';
 import * as dice from 'dice';
 import * as humanTime from 'humanTime';
 import * as icons from 'style/icon';
 import * as Roll from './rollComponents';
 
 import * as Event from 'event';
-import * as Game from 'game';
 import * as rollStats from 'rollStats';
 
 type Props = {
     +event: Event.RerollFailures,
 }
 function RerollRecord({ event }: Props, ref) {
-    const game = React.useContext(Game.Ctx);
-
     const color = Event.colorOf(event);
     const result = rollStats.results(event);
-    const canModify = Event.canModify(event, game?.player?.id);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
@@ -38,7 +32,7 @@ function RerollRecord({ event }: Props, ref) {
     const title = event.title ? (
         <>to <b>{event.title}</b></>
     ) : (
-        <>on {event.rounds[1].length} dice</>
+        <>on {event.rounds[1].length} {event.rounds[1].length === 1 ? "die" : "dice"}</>
     );
 
     return (

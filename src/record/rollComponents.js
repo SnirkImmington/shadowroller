@@ -70,7 +70,7 @@ type RoundsProps = {
     +transform?: string,
 };
 export function Rounds({ rounds, icon, transform, color }: RoundsProps): React.Node {
-    if (rounds.length == 0) {
+    if (rounds.length === 0) {
         return (
             <RoundsRow>
                 <UI.FAIcon icon={icon} color={color} className="sr-die"
@@ -111,7 +111,7 @@ function LocalActionsRow({ event, result }: Props) {
             rounds: [srutil.rerollFailures(event.dice), event.dice]
         };
         dispatch({ ty: "newEvent", event: rerolled });
-    }, [event]);
+    }, [event, dispatch]);
 
     return (
         <UI.LinkList>
@@ -123,9 +123,8 @@ function LocalActionsRow({ event, result }: Props) {
 }
 
 function GameActionsRow({ event, result }: Props) {
-    const dispatch = React.useContext(Event.DispatchCtx);
-
     const [connection, setConnection] = React.useState<Connection>("offline");
+
     const onSecondChance = React.useCallback(function onSecondChance() {
         routes.game.reroll({ rollID: event.id, rerollType: "rerollFailures" })
             .onConnection(setConnection);

@@ -3,7 +3,6 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-import * as UI from 'style';
 import theme from 'style/theme';
 
 const MINUTE = 60,
@@ -33,7 +32,7 @@ export function since(ts: Date, now: Date = new Date()): string {
     if (delta < 2 * WEEK) {
         return `Last ${WEEK_DAY.format(ts)} at ${HOUR_FORMAT.format(ts)}`;
     }
-    if (ts.getFullYear() == now.getFullYear()) {
+    if (ts.getFullYear() === now.getFullYear()) {
         return `${MONTH_FORMAT.format(ts)} at ${HOUR_FORMAT.format(ts)}`;
     }
     return DATE_FORMAT.format(ts);

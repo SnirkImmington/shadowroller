@@ -52,7 +52,7 @@ export function results(event: Event.DiceEvent): HitsResults {
 }
 
 export function resultMessage(results: HitsResults): string {
-    const hits = results.hits == 1 ? "hit" : "hits";
+    const hits = results.hits === 1 ? "hit" : "hits";
     if (results.critical) {
         return "Critical glitch!"
     }

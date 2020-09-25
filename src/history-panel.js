@@ -28,18 +28,6 @@ const GAME_EMPTY_FLAVOR = [
     "Be the first one to roll!",
 ];
 
-function defaultHeight(event: Event.Event): number {
-    switch (event.ty) {
-        case "playerJoin": return 34;
-        case "roll": return 100;
-        case "rerollFailures":
-        case "edgeRoll":
-            return 120;
-        default:
-            return 34;
-    }
-}
-
 type RecordProps = {
     +event: ?Event.Event,
     +eventIx: number,
@@ -147,7 +135,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }
 
     function setIndexHeight(height: number, index) {
-        if (itemSizes.current[index] == height) {
+        if (itemSizes.current[index] === height) {
             return;
         }
         itemSizes.current[index] = height;
@@ -165,7 +153,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             const event = data[index];
             return <EventRecord event={event} setHeight={setHeight} eventIx={index} style={style} />;
         }
-    }, [itemSizes, loadedAt]);
+    }, [loadedAt]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline") {

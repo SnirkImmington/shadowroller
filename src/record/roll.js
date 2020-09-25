@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
 import * as UI from 'style';
 import * as dice from 'dice';
 import * as humanTime from 'humanTime';
@@ -9,8 +8,6 @@ import * as Roll from './rollComponents';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import routes from 'routes';
-import * as srutil from 'srutil';
 import * as rollStats from 'rollStats';
 
 type Props = {
@@ -36,7 +33,7 @@ function RollRecordInner({ event }: Props, ref) {
     const title = event.title ? (
         <>to <b>{event.title}</b></>
     ) : (
-        <>{event.dice.length} {event.dice.length == 1 ? "die" : "dice"}</>
+        <>{event.dice.length} {event.dice.length === 1 ? "die" : "dice"}</>
     );
 
     return (

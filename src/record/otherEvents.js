@@ -1,10 +1,9 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
 import * as humanTime from 'humanTime';
-
 import * as UI from 'style';
+
 import * as Game from 'game';
 import * as Event from 'event';
 
@@ -31,7 +30,7 @@ export const PlayerJoin = React.memo<PlayerJoinProps>(React.forwardRef(function 
     );
 }), (prev, next) => prev.event.id === next.event.id);
 
-export const Loading = React.memo<{}>(React.forwardRef(function LoadingIndicator({}, ref) {
+export const Loading = React.memo<{}>(React.forwardRef(function LoadingIndicator(props, ref) {
     return (
         <span ref={ref}>Getting some rolls... <UI.DiceSpinner /></span>
     );

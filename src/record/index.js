@@ -1,7 +1,6 @@
 // @flow
 
 import styled from 'styled-components/macro';
-import * as UI from 'style';
 import type { StyledComponent } from 'styled-components';
 
 type RecordProps = {
