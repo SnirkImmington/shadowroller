@@ -11,14 +11,19 @@ export const NoWrap: StyledComponent<> = styled.span`
 
 export const FlexRow: StyledComponent<> = styled.div`
     display: flex;
-    align-items: center;
+    align-items: ${props => props.alignItems ? props.alignItems : "center"};
     ${props => props.maxWidth ? 'width: 100%;' : ''}
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
+
+    & *:last-child {
+        ${props => props.floatRight ? 'margin-left: auto;' : ''}
+    }
 `;
 
 export const FlexColumn: StyledComponent<> = styled.div`
     display: flex;
     flex-direction: column;
+    ${props => props.alignItems ? `align-items: ${props.alignItems};` : ''}
     ${props => props.maxWidth ? 'width: 100%;' : ''}
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
 `;
@@ -31,12 +36,8 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
 `;
 
 export const LinkList: StyledComponent<> = styled(FlexRow)`
-    width: 100%;
     & > * {
-        margin-right: 10px;
-    }
-    & :last-child {
-        margin-right: 0em;
+        margin-right: .5em;
     }
 `;
 
