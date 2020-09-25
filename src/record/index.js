@@ -13,25 +13,18 @@ type RecordProps = {
 // Spacing between event records
 const GUTTER_SIZE = 4;
 
-export const StyledRecord: StyledComponent<RecordProps> = styled(UI.FlexColumn).attrs(
+export const StyledRecord: StyledComponent<RecordProps> = styled.div.attrs(
     props => {
-        console.log("StyledRecord", props, props.style.height);
-        // So we get an initial height which we need to not pass through.
-        if (props.style.height == 69) {
-            delete props.style.height;
-            return {
-                ...props.style,
-            };
-        }
-        console.log(props.style)
         const style = {
             ...props.style,
+            top: props.style.top + GUTTER_SIZE,
             height: props.style.height - GUTTER_SIZE,
-            bottom: props.style.bottom - GUTTER_SIZE,
         };
         return { style };
 })`
+    padding-bottom: 4px;
     padding-left: 5px;
+    padding-right: 2px;
     ${({color}) =>
         `border-left: 5px solid ${color};`
     }
@@ -40,3 +33,6 @@ export const StyledRecord: StyledComponent<RecordProps> = styled(UI.FlexColumn).
 
 export * from './roll';
 export * from './otherEvents';
+export { EdgeRoll } from './edgeRoll';
+export { Reroll } from './reroll';
+export { RollRecord as Roll } from './roll';

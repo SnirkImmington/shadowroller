@@ -105,6 +105,10 @@ export const defaultState: State = {
     historyFetch: "ready",
 };
 
+export function timeOf(event: Event): Date {
+    return new Date(event.id);
+}
+
 export function colorOf(event: Event): string {
     return event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
 }
