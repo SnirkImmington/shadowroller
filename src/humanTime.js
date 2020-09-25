@@ -25,7 +25,7 @@ export function since(ts: Date, now: Date = new Date()): string {
         return HOUR_FORMAT.format(ts);
     }
     if (delta < 2 * DAY) {
-        return `Yesterday at ${HOUR_FORMAT.format(ts)}`;
+        return `Yesterday ${HOUR_FORMAT.format(ts)}`;
     }
     if (delta < WEEK) {
         return `${WEEK_DAY.format(ts)} at ${HOUR_FORMAT.format(ts)}`;
