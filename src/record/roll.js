@@ -26,9 +26,9 @@ function RollActionsRow({edgeActions, onPush, onSecondChance, onRemove}: RollAct
             <UI.LinkButton disabled={!edgeActions} onClick={onSecondChance}>
                 second chance
             </UI.LinkButton>
-            {/*<UI.LinkButton disabled={!onRemove} onClick={onRemove}>
+            <UI.LinkButton disabled={!onRemove} onClick={onRemove}>
                 remove
-            </UI.LinkButton>*/}
+            </UI.LinkButton>
         </UI.LinkList>
     );
 }
@@ -65,8 +65,6 @@ function rollActions(event: Event.DiceEvent, eventIx: number, dispatch: Event.Di
         }
     }
 }
-
-const WrapperColumn = styled(UI.FlexColumn)``;
 
 const TitleRow = styled(UI.FlexRow)`
     flex-grow: 1;
@@ -183,7 +181,7 @@ export const RollRecord = React.memo<RollProps>(function RollRecord({ event, eve
     );
 
     return (
-        <WrapperColumn>
+        <UI.FlexColumn className="returnedFromRoll">
             <RollScrollable>
                 <TitleRow>
                     <UI.NoWrap>{intro} {title}</UI.NoWrap>
@@ -194,6 +192,6 @@ export const RollRecord = React.memo<RollProps>(function RollRecord({ event, eve
             </RollScrollable>
             {canModify && !result.edged &&
                 <RollActionsRow edgeActions={!result.edged} {...actions} />}
-        </WrapperColumn>
+        </UI.FlexColumn>
     );
 });

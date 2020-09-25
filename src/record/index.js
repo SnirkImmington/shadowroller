@@ -14,14 +14,23 @@ type RecordProps = {
 const GUTTER_SIZE = 4;
 
 export const StyledRecord: StyledComponent<RecordProps> = styled(UI.FlexColumn).attrs(
-    props => ({
-        style: {
+    props => {
+        console.log("StyledRecord", props, props.style.height);
+        // So we get an initial height which we need to not pass through.
+        if (props.style.height == 69) {
+            delete props.style.height;
+            return {
+                ...props.style,
+            };
+        }
+        console.log(props.style)
+        const style = {
             ...props.style,
             height: props.style.height - GUTTER_SIZE,
             bottom: props.style.bottom - GUTTER_SIZE,
-        }
-    })
-)`
+        };
+        return { style };
+})`
     padding-left: 5px;
     ${({color}) =>
         `border-left: 5px solid ${color};`

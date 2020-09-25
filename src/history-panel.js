@@ -28,8 +28,43 @@ const GAME_EMPTY_FLAVOR = [
     "Be the first one to roll!",
 ];
 
-type RecordProps = { +event: ?Event.Event, +eventIx: number, style?: any };
-const EventRecord = React.memo<RecordProps>(function EventRecord({ event, eventIx, style }) {
+function defaultHeight(event: Event.Event): number {
+    switch (event.ty) {
+        case "playerJoin": return 34;
+        case "roll": return 100;
+        case "rerollFailures":
+        case "edgeRoll":
+            return 120;
+        default:
+            return 34;
+    }
+}
+
+type RecordProps = {
+    +event: ?Event.Event,
+    +eventIx: number,
+    +setHeight: (number) => void,
+    style?: any
+};
+const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
+    const { event, eventIx, setHeight, style } = props;
+
+    const ref = React.useRef<?Element>();
+    React.useLayoutEffect(() => {
+        if (!ref.current) {
+            return () => {};
+        }
+        console.log("Creating observer", eventIx);
+        const observer = new ResizeObserver(function(entries) {
+            console.log("Observed", entries, eventIx);
+            setHeight(entries[0].target.getBoundingClientRect().height);
+        });
+        observer.observe(ref.current);
+        return () => {
+            console.log("Disconnecting observer", eventIx);
+            observer.disconnect();
+        }
+    }, [ref]);
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
@@ -37,16 +72,17 @@ const EventRecord = React.memo<RecordProps>(function EventRecord({ event, eventI
             </Record.StyledRecord>
         );
     }
+
     let inner: React.Node;
     const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
     switch (event.ty) {
         case "playerJoin":
-            inner = (<Record.PlayerJoin event={event} style={style} />);
+            inner = (<Record.PlayerJoin ref={ref} event={event} />);
             break;
         case "edgeRoll":
         case "roll":
         case "rerollFailures":
-            inner = (<Record.RollRecord event={event} eventIx={eventIx} />);
+            inner = (<Record.RollRecord ref={ref} event={event} eventIx={eventIx} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -73,6 +109,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         atHistoryEnd || connection === "offline" || connection === "disconnected" ? 0 : 1);
 
     const listRef = React.useRef(null);
+    const itemSizes = React.useRef([]);
 
     // Once we've connected this ref to the list,
     // we want to ask the list to stop caching the item sizes whenever we push
@@ -90,26 +127,14 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = React.useCallback((index: number): number => {
-        if (index >= eventsLength) {
-            return 34;
+    const itemSize = (index: number): number => {
+        console.log("Checking size of", index, "against", itemSizes.current);
+        if (itemSizes.current[index]) {
+            console.log("Passing cached value for item size");
+            return itemSizes.current[index];
         }
-        const event = state.events[index];
-        switch (event.ty) {
-            case "localRoll":
-            case "gameRoll":
-            case "edgeRoll":
-            case "roll":
-                if (Event.canModify(event, playerID)) {
-                    return Event.wouldScroll(event) ? 120 : 110;
-                }
-                return Event.wouldScroll(event) ? 100 : 84;
-            case "rerollFailures":
-                return Event.wouldScroll(event) ? 100 : 84;
-            default:
-                return 32;
-        }
-    }, [playerID, eventsLength, state.events]);
+        return 69;
+    };
 
     function itemKey(index: number, data: Event.Event[]): any {
         if (!data || !data[index]) {
@@ -119,14 +144,20 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }
 
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
+        function setHeight(height: number) {
+            itemSizes.current[index] = height;
+            console.log("Updated itemSizes at", index, itemSizes);
+            listRef.current._listRef.resetAfterIndex(index);
+        }
+
         if (!loadedAt(index)) {
-            return <EventRecord event={null} eventIx={index} style={style} />;
+            return <EventRecord event={null} setHeight={setHeight} eventIx={index} style={style} />;
         }
         else {
             const event = data[index];
-            return <EventRecord event={event} eventIx={index} style={style} />;
+            return <EventRecord event={event} setHeight={setHeight} eventIx={index} style={style} />;
         }
-    }, [loadedAt]);
+    }, [itemSizes, loadedAt]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline") {
