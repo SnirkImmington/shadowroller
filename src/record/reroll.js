@@ -4,55 +4,53 @@ import * as React from 'react';
 import * as UI from 'style';
 import * as dice from 'dice';
 import * as humanTime from 'humanTime';
+import * as icons from 'style/icon';
 import * as Roll from './rollComponents';
 
-import * as Game from 'game';
 import * as Event from 'event';
 import * as rollStats from 'rollStats';
 
 type Props = {
-    event: Event.Roll
+    +event: Event.RerollFailures,
 }
-function RollRecordInner({ event }: Props, ref) {
-    const game = React.useContext(Game.Ctx);
-
+function RerollRecord({ event }: Props, ref) {
     const color = Event.colorOf(event);
     const result = rollStats.results(event);
-    const canModify = Event.canModify(event, game?.player?.id);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
             <UI.HashColored id={event.source.id}>
                 {event.source.name}
             </UI.HashColored>
-            {` rolls`}
+            &nbsp;
+            <b>rerolls failures</b>
         </>
     ) : (
-        <>Rolled</>
+        <b>Rerolled failures</b>
     );
+
     const title = event.title ? (
         <>to <b>{event.title}</b></>
     ) : (
-        <>{event.dice.length} {event.dice.length === 1 ? "die" : "dice"}</>
+        <>on {event.rounds[1].length} {event.rounds[1].length === 1 ? "die" : "dice"}</>
     );
 
     return (
         <UI.FlexColumn ref={ref}>
-            <UI.FlexRow>
+            <UI.FlexRow alignItems="flex-start">
                 <Roll.Title>{intro} {title}</Roll.Title>
                 <Roll.Results color={color} result={result} />
             </UI.FlexRow>
             <Roll.Scrollable>
-                <dice.List rolls={event.dice} />
+                <dice.List rolls={event.rounds[1]} />
+                <Roll.Rounds icon={icons.faRedo} color={color}
+                             transform="grow-5"
+                             rounds={[event.rounds[0]]} />
             </Roll.Scrollable>
-            <UI.FlexRow floatRight>
+            <UI.FlexRow>
                 <humanTime.Since date={Event.timeOf(event)} />
-                <UI.FlexRow>
-                    {canModify &&
-                        <Roll.ActionsRow event={event} result={result} />}
-                </UI.FlexRow>
             </UI.FlexRow>
         </UI.FlexColumn>
     );
 }
-export const RollRecord = React.memo<Props>(React.forwardRef(RollRecordInner));
+export const Reroll = React.memo<Props>(React.forwardRef(RerollRecord));
