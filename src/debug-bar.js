@@ -56,7 +56,7 @@ export default function DebugBar() {
         gameState.gameID, gameState.player.name, gameState.player.id
     ];
     const players = !gameState ? "N/A" : Array.from(gameState.players.values());
-    const events = { ...eventState, events: undefined };
+    const events = { ...eventState, events: undefined, editing: eventState.editing?.id || null };
 
     const eventsClicked = React.useCallback(() => {
         if (eventState.events.length === 0) {

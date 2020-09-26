@@ -54,8 +54,13 @@ export type Action =
 | {| +ty: "setHistoryFetch", state: HistoryFetchState |}
 | {| +ty: "newEvent", event: Event |}
 | {| +ty: "mergeEvents", events: Event[] |}
-| {| +ty: "modifyEvent", id: number, diff: $Shape<Event> |}
 | {| +ty: "clearEvents" |}
+
+| {| +ty: "selectEdit", event: DiceEvent |}
+| {| +ty: "clearEdit" |}
+
+| {| +ty: "modifyRoll", id: number, diff: $Shape<DiceEvent> |}
+| {| +ty: "deleteEvent", id: number |}
 ;
 
 /*
@@ -100,10 +105,12 @@ Invariants:
 export type State = {|
     +events: Event[],
     +historyFetch: HistoryFetchState,
+    +editing: ?DiceEvent,
 |};
 export const defaultState: State = {
     events: [],
     historyFetch: "ready",
+    editing: null,
 };
 
 export function timeOf(event: Event): Date {
@@ -199,6 +206,21 @@ function eventReduce(state: State, action: Action): State {
         case "clearEvents":
             const localEvents = state.events.filter(e => e?.source === "local");
             return { ...state, events: localEvents };
+
+        case "deleteEvent":
+            const deletedEvents = state.events.filter(e => e.id !== action.id);
+            return { ...state, events: deletedEvents };
+        case "modifyRoll":
+            const newEvents = state.events.map(e =>
+                // flow-ignore-all-next-line Flow doesn't like the spread, we also assume here we're targeting a roll
+                    e.id === action.id ? { ...e, ...action.diff } : e);
+            // flow-ignore-all-next-line We don't typecheck that we're updating the wrong events.
+            return { ...state, events: newEvents };
+
+        case "selectEdit":
+            return { ...state, editing: action.event };
+        case "clearEdit":
+            return { ...state, editing: null };
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
             if (process.env.NODE_ENV !== "production") {

@@ -8,14 +8,19 @@ import * as icons from 'style/icon';
 import * as Roll from './rollComponents';
 
 import * as Event from 'event';
+import * as Game from 'game';
 import * as rollStats from 'rollStats';
 
 type Props = {
     +event: Event.RerollFailures,
+    +noActions?: bool
 }
-function RerollRecord({ event }: Props, ref) {
+function RerollRecord({ event, noActions }: Props, ref) {
+    const game = React.useContext(Game.Ctx);
+
     const color = Event.colorOf(event);
     const result = rollStats.results(event);
+    const canModify = !noActions && Event.canModify(event, game?.player?.id);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
@@ -47,8 +52,10 @@ function RerollRecord({ event }: Props, ref) {
                              transform="grow-5"
                              rounds={[event.rounds[0]]} />
             </Roll.Scrollable>
-            <UI.FlexRow>
+            <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
+                {canModify &&
+                    <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>
         </UI.FlexColumn>
     );

@@ -7,6 +7,7 @@ import * as UI from 'style';
 import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import EditEvent from 'edit-event';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -32,10 +33,12 @@ type RecordProps = {
     +event: ?Event.Event,
     +eventIx: number,
     +setHeight: (number) => void,
+    +noActions?: boolean,
+    +editing?: boolean,
     style?: any
 };
-const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const { event, eventIx, setHeight, style } = props;
+export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
+    const { event, eventIx, setHeight, noActions, editing, style } = props;
 
     const ref = React.useRef<?Element>();
     React.useLayoutEffect(() => {
@@ -53,25 +56,26 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
 
     let inner: React.Node;
     const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
+
     switch (event.ty) {
         case "playerJoin":
-            inner = (<Record.PlayerJoin ref={ref} event={event} />);
+            inner = (<Record.PlayerJoin ref={ref} event={event} noActions={noActions} />);
             break;
         case "edgeRoll":
-            inner = (<Record.EdgeRoll ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.EdgeRoll ref={ref} event={event} noActions={noActions} />);
             break;
         case "rerollFailures":
-            inner = (<Record.Reroll ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.Reroll ref={ref} event={event} noActions={noActions} />);
             break;
         case "roll":
-            inner = (<Record.Roll ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.Roll ref={ref} event={event} noActions={noActions} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
             return '';
     }
     return (
-        <Record.StyledRecord color={color} style={style}>
+        <Record.StyledRecord color={color} editing={editing} style={style}>
             {inner}
         </Record.StyledRecord>
     );
@@ -151,9 +155,10 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         }
         else {
             const event = data[index];
-            return <EventRecord event={event} setHeight={setHeight} eventIx={index} style={style} />;
+            const editing = state.editing != null && state.editing.id === event.id;
+            return <EventRecord event={event} editing={editing} setHeight={setHeight} eventIx={index} style={style} />;
         }
-    }, [loadedAt]);
+    }, [loadedAt, state.editing]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline") {
@@ -245,6 +250,10 @@ export default function EventHistory() {
     }
 
     return (
+        <>
+        {events.editing &&
+            <EditEvent event={events.editing} />
+        }
         <UI.Card grow color="#81132a">
             <TitleBar>
                 <UI.CardTitleText color="#842222">
@@ -254,5 +263,6 @@ export default function EventHistory() {
             </TitleBar>
             {body}
         </UI.Card>
+        </>
     );
 }

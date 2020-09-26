@@ -2,15 +2,31 @@
 
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
-import type { Event } from 'event';
+import type { Event, DiceEvent } from 'event';
 
 export type RenameRequest = {|
     name: string
 |};
 
 export function rename(request: RenameRequest): BackendRequest<void> {
-    // flow-ignore-all-next-line
     return post<RenameRequest, void>("game/rename", request);
+}
+
+export type ModifyRollRequest = {|
+    id: number,
+    diff: $Shape<DiceEvent>,
+|};
+
+export function modifyRoll(request: ModifyRollRequest): BackendRequest<void> {
+    return post<ModifyRollRequest, void>("game/modify-roll", request);
+}
+
+export type DeleteEventRequest = {|
+    id: number,
+|};
+
+export function deleteEvent(request: DeleteEventRequest): BackendRequest<void> {
+    return post<DeleteEventRequest, void>("game/delete-roll", request);
 }
 
 export type RollRequest = {|
@@ -20,7 +36,6 @@ export type RollRequest = {|
 |};
 
 export function roll(request: RollRequest): BackendRequest<void> {
-    // flow-ignore-all-next-line
     return post<RollRequest, void>("game/roll", request);
 }
 
@@ -30,7 +45,6 @@ export type RerollRequest = {|
 |};
 
 export function reroll(request: RerollRequest): BackendRequest<void> {
-    // flow-ignore-all-next-line
     return post<RerollRequest, void>("game/reroll", request);
 }
 
@@ -45,6 +59,5 @@ export type EventsResponse = {|
 |};
 
 export function getEvents(request: EventsRequest): BackendRequest<EventsResponse> {
-    // flow-ignore-all-next-line
     return get<EventsRequest, EventsResponse>("game/events", request);
 }

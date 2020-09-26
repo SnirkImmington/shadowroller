@@ -36,7 +36,35 @@ function onEvent(streamEvent: MessageEvent, eventDispatch: Event.Dispatch) {
     eventDispatch({ ty: "newEvent", event });
 }
 
-function onUpdate(event: MessageEvent) {
+function onUpdate(event: MessageEvent, eventDispatch: Event.Dispatch) {
+    if (process.env.NODE_ENV !== "production") {
+        console.log("Received update", event.data, event);
+    }
+    let updateData: [string, string, any];
+    try {
+        // flow-ignore-all-next-line
+        updateData = JSON.parse(event.data);
+    }
+    catch (err) {
+        console.error("Invalid update received from server", err, event);
+        return;
+    }
+    if (typeof updateData !== "object" || updateData.length != 3) {
+        console.error("Invalid update type received from server", event);
+    }
+    const [ty, key, value] = updateData;
+
+    switch (ty) {
+        // Event rename
+        case "event.title":
+            eventDispatch({ ty: "modifyRoll", id: parseInt(key), diff: { title: value } });
+            return;
+        case "event.delete":
+            eventDispatch({ ty: "deleteEvent", id: parseInt(key) });
+            return;
+        default:
+            console.log("Unknown update from server:", updateData);
+    }
 }
 
 export function open(
@@ -53,7 +81,7 @@ export function open(
     );
     source.onmessage = onMessage;
     source.addEventListener("event", (e: MessageEvent) => onEvent(e, eventDispatch));
-    source.addEventListener("update", onUpdate);
+    source.addEventListener("update", (e: MessageEvent) => onUpdate(e, eventDispatch));
     source.onopen = function() {
         if (process.env.NODE_ENV !== "production") {
             // flow-ignore-all-next-line

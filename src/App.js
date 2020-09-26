@@ -119,7 +119,6 @@ function Shadowroller() {
                     <RollDicePrompt />
                 </AppLeft>
                 <AppRight>
-                    <EditEvent />
                     <EventHistory />
                 </AppRight>
             </UI.ColumnToRow>

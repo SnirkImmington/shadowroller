@@ -14,9 +14,14 @@ export const FlexRow: StyledComponent<> = styled.div`
     align-items: ${props => props.alignItems ? props.alignItems : "center"};
     ${props => props.maxWidth ? 'width: 100%;' : ''}
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
+    ${props => props.formRow ? 'margin-bottom: .5rem;' : ''}
 
     & *:last-child {
         ${props => props.floatRight ? 'margin-left: auto;' : ''}
+    }
+
+    & > * {
+        ${props => props.spaced ? 'margin-right: .5rem;' : ''}
     }
 `;
 
@@ -32,12 +37,6 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
     ${props => props?.grow ? 'height: 100%;' : ''}
     @media all and (min-width: 768px) {
         flex-direction: row;
-    }
-`;
-
-export const LinkList: StyledComponent<> = styled(FlexRow)`
-    & > * {
-        margin-right: .5em;
     }
 `;
 

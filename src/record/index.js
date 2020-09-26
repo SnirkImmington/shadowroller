@@ -6,6 +6,7 @@ import type { StyledComponent } from 'styled-components';
 type RecordProps = {
     +style: any,
     +color: string,
+    +bg?: string,
     //+eventDispatch: Event.Dispatch,
 };
 
@@ -16,9 +17,13 @@ export const StyledRecord: StyledComponent<RecordProps> = styled.div.attrs(
     props => {
         const style = {
             ...props.style,
-            top: props.style.top + GUTTER_SIZE,
-            height: props.style.height - GUTTER_SIZE,
+            top: (props.style.top + GUTTER_SIZE) || 0,
+            height: (props.style.height - GUTTER_SIZE) || 'auto',
         };
+        if (props.editing) {
+            props.style.backgroundColor = props.color === "slategray" ?
+                "#efefef" : props.color.replace("80%", "8%").replace("56%", "96%");
+        }
         return { style };
 })`
     padding-bottom: 4px;
