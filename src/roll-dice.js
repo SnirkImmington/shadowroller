@@ -12,7 +12,7 @@ import { ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
-const ROLL_TITLE_FLAVOR = [
+export const ROLL_TITLE_FLAVOR = [
     "look good in a suit",
     "swipe the key card",
     "negotiate for more pay",

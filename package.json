@@ -1,20 +1,20 @@
 {
     "name": "shadowroller",
     "description": "Roll dice from random.org",
-    "version": "0.8.0",
+    "version": "0.8.4",
     "author": "S. B. Immington",
     "license": "MIT",
-    "homepage": "https://snirkimmington.github.io/shadowroller",
+    "homepage": "https://shadowroller.net/",
     "repository": {
         "type": "git",
-        "url": "https://github.com/snirkimmington/shadowroller.git"
+        "url": "https://github.com/SnirkImmington/shadowroller.git"
     },
     "keywords": [
         "dice",
         "rolling"
     ],
     "bugs": {
-        "url": "https://github.com/snirkimmington/shadowroller/issues"
+        "url": "https://github.com/SnirkImmington/shadowroller/issues"
     },
     "devDependencies": {
         "flow-bin": "^0.121.0",

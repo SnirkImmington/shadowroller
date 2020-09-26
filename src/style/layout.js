@@ -43,11 +43,11 @@ export const LinkList: StyledComponent<> = styled(FlexRow)`
 
 export const CardWrapper: StyledComponent<{ grow?: bool, pad?: bool }> = styled(FlexColumn)`
     ${props => props?.pad ? 'padding-bottom: 10px;' : ''}
-    ${props => props?.grow ? 'height: 100%;' : ''}
+    ${props => props?.grow ? 'flex-grow: 1' : ''}
 `;
 
 const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled(FlexColumn)`
-    ${props => props?.grow ? 'height: 100%;' : ''}
+    ${props => props?.grow ? 'flex-grow: 1' : ''}
 `;
 
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`

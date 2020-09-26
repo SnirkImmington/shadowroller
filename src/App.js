@@ -16,12 +16,13 @@ import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
+import EditEvent from 'edit-event';
 import EventHistory from 'history-panel';
 import DebugBar from 'debug-bar';
 
 import 'assets-external/source-code-pro.css';
 
-const AppLeft: StyledComponent<> = styled.div`
+const AppLeft: StyledComponent<> = styled(UI.FlexColumn)`
     /* Phones: vertical margin included in cards. */
 
     padding-left: 0.5em;
@@ -33,9 +34,10 @@ const AppLeft: StyledComponent<> = styled.div`
     }
 `;
 
-const AppRight: StyledComponent<> = styled.div`
+const AppRight: StyledComponent<> = styled(UI.FlexColumn)`
     /* Phones: no padding needed. */
-    height: 100%; /* Always go as high as possible. */
+    /* height: 100%; Always go as high as possible. */
+    flex-grow: 1;
 
     padding-left: 2px;
 
@@ -117,6 +119,7 @@ function Shadowroller() {
                     <RollDicePrompt />
                 </AppLeft>
                 <AppRight>
+                    <EditEvent />
                     <EventHistory />
                 </AppRight>
             </UI.ColumnToRow>

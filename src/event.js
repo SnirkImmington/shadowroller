@@ -54,6 +54,7 @@ export type Action =
 | {| +ty: "setHistoryFetch", state: HistoryFetchState |}
 | {| +ty: "newEvent", event: Event |}
 | {| +ty: "mergeEvents", events: Event[] |}
+| {| +ty: "modifyEvent", id: number, diff: $Shape<Event> |}
 | {| +ty: "clearEvents" |}
 ;
 

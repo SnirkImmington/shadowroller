@@ -3,8 +3,9 @@
 import * as server from 'server';
 import * as auth from './auth';
 import type { SetConnection, SetResponse } from 'connection';
+import type { JSON } from 'srutil';
 
-export class BackendRequest<O> {
+export class BackendRequest<O: JSON> {
     request: Promise<Response>;
     handleSuccess: (bool, Response) => void;
     handleResponse: (O, Response) => void;
@@ -146,7 +147,7 @@ type FetchArgs<B, P> = {
     body?: B,
     params?: P
 };
-function backendFetch<B, P>({ method, path, body, params }: FetchArgs<B, P>): Promise<Response> {
+function backendFetch<B: JSON, P: JSON>({ method, path, body, params }: FetchArgs<B, P>): Promise<Response> {
     let url = server.BACKEND_URL + path;
     if (params) {
         // flow-ignore-all-next-line
@@ -167,12 +168,12 @@ function backendFetch<B, P>({ method, path, body, params }: FetchArgs<B, P>): Pr
     });
 }
 
-export function get<I: { [string]: string }, O>(path: string, params: I): BackendRequest<O> {
+export function get<I: JSON, O: JSON>(path: string, params: I): BackendRequest<O> {
     const fetchRequest = backendFetch({ method: "get", path, params });
     return new BackendRequest(fetchRequest);
  }
 
- export function post<I: $TypedArray, O>(path: string, body: I): BackendRequest<O> {
+ export function post<I: JSON, O: JSON>(path: string, body: I): BackendRequest<O> {
     const fetchRequest = backendFetch({ method: "post", path, body });
     return new BackendRequest(fetchRequest);
  }
