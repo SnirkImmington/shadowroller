@@ -73,7 +73,7 @@ export default function EditEvent({ event }: Props) {
         <UI.Card color="#81132a" style={{ padding: '5px'}}>
             <TitleBar>
                 <UI.CardTitleText color="#842222">
-                    Edit "{event.title}"
+                    Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
                 </UI.CardTitleText>
                 <UI.LinkButton onClick={cancelEdit}>[ X ]</UI.LinkButton>
             </TitleBar>

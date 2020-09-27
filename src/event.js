@@ -125,6 +125,22 @@ export function canModify(event: Event, playerID: ?string): bool {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
 }
 
+export function titleOf(event: Event) {
+    switch (event.ty) {
+        case "roll":
+            return event.title || `roll ${event.dice.length} ${event.dice.length === 1 ? "die" : "dice"}`;
+        case "edgeRoll":
+            return event.title || `push the limit on ${event.rounds[0].length} ${event.rounds[0].length === 1 ? "die" : "dice"}`;
+        case "rerollFailures":
+            return event.title || `reroll failures on ${event.rounds[1].length} ${event.rounds[1].length === 1 ? "die" : "dice"}`;
+        case "playerJoin":
+            return `${event.source.name} joined`;
+        default:
+            (event: empty); // eslint-disable-line no-unused-expressions
+            return "event";
+    }
+}
+
 export function wouldScroll(event: DiceEvent): bool {
     return (event?.dice && event.dice.length > 12)
     // flow-ignore-all-next-line this check works fine

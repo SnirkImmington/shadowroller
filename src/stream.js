@@ -40,7 +40,7 @@ function onUpdate(event: MessageEvent, eventDispatch: Event.Dispatch) {
     if (process.env.NODE_ENV !== "production") {
         console.log("Received update", event.data, event);
     }
-    let updateData: [string, string, any];
+    let updateData: [number, $Shape<Event.DiceEvent>];
     try {
         // flow-ignore-all-next-line
         updateData = JSON.parse(event.data);
@@ -49,21 +49,16 @@ function onUpdate(event: MessageEvent, eventDispatch: Event.Dispatch) {
         console.error("Invalid update received from server", err, event);
         return;
     }
-    if (typeof updateData !== "object" || updateData.length != 3) {
+    if (typeof updateData !== "object" || updateData.length != 2) {
         console.error("Invalid update type received from server", event);
     }
-    const [ty, key, value] = updateData;
+    const [id, diff] = updateData;
 
-    switch (ty) {
-        // Event rename
-        case "event.title":
-            eventDispatch({ ty: "modifyRoll", id: parseInt(key), diff: { title: value } });
-            return;
-        case "event.delete":
-            eventDispatch({ ty: "deleteEvent", id: parseInt(key) });
-            return;
-        default:
-            console.log("Unknown update from server:", updateData);
+    if (diff === "del") {
+        eventDispatch({ ty: "deleteEvent", id });
+    }
+    else {
+        eventDispatch({ ty: "modifyRoll", id, diff });
     }
 }
 
