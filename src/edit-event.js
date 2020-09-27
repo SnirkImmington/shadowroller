@@ -3,12 +3,9 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
-import NumericInput from 'numeric-input';
 import {EventRecord} from 'history-panel';
 
-import type { Connection } from 'connection';
 import * as Event from 'event';
-import * as Game from 'game';
 import routes from 'routes';
 
 const TitleBar = styled(UI.FlexRow)`
@@ -24,7 +21,6 @@ export default function EditEvent({ event }: Props) {
 
     const [title, setTitle] = React.useState(event.title);
     const [deletePrompt, setDeletePrompt] = React.useState(false);
-    const [connection, setConnection] = React.useState<Connection>("offline");
 
     const canUpdate = title !== event.title;
 
@@ -35,7 +31,6 @@ export default function EditEvent({ event }: Props) {
     function deleteEvent() {
         if (event.source !== "local") {
             routes.game.deleteEvent({ id: event.id })
-                .onConnection(setConnection)
                 .onDone(success => {
                     if (success) {
                         dispatch({ ty: "clearEdit" });
@@ -53,7 +48,6 @@ export default function EditEvent({ event }: Props) {
     function updateEvent() {
         if (event.source !== "local") {
             routes.game.modifyRoll({ id: event.id, diff: { title }})
-                .onConnection(setConnection)
                 .onDone(success => {
                     if (success) {
                         dispatch({ ty: "clearEdit" });

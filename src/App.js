@@ -16,7 +16,6 @@ import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
-import EditEvent from 'edit-event';
 import EventHistory from 'history-panel';
 import DebugBar from 'debug-bar';
 

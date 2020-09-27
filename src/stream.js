@@ -49,8 +49,9 @@ function onUpdate(event: MessageEvent, eventDispatch: Event.Dispatch) {
         console.error("Invalid update received from server", err, event);
         return;
     }
-    if (typeof updateData !== "object" || updateData.length != 2) {
+    if (typeof updateData !== "object" || updateData.length !== 2) {
         console.error("Invalid update type received from server", event);
+        return;
     }
     const [id, diff] = updateData;
 
