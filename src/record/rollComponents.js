@@ -102,15 +102,11 @@ function LocalActionsRow({ event, result }: Props) {
 
     const onSecondChance = React.useCallback(function onSecondChance() {
         if (!event.dice) { return; }
-        const rerolled: Event.RerollFailures = {
-            ty: "rerollFailures",
-            id: Event.newID(),
-            rollID: event.id,
-            title: event.title,
-            source: event.source,
-            rounds: [srutil.rerollFailures(event.dice), event.dice]
-        };
-        dispatch({ ty: "newEvent", event: rerolled });
+        dispatch({
+            ty: "reroll", id: event.id,
+            edit: Date.now().valueOf(),
+            round: srutil.rerollFailures(event.dice)
+        });
     }, [event, dispatch]);
 
     const onEdit = React.useCallback(function onEdit() {

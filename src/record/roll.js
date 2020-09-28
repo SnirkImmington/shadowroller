@@ -11,14 +11,12 @@ import * as Event from 'event';
 import * as rollStats from 'rollStats';
 
 type Props = {
-    +event: Event.Roll, +noActions?: bool
+    +event: Event.Roll, playerID: ?string, +noActions?: bool
 }
-function RollRecordInner({ event, noActions }: Props, ref) {
-    const game = React.useContext(Game.Ctx);
-
+function RollRecordInner({ event, playerID, noActions }: Props, ref) {
     const color = Event.colorOf(event);
     const result = rollStats.results(event);
-    const canModify = !noActions && Event.canModify(event, game?.player?.id);
+    const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
@@ -47,8 +45,10 @@ function RollRecordInner({ event, noActions }: Props, ref) {
             </Roll.Scrollable>
             <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
-                    {canModify &&
-                        <Roll.ActionsRow event={event} result={result} />}
+                {event.edit &&
+                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                {canModify &&
+                    <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>
         </UI.FlexColumn>
     );

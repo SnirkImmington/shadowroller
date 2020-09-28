@@ -31,21 +31,21 @@ const GAME_EMPTY_FLAVOR = [
 
 type RecordProps = {
     +event: ?Event.Event,
-    +eventIx: number,
+    +playerID: ?string,
     +setHeight: (number) => void,
     +noActions?: boolean,
     +editing?: boolean,
     style?: any
 };
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const { event, eventIx, setHeight, noActions, editing, style } = props;
+    const { event, playerID, setHeight, noActions, editing, style } = props;
 
     const ref = React.useRef<?Element>();
-    React.useLayoutEffect(() => {
+    React.useEffect(() => {
         if (ref.current) {
             setHeight(ref.current.getBoundingClientRect().height);
         }
-    }, [ref, eventIx, setHeight]);
+    }, [ref, setHeight]);
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
@@ -62,13 +62,13 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
             inner = (<Record.PlayerJoin ref={ref} event={event} noActions={noActions} />);
             break;
         case "edgeRoll":
-            inner = (<Record.EdgeRoll ref={ref} event={event} noActions={noActions} />);
+            inner = (<Record.EdgeRoll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         case "rerollFailures":
-            inner = (<Record.Reroll ref={ref} event={event} noActions={noActions} />);
+            inner = (<Record.Reroll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         case "roll":
-            inner = (<Record.Roll ref={ref} event={event} noActions={noActions} />);
+            inner = (<Record.Roll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -151,12 +151,12 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
-            return <EventRecord event={null} setHeight={setHeight} eventIx={index} style={style} />;
+            return <EventRecord event={null} setHeight={setHeight} playerID={playerID} style={style} />;
         }
         else {
             const event = data[index];
             const editing = state.editing != null && state.editing.id === event.id;
-            return <EventRecord event={event} editing={editing} setHeight={setHeight} eventIx={index} style={style} />;
+            return <EventRecord event={event} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
     }, [loadedAt, state.editing]);
 
@@ -211,7 +211,6 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
                 </InfiniteLoader>
             )}
         </AutoSizer>
-
     );
 }
 
@@ -252,7 +251,7 @@ export default function EventHistory() {
     return (
         <>
         {events.editing &&
-            <EditEvent event={events.editing} />
+            <EditEvent playerID={game?.player?.id} event={events.editing} />
         }
         <UI.Card grow color="#81132a">
             <TitleBar>
