@@ -88,10 +88,11 @@ func PlayerJoinEventCore(session *Session) EventCore {
 
 // EventCore is the basic values put into events.
 type EventCore struct {
-	ID         int64  `json:"id"`    // ID of the event
-	Type       string `json:"ty"`    // Type of the event
-	PlayerID   UID    `json:"pID"`   // ID of the player who posted the event
-	PlayerName string `json:"pName"` // Name of the player who posted the event
+	ID         int64  `json:"id"`             // ID of the event
+	Type       string `json:"ty"`             // Type of the event
+	Edit       int64  `json:"edit,omitempty"` // Edit time of the event
+	PlayerID   UID    `json:"pID"`            // ID of the player who posted the event
+	PlayerName string `json:"pName"`          // Name of the player who posted the event
 }
 
 // Event is the common interface of all events.
@@ -100,6 +101,8 @@ type Event interface {
 	GetType() string
 	GetPlayerID() UID
 	GetPlayerName() string
+	GetEdit() int64
+	SetEdit(edited int64)
 }
 
 // GetID returns the timestamp ID of the event.
@@ -123,20 +126,29 @@ func (core *EventCore) GetPlayerName() string {
 	return core.PlayerName
 }
 
+func (core *EventCore) GetEdit() int64 {
+	return core.Edit
+}
+
+// SetEdit updates the event's edit time
+func (core *EventCore) SetEdit(edited int64) {
+	core.Edit = edited
+}
+
 // ParseEvent parses an event from JSON
 func ParseEvent(input []byte) (Event, error) {
 	var data map[string]interface{}
 	err := json.Unmarshal(input, &data)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse event object: %w", err)
+		return nil, fmt.Errorf("could not parse event object: %w", err)
 	}
 	tyVal, ok := data["ty"]
 	if !ok {
-		return nil, fmt.Errorf("Parsed input did not contain a ty field")
+		return nil, fmt.Errorf("parsed input did not contain a ty field")
 	}
 	ty, ok := tyVal.(string)
 	if !ok {
-		return nil, fmt.Errorf("Error retrieving type info for event: got %v", data)
+		return nil, fmt.Errorf("error retrieving type info for event: got %v", data)
 	}
 
 	switch ty {
@@ -160,7 +172,7 @@ func ParseEvent(input []byte) (Event, error) {
 		err = json.Unmarshal(input, &playerJoin)
 		return &playerJoin, err
 	default:
-		return nil, fmt.Errorf("Unknown roll type %v", ty)
+		return nil, fmt.Errorf("unknown event type %v", ty)
 	}
 }
 
@@ -169,6 +181,7 @@ func MakeEventCore(ty string, session *Session) EventCore {
 	return EventCore{
 		ID:         NewEventID(),
 		Type:       ty,
+		Edit:       0,
 		PlayerID:   session.PlayerID,
 		PlayerName: session.PlayerName,
 	}

@@ -96,6 +96,8 @@ func handleReauth(response Response, request *Request) {
 	session, err := sr.GetSessionByID(requestSession, conn)
 	httpUnauthorizedIf(response, request, err)
 
+	// Session could have been compromised since last login.
+
 	gameExists, err := sr.GameExists(session.GameID, conn)
 	httpInternalErrorIf(response, request, err)
 	if !gameExists {

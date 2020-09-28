@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"sr"
 	"sr/config"
@@ -49,15 +50,117 @@ func handleRename(response Response, request *Request) {
 	err = readBodyJSON(request, &rename)
 	httpInternalErrorIf(response, request, err)
 
-	update := sr.PlayerRenameUpdate(sess.PlayerID, rename.Name)
-	err = sr.PostUpdate(sess.GameID, &update, conn)
-	httpInternalErrorIf(response, request, err)
+	// No op
 
 	httpSuccess(
 		response, request,
 		sess.PlayerID, " [",
 		sess.PlayerName, "] -> [", rename.Name, "]",
 	)
+}
+
+var _ = gameRouter.HandleFunc("/modify-roll", handleUpdateEvent).Methods("POST")
+
+type updateEventRequest struct {
+	ID   int64                  `json:"id"`
+	Diff map[string]interface{} `json:"diff"`
+}
+
+func handleUpdateEvent(response Response, request *Request) {
+	logRequest(request)
+	sess, conn, err := requestSession(request)
+	httpUnauthorizedIf(response, request, err)
+	defer sr.CloseRedis(conn)
+
+	var updateRequest updateEventRequest
+	err = readBodyJSON(request, &updateRequest)
+	httpInternalErrorIf(response, request, err)
+
+	logf(request,
+		"%v requests update %v", sess.PlayerInfo(), updateRequest,
+	)
+	eventText, err := sr.EventByID(sess.GameID, updateRequest.ID, conn)
+	httpBadRequestIf(response, request, err)
+
+	event, err := sr.ParseEvent([]byte(eventText))
+	httpBadRequestIf(response, request, err)
+
+	if event.GetPlayerID() != sess.PlayerID {
+		httpForbidden(response, request, "You may not update this event.")
+	}
+	if event.GetType() == sr.EventTypePlayerJoin {
+		httpForbidden(response, request, "You may not update this event.")
+	}
+
+	logf(request, "Event type %v found, updating", event.GetType())
+	updateTime := sr.NewEventID()
+	event.SetEdit(updateTime)
+	update := sr.MakeEventDiffUpdate(event)
+	for key, value := range updateRequest.Diff {
+		switch key {
+		// Title: the player can set the event title.
+		case "title":
+			title, ok := value.(string)
+			if !ok {
+				httpBadRequest(response, request, "Event diff: title: expected string")
+			}
+			// Title is common to many events to be worth type switch
+			titleField := reflect.Indirect(reflect.ValueOf(event)).FieldByName("Title")
+			if !titleField.CanSet() {
+				httpInternalError(response, request, "Cannot set Title field")
+			}
+			titleField.SetString(title)
+			update.AddField("title", title)
+		}
+	}
+
+	logf(request, "Event %v diff %v", event.GetID(), update.Diff)
+
+	err = sr.UpdateEvent(sess.GameID, event, &update, conn)
+	httpInternalErrorIf(response, request, err)
+
+	httpSuccess(response, request, "Updated event ", event.GetID())
+}
+
+var _ = gameRouter.HandleFunc("/delete-roll", handleDeleteEvent).Methods("POST")
+
+type deleteEventRequest struct {
+	ID int64 `json:"id"`
+}
+
+func handleDeleteEvent(response Response, request *Request) {
+	logRequest(request)
+	sess, conn, err := requestSession(request)
+	httpUnauthorizedIf(response, request, err)
+	defer sr.CloseRedis(conn)
+
+	var delete deleteEventRequest
+	err = readBodyJSON(request, &delete)
+	httpInternalErrorIf(response, request, err)
+
+	logf(request,
+		"%v requests to delete %v", sess.PlayerInfo(), delete.ID,
+	)
+	eventText, err := sr.EventByID(sess.GameID, delete.ID, conn)
+	httpBadRequestIf(response, request, err)
+
+	event, err := sr.ParseEvent([]byte(eventText))
+	httpBadRequestIf(response, request, err)
+
+	if event.GetPlayerID() != sess.PlayerID {
+		httpForbidden(response, request, "You may not delete this event.")
+	}
+	if event.GetType() == sr.EventTypePlayerJoin {
+		httpForbidden(response, request, "You may not delete this event.")
+	}
+
+	logf(request,
+		"%v deleting %v %v", sess.PlayerInfo(), event.GetType(), event,
+	)
+	err = sr.DeleteEvent(sess.GameID, event.GetID(), conn)
+	httpInternalErrorIf(response, request, err)
+
+	httpSuccess(response, request, "Deleted event ", event.GetID())
 }
 
 type rollRequest struct {
@@ -104,7 +207,7 @@ func handleRoll(response Response, request *Request) {
 	} else {
 		rolls := make([]int, roll.Count)
 		hits := sr.FillRolls(rolls)
-		logf(request, "%v: roll: %v (%v hits)",
+		logf(request, "%v rolls %v (%v hits)",
 			sess.LogInfo(), rolls, hits,
 		)
 		event = &sr.RollEvent{
@@ -160,22 +263,34 @@ func handleReroll(response Response, request *Request) {
 		logf(request, "Expecting to parse previous roll")
 		httpBadRequest(response, request, "Invalid previous roll")
 	}
-	logf(request, "Got previous roll %#v", previousRoll)
+	logf(request, "Got previous roll %v %v",
+		previousRoll.Title, previousRoll.Dice,
+	)
 
 	if reroll.Type == sr.RerollTypeRerollFailures {
-		newDice := sr.RerollFailures(previousRoll.Dice)
-		rounds := [][]int{newDice, previousRoll.Dice}
-		rerollEvent := sr.RerollFailuresEvent{
-			EventCore: sr.RerollFailuresEventCore(&sess),
-			PrevID:    previousRoll.ID,
-			Title:     previousRoll.Title,
-			Rounds:    rounds,
+		newRound := sr.RerollFailures(previousRoll.Dice)
+		if len(newRound) == 0 {
+			// Cannot reroll failures on all hits
+			httpBadRequest(response, request, "Invalid previous roll")
 		}
-		err = sr.PostEvent(sess.GameID, &rerollEvent, conn)
+		rerolled := sr.RerollFailuresEvent{
+			EventCore: sr.EventCore{
+				ID:         previousRoll.ID,
+				Edit:       sr.NewEventID(),
+				Type:       sr.EventTypeRerollFailures,
+				PlayerID:   previousRoll.PlayerID,
+				PlayerName: previousRoll.PlayerName,
+			},
+			PrevID: previousRoll.ID,
+			Title:  previousRoll.Title,
+			Rounds: [][]int{newRound, previousRoll.Dice},
+		}
+		update := sr.SecondChanceUpdate(&rerolled, newRound)
+		err = sr.UpdateEvent(sess.GameID, &rerolled, update, conn)
 		httpInternalErrorIf(response, request, err)
+
 		httpSuccess(
-			response, request,
-			"OK; reroll ", rerollEvent.ID, " posted",
+			response, request, "Rerolled ", rerolled.ID, newRound,
 		)
 	} else {
 		httpBadRequest(response, request, "Invalid reroll type")
@@ -231,6 +346,7 @@ func handleSubscription(response Response, request *Request) {
 	// Restart the session's month/15 min duration while streaming
 	logf(request, "Unexpire session %v", sess.LogInfo())
 	_, err = sr.UnexpireSession(&sess, conn)
+	httpInternalErrorIf(response, request, err)
 	defer func() {
 		if _, err := sr.ExpireSession(&sess, conn); err != nil {
 			logf(request, "Error expiring session %v: %v", sess.LogInfo(), err)
@@ -239,18 +355,18 @@ func handleSubscription(response Response, request *Request) {
 
 	// Begin writing events
 	logf(request, "Begin receiving events...")
+	ssePingInterval := time.Duration(config.SSEPingSecs) * time.Second
 	for {
 		const pollInterval = time.Duration(2) * time.Second
-		ssePingInterval := time.Duration(config.SSEPingSecs) * time.Second
 		now := time.Now()
 		if !stream.IsOpen() {
-			logf(request, "Connection closed by remote host")
+			logf(request, "== Connection closed by remote host")
 			break
 		}
 		if now.Sub(lastPing) >= ssePingInterval {
 			err = stream.WriteStringEvent("", "")
 			if err != nil {
-				logf(request, "Unable to write to stream: %v", err)
+				logf(request, "== Unable to write to stream: %v", err)
 				break
 			}
 			lastPing = now
@@ -259,20 +375,30 @@ func handleSubscription(response Response, request *Request) {
 		case messageText := <-messages:
 			body := strings.SplitN(messageText, ":", 2)
 			if len(body) != 2 {
-				logf(request, "Unable to parse message '%v'", body)
+				logf(request, "== Unable to parse message '%v'", body)
 				break
 			}
-			messageID := sr.ParseEventID(body[1])
-			messageTy := sr.ParseEventTy(body[1])
+			var updateLog string
+			var messageID string
+			if body[0] == "update" {
+				messageID = fmt.Sprintf("%v", sr.NewEventID())
+				updateLog = fmt.Sprintf("update %v", body[1])
+			} else {
+				messageID = sr.ParseEventID(body[1])
+				updateLog = fmt.Sprintf(
+					"event %v %v",
+					sr.ParseEventTy(body[1]), messageID,
+				)
+			}
 			// channel := body[0] ; message := body[1]
 			err = stream.WriteEventWithID(messageID, body[0], []byte(body[1]))
 			if err != nil {
 				logf(request, "Unable to write %s to stream: %v", messageText, err)
 				break
 			}
-			logf(request, "Sent %v %s %s (%s).", sess.LogInfo(), body[0], messageID, messageTy)
+			logf(request, "== Sent %v to %v", updateLog, sess.LogInfo())
 		case err := <-errChan:
-			logf(request, "Error from subscription goroutine: %v", err)
+			logf(request, "== Error from subscription goroutine: %v", err)
 			break
 		case <-time.After(pollInterval):
 			// Need to recheck stream.IsOpen()
@@ -289,7 +415,7 @@ func handleSubscription(response Response, request *Request) {
 
 type eventRangeResponse struct {
 	Events []sr.Event `json:"events"`
-	LastID string     `json:"lastID"`
+	LastID int64      `json:"lastID"`
 	More   bool       `json:"more"`
 }
 
@@ -342,7 +468,7 @@ func handleEvents(response Response, request *Request) {
 	if len(events) == 0 {
 		eventRange = eventRangeResponse{
 			Events: []sr.Event{},
-			LastID: "",
+			LastID: 0,
 			More:   false,
 		}
 		message = "0 events"
@@ -351,7 +477,7 @@ func handleEvents(response Response, request *Request) {
 		for i, event := range events {
 			ev, err := sr.ParseEvent([]byte(event))
 			if err != nil {
-				err := fmt.Errorf("Error parsing event %v: %w", i, err)
+				err := fmt.Errorf("error parsing event %v: %w", i, err)
 				httpInternalErrorIf(response, request, err)
 			}
 			parsed[i] = ev
@@ -361,7 +487,7 @@ func handleEvents(response Response, request *Request) {
 
 		eventRange = eventRangeResponse{
 			Events: parsed,
-			LastID: string(lastID),
+			LastID: lastID,
 			More:   len(events) == config.MaxEventRange,
 		}
 		message = fmt.Sprintf(
