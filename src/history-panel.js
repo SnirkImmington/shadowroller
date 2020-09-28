@@ -158,7 +158,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             const editing = state.editing != null && state.editing.id === event.id;
             return <EventRecord event={event} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt, state.editing]);
+    }, [loadedAt, playerID, state.editing]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline") {

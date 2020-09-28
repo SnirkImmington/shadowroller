@@ -6,7 +6,6 @@ import * as dice from 'dice';
 import * as humanTime from 'humanTime';
 import * as Roll from './rollComponents';
 
-import * as Game from 'game';
 import * as Event from 'event';
 import * as rollStats from 'rollStats';
 

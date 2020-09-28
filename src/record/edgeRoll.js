@@ -8,7 +8,6 @@ import * as icons from 'style/icon';
 import * as Roll from './rollComponents';
 
 import * as Event from 'event';
-import * as Game from 'game';
 import * as rollStats from 'rollStats';
 
 type Props = {

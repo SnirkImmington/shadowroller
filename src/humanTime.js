@@ -1,10 +1,7 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
-import theme from 'style/theme';
 
 const MINUTE = 60,
       HOUR = MINUTE * 60,

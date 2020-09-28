@@ -1,6 +1,5 @@
 // @flow
 
-import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import theme from 'style/theme';
