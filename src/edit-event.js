@@ -14,9 +14,10 @@ const TitleBar = styled(UI.FlexRow)`
 `;
 
 type Props = {
-    +event: Event.DiceEvent
+    +event: Event.DiceEvent,
+    +playerID: ?string,
 };
-export default function EditEvent({ event }: Props) {
+export default function EditEvent({ event, playerID }: Props) {
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [title, setTitle] = React.useState(event.title);
@@ -58,7 +59,7 @@ export default function EditEvent({ event }: Props) {
                 });
         }
         else {
-            dispatch({ ty: "modifyRoll", id: event.id, diff: { title } });
+            dispatch({ ty: "modifyRoll", id: event.id, edit: new Date().valueOf(), diff: { title } });
             dispatch({ ty: "clearEdit" });
         }
     }
@@ -73,13 +74,9 @@ export default function EditEvent({ event }: Props) {
             </TitleBar>
             <UI.FlexColumn>
                 <UI.FlexRow maxWidth formRow>
-                    <EventRecord editing eventIx={0} noActions setHeight={()=>{}} style={{
-                            width: '100%'
-                        }} event={{
-                            ...event,
-                            title: title,
-
-                        }} />
+                    <EventRecord editing noActions setHeight={()=>{}}
+                                 style={{ width: '100%'}} playerID={playerID}
+                                 event={{ ...event, title: title }} />
                 </UI.FlexRow>
                 <UI.ColumnToRow>
                     <UI.FlexRow formRow>

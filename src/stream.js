@@ -49,17 +49,20 @@ function onUpdate(event: MessageEvent, eventDispatch: Event.Dispatch) {
         console.error("Invalid update received from server", err, event);
         return;
     }
-    if (typeof updateData !== "object" || updateData.length !== 2) {
+    if (typeof updateData !== "object" || updateData.length !== 3) {
         console.error("Invalid update type received from server", event);
         return;
     }
-    const [id, diff] = updateData;
+    const [id, edit, diff] = updateData;
 
     if (diff === "del") {
         eventDispatch({ ty: "deleteEvent", id });
     }
+    else if (diff["reroll"]) {
+        eventDispatch({ ty: "reroll", id, edit, round: diff["reroll"] });
+    }
     else {
-        eventDispatch({ ty: "modifyRoll", id, diff });
+        eventDispatch({ ty: "modifyRoll", id, edit, diff });
     }
 }
 

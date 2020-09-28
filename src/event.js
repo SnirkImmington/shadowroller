@@ -11,6 +11,7 @@ export type Source =
 export type Roll = {|
     +ty: "roll",
     +id: number,
+    +edit?: number,
     +source: Source,
     +title: string,
     +dice: number[],
@@ -19,6 +20,7 @@ export type Roll = {|
 export type EdgeRoll = {|
     +ty: "edgeRoll",
     +id: number,
+    +edit?: number,
     +source: Source,
     +title: string,
     +rounds: number[][],
@@ -27,6 +29,7 @@ export type EdgeRoll = {|
 export type RerollFailures = {|
     +ty: "rerollFailures",
     +id: number,
+    +edit?: number,
     +source: Source,
     +rollID: number,
     +title: string,
@@ -59,7 +62,8 @@ export type Action =
 | {| +ty: "selectEdit", event: DiceEvent |}
 | {| +ty: "clearEdit" |}
 
-| {| +ty: "modifyRoll", id: number, diff: $Shape<DiceEvent> |}
+| {| +ty: "modifyRoll", id: number, edit: number, diff: $Shape<DiceEvent> |}
+| {| +ty: "reroll", id: number, edit: number, round: number[] |}
 | {| +ty: "deleteEvent", id: number |}
 ;
 
@@ -228,10 +232,21 @@ function eventReduce(state: State, action: Action): State {
             return { ...state, events: deletedEvents };
         case "modifyRoll":
             const newEvents = state.events.map(e =>
-                // flow-ignore-all-next-line Flow doesn't like the spread, we also assume here we're targeting a roll
-                    e.id === action.id ? { ...e, ...action.diff } : e);
-            // flow-ignore-all-next-line We don't typecheck that we're updating the wrong events.
+                e.id === action.id ?
+                    // flow-ignore-all-next-line Flow doesn't like the spread, we also assume here we're targeting a roll
+                    { ...e, edit: action.edit, ...action.diff }
+                    : e
+            );
+            // flow-ignore-all-next-line We don't check that we're updating the right even type.
             return { ...state, events: newEvents };
+        case "reroll":
+            const eventsWithReroll = state.events.map(e =>
+                e.id === action.id ?
+                    { ...e, edit: action.edit, dice: undefined, ty: "rerollFailures", rounds: [action.round, e.dice] }
+                    : e
+            );
+            // flow-ignore-all-next-line We don't check that we're updating the right event type.
+            return { ...state, events: eventsWithReroll };
 
         case "selectEdit":
             return { ...state, editing: action.event };
