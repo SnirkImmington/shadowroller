@@ -4,9 +4,11 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
 import {EventRecord} from 'history-panel';
+import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
 import * as Event from 'event';
 import routes from 'routes';
+import * as srutil from 'srutil';
 
 const TitleBar = styled(UI.FlexRow)`
     width: 100%;
@@ -21,6 +23,7 @@ export default function EditEvent({ event, playerID }: Props) {
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [title, setTitle] = React.useState(event.title);
+    const [titleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
     const [deletePrompt, setDeletePrompt] = React.useState(false);
 
     const canUpdate = title !== event.title;
@@ -80,9 +83,9 @@ export default function EditEvent({ event, playerID }: Props) {
                 </UI.FlexRow>
                 <UI.ColumnToRow>
                     <UI.FlexRow formRow>
-                        Title
+                        Roll to
                         <UI.Input
-                                placeholder={event.title}
+                                placeholder={event.title || titleFlavor}
                                 onChange={(e) => setTitle(e.target.value)} />
                     </UI.FlexRow>
             {/*
