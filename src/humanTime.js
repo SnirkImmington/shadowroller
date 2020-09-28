@@ -3,6 +3,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
+import * as UI from 'style';
 import theme from 'style/theme';
 
 const MINUTE = 60,
@@ -38,16 +39,8 @@ export function since(ts: Date, now: Date = new Date()): string {
     return DATE_FORMAT.format(ts);
 }
 
-const StyledSince: StyledComponent<{}, typeof theme> = styled.div`
-    white-space: nowrap;
-    font-size: 0.6rem;
-    line-height: 1rem;
-    filter: brightness(70%);
-    color: ${({theme}) => theme.colors.gray1};
-`;
-
 export function Since({ date }: { date: Date }) {
     return (
-        <StyledSince>{since(date) ?? "At some point"}</StyledSince>
+        <UI.SmallText>{since(date) ?? "At some point"}</UI.SmallText>
     );
 }
