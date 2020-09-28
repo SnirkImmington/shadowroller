@@ -11,11 +11,12 @@ import * as Event from 'event';
 import * as rollStats from 'rollStats';
 
 type Props = {
-    +event: Event.EdgeRoll,
+    +event: Event.EdgeRoll, +playerID: ?string, +noActions?: bool
 }
-function EdgeRollRecord({ event }: Props, ref) {
+function EdgeRollRecord({ event, noActions, playerID }: Props, ref) {
     const color = Event.colorOf(event);
     const result = rollStats.results(event);
+    const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
@@ -48,8 +49,12 @@ function EdgeRollRecord({ event }: Props, ref) {
                                  rounds={event.rounds.slice(1)} />
                 </UI.FlexRow>
             </Roll.Scrollable>
-            <UI.FlexRow>
+            <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
+                {event.edit &&
+                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                {canModify &&
+                    <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>
         </UI.FlexColumn>
     );

@@ -102,27 +102,34 @@ function LocalActionsRow({ event, result }: Props) {
 
     const onSecondChance = React.useCallback(function onSecondChance() {
         if (!event.dice) { return; }
-        const rerolled: Event.RerollFailures = {
-            ty: "rerollFailures",
-            id: Event.newID(),
-            rollID: event.id,
-            title: event.title,
-            source: event.source,
-            rounds: [srutil.rerollFailures(event.dice), event.dice]
-        };
-        dispatch({ ty: "newEvent", event: rerolled });
+        dispatch({
+            ty: "reroll", id: event.id,
+            edit: Date.now().valueOf(),
+            round: srutil.rerollFailures(event.dice)
+        });
+    }, [event, dispatch]);
+
+    const onEdit = React.useCallback(function onEdit() {
+        dispatch({ ty: "selectEdit", event: event });
     }, [event, dispatch]);
 
     return (
-        <UI.LinkList>
-            <UI.LinkButton disabled={!canSecondChance(result)} onClick={onSecondChance}>
-                second chance
+        <UI.FlexRow spaced>
+            {canSecondChance(result) &&
+                <UI.LinkButton onClick={onSecondChance}>
+                    second chance
+                </UI.LinkButton>
+            }
+            <UI.LinkButton onClick={onEdit}>
+                edit
             </UI.LinkButton>
-        </UI.LinkList>
+        </UI.FlexRow>
     );
 }
 
 function GameActionsRow({ event, result }: Props) {
+    const dispatch = React.useContext(Event.DispatchCtx);
+
     const [connection, setConnection] = React.useState<Connection>("offline");
 
     const onSecondChance = React.useCallback(function onSecondChance() {
@@ -130,13 +137,22 @@ function GameActionsRow({ event, result }: Props) {
             .onConnection(setConnection);
     }, [event]);
 
+    const onEdit = React.useCallback(function onEdit() {
+        dispatch({ ty: "selectEdit", event: event });
+    }, [event, dispatch]);
+
     return (
-        <UI.LinkList>
-            <UI.LinkButton onClick={onSecondChance}
-                disabled={!canSecondChance(result) || connection === "connecting"}>
-                second chance
+        <UI.FlexRow spaced>
+            {canSecondChance(result) &&
+                <UI.LinkButton disabled={connection === "connecting"}
+                               onClick={onSecondChance}>
+                    second chance
+                </UI.LinkButton>
+            }
+            <UI.LinkButton onClick={onEdit}>
+                edit
             </UI.LinkButton>
-        </UI.LinkList>
+        </UI.FlexRow>
     );
 }
 

@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
-
 import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
@@ -12,7 +12,7 @@ import { ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
-const ROLL_TITLE_FLAVOR = [
+export const ROLL_TITLE_FLAVOR = [
     "look good in a suit",
     "swipe the key card",
     "negotiate for more pay",
@@ -115,7 +115,13 @@ const TitleRow = styled(UI.FlexRow)`
 const FormLabel = styled.label`
 `;
 
-const RollButton = styled.button`
+const RollBackground = {
+    inGame: `linear-gradient(180deg, #783442 0, #601010)`,
+    edgy: `linear-gradient(180deg, #ba4864 0, #cc365b)`,
+    regular: `linear-gradient(180deg, #394341 0, #232928)`
+}
+
+const RollButton: StyledComponent<{ bg: string} > = styled.button`
     font-size: 1.07em;
     font-weight: 600;
     text-align: center;
@@ -124,21 +130,21 @@ const RollButton = styled.button`
     border: 0;
 
     color: white;
-    background-image: linear-gradient(180deg, #394341 0, #232928);
+    background-image: ${props => props.bg};
 
     &:hover {
         text-decoration: none;
     }
 
     &:active {
-        background-image: linear-gradient(180deg, #263427 0, #192423);
+        filter: brightness(85%);
     }
 
     &[disabled] {
         pointer-events: none;
         cursor: not-allowed;
         color: #ccc;
-        background-image: linear-gradient(180deg, #52605e 0, #3f4946);
+        filter: saturate(40%) brightness(85%);
     }
 `;
 
@@ -172,6 +178,10 @@ export default function RollDicePrompt() {
     const rollDisabled = (
         rollLoading || !diceCount || diceCount < 1 || diceCount > 100
     );
+
+    const rollBackgound = connected && !localRoll ?
+        (edge ? RollBackground.edgy : RollBackground.inGame)
+        : RollBackground.regular;
 
     function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
@@ -287,7 +297,7 @@ export default function RollDicePrompt() {
                         </>
                     : ''}
                     <RollButton id="roll-button-submit" type="submit"
-                                disabled={rollDisabled}
+                                disabled={rollDisabled} bg={rollBackgound}
                                 onClick={onRollClicked}>
                         Roll dice
                     </RollButton>

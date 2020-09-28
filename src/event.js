@@ -11,6 +11,7 @@ export type Source =
 export type Roll = {|
     +ty: "roll",
     +id: number,
+    +edit?: number,
     +source: Source,
     +title: string,
     +dice: number[],
@@ -19,6 +20,7 @@ export type Roll = {|
 export type EdgeRoll = {|
     +ty: "edgeRoll",
     +id: number,
+    +edit?: number,
     +source: Source,
     +title: string,
     +rounds: number[][],
@@ -27,6 +29,7 @@ export type EdgeRoll = {|
 export type RerollFailures = {|
     +ty: "rerollFailures",
     +id: number,
+    +edit?: number,
     +source: Source,
     +rollID: number,
     +title: string,
@@ -55,6 +58,13 @@ export type Action =
 | {| +ty: "newEvent", event: Event |}
 | {| +ty: "mergeEvents", events: Event[] |}
 | {| +ty: "clearEvents" |}
+
+| {| +ty: "selectEdit", event: DiceEvent |}
+| {| +ty: "clearEdit" |}
+
+| {| +ty: "modifyRoll", id: number, edit: number, diff: $Shape<DiceEvent> |}
+| {| +ty: "reroll", id: number, edit: number, round: number[] |}
+| {| +ty: "deleteEvent", id: number |}
 ;
 
 /*
@@ -99,10 +109,12 @@ Invariants:
 export type State = {|
     +events: Event[],
     +historyFetch: HistoryFetchState,
+    +editing: ?DiceEvent,
 |};
 export const defaultState: State = {
     events: [],
     historyFetch: "ready",
+    editing: null,
 };
 
 export function timeOf(event: Event): Date {
@@ -115,6 +127,22 @@ export function colorOf(event: Event): string {
 
 export function canModify(event: Event, playerID: ?string): bool {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
+}
+
+export function titleOf(event: Event) {
+    switch (event.ty) {
+        case "roll":
+            return event.title || `roll ${event.dice.length} ${event.dice.length === 1 ? "die" : "dice"}`;
+        case "edgeRoll":
+            return event.title || `push the limit on ${event.rounds[0].length} ${event.rounds[0].length === 1 ? "die" : "dice"}`;
+        case "rerollFailures":
+            return event.title || `reroll failures on ${event.rounds[1].length} ${event.rounds[1].length === 1 ? "die" : "dice"}`;
+        case "playerJoin":
+            return `${event.source.name} joined`;
+        default:
+            (event: empty); // eslint-disable-line no-unused-expressions
+            return "event";
+    }
 }
 
 export function wouldScroll(event: DiceEvent): bool {
@@ -198,6 +226,32 @@ function eventReduce(state: State, action: Action): State {
         case "clearEvents":
             const localEvents = state.events.filter(e => e?.source === "local");
             return { ...state, events: localEvents };
+
+        case "deleteEvent":
+            const deletedEvents = state.events.filter(e => e.id !== action.id);
+            return { ...state, events: deletedEvents };
+        case "modifyRoll":
+            const newEvents = state.events.map(e =>
+                e.id === action.id ?
+                    // flow-ignore-all-next-line Flow doesn't like the spread, we also assume here we're targeting a roll
+                    { ...e, edit: action.edit, ...action.diff }
+                    : e
+            );
+            // flow-ignore-all-next-line We don't check that we're updating the right even type.
+            return { ...state, events: newEvents };
+        case "reroll":
+            const eventsWithReroll = state.events.map(e =>
+                e.id === action.id ?
+                    { ...e, edit: action.edit, dice: undefined, ty: "rerollFailures", rounds: [action.round, e.dice] }
+                    : e
+            );
+            // flow-ignore-all-next-line We don't check that we're updating the right event type.
+            return { ...state, events: eventsWithReroll };
+
+        case "selectEdit":
+            return { ...state, editing: action.event };
+        case "clearEdit":
+            return { ...state, editing: null };
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
             if (process.env.NODE_ENV !== "production") {

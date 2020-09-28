@@ -7,6 +7,7 @@ import * as UI from 'style';
 import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import EditEvent from 'edit-event';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -30,19 +31,21 @@ const GAME_EMPTY_FLAVOR = [
 
 type RecordProps = {
     +event: ?Event.Event,
-    +eventIx: number,
+    +playerID: ?string,
     +setHeight: (number) => void,
+    +noActions?: boolean,
+    +editing?: boolean,
     style?: any
 };
-const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const { event, eventIx, setHeight, style } = props;
+export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
+    const { event, playerID, setHeight, noActions, editing, style } = props;
 
     const ref = React.useRef<?Element>();
-    React.useLayoutEffect(() => {
+    React.useEffect(() => {
         if (ref.current) {
             setHeight(ref.current.getBoundingClientRect().height);
         }
-    }, [ref, eventIx, setHeight]);
+    }, [ref, setHeight]);
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
@@ -53,25 +56,26 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
 
     let inner: React.Node;
     const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
+
     switch (event.ty) {
         case "playerJoin":
-            inner = (<Record.PlayerJoin ref={ref} event={event} />);
+            inner = (<Record.PlayerJoin ref={ref} event={event} noActions={noActions} />);
             break;
         case "edgeRoll":
-            inner = (<Record.EdgeRoll ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.EdgeRoll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         case "rerollFailures":
-            inner = (<Record.Reroll ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.Reroll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         case "roll":
-            inner = (<Record.Roll ref={ref} event={event} eventIx={eventIx} />);
+            inner = (<Record.Roll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
             return '';
     }
     return (
-        <Record.StyledRecord color={color} style={style}>
+        <Record.StyledRecord color={color} editing={editing} style={style}>
             {inner}
         </Record.StyledRecord>
     );
@@ -147,13 +151,14 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
-            return <EventRecord event={null} setHeight={setHeight} eventIx={index} style={style} />;
+            return <EventRecord event={null} setHeight={setHeight} playerID={playerID} style={style} />;
         }
         else {
             const event = data[index];
-            return <EventRecord event={event} setHeight={setHeight} eventIx={index} style={style} />;
+            const editing = state.editing != null && state.editing.id === event.id;
+            return <EventRecord event={event} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt]);
+    }, [loadedAt, playerID, state.editing]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline") {
@@ -206,7 +211,6 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
                 </InfiniteLoader>
             )}
         </AutoSizer>
-
     );
 }
 
@@ -245,6 +249,10 @@ export default function EventHistory() {
     }
 
     return (
+        <>
+        {events.editing &&
+            <EditEvent playerID={game?.player?.id} event={events.editing} />
+        }
         <UI.Card grow color="#81132a">
             <TitleBar>
                 <UI.CardTitleText color="#842222">
@@ -254,5 +262,6 @@ export default function EventHistory() {
             </TitleBar>
             {body}
         </UI.Card>
+        </>
     );
 }

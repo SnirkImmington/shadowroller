@@ -16,6 +16,7 @@ type Props = {
     min?: number,
     max?: number,
     value?: number,
+    placeholder?: string,
     round?: RoundingMode,
 };
 
@@ -160,7 +161,7 @@ export default function NumericInput(props: Props) {
 
     let components: React.Node[] = [
         <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
-               value={text} onChange={onTextInput} key="input" />,
+               value={text} onChange={onTextInput} key="input" placeholder={props.placeholder} />,
         <CalcBox key="calc">
             <span className="fa-layers">
                 <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 up-2 left-2" />

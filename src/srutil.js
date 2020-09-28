@@ -2,6 +2,15 @@
 
 import * as React from 'react';
 
+type JSON =
+| number
+| boolean
+| null
+| typeof undefined
+| string
+| JSON[]
+|{ [string]: JSON };
+
 function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;
 }

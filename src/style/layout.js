@@ -14,9 +14,14 @@ export const FlexRow: StyledComponent<> = styled.div`
     align-items: ${props => props.alignItems ? props.alignItems : "center"};
     ${props => props.maxWidth ? 'width: 100%;' : ''}
     ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
+    ${props => props.formRow ? 'margin-bottom: .5rem;' : ''}
 
     & *:last-child {
         ${props => props.floatRight ? 'margin-left: auto;' : ''}
+    }
+
+    & > * {
+        ${props => props.spaced ? 'margin-right: .5rem;' : ''}
     }
 `;
 
@@ -35,19 +40,13 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
     }
 `;
 
-export const LinkList: StyledComponent<> = styled(FlexRow)`
-    & > * {
-        margin-right: .5em;
-    }
-`;
-
 export const CardWrapper: StyledComponent<{ grow?: bool, pad?: bool }> = styled(FlexColumn)`
     ${props => props?.pad ? 'padding-bottom: 10px;' : ''}
-    ${props => props?.grow ? 'height: 100%;' : ''}
+    ${props => props?.grow ? 'flex-grow: 1' : ''}
 `;
 
 const CardBody: StyledComponent<{ grow?: bool, +color: string }> = styled(FlexColumn)`
-    ${props => props?.grow ? 'height: 100%;' : ''}
+    ${props => props?.grow ? 'flex-grow: 1' : ''}
 `;
 
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`

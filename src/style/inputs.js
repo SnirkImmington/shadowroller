@@ -47,13 +47,12 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     white-space: pre;
 
     &[disabled] {
-        pointer-events: none;
         cursor: not-allowed !important;
         text-decoration: none;
-        filter: grayscale(80%);
+        color: ${({theme}) => theme.colors.dieNone};
     }
 
-    &:hover {
+    &:hover &[disabled=""] {
         filter: brightness(115%);
     }
 

@@ -12,10 +12,13 @@ import * as rollStats from 'rollStats';
 
 type Props = {
     +event: Event.RerollFailures,
+    +playerID: ?string,
+    +noActions?: bool
 }
-function RerollRecord({ event }: Props, ref) {
+function RerollRecord({ event, playerID, noActions }: Props, ref) {
     const color = Event.colorOf(event);
     const result = rollStats.results(event);
+    const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
@@ -47,8 +50,12 @@ function RerollRecord({ event }: Props, ref) {
                              transform="grow-5"
                              rounds={[event.rounds[0]]} />
             </Roll.Scrollable>
-            <UI.FlexRow>
+            <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
+                {event.edit &&
+                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                {canModify &&
+                    <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>
         </UI.FlexColumn>
     );

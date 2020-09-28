@@ -4,14 +4,6 @@ import { post } from 'server';
 import type { GameInfo } from 'routes';
 import type { BackendRequest } from 'server/request';
 
-export type JSON =
-| string
-| bool
-| null
-| typeof undefined
-| { [string]: JSON }
-;
-
 export type LoginRequest = {|
     gameID: string, playerName: string, persist: bool
 |};

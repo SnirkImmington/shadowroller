@@ -3,6 +3,7 @@
 import * as Event from 'event';
 
 export function normalizeEvent(event: any) {
+    console.log("Normalize", event);
     if (!event.source) {
         event.source = { id: event.pID, name: event.pName };
         delete event.pID;
@@ -10,24 +11,25 @@ export function normalizeEvent(event: any) {
     }
     if (event.roll && !event.dice) {
         event.dice = event.roll;
-        event.roll = undefined;
+        delete event.roll;
     }
 }
 
 export function parseEvent(event: any): ?Event.Event {
     switch (event.ty) {
         case "roll":
-            return {
-                ty: "roll", id: event.id,
+            console.log("Parsing", event);
+            return ({
+                ty: "roll", id: event.id, edit: event.edit,
                 source: {
                     id: event.pID, name: event.pName,
                 },
                 title: event.title ?? '',
                 dice: event.dice,
-            };
+            } : Event.Roll);
         case "edgeRoll":
             return {
-                ty: "edgeRoll", id: event.id,
+                ty: "edgeRoll", id: event.id, edit: event.edit,
                 source: {
                     id: event.pID, name: event.pName,
                 },
@@ -36,7 +38,7 @@ export function parseEvent(event: any): ?Event.Event {
             };
         case "rerollFailures":
             return {
-                ty: "rerollFailures", id: event.id,
+                ty: "rerollFailures", id: event.id, edit: event.edit,
                 source: {
                     id: event.pID, name: event.pName,
                 },
