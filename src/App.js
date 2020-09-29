@@ -25,12 +25,19 @@ import 'assets-external/source-code-pro.css';
 const AppLeft: StyledComponent<> = styled(UI.FlexColumn)`
     /* Phones: vertical margin included in cards. */
 
-    padding-left: 0.5em;
+    padding: 0 0.5em;
 
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
         flex-grow: 1; /* Grows out */
         padding-right: 14px;
+
+        padding: 1rem 1.5rem 0 1rem;
+
+        /* Space out dice and initiative on tablet+ */
+        & > *:first-child {
+            margin-bottom: 2rem;
+        }
     }
 `;
 
@@ -43,6 +50,7 @@ const AppRight: StyledComponent<> = styled(UI.FlexColumn)`
 
     @media all and (min-width: 768px) {
         width: 30rem;
+        padding: 1rem 0 0 0;
     }
 `;
 

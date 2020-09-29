@@ -223,7 +223,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
 
 const TitleBar = styled(UI.FlexRow)`
     width: 100%;
-    justify-content: space-between;
+    margin-right: 0.5rem;
 `;
 
 const HistoryFlavor = styled(UI.Flavor)`
@@ -260,13 +260,11 @@ export default function EventHistory() {
         {events.editing &&
             <EditEvent playerID={game?.player?.id} event={events.editing} />
         }
-        <UI.Card grow color="#81132a">
-            <TitleBar>
-                <UI.CardTitleText color="#842222">
-                    {title}
-                    {events.historyFetch === "fetching" && "..."}
-                </UI.CardTitleText>
-            </TitleBar>
+        <UI.Card padRight grow color="#81132a">
+            <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
+                {title}
+                {events.historyFetch === "fetching" && "..."}
+            </UI.CardTitleText>
             {body}
         </UI.Card>
         </>

@@ -99,27 +99,11 @@ export default function RollInitiativePrompt() {
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <UI.FlexRow floatRight spaced rowCenter>
-                    <UI.RadioLink id="roll-initiative-in-game"
-                                  name="roll-initiative-location"
-                                  onChange={()=>{}}
-                                  type="radio" light checked={!local}>
-                        in&nbsp;<tt>testgamething</tt>
-                    </UI.RadioLink>
-                    <UI.RadioLink id="roll-initiative-local"
-                                  name="roll-initiative-location"
-                                  onChange={()=>{}}
-                                  type="radio" light checked={local}>
-                        locally
-                    </UI.RadioLink>
                     <RollButton id="roll-initiative-submit" type="submit"
                                 bg={RollBackground.inGame}>
                         Roll Initiative
                     </RollButton>
                 </UI.FlexRow>
-                <UI.FlexRow>&nbsp;</UI.FlexRow>
-                <EventRecord playerID={game?.player?.id}
-                             event={event}
-                             setHeight={()=>{}} />
             </form>
         </UI.Card>
     )

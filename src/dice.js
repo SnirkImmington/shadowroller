@@ -58,10 +58,6 @@ const StyledList: StyledComponent<{ small?:bool, }> = styled(UI.FlexRow)`
 const SmallStyledList: StyledComponent<> = styled(UI.FlexRow)`
     font-size: 1.2em;
     display: inline-flex;
-
-    & > * {
-        display: inline-block;
-    }
 `;
 
 type ListProps = { rolls: number[], small?: bool, children?: React.ChildrenArray<any> };
