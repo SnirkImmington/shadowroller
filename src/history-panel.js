@@ -51,29 +51,30 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
+                {/* flow-ignore-all-next-line No, this ref is fine, thanks */}
                 <Record.Loading ref={ref}/>
             </Record.StyledRecord>
         );
     }
 
-    let inner: React.Node;
+    let Inner;
     const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
 
     switch (event.ty) {
         case "playerJoin":
-            inner = (<Record.PlayerJoin ref={ref} event={event} noActions={noActions} />);
+            Inner = Record.PlayerJoin;
             break;
         case "edgeRoll":
-            inner = (<Record.EdgeRoll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            Inner = Record.EdgeRoll;
             break;
         case "rerollFailures":
-            inner = (<Record.Reroll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            Inner = Record.Reroll;
             break;
         case "roll":
-            inner = (<Record.Roll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            Inner = Record.Roll;
             break;
-        case "initiative":
-            inner = (<Record.Initiative ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+        case "rollInitiative":
+            Inner = Record.Initiative;
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -81,7 +82,8 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }
     return (
         <Record.StyledRecord color={color} editing={editing} style={style}>
-            {inner}
+            {/* flow-ignore-all-next-line We do pass the events properly here */}
+            <Inner ref={ref} playerID={playerID} event={event} noActions={noActions} />
         </Record.StyledRecord>
     );
 }, areEqual);

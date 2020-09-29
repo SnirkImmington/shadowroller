@@ -30,9 +30,11 @@ export function results(event: Event.DiceEvent): HitsResults {
 
     const glitched = misses > Math.ceil(dice.length / 2);
     const critical = glitched && hits === 0;
-    const edged = event.rounds != null;
+    // flow-ignore-all-next-line We're checking for null here, flow
+    const edged = event?.rounds != null;
     let rounds = 1;
     if (rerolled) {
+        // flow-ignore-all-next-line rerolled indicates it's a rerollFailures
         rounds = event.rounds.length - 1;
     }
     else if (event.rounds) {

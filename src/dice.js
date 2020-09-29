@@ -7,11 +7,17 @@ import * as UI from 'style';
 import theme from 'style/theme';
 import 'index.css';
 
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieTwo } from 'assets/die-2.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieThree } from 'assets/die-3.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieFour } from 'assets/die-4.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieFive } from 'assets/die-5.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieSix } from 'assets/die-6.svg';
 
 export function colorForRoll(roll: number): string {

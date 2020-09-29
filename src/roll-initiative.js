@@ -61,7 +61,7 @@ export default function RollInitiativePrompt() {
     const rollReady = base > 0 && dice > 0 && dice <= 5;
 
     const event: Event.Initiative = {
-        ty: "initiative", id: Date.now().valueOf(),
+        ty: "rollInitiative", id: Date.now().valueOf(),
         source: game?.player ?? "local",
         title: "", base: 11, dice: [1, 4]
     };
@@ -101,11 +101,13 @@ export default function RollInitiativePrompt() {
                 <UI.FlexRow floatRight spaced rowCenter>
                     <UI.RadioLink id="roll-initiative-in-game"
                                   name="roll-initiative-location"
+                                  onChange={()=>{}}
                                   type="radio" light checked={!local}>
                         in&nbsp;<tt>testgamething</tt>
                     </UI.RadioLink>
                     <UI.RadioLink id="roll-initiative-local"
                                   name="roll-initiative-location"
+                                  onChange={()=>{}}
                                   type="radio" light checked={local}>
                         locally
                     </UI.RadioLink>

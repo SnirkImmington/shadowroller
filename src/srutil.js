@@ -2,14 +2,15 @@
 
 import * as React from 'react';
 
-type JSON =
+export type Json =
+| string
 | number
 | boolean
-| null
-| typeof undefined
-| string
-| JSON[]
-|{ [string]: JSON };
+| string[]
+| number[]
+| boolean[]
+| Array<?Json>
+|{ [k: string]: Json };
 
 function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;

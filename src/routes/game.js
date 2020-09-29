@@ -3,6 +3,7 @@
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
 import type { Event, DiceEvent } from 'event';
+import type { Json } from 'srutil';
 
 export type RenameRequest = {|
     name: string

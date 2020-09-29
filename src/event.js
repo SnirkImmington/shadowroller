@@ -37,7 +37,7 @@ export type RerollFailures = {|
 |}
 
 export type Initiative = {|
-    +ty: "initiative",
+    +ty: "rollInitiative",
     +id: number,
     +edit?: number,
     +source: Source,
@@ -56,6 +56,7 @@ export type Event =
 | Roll
 | EdgeRoll
 | RerollFailures
+| Initiative
 | PlayerJoin
 ;
 
@@ -147,6 +148,8 @@ export function titleOf(event: Event) {
             return event.title || `push the limit on ${event.rounds[0].length} ${event.rounds[0].length === 1 ? "die" : "dice"}`;
         case "rerollFailures":
             return event.title || `reroll failures on ${event.rounds[1].length} ${event.rounds[1].length === 1 ? "die" : "dice"}`;
+        case "rollInitiative":
+            return event.title || "initiative";
         case "playerJoin":
             return `${event.source.name} joined`;
         default:
@@ -242,8 +245,8 @@ function eventReduce(state: State, action: Action): State {
             return { ...state, events: deletedEvents };
         case "modifyRoll":
             const newEvents = state.events.map(e =>
-                e.id === action.id ?
-                    // flow-ignore-all-next-line Flow doesn't like the spread, we also assume here we're targeting a roll
+                e.id === action.id && e.ty !== "playerJoin" ?
+                    // flow-ignore-all-next-line We do not check the individual diff.
                     { ...e, edit: action.edit, ...action.diff }
                     : e
             );
@@ -251,11 +254,15 @@ function eventReduce(state: State, action: Action): State {
             return { ...state, events: newEvents };
         case "reroll":
             const eventsWithReroll = state.events.map(e =>
-                e.id === action.id ?
-                    { ...e, edit: action.edit, dice: undefined, ty: "rerollFailures", rounds: [action.round, e.dice] }
+                (e.id === action.id && e.ty === "roll") ?
+                    ({
+                        id: e.id, source: e.source,
+                        ty: "rerollFailures",
+                        rollID: e.id, title: e.title,
+                        rounds: [action.round, e.dice]
+                    }: RerollFailures)
                     : e
             );
-            // flow-ignore-all-next-line We don't check that we're updating the right event type.
             return { ...state, events: eventsWithReroll };
 
         case "selectEdit":
