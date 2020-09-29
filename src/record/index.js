@@ -17,8 +17,8 @@ export const StyledRecord: StyledComponent<RecordProps> = styled.div.attrs(
     props => {
         const style = {
             ...props.style,
-            top: (props.style.top + GUTTER_SIZE) || 0,
-            height: (props.style.height - GUTTER_SIZE) || 'auto',
+            top: (props.style?.top + GUTTER_SIZE) || 0,
+            height: (props.style?.height - GUTTER_SIZE) || 'auto',
         };
         if (props.editing) {
             props.style.backgroundColor = props.color === "slategray" ?
@@ -40,3 +40,4 @@ export * from './otherEvents';
 export { EdgeRoll } from './edgeRoll';
 export { Reroll } from './reroll';
 export { RollRecord as Roll } from './roll';
+export { Initiative } from './initiative';

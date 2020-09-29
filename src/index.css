@@ -48,7 +48,6 @@ p {
 
 .sr-die {
     margin: 2px;
-    flex-shrink: 0;
     width: 10vw;
     height: 10vw;
 }
@@ -58,7 +57,12 @@ p {
         height: 2.45rem;
     }
 }
-
 .sr-die:nth-child(3n+0) {
     margin-right: .5em;
+}
+
+.sr-small-die {
+    margin: 2px;
+    width: 1.5em;
+    height: 1.5em;
 }

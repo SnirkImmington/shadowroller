@@ -37,6 +37,7 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
     ${props => props?.grow ? 'height: 100%;' : ''}
     @media all and (min-width: 768px) {
         flex-direction: row;
+        ${props => props.rowCenter ? 'align-items: center;' : ''}
     }
 `;
 

@@ -40,6 +40,8 @@ type RecordProps = {
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     const { event, playerID, setHeight, noActions, editing, style } = props;
 
+    console.log("EventRecord", props);
+
     const ref = React.useRef<?Element>();
     React.useEffect(() => {
         if (ref.current) {
@@ -69,6 +71,9 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
             break;
         case "roll":
             inner = (<Record.Roll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            break;
+        case "initiative":
+            inner = (<Record.Initiative ref={ref} playerID={playerID} event={event} noActions={noActions} />);
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions

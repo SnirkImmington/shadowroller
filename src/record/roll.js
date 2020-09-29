@@ -25,7 +25,7 @@ function RollRecordInner({ event, playerID, noActions }: Props, ref) {
             {` rolls`}
         </>
     ) : (
-        <>Rolled</>
+        "Rolled"
     );
     const title = event.title ? (
         <>to <b>{event.title}</b></>

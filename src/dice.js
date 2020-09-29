@@ -20,8 +20,8 @@ export function colorForRoll(roll: number): string {
         : theme.colors.dieNone;
 }
 
-type DieProps = { roll: number };
-export const Die = React.memo<DieProps>(function Die({ roll }: DieProps) {
+type DieProps = { roll: number, small?: bool };
+export const Die = React.memo<DieProps>(function Die({ roll, small }: DieProps) {
     let Dice = DieOne;
     let color = theme.colors.dieNone;
 
@@ -36,16 +36,14 @@ export const Die = React.memo<DieProps>(function Die({ roll }: DieProps) {
             break;
     }
 
-    return <Dice className="sr-die" color={color} />;
+    return <Dice className={small ? "sr-small-die" : "sr-die"}
+                 color={small ? theme.colors.dieNone : color} />;
 });
 
-const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
-`;
-
-type ListProps = { rolls: number[] };
-export function List({ rolls }: ListProps) {
+type ListProps = { rolls: number[], small?: bool };
+export function List({ rolls, small }: ListProps) {
     const dice = rolls.map((roll, ix) =>
-        <Die key={ix * 10 + roll} roll={roll} />
+        <Die key={ix * 10 + roll} small={small} roll={roll} />
     );
-    return <ListWrapper>{dice}</ListWrapper>;
+    return <UI.FlexRow>{dice}</UI.FlexRow>;
 }
