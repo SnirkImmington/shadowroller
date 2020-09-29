@@ -47,7 +47,6 @@ function RerollRecord({ event, playerID, noActions }: Props, ref) {
             <Roll.Scrollable>
                 <dice.List rolls={event.rounds[1]} />
                 <Roll.Rounds icon={icons.faRedo} color={color}
-                             transform="grow-5"
                              rounds={[event.rounds[0]]} />
             </Roll.Scrollable>
             <UI.FlexRow floatRight={canModify}>

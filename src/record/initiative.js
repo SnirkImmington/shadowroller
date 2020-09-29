@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import * as UI from 'style';
+import * as icons from 'style/icon';
 import * as dice from 'dice';
 import * as humanTime from 'humanTime';
 import * as Roll from './rollComponents';
@@ -24,6 +25,7 @@ function LocalActionsRow({ event, result }: ActionProps) {
             <UI.LinkButton>-10</UI.LinkButton>
             <UI.LinkButton>-5</UI.LinkButton>
             <UI.LinkButton>-1</UI.LinkButton>
+            <UI.LinkButton>+1</UI.LinkButton>
             <UI.LinkButton>edit</UI.LinkButton>
         </UI.FlexRow>
     );
@@ -36,6 +38,8 @@ function InitiativeRecord({ event, playerID, noActions }: Props, ref) {
 
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
 
+    const diceString = event.dice.join(" + ");
+
     // snirk rolls initiative           24
     // 11 + [1] + [2]
 
@@ -46,31 +50,33 @@ function InitiativeRecord({ event, playerID, noActions }: Props, ref) {
             <UI.HashColored id={event.source.id}>
                 {event.source.name}
             </UI.HashColored>
-            {` rolls`}
+            &nbsp;rolls
         </>
     ) : (
         "Rolled"
     );
     const title = (
-        <>for <b>{event.title ?? "initiative"}</b></>
+        <>for { event.title ? <b>{event.title}</b> : "initiative"}</>
     );
     const dieList = (
-        <UI.FlexRow>
-            {event.base} + <dice.List small rolls={event.dice} />
-        </UI.FlexRow>
+        <>
+            &nbsp;{event.base} +&nbsp;<dice.List small rolls={event.dice} />&nbsp;
+        </>
     );
 
     return (
         <UI.FlexColumn ref={ref}>
             <UI.FlexRow>
+                <UI.FlexRow flexWrap>
+                    {intro}
+                    {dieList}
                 <Roll.Title>
-                    {intro}&nbsp;
-                    {dieList}&nbsp;
                     {title}
                 </Roll.Title>
-                <b style={{ color }}>
-                    {result}
-                </b>
+                </UI.FlexRow>
+                <Roll.StyledResults color={color} style={{ alignSelf: 'flex-start'}}>
+                    {result} <UI.FAIcon icon={icons.faClipboardList} />
+                </Roll.StyledResults>
             </UI.FlexRow>
             <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />

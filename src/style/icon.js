@@ -10,7 +10,7 @@ export {
     // Icons for in game/GC/local rolls
     faUser, faUsers, faUserFriends, faUserSecret,
     // Roll icons
-    faBolt, faRedo,
+    faBolt, faRedo, faClipboardList, faSortAmountUp,
     // dice
     // faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo,
 } from "@fortawesome/free-solid-svg-icons";

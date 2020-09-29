@@ -63,7 +63,7 @@ export default function RollInitiativePrompt() {
     const event: Event.Initiative = {
         ty: "initiative", id: Date.now().valueOf(),
         source: game?.player ?? "local",
-        title: "meatspace", base: 11, dice: [1, 4]
+        title: "", base: 11, dice: [1, 4]
     };
 
     return (
@@ -114,6 +114,7 @@ export default function RollInitiativePrompt() {
                         Roll Initiative
                     </RollButton>
                 </UI.FlexRow>
+                <UI.FlexRow>&nbsp;</UI.FlexRow>
                 <EventRecord playerID={game?.player?.id}
                              event={event}
                              setHeight={()=>{}} />
