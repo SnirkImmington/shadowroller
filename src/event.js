@@ -36,6 +36,16 @@ export type RerollFailures = {|
     +rounds: number[][],
 |}
 
+export type Initiative = {|
+    +ty: "initiative",
+    +id: number,
+    +edit?: number,
+    +source: Source,
+    +title: string,
+    +base: number,
+    +dice: number[],
+|};
+
 export type PlayerJoin = {|
     +ty: "playerJoin",
     +id: number,

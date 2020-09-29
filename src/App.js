@@ -16,6 +16,7 @@ import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
+import RollInitiativePrompt from 'roll-initiative';
 import EventHistory from 'history-panel';
 import DebugBar from 'debug-bar';
 
@@ -116,6 +117,7 @@ function Shadowroller() {
             <UI.ColumnToRow grow>
                 <AppLeft>
                     <RollDicePrompt />
+                    <RollInitiativePrompt />
                 </AppLeft>
                 <AppRight>
                     <EventHistory />

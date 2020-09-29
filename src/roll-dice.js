@@ -245,8 +245,6 @@ export default function RollDicePrompt() {
         <UI.Card color="#81132a">
             <TitleRow>
                 <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
-                <UI.FlexRow>
-                </UI.FlexRow>
             </TitleRow>
             <form id="dice-input" onSubmit={onRollClicked}>
                 <UI.ColumnToRow>
