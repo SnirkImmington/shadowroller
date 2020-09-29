@@ -3,7 +3,6 @@
 import * as Event from 'event';
 
 export function normalizeEvent(event: any) {
-    console.log("Normalize", event);
     if (!event.source) {
         event.source = { id: event.pID, name: event.pName };
         delete event.pID;
