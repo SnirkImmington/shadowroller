@@ -48,21 +48,11 @@ p {
 
 .sr-die {
     margin: 2px;
-    width: 10vw;
-    height: 10vw;
-}
-@media all and (min-width: 768px) {
-    .sr-die {
-        width: 2.45rem;
-        height: 2.45rem;
-    }
+    height: 1em;
+    width: 1em;
+    min-height: 1em;
+    min-width: 1em;
 }
 .sr-die:nth-child(3n+0) {
-    margin-right: .5em;
-}
-
-.sr-small-die {
-    margin: 2px;
-    width: 1.5em;
-    height: 1.5em;
+    margin-right: 6px;
 }

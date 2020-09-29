@@ -36,14 +36,37 @@ export const Die = React.memo<DieProps>(function Die({ roll, small }: DieProps) 
             break;
     }
 
-    return <Dice className={small ? "sr-small-die" : "sr-die"}
+    return <Dice className="sr-die"
                  color={small ? theme.colors.dieNone : color} />;
 });
 
-type ListProps = { rolls: number[], small?: bool };
-export function List({ rolls, small }: ListProps) {
-    const dice = rolls.map((roll, ix) =>
-        <Die key={ix * 10 + roll} small={small} roll={roll} />
+const StyledList: StyledComponent<{ small?:bool, }> = styled(UI.FlexRow)`
+    /* Mobile: dice are 1/12 screen width. */
+    font-size: 7vw;
+
+    @media all and (min-width: 768px) {
+        font-size: 2.5rem;
+    }
+`;
+
+const SmallStyledList: StyledComponent<> = styled(UI.FlexRow)`
+    font-size: 1.2em;
+    display: inline-flex;
+
+    & > * {
+        display: inline-block;
+    }
+`;
+
+type ListProps = { rolls: number[], small?: bool, children?: React.ChildrenArray<any> };
+export function List({ rolls, small, children }: ListProps) {
+    const Wrapper = small ? SmallStyledList : StyledList;
+    return (
+        <Wrapper>
+            {children}
+            {rolls.map((roll, ix) =>
+                <Die key={ix * 10 + roll} small={small} roll={roll} />
+            )}
+        </Wrapper>
     );
-    return <UI.FlexRow>{dice}</UI.FlexRow>;
 }
