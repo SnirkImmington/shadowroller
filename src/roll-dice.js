@@ -89,24 +89,6 @@ export const ROLL_TITLE_FLAVOR = [
     "summon the zeppelin",
 ];
 
-const ButtonRow = styled(UI.FlexRow)`
-    & > *:first-child {
-        margin-left: 0;
-    }
-    & > *:last-child {
-        margin-left: auto;
-        margin-right: 0.5em;
-    }
-`;
-
-const RollInputRow = styled(UI.FlexRow)`
-    margin: 0.75rem 0;
-
-    @media all and (min-width: 768px) {
-        margin: 0.5rem;
-    }
-`;
-
 const TitleRow = styled(UI.FlexRow)`
     width: 100%;
     justify-content: space-between;
@@ -187,11 +169,7 @@ export default function RollDicePrompt() {
         setTitle(event.target.value || '');
     }
 
-    const rollLocalClicked = React.useCallback(
-        (event) => setLocalRoll(l => !l),
-        [setLocalRoll]
-    );
-
+    const rollLocalClicked = React.useCallback(() => setLocalRoll(l => !l), [setLocalRoll]);
 
     const onEdgeClicked = React.useCallback(
         (event) => setEdge(event.target.checked),
@@ -248,7 +226,7 @@ export default function RollDicePrompt() {
             </TitleRow>
             <form id="dice-input" onSubmit={onRollClicked}>
                 <UI.ColumnToRow>
-                    <RollInputRow>
+                    <UI.FlexRow formRow>
                         <FormLabel htmlFor="roll-select-dice">
                             Roll
                         </FormLabel>
@@ -256,8 +234,8 @@ export default function RollDicePrompt() {
                         <FormLabel htmlFor="roll-select-dice">
                             dice
                         </FormLabel>
-                    </RollInputRow>
-                    <UI.FlexRow>
+                    </UI.FlexRow>
+                    <UI.FlexRow formRow>
                         <RollToLabel htmlFor="roll-title">
                             to
                         </RollToLabel>
@@ -266,7 +244,7 @@ export default function RollDicePrompt() {
                                         onChange={rollTitleChanged}
                                         value={title} />
                     </UI.FlexRow>
-                    <UI.FlexRow maxWidth>
+                    <UI.FlexRow formRow maxWidth>
                         <UI.RadioLink id="roll-enable-edge"
                                       type="checkbox" light
                                       checked={edge}
@@ -275,7 +253,7 @@ export default function RollDicePrompt() {
                         </UI.RadioLink>
                     </UI.FlexRow>
                 </UI.ColumnToRow>
-                <ButtonRow>
+                <UI.FlexRow spaced floatRight>
                     {connected ?
                         <>
                             <UI.RadioLink id="roll-set-in-game"
@@ -299,7 +277,7 @@ export default function RollDicePrompt() {
                                 onClick={onRollClicked}>
                         Roll dice
                     </RollButton>
-                </ButtonRow>
+                </UI.FlexRow>
             </form>
         </UI.Card>
     );

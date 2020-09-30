@@ -40,8 +40,6 @@ type RecordProps = {
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     const { event, playerID, setHeight, noActions, editing, style } = props;
 
-    console.log("EventRecord", props);
-
     const ref = React.useRef<?Element>();
     React.useEffect(() => {
         if (ref.current) {
@@ -73,7 +71,7 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
         case "roll":
             Inner = Record.Roll;
             break;
-        case "rollInitiative":
+        case "initiativeRoll":
             Inner = Record.Initiative;
             break;
         default:
@@ -261,10 +259,12 @@ export default function EventHistory() {
             <EditEvent playerID={game?.player?.id} event={events.editing} />
         }
         <UI.Card padRight grow color="#81132a">
-            <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
-                {title}
-                {events.historyFetch === "fetching" && "..."}
-            </UI.CardTitleText>
+            <UI.FlexRow maxWidth rowCenter>
+                <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
+                    {title}
+                    {events.historyFetch === "fetching" && "..."}
+                </UI.CardTitleText>
+            </UI.FlexRow>
             {body}
         </UI.Card>
         </>
