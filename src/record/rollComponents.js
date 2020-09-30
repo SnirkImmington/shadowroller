@@ -76,7 +76,7 @@ export function Rounds({ rounds, icon, transform, color }: RoundsProps): React.N
             {rounds.map((rolls, ix) =>
                 <dice.List key={ix} rolls={rolls}>
                     <UI.FAIcon icon={icon} color={color} className="sr-die"
-                        style={{marginRight:'.2em'}} size="sm" />
+                        style={{margin:'2px calc(.1em + 1px)'}} size="sm" />
                 </dice.List>
             )}
         </UI.FlexRow>
