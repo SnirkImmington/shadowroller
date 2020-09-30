@@ -219,11 +219,6 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     );
 }
 
-const TitleBar = styled(UI.FlexRow)`
-    width: 100%;
-    margin-right: 0.5rem;
-`;
-
 const HistoryFlavor = styled(UI.Flavor)`
     margin: 1em auto;
 `;

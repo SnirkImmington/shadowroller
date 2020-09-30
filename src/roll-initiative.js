@@ -5,11 +5,10 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import NumericInput from 'numeric-input';
-import { EventRecord } from 'history-panel';
 
 import * as Game from 'game';
 import * as Event from 'event';
-import { ConnectionCtx } from 'connection';
+//import { ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
@@ -46,12 +45,12 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
     }
 `;
 export default function RollInitiativePrompt() {
-    const connection = React.useContext(ConnectionCtx);
+    //const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [shown, setShown] = React.useState(true);
-    const [loading, setLoading] = React.useState(false);
+    //const [loading, setLoading] = React.useState(false);
 
     const [base, setBase] = React.useState<?number>();
     const [title, setTitle] = React.useState("");
@@ -60,19 +59,11 @@ export default function RollInitiativePrompt() {
     const local = game?.gameID == null;
 
 
-    const connected = connection === "connected";
+    //const connected = connection === "connected";
     const rollReady = base && dice && base > 0 && dice > 0 && dice <= 5;
 
-    const event: Event.Initiative = {
-        ty: "initiativeRoll", id: Date.now().valueOf(),
-        source: game?.player ?? "local",
-        title: "", base: 11, dice: [1, 4]
-    };
-
     const titleChanged = React.useCallback((e) => { setTitle(e.target.value); }, [setTitle]);
-
     const baseChanged = React.useCallback((value) => { setBase(value); }, [setBase]);
-
     const diceChanged = React.useCallback((value) => { setDice(value || 1); }, [setDice]);
 
     const rollClicked = React.useCallback((e) => {
@@ -91,7 +82,7 @@ export default function RollInitiativePrompt() {
         else {
             routes.game.rollInitiative({ base: base || 0, dice, title });
         }
-    }, [rollReady, base, dice, title]);
+    }, [rollReady, dispatch, local, base, dice, title]);
 
     if (!shown) {
         return (
@@ -150,5 +141,5 @@ export default function RollInitiativePrompt() {
                 </UI.FlexRow>
             </form>
         </UI.Card>
-    )
+    );
 }
