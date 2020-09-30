@@ -12,10 +12,8 @@ import * as rollStats from 'rollStats';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
-export const Title: StyledComponent<> = styled.span`
-    white-space: wrap;
+export const Title: StyledComponent<> = styled.div`
     line-height: 1.2em;
-    flex-grow: 1;
     padding-left: 2px;
 `;
 
@@ -33,7 +31,7 @@ export const Scrollable: StyledComponent<> = styled(UI.FlexColumn)`
     }
 `;
 
-const StyledResults: StyledComponent<{ color: string }> = styled.b`
+export const StyledResults: StyledComponent<{ color: string }> = styled.b`
     color: ${props => props.color};
 
     align-self: flex-start;
@@ -41,7 +39,6 @@ const StyledResults: StyledComponent<{ color: string }> = styled.b`
     margin-top: 0;
     margin-left: auto;
     padding: 0 4px 0 .5em;
-    justify-content: flex-end;
     white-space: nowrap;
 `;
 
@@ -58,11 +55,6 @@ export function Results({ color, result }: RollMessageProps) {
     )
 }
 
-const RoundsRow = styled(UI.FlexRow)`
-    & > *:first-child {
-        margin: 0 6px;
-    }
-`;
 type RoundsProps = {
     +rounds: number[][],
     +icon: any,
@@ -72,21 +64,20 @@ type RoundsProps = {
 export function Rounds({ rounds, icon, transform, color }: RoundsProps): React.Node {
     if (rounds.length === 0) {
         return (
-            <RoundsRow>
+            <UI.FlexRow>
                 <UI.FAIcon icon={icon} color={color} className="sr-die"
                             fixedWidth transform={transform} />
                 <tt>:(</tt>
-            </RoundsRow>
+            </UI.FlexRow>
         );
     }
     return (
         <UI.FlexRow>
             {rounds.map((rolls, ix) =>
-                <RoundsRow key={ix}>
+                <dice.List key={ix} rolls={rolls}>
                     <UI.FAIcon icon={icon} color={color} className="sr-die"
-                               fixedWidth transform={transform} />
-                    <dice.List rolls={rolls} />
-                </RoundsRow>
+                        style={{margin:'2px calc(.1em + 1px)'}} size="sm" />
+                </dice.List>
             )}
         </UI.FlexRow>
     );

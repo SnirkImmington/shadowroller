@@ -3,7 +3,6 @@
 import * as Event from 'event';
 
 export function normalizeEvent(event: any) {
-    console.log("Normalize", event);
     if (!event.source) {
         event.source = { id: event.pID, name: event.pName };
         delete event.pID;
@@ -45,6 +44,16 @@ export function parseEvent(event: any): ?Event.Event {
                 rollID: event.rollID,
                 title: event.title ?? "",
                 rounds: event.rounds,
+            };
+        case "initiativeRoll":
+            console.log("Got event", event);
+            return {
+                ty: "initiativeRoll", id: event.id, edit: event.edit,
+                source: {
+                    id: event.pID, name: event.pName,
+                },
+                title: event.title ?? "",
+                base: event.base, dice: event.dice,
             };
         case "playerJoin":
             return {

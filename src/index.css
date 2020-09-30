@@ -48,17 +48,11 @@ p {
 
 .sr-die {
     margin: 2px;
-    flex-shrink: 0;
-    width: 10vw;
-    height: 10vw;
+    height: 1em;
+    width: 1em;
+    min-height: 1em;
+    min-width: 1em;
 }
-@media all and (min-width: 768px) {
-    .sr-die {
-        width: 2.45rem;
-        height: 2.45rem;
-    }
-}
-
 .sr-die:nth-child(3n+0) {
-    margin-right: .5em;
+    margin-right: 6px;
 }

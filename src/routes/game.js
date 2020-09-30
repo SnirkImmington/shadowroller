@@ -39,6 +39,15 @@ export function roll(request: RollRequest): BackendRequest<void> {
     return post<RollRequest, void>("game/roll", request);
 }
 
+export type RollInitiativeRequest = {|
+    base: number,
+    dice: number,
+    title: string,
+|};
+export function rollInitiative(request: RollInitiativeRequest): BackendRequest<void> {
+    return post<RollInitiativeRequest, void>("game/roll-initiative", request);
+}
+
 export type RerollRequest = {|
     rollID: number,
     rerollType: "rerollFailures"

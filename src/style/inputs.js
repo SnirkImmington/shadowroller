@@ -126,28 +126,29 @@ const HiddenInput = styled.input.attrs(props => ({
 `;
 
 const RadioSelector = styled.span`
+    line-height: 1.5;
     font-family: ${({theme}) => theme.fonts.monospace};
     &:before {
+        line-height: 1.5;
         content: '[';
         color: ${({light}) => light ? "#eef" : "#222"};
         font-weight: 400;
     }
     &:after {
+        line-height: 1.5;
         content: ']';
         color: ${({light}) => light ? "#eef" : "#222"};
         font-weight: 400;
     }
     font-weight: bold;
-    margin-left: 0.5em;
-    margin-right: 0.25em;
     color: ${({light, theme}) =>
         light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
     };
 `;
 
 const RadioLabel: StyledComponent<> = styled.label`
-    display: flex;
-    margin-right: 0.5em;
+    display: inline-flex;
+    align-items: center;
     line-height: 1.5;
     font-size: 1em;
     cursor: pointer !important;
@@ -160,7 +161,7 @@ const RadioLabel: StyledComponent<> = styled.label`
         filter: brightness(180%);
     }
 
-    & > *:checked {
+    & *:checked {
         filter: brightness(50%);
         text-decoration: underline;
     }

@@ -49,26 +49,30 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     if (!event) {
         return (
             <Record.StyledRecord color="white" style={style}>
+                {/* flow-ignore-all-next-line No, this ref is fine, thanks */}
                 <Record.Loading ref={ref}/>
             </Record.StyledRecord>
         );
     }
 
-    let inner: React.Node;
+    let Inner;
     const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
 
     switch (event.ty) {
         case "playerJoin":
-            inner = (<Record.PlayerJoin ref={ref} event={event} noActions={noActions} />);
+            Inner = Record.PlayerJoin;
             break;
         case "edgeRoll":
-            inner = (<Record.EdgeRoll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            Inner = Record.EdgeRoll;
             break;
         case "rerollFailures":
-            inner = (<Record.Reroll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            Inner = Record.Reroll;
             break;
         case "roll":
-            inner = (<Record.Roll ref={ref} playerID={playerID} event={event} noActions={noActions} />);
+            Inner = Record.Roll;
+            break;
+        case "initiativeRoll":
+            Inner = Record.Initiative;
             break;
         default:
             (event: empty); // eslint-disable-line no-unused-expressions
@@ -76,7 +80,8 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }
     return (
         <Record.StyledRecord color={color} editing={editing} style={style}>
-            {inner}
+            {/* flow-ignore-all-next-line We do pass the events properly here */}
+            <Inner ref={ref} playerID={playerID} event={event} noActions={noActions} />
         </Record.StyledRecord>
     );
 }, areEqual);
@@ -214,11 +219,6 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     );
 }
 
-const TitleBar = styled(UI.FlexRow)`
-    width: 100%;
-    justify-content: space-between;
-`;
-
 const HistoryFlavor = styled(UI.Flavor)`
     margin: 1em auto;
 `;
@@ -253,13 +253,13 @@ export default function EventHistory() {
         {events.editing &&
             <EditEvent playerID={game?.player?.id} event={events.editing} />
         }
-        <UI.Card grow color="#81132a">
-            <TitleBar>
-                <UI.CardTitleText color="#842222">
+        <UI.Card padRight grow color="#81132a">
+            <UI.FlexRow maxWidth rowCenter>
+                <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>
-            </TitleBar>
+            </UI.FlexRow>
             {body}
         </UI.Card>
         </>

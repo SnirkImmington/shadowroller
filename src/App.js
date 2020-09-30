@@ -16,6 +16,7 @@ import type { Connection } from 'connection';
 
 import SRHeader from 'header';
 import RollDicePrompt from 'roll-dice';
+import RollInitiativePrompt from 'roll-initiative';
 import EventHistory from 'history-panel';
 import DebugBar from 'debug-bar';
 
@@ -24,12 +25,23 @@ import 'assets-external/source-code-pro.css';
 const AppLeft: StyledComponent<> = styled(UI.FlexColumn)`
     /* Phones: vertical margin included in cards. */
 
-    padding-left: 0.5em;
+    padding: 0.5rem;
+
+    & > *:first-child {
+        margin-bottom: 1rem;
+    }
 
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
         flex-grow: 1; /* Grows out */
         padding-right: 14px;
+
+        padding: 1rem 1.5rem 0 1rem;
+
+        /* Space out dice and initiative on tablet+ */
+        & > *:first-child {
+            margin-bottom: 4rem;
+        }
     }
 `;
 
@@ -41,7 +53,8 @@ const AppRight: StyledComponent<> = styled(UI.FlexColumn)`
     padding-left: 2px;
 
     @media all and (min-width: 768px) {
-        width: 37rem;
+        width: 30rem;
+        padding: 1rem 0 0 0;
     }
 `;
 
@@ -116,6 +129,7 @@ function Shadowroller() {
             <UI.ColumnToRow grow>
                 <AppLeft>
                     <RollDicePrompt />
+                    <RollInitiativePrompt />
                 </AppLeft>
                 <AppRight>
                     <EventHistory />

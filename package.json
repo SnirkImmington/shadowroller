@@ -1,10 +1,10 @@
 {
     "name": "shadowroller",
     "description": "Roll dice from random.org",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "author": "S. B. Immington",
     "license": "MIT",
-    "homepage": "https://shadowroller.net/",
+    "homepage": "https://snirkimmington.github.io/shadowroller",
     "repository": {
         "type": "git",
         "url": "https://github.com/SnirkImmington/shadowroller.git"

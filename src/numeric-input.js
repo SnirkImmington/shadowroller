@@ -15,6 +15,7 @@ type Props = {
     onSelect: (?number) => void,
     min?: number,
     max?: number,
+    small?: bool,
     value?: number,
     placeholder?: string,
     round?: RoundingMode,
@@ -37,7 +38,7 @@ const StyledInput = styled(UI.Input)`
     border: 0;
     outline: 0;
 
-    width: 8em;
+    width: ${props => props.small ? '3em' : '6em'};
 
     &:focus {
         border: 0;
@@ -161,7 +162,9 @@ export default function NumericInput(props: Props) {
 
     let components: React.Node[] = [
         <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
-               value={text} onChange={onTextInput} key="input" placeholder={props.placeholder} />,
+               value={text} onChange={onTextInput} key="input"
+               placeholder={props.placeholder} small={props.small}
+               />,
         <CalcBox key="calc">
             <span className="fa-layers">
                 <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 up-2 left-2" />

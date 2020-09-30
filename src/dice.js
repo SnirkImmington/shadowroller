@@ -7,11 +7,17 @@ import * as UI from 'style';
 import theme from 'style/theme';
 import 'index.css';
 
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieTwo } from 'assets/die-2.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieThree } from 'assets/die-3.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieFour } from 'assets/die-4.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieFive } from 'assets/die-5.svg';
+// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieSix } from 'assets/die-6.svg';
 
 export function colorForRoll(roll: number): string {
@@ -20,8 +26,8 @@ export function colorForRoll(roll: number): string {
         : theme.colors.dieNone;
 }
 
-type DieProps = { roll: number };
-export const Die = React.memo<DieProps>(function Die({ roll }: DieProps) {
+type DieProps = { roll: number, small?: bool };
+export const Die = React.memo<DieProps>(function Die({ roll, small }: DieProps) {
     let Dice = DieOne;
     let color = theme.colors.dieNone;
 
@@ -36,16 +42,33 @@ export const Die = React.memo<DieProps>(function Die({ roll }: DieProps) {
             break;
     }
 
-    return <Dice className="sr-die" color={color} />;
+    return <Dice className="sr-die"
+                 color={small ? theme.colors.dieNone : color} />;
 });
 
-const ListWrapper: StyledComponent<> = styled(UI.FlexRow)`
+const StyledList: StyledComponent<{ small?:bool, }> = styled(UI.FlexRow)`
+    /* Mobile: dice are 1/12 screen width. */
+    font-size: 7vw;
+
+    @media all and (min-width: 768px) {
+        font-size: 2.5rem;
+    }
 `;
 
-type ListProps = { rolls: number[] };
-export function List({ rolls }: ListProps) {
-    const dice = rolls.map((roll, ix) =>
-        <Die key={ix * 10 + roll} roll={roll} />
+const SmallStyledList: StyledComponent<> = styled(UI.FlexRow)`
+    font-size: 1.2em;
+    display: inline-flex;
+`;
+
+type ListProps = { rolls: number[], small?: bool, children?: React.ChildrenArray<any> };
+export function List({ rolls, small, children }: ListProps) {
+    const Wrapper = small ? SmallStyledList : StyledList;
+    return (
+        <Wrapper>
+            {children}
+            {rolls.map((roll, ix) =>
+                <Die key={ix * 10 + roll} small={small} roll={roll} />
+            )}
+        </Wrapper>
     );
-    return <ListWrapper>{dice}</ListWrapper>;
 }
