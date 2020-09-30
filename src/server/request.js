@@ -3,7 +3,6 @@
 import * as server from 'server';
 import * as auth from './auth';
 import type { SetConnection, SetResponse } from 'connection';
-import type { Json } from 'srutil';
 
 export class BackendRequest<O> {
     request: Promise<Response>;

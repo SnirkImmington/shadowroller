@@ -2,16 +2,6 @@
 
 import * as React from 'react';
 
-export type Json =
-| string
-| number
-| boolean
-| string[]
-| number[]
-| boolean[]
-| Array<?Json>
-|{ [k: string]: Json };
-
 function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;
 }
