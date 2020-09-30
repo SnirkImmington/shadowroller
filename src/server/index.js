@@ -3,7 +3,6 @@
 export * from './events';
 export * from './auth';
 export * from './request';
-export * from './routes';
 
 export const BACKEND_URL = process.env.NODE_ENV === 'production' ?
     'https://shadowroller.net/'
