@@ -182,6 +182,9 @@ func handleRoll(response Response, request *Request) {
 	err = readBodyJSON(request, &roll)
 	httpInternalErrorIf(response, request, err)
 
+	if roll.Count < 1 {
+		httpBadRequest(response, request, "Invalid roll count")
+	}
 	if roll.Count > config.MaxSingleRoll {
 		httpBadRequest(response, request, "Roll count too high")
 	}
@@ -227,6 +230,55 @@ func handleRoll(response Response, request *Request) {
 	httpSuccess(
 		response, request,
 		"OK; roll ", event.GetID(), " posted",
+	)
+}
+
+type initiativeRollRequest struct {
+	Title string `json:"title"`
+	Base  int    `json:"base"`
+	Dice  int    `json:"dice"`
+}
+
+var _ = gameRouter.HandleFunc("/roll-initiative", handleRollInitiative).Methods("POST")
+
+// $ POST /roll-initiative title base dice
+func handleRollInitiative(response Response, request *Request) {
+	logRequest(request)
+	sess, conn, err := requestSession(request)
+	httpUnauthorizedIf(response, request, err)
+	defer sr.CloseRedis(conn)
+
+	var roll initiativeRollRequest
+	err = readBodyJSON(request, &roll)
+	httpInternalErrorIf(response, request, err)
+
+	if roll.Dice < 1 {
+		httpBadRequest(response, request, "Invalid dice count")
+	}
+	if roll.Base < 0 {
+		httpBadRequest(response, request, "Invalid initiative base")
+	}
+	if roll.Dice > 5 {
+		httpBadRequest(response, request, "Cannot roll more than 5 dice")
+	}
+
+	dice := make([]int, roll.Dice)
+	sr.FillRolls(dice)
+
+	logf(request, "%v rolls %v + %v for `%v`",
+		sess.LogInfo(), roll.Base, dice, roll.Title,
+	)
+	event := &sr.InitiativeRollEvent{
+		EventCore: sr.InitiativeRollEventCore(&sess),
+		Title:     roll.Title,
+		Base:      roll.Base,
+		Dice:      dice,
+	}
+	err = sr.PostEvent(sess.GameID, event, conn)
+	httpInternalErrorIf(response, request, err)
+	httpSuccess(
+		response, request,
+		"Initiative ", event.GetID(), " posted",
 	)
 }
 

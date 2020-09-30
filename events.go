@@ -65,6 +65,22 @@ func RerollFailuresEventCore(session *Session) EventCore {
 	return MakeEventCore(EventTypeRerollFailures, session)
 }
 
+// EventTypeInitiativeRoll is the type of `InitiativeRollEvent`.
+const EventTypeInitiativeRoll = "initiativeRoll"
+
+// InitiativeRollEvent is an event for a player's initiative roll.
+type InitiativeRollEvent struct {
+	EventCore
+	Title string `json:"title"`
+	Base  int    `json:"base"`
+	Dice  []int  `json:"dice"`
+}
+
+// InitiativeRollEventCore makes the EventCore of an InitiativeRollEvent.
+func InitiativeRollEventCore(session *Session) EventCore {
+	return MakeEventCore(EventTypeInitiativeRoll, session)
+}
+
 //
 // Player Join
 //
@@ -126,6 +142,7 @@ func (core *EventCore) GetPlayerName() string {
 	return core.PlayerName
 }
 
+// GetEdit gets the event's edit time
 func (core *EventCore) GetEdit() int64 {
 	return core.Edit
 }
@@ -167,10 +184,16 @@ func ParseEvent(input []byte) (Event, error) {
 		err = json.Unmarshal(input, &rerollFailures)
 		return &rerollFailures, err
 
+	case EventTypeInitiativeRoll:
+		var initiativeRoll InitiativeRollEvent
+		err = json.Unmarshal(input, &initiativeRoll)
+		return &initiativeRoll, err
+
 	case EventTypePlayerJoin:
 		var playerJoin PlayerJoinEvent
 		err = json.Unmarshal(input, &playerJoin)
 		return &playerJoin, err
+
 	default:
 		return nil, fmt.Errorf("unknown event type %v", ty)
 	}
