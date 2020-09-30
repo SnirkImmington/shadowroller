@@ -17,7 +17,6 @@ export function normalizeEvent(event: any) {
 export function parseEvent(event: any): ?Event.Event {
     switch (event.ty) {
         case "roll":
-            console.log("Parsing", event);
             return ({
                 ty: "roll", id: event.id, edit: event.edit,
                 source: {

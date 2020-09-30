@@ -234,6 +234,7 @@ export default function RollDicePrompt() {
                         <FormLabel htmlFor="roll-select-dice">
                             dice
                         </FormLabel>
+                        &nbsp;
                     </UI.FlexRow>
                     <UI.FlexRow formRow>
                         <RollToLabel htmlFor="roll-title">
