@@ -37,7 +37,7 @@ export type RerollFailures = {|
 |}
 
 export type Initiative = {|
-    +ty: "rollInitiative",
+    +ty: "initiativeRoll",
     +id: number,
     +edit?: number,
     +source: Source,
@@ -148,7 +148,7 @@ export function titleOf(event: Event) {
             return event.title || `push the limit on ${event.rounds[0].length} ${event.rounds[0].length === 1 ? "die" : "dice"}`;
         case "rerollFailures":
             return event.title || `reroll failures on ${event.rounds[1].length} ${event.rounds[1].length === 1 ? "die" : "dice"}`;
-        case "rollInitiative":
+        case "initiativeRoll":
             return event.title || "initiative";
         case "playerJoin":
             return `${event.source.name} joined`;

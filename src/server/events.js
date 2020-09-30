@@ -45,6 +45,16 @@ export function parseEvent(event: any): ?Event.Event {
                 title: event.title ?? "",
                 rounds: event.rounds,
             };
+        case "initiativeRoll":
+            console.log("Got event", event);
+            return {
+                ty: "initiativeRoll", id: event.id, edit: event.edit,
+                source: {
+                    id: event.pID, name: event.pName,
+                },
+                title: event.title ?? "",
+                base: event.base, dice: event.dice,
+            };
         case "playerJoin":
             return {
                 ty: "playerJoin", id: event.id,
