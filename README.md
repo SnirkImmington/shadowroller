@@ -1,8 +1,12 @@
 # Shadowroller
 
-Roll some dice from [random.org](https://random.org).
+Shadowroller is work-in-progress a website that lets you roll lots of d6's and follow Shadowrun's dice rules. 
 
-Available at https://snirkimmington.github.io/shadowroller
+Shadowroller is avaialable at https://shadowroller.net/. 
+
+There is a server ([sr-server](https://github.com/SnirkImmington/sr-server)) which runs games for my friends.
+This system is not available for the general internet at the moment. 
+You can run a local version of the server yourself if you'd like.
 
 ## Credits & Attribution
 
