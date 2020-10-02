@@ -14,35 +14,44 @@ Given those descriptions, there are some import paths:
 There are basic guidelines to keeping things well-architectured:
 - ~rotues~ should not perform redis commands directly
 - ~sr~ should not perform HTTP/request management
-- ~config~ should do nothing besides get config data
-- ~main~ should call some functions from ~sr~ in a simple manner
+- ~config~ should do nothing besides get and verify config data
+- ~main~ should call some functions from ~sr~ with minimal business logic
 
 ** ~sr~ package: business logic
 
 Although Shadowroller is very small and doesn't do much, I'm trying to maintain
-a basic amount of separation between this core package and ~routes~.
+a reasonable amount of separation between this core package and ~routes~.
 
-- ~auth~: create accounts, check authorization on first login.
-- ~session~: create temporary sessions in Redis, check authorization per-request.
-- ~game~:
+- ~session~: create sessions in Redis, check authorization per-request.
+- ~game~: manage the players in a game
 - ~event~: create events, subscribe to events
+- ~events~: definition of event types and serialization
 - ~roll~: roll dice according to Shadowrun rules
-- ~server~: create
+- ~update~: updates are streamed server->client when game state changes
+
+- ~tid~: a timestamp ID with some noise, not currently used but will be in the future
+- ~timestamp~: event IDs are currently milisecond timestamps
+- ~id~: GUIDs using base64 encoded strings, used for players
 
 ** ~routes~ package: a REST API
 
 This started as an idea to keep endpoint files in a folder, but turned into an API
 boundary. Shadowroller may have alternate APIs in the future (i.e. a Discord bot)
-so making the split more serious doesn't hurt.
+so keeping the business/endpoint logic separate is a good investment.
 
-This package includes the HTTP handlers for API endpoints and the Gorilla routers
-they're registered on.
+This package includes the HTTP handlers for API endpoints + the Gorilla routers
+they're registered on, and auxiliary files for creating the HTTP server.
+It's definitely due for a split-up!
 
-- ~httpAuth~: convert between HTTP request headers and ~sr.Auth~ s.
+- ~httpServer~: methods for creating servers and ~mux~ es
 - ~httpSession~: get session info from HTTP requests
+- ~httpContext~: attach request IDs and other info to request ~Context~ s.
+- ~httpError~: error shortcuts for bailing out of HTTP request handler
 - ~middleware~: router middleware including rate limiting and panic catching.
 - ~redirectServer~: Simple HTTP -> HTTPS redirect server which is mostly used by spammers
-- ~request~: HTTP request handler utilities
+- ~request~: Generic, mixed HTTP request handler utilities, mostly logging.
 
 - ~auth~: log in and refresh sessions
-- ~game~: get info about games, perform actions (i.e. rolls)
+- ~game~: get info about games, perform actions (i.e. rolls) - will get split up
+- ~task~: one-off tasks are registered as routes here, usually disabled
+- ~meta~: frontend redirect, 404 handler, healthcheck, etc.

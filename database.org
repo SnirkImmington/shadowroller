@@ -8,39 +8,45 @@ Most of this will be transitioned over to a persistent SQL DB.
 *Game ID*: each game will have a unique ID (dev environment creates ~test1~ and ~test2~)
 which the players use to connect to the game. This ID should be kept secret.
 
-*Player ID*: with the game ID, a player types in a name. Players in a game may have the same name.
-We give them a random ID internally and send them a *signed* JWT with the game ID and their player ID.
-They will get the ~{playerID -> playerName}~ set when they or other players connect.
-I will not implement player leaving yet, easier to just restart redis.
-Frontend will give player names random colors based on the random ID.
+*Players*: players are "ephemeral" in that we just make a new one every time someone logs in.
+(This will be changed next major update.) We generate a random ID for each player when they join,
+as well as a session which the client uses to authenticate. (The games I run with friends have >100
+players each.)
 
-*Events*: the main function of the +chat+ roll server is through pub/sub. Events are posted to a redis channel
-via the frontend POSTing using JWT auth. Frontend will receive events using Server Sent Events (basically
-codified long-polling) where the request goroutine will hold the connection open and write each event for the
-game as the players receive it. Game history is not saved outside of this channel. Events are JSON objects
-which contain the player ID, type of the event, and {roll, dice rolled} or {join, player who joined}.
+*Sessions*: sessions are used with every client request to authenticate as a player in a game.
+They are generated with a random ID and can be persistent or temporary. Sessions are kept persistent
+while a player is actively connected to the server. Sessions contain some basic information about the
+player as well.
+
+*History/Events*: each time a player makes a dice/initiative roll, a new event is created.
+Events are stored in a sorted set, sorted by millisecond timestamp and stored as JSON strongs.
+Events are also broadcast to all players in the game they're created in via Redis pub/sub.
+
+*Updates*: the server broadcasts state changes (i.e. event edited/deleted) to all players via updates.
+These are small JSON strings often indicating a key/value change. Like events, they are sent to clients
+via Redis pub/sub.
 
 ** Games ~game:{gameID}~ hash
-- ~event_id~ number: incrementing event ID
+- ~event_id~ number: unused.
 
 ** Players ~player_name:{gameID}~ hash
 - contains fields of format ~{playerID}: {playerName}~
+- this will grow arbitrarily as a new set of players is typically created every tabletop session.
 
-** Game events ~game_event:{gameID}~ channel
-/A JSON-encoded event is passed through this channel./
-- *Event* (the core datatype)
-  + ~type~ string: one of ~"player_joined"~, ~"roll"~
-  + ~id~ number: incrementing event ID stored in ~game.{gameID} event_id~
-  + ~ts~ Timestamp: unix timestamp of event (second precision)
-- *Player Joined*
-  + ~player_id~ string: new player ID
-  + ~player_name~ string: new player name
-#  + ~players~ { (id): (name), ... }: all players in the game
-- *Roll events*
-  + ~player_id~ number: player ID
-  + ~roll~ []number: the dice rolled
+** Sessions ~session:{sessionID}~ hash
+- ~gameID~, ~playerID~ of the player in question
+- ~persist~: 1 for persistent (default 1 month), 0 for temporary (default 15 min after logout).
+  Persistence handled via Redis ~EXPIRE~.
+- Also includes ~playerName~ to reduce Redis lookups.
 
-* New DB
+** Persistent event history ~history:{gameID}~ sorted set
+- score: timestamp (and ID) of the event
+- value: the event as a JSON string (which includes its timestamp)
 
-** Sessions ~session:sessionID~ hash
-- ~playerID~, ~gameID~, ... ~playerName~
+** Event channel ~event:{gameID}~ channel
+- JSON-encoded events are published by event handlers
+- Subscribed to by SSE subscription handler
+
+** Update channel ~update:{gameID}~ channel
+- JSON-encoded upates are published by event handlers
+- Subscribed to by SSE subscription handler
