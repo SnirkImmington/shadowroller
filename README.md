@@ -2,11 +2,13 @@
 
 Shadowroller is work-in-progress a website that lets you roll lots of d6's and follow Shadowrun's dice rules. 
 
+![Desktop screenshot Oct 02 2020](https://user-images.githubusercontent.com/1468114/94968996-ea440600-04cf-11eb-97eb-faca0af677f3.png)
+
 Shadowroller is avaialable at https://shadowroller.net/. 
 
 There is a server ([sr-server](https://github.com/SnirkImmington/sr-server)) which runs games for my friends.
 This system is not available for the general internet at the moment. 
-You can run a local version of the server yourself if you'd like.
+You can run a local version of the server yourself if you'd like - it's rather straightforward if you're comfortable with the command line.
 
 ## Credits & Attribution
 
