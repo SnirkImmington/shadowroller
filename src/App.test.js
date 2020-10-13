@@ -1,13 +1,16 @@
-// @flow
+import * as React from "react";
+import { act, render, screen } from "@testing-library/react";
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
+import * as server from 'server';
+import App from "./App";
 
-// Flow type for the tests.
-/*:: declare var it: (name: string, action: () => void) => void; */
+/*:: declare var beforeEach: (() => void) => void */
+/*:: declare var afterEach: (() => void) => void */
+/*:: declare var beforeEach: (() => void) => void */
+/*:: declare var expect: (any) => any */
 
-it('renders without crashing', () => {
-  const div = document.createElement('div');
-  ReactDOM.render(<App />, div);
+test("renders without crashing", () => {
+    render(<App />);
+    expect(screen.getByText("Join")).toBeDefined();
+    expect(screen.getByText("Shadowroller")).toBeDefined();
 });
