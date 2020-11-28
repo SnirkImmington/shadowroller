@@ -43,6 +43,7 @@ export const Flavor: StyledComponent<> = styled.i`
 `;
 
 export const HashColored: StyledComponent<{ id: string, light?: bool }> = styled.b`
+    white-space: nowrap;
     color: ${props => srutil.hashedColor(props.id)};
     ${props => props.light ? "padding: 1px; background: white;" : ""}
 `;

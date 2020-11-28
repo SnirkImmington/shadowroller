@@ -6,7 +6,6 @@ import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as Game from 'game';
-import * as server from 'server';
 
 const StyledList: StyledComponent<> = styled(UI.FlexRow)`
     flex-grow: 1;

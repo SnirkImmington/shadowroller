@@ -8,6 +8,7 @@ import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import EditEvent from 'edit-event';
+import PlayerList from 'game/player-list';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -259,6 +260,7 @@ export default function EventHistory() {
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>
+                {game && <PlayerList />}
             </UI.FlexRow>
             {body}
         </UI.Card>

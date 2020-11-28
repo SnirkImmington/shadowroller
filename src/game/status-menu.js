@@ -4,6 +4,8 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
 
+import ColorPicker from 'color-picker';
+
 import * as Game from 'game';
 import * as Event from 'event';
 import * as server from 'server';
@@ -55,6 +57,7 @@ export function StatusMenu({ hide }: Props) {
                         {game.player.name}
                     </UI.HashColored>.
                 </Message>
+                <ColorPicker />
                 <LeaveButton light onClick={handleLeave}>
                     Log Out
                 </LeaveButton>
