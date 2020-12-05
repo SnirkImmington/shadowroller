@@ -60,6 +60,8 @@ export const ROLL_TITLE_FLAVOR = [
     "animate objects",
     "hack the cupcake",
     "catch the hacker",
+    "eavesdrop on the queen",
+    "send in the red team",
 
     "drive through the storm",
     "not spray more tags",
@@ -74,7 +76,9 @@ export const ROLL_TITLE_FLAVOR = [
     "pretend to be a chef",
     "smuggle in handcuffs",
     "remember the cocktail list",
-    "practice blooood magic",
+    "practice blood magic",
+    "shoot the bandit",
+    "drive through the loop",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",
@@ -92,9 +96,6 @@ export const ROLL_TITLE_FLAVOR = [
 const TitleRow = styled(UI.FlexRow)`
     width: 100%;
     justify-content: space-between;
-`;
-
-const FormLabel = styled.label`
 `;
 
 const RollBackground = {
@@ -130,9 +131,6 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
     }
 `;
 
-const RollToLabel = styled.label`
-`;
-
 const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
     height: calc(1em + 10px);
     /* Mobile: full width - "name rolls to" */
@@ -140,6 +138,13 @@ const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
 
     @media all and (min-width: 768px) {
         width: 23em;
+    }
+`;
+
+const RollGlitchyLabel = styled.label`
+    padding: .5em;
+    @media all and (min-width: 768px) {
+        padding: 0;
     }
 `;
 
@@ -154,6 +159,7 @@ export default function RollDicePrompt() {
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [title, setTitle] = React.useState('');
     const [edge, setEdge] = React.useState(false);
+    const [glitchy, setGlitchy] = React.useState(0);
     const [localRoll, setLocalRoll] = React.useState(false);
 
     const connected = connection === "connected";
@@ -176,6 +182,16 @@ export default function RollDicePrompt() {
         [setEdge]
     );
 
+    const onGlitchyClicked = React.useCallback(
+        (e) => setGlitchy(g => g === 0 ? 1 : 0),
+        [setGlitchy]
+    );
+
+    const setRollGlitchy = React.useCallback(
+        (g: ?number) => { g != null && setGlitchy(g); },
+        [setGlitchy]
+    );
+
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
         if (!diceCount) { return; }
@@ -185,21 +201,21 @@ export default function RollDicePrompt() {
                 const rounds = srutil.rollExploding(diceCount);
                 localRoll = {
                     ty: "edgeRoll", source: "local", id: Event.newID(),
-                    title, rounds,
+                    title, rounds, glitchy,
                 };
             }
             else {
                 const dice = srutil.roll(diceCount);
                 localRoll = {
                     ty: "roll", source: "local", id: Event.newID(),
-                    title, dice,
+                    title, dice, glitchy,
                 };
             }
             dispatch({ ty: "newEvent", event: localRoll });
         }
         else {
             setRollLoading(true);
-            routes.game.roll({ count: diceCount, title, edge })
+            routes.game.roll({ count: diceCount, title, edge, glitchy })
                 .onDone((res, full) => {
                     setRollLoading(false);
                     if (!res && process.env.NODE_ENV !== "production") {
@@ -209,13 +225,16 @@ export default function RollDicePrompt() {
         }
         setTitle('');
         setEdge(false);
-        if (Math.floor(Math.random() * 2.6) === 0) {
+        setGlitchy(0);
+        if (Math.floor(Math.random() * 2.64) === 0) {
             newTitleFlavor();
         }
     }
 
     const numericInput = React.useMemo(() => (
-        <NumericInput id="roll-select-dice" min={1} max={99} onSelect={setDiceCount} />
+        <NumericInput id="roll-select-dice"
+                      min={1} max={99}
+                      onSelect={setDiceCount} />
     ), [setDiceCount]);
 
     // roll title gets game state, dispatch useLocalRoll
@@ -225,21 +244,21 @@ export default function RollDicePrompt() {
                 <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
             </TitleRow>
             <form id="dice-input" onSubmit={onRollClicked}>
-                <UI.ColumnToRow>
+                <UI.ColumnToRow formRow>
                     <UI.FlexRow formRow>
-                        <FormLabel htmlFor="roll-select-dice">
+                        <label htmlFor="roll-select-dice">
                             Roll
-                        </FormLabel>
+                        </label>
                         {numericInput}
-                        <FormLabel htmlFor="roll-select-dice">
+                        <label htmlFor="roll-select-dice">
                             dice
-                        </FormLabel>
+                        </label>
                         &nbsp;
                     </UI.FlexRow>
                     <UI.FlexRow formRow>
-                        <RollToLabel htmlFor="roll-title">
+                        <label htmlFor="roll-title">
                             to
-                        </RollToLabel>
+                        </label>
                         <RollTitleInput id="roll-title"
                                         placeholder={titleFlavor}
                                         onChange={rollTitleChanged}
@@ -254,6 +273,33 @@ export default function RollDicePrompt() {
                         </UI.RadioLink>
                     </UI.FlexRow>
                 </UI.ColumnToRow>
+                <UI.FlexRow maxWidth>
+                    <UI.ColumnToRow rowCenter>
+                        <UI.FlexRow>
+                            <UI.RadioLink id="roll-use-glitchy"
+                                          type="checkbox" light
+                                          checked={glitchy !== 0}
+                                          onChange={onGlitchyClicked}>
+                                Glitchy
+                            </UI.RadioLink>
+                            {glitchy !== 0 &&
+                                <NumericInput small id="roll-glitchiness"
+                                              min={-99} max={99}
+                                              placeholder={`${glitchy}`}
+                                              onSelect={setRollGlitchy} />
+                            }
+                        </UI.FlexRow>
+                        {glitchy !== 0 &&
+                            <RollGlitchyLabel htmlFor="roll-glitchiness">
+                                <i>
+                                    {glitchy > 0 ? "Reduce " : "Increase "}
+                                    number of 1s needed to glitch
+                                    by {Math.abs(glitchy)}.
+                                </i>
+                            </RollGlitchyLabel>
+                        }
+                    </UI.ColumnToRow>
+                </UI.FlexRow>
                 <UI.FlexRow spaced floatRight>
                     {connected ?
                         <>

@@ -12,6 +12,8 @@ import * as rollStats from 'rollStats';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
+export const SignDisplayFormat = new Intl.NumberFormat(undefined, { signDisplay: "always" });
+
 export const Title: StyledComponent<> = styled.div`
     line-height: 1.2em;
     padding-left: 2px;

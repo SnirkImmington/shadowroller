@@ -41,7 +41,11 @@ function RerollRecord({ event, playerID, noActions }: Props, ref) {
     return (
         <UI.FlexColumn ref={ref}>
             <UI.FlexRow alignItems="flex-start">
-                <Roll.Title>{intro} {title}</Roll.Title>
+                <Roll.Title>
+                    {intro} {title}
+                    {event.glitchy !== 0 &&
+                        ` (glitchy ${Roll.SignDisplayFormat.format(event.glitchy)})`}
+                </Roll.Title>
                 <Roll.Results color={color} result={result} />
             </UI.FlexRow>
             <Roll.Scrollable>

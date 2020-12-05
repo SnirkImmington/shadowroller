@@ -12,6 +12,9 @@ export function normalizeEvent(event: any) {
         event.dice = event.roll;
         delete event.roll;
     }
+    if (event.glitchy == null) {
+        event.glitchy = 0;
+    }
 }
 
 export function parseEvent(event: any): ?Event.Event {
@@ -24,6 +27,7 @@ export function parseEvent(event: any): ?Event.Event {
                 },
                 title: event.title ?? '',
                 dice: event.dice,
+                glitchy: event.glitchy ?? 0,
             } : Event.Roll);
         case "edgeRoll":
             return {
@@ -33,6 +37,7 @@ export function parseEvent(event: any): ?Event.Event {
                 },
                 title: event.title ?? '',
                 rounds: event.rounds,
+                glitchy: event.glitchy ?? 0,
             };
         case "rerollFailures":
             return {
@@ -43,9 +48,9 @@ export function parseEvent(event: any): ?Event.Event {
                 rollID: event.rollID,
                 title: event.title ?? "",
                 rounds: event.rounds,
+                glitchy: event.glitchy ?? 0,
             };
         case "initiativeRoll":
-            console.log("Got event", event);
             return {
                 ty: "initiativeRoll", id: event.id, edit: event.edit,
                 source: {

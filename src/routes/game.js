@@ -33,6 +33,7 @@ export type RollRequest = {|
     count: number,
     title: string,
     edge: bool,
+    glitchy: number,
 |};
 
 export function roll(request: RollRequest): BackendRequest<void> {
