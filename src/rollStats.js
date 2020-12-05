@@ -34,7 +34,7 @@ export function isGlitched(event: Event.DiceEvent): bool {
         // those dice that you reroll.
         // flow-ignore-all-next-line it forces flat() to be mixed
         const allDice: number[] = event.rounds.flat();
-        return sumOnes(allDice) + event.glitchy > allDice.length / 2;
+        return (sumOnes(allDice) + event.glitchy) > (allDice.length / 2);
     }
     else {
         console.error("Called isGlitched with", event);
