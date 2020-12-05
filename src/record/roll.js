@@ -37,9 +37,9 @@ function RollRecordInner({ event, playerID, noActions }: Props, ref) {
         <UI.FlexColumn ref={ref}>
             <UI.FlexRow>
                 <Roll.Title>
-                {intro} {title}
-                {event.glitchy !== 0 &&
-                    ` (glitchy ${Roll.SignDisplayFormat.format(event.glitchy)})`}
+                    {intro} {title}
+                    {event.glitchy !== 0 &&
+                        ` (glitchy ${Roll.SignDisplayFormat.format(event.glitchy)})`}
                 </Roll.Title>
                 <Roll.Results color={color} result={result} />
             </UI.FlexRow>

@@ -78,7 +78,6 @@ export const ROLL_TITLE_FLAVOR = [
     "remember the cocktail list",
     "practice blood magic",
     "shoot the bandit",
-    "drive through the loop",
 
     "slice with zappy sword",
     "soak 6 rounds of burst fire",
