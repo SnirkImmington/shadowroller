@@ -103,7 +103,13 @@ func logf(request *Request, format string, values ...interface{}) {
 func rawLog(stack int, request *Request, format string, values ...interface{}) {
 	id := requestID(request.Context())
 	message := fmt.Sprintf(format, values...)
-	err := log.Output(2+stack, id+" "+message)
+	var logText string
+	if config.IsProduction {
+		logText = fmt.Sprintf("%03x %v", id, message)
+	} else {
+		logText = fmt.Sprintf("\033[38;5;%vm%02x\033[m %v\n", id, id, message)
+	}
+	err := log.Output(2+stack, logText)
 	if err != nil {
 		log.Print(id, " [Output Error] ", message)
 	}

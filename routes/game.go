@@ -111,6 +111,17 @@ func handleUpdateEvent(response Response, request *Request) {
 			}
 			titleField.SetString(title)
 			update.AddField("title", title)
+		case "glitchy":
+			glitchy, ok := value.(float64)
+			if !ok {
+				httpBadRequest(response, request, "Event diff: glitchy: expected int")
+			}
+			glitchyField := reflect.Indirect(reflect.ValueOf(event)).FieldByName("Glitchy")
+			if !glitchyField.CanSet() {
+				httpInternalError(response, request, "Cannot set Glitchy field")
+			}
+			glitchyField.SetInt(int64(glitchy))
+			update.AddField("glitchy", glitchy)
 		}
 	}
 
@@ -164,9 +175,10 @@ func handleDeleteEvent(response Response, request *Request) {
 }
 
 type rollRequest struct {
-	Count int    `json:"count"`
-	Title string `json:"title"`
-	Edge  bool   `json:"edge"`
+	Count   int    `json:"count"`
+	Title   string `json:"title"`
+	Edge    bool   `json:"edge"`
+	Glitchy int    `json:"glitchy"`
 }
 
 var _ = gameRouter.HandleFunc("/roll", handleRoll).Methods("POST")
@@ -203,8 +215,9 @@ func handleRoll(response Response, request *Request) {
 				PlayerID:   sess.PlayerID,
 				PlayerName: sess.PlayerName,
 			},
-			Title:  roll.Title,
-			Rounds: rolls,
+			Title:   roll.Title,
+			Rounds:  rolls,
+			Glitchy: roll.Glitchy,
 		}
 
 	} else {
@@ -220,8 +233,9 @@ func handleRoll(response Response, request *Request) {
 				PlayerID:   sess.PlayerID,
 				PlayerName: sess.PlayerName,
 			},
-			Dice:  rolls,
-			Title: roll.Title,
+			Title:   roll.Title,
+			Dice:    rolls,
+			Glitchy: roll.Glitchy,
 		}
 	}
 

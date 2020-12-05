@@ -16,8 +16,9 @@ const EventTypeRoll = "roll"
 // RollEvent is triggered when a player rolls non-edge dice.
 type RollEvent struct {
 	EventCore
-	Title string `json:"title"`
-	Dice  []int  `json:"dice"`
+	Title   string `json:"title"`
+	Dice    []int  `json:"dice"`
+	Glitchy int    `json:"glitchy"`
 }
 
 // RollEventCore makes the EventCore of a RollEvent.
@@ -35,8 +36,9 @@ const EventTypeEdgeRoll = "edgeRoll"
 // EdgeRollEvent is triggered when a player uses edge before a roll.
 type EdgeRollEvent struct {
 	EventCore
-	Title  string  `json:"title"`
-	Rounds [][]int `json:"rounds"`
+	Title   string  `json:"title"`
+	Rounds  [][]int `json:"rounds"`
+	Glitchy int     `json:"glitchy"`
 }
 
 // EdgeRollEventCore makes the EventCore of an EdgeRollEvent.
@@ -55,9 +57,10 @@ const EventTypeRerollFailures = "rerollFailures"
 // on a roll.
 type RerollFailuresEvent struct {
 	EventCore
-	PrevID int64   `json:"prevID"`
-	Title  string  `json:"title"`
-	Rounds [][]int `json:"rounds"`
+	PrevID  int64   `json:"prevID"`
+	Title   string  `json:"title"`
+	Rounds  [][]int `json:"rounds"`
+	Glitchy int     `json:"glitchy"`
 }
 
 // RerollFailuresEventCore makes the EventCore of a RerollFailuresEvent.

@@ -18,22 +18,22 @@ const (
 )
 
 func withRequestID(ctx context.Context) context.Context {
-	var id string
+	var id int
 	if config.IsProduction {
-		id = fmt.Sprintf("%03x", rand.Intn(4096))
+		id = rand.Intn(4096)
 	} else {
-		id = fmt.Sprintf("%02x", rand.Intn(256))
+		id = rand.Intn(256)
 	}
 	return context.WithValue(ctx, requestIDKey, id)
 }
 
-func requestID(ctx context.Context) string {
+func requestID(ctx context.Context) int {
 	val := ctx.Value(requestIDKey)
 	if val == nil {
 		_ = log.Output(2, "Attempted to get request ID from missing context")
-		return "??"
+		return 0
 	}
-	return val.(string)
+	return val.(int)
 }
 
 func withConnectedNow(ctx context.Context) context.Context {
