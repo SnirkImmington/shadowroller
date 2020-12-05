@@ -6,4 +6,4 @@ export * from './request';
 
 export const BACKEND_URL = process.env.NODE_ENV === 'production' ?
     'https://shadowroller.net/'
-    : document.location.toString().replace(':3000', ':3001').replace('/shadowroller', '/');
+    : document.location.toString().replace(/:\d\d\d\d/, ':3001').replace('/shadowroller', '/');
