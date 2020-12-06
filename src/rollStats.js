@@ -7,7 +7,7 @@ function sumOnes(dice: number[]): number {
 }
 
 function sumHits(dice: number[]): number {
-    return dice.reduce((acc, curr) => curr === 1 ? acc + 1 : acc, 0);
+    return dice.reduce((acc, curr) => curr >= 5 ? acc + 1 : acc, 0);
 }
 
 export function isGlitched(event: Event.DiceEvent): bool {
