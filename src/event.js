@@ -15,6 +15,7 @@ export type Roll = {|
     +source: Source,
     +title: string,
     +dice: number[],
+    +glitchy: number,
 |};
 
 export type EdgeRoll = {|
@@ -24,6 +25,7 @@ export type EdgeRoll = {|
     +source: Source,
     +title: string,
     +rounds: number[][],
+    +glitchy: number,
 |};
 
 export type RerollFailures = {|
@@ -34,6 +36,7 @@ export type RerollFailures = {|
     +rollID: number,
     +title: string,
     +rounds: number[][],
+    +glitchy: number,
 |}
 
 export type Initiative = {|
@@ -258,7 +261,8 @@ function eventReduce(state: State, action: Action): State {
                     ({
                         id: e.id, source: e.source,
                         ty: "rerollFailures",
-                        rollID: e.id, title: e.title,
+                        rollID: e.id,
+                        title: e.title, glitchy: e.glitchy,
                         rounds: [action.round, e.dice]
                     }: RerollFailures)
                     : e

@@ -113,15 +113,16 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             listRef.current._listRef.resetAfterIndex(0);
         }
         else {
-            setTimeout(function resetLength() {
-                console.log("Resetting length...");
+            let timeout;
+            timeout = setTimeout(function resetLength() {
                 if (listRef.current && listRef.current._listRef) {
                     listRef.current._listRef.resetAfterIndex(0);
                 }
                 else {
-                    setTimeout(resetLength);
+                    timeout = setTimeout(resetLength);
                 }
-            })
+            });
+            return () => clearTimeout(timeout);
         }
     }, [eventsLength]);
 
@@ -167,7 +168,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     }, [loadedAt, playerID, state.editing]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
-        if (fetchingEvents || connection === "offline") {
+        if (fetchingEvents || connection === "offline" || atHistoryEnd) {
             return;
         }
         const event = state.events[oldestIx - 1];

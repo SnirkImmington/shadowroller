@@ -84,14 +84,14 @@ export function handleLogin(
     eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
     return routes.game.getEvents({ oldest: response.lastEvent })
         .onConnection(setConnection)
-        .onResponse(events => {
-            events.events.forEach(server.normalizeEvent);
+        .onResponse(resp => {
+            resp.events.forEach(server.normalizeEvent);
             eventDispatch({
                 ty: "setHistoryFetch",
-                state: events.more ? "ready" : "finished"
+                state: resp.more ? "ready" : "finished"
             });
             eventDispatch({
-                ty: "mergeEvents", events: events.events
+                ty: "mergeEvents", events: resp.events
             });
         })
         .onAnyError(eventsErr => {

@@ -3,6 +3,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
+import NumericInput from 'numeric-input';
 import {EventRecord} from 'history-panel';
 import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
@@ -23,10 +24,12 @@ export default function EditEvent({ event, playerID }: Props) {
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [title, setTitle] = React.useState(event.title);
+    // const [dice, setDice] = React.useState(event.dice);
+    const [glitchy, setGlitchy] = React.useState(event.glitchy);
     const [titleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
     const [deletePrompt, setDeletePrompt] = React.useState(false);
 
-    const canUpdate = title !== event.title;
+    const canUpdate = title !== event.title || glitchy !== event.glitchy;
 
     function cancelEdit() {
         dispatch({ ty: "clearEdit" });
@@ -49,9 +52,19 @@ export default function EditEvent({ event, playerID }: Props) {
         }
     }
 
+    function setRollGlitchy(selected: ?number) {
+        selected != null && setGlitchy(selected);
+    }
+
     function updateEvent() {
+        if (!canUpdate) {
+            return;
+        }
+        const diff = {};
+        if (title !== event.title) { diff.title = title; }
+        if (glitchy !== event.glitchy) { diff.glitchy = glitchy; }
         if (event.source !== "local") {
-            routes.game.modifyRoll({ id: event.id, diff: { title }})
+            routes.game.modifyRoll({ id: event.id, diff })
                 .onDone(success => {
                     if (success) {
                         dispatch({ ty: "clearEdit" });
@@ -62,7 +75,12 @@ export default function EditEvent({ event, playerID }: Props) {
                 });
         }
         else {
-            dispatch({ ty: "modifyRoll", id: event.id, edit: new Date().valueOf(), diff: { title } });
+            dispatch({
+                ty: "modifyRoll",
+                id: event.id,
+                edit: new Date().valueOf(),
+                diff
+            });
             dispatch({ ty: "clearEdit" });
         }
     }
@@ -79,7 +97,7 @@ export default function EditEvent({ event, playerID }: Props) {
                 <UI.FlexRow maxWidth formRow>
                     <EventRecord editing noActions setHeight={()=>{}}
                                  style={{ width: '100%'}} playerID={playerID}
-                                 event={{ ...event, title: title }} />
+                                 event={{ ...event, title, glitchy }} />
                 </UI.FlexRow>
                 <UI.ColumnToRow>
                     <UI.FlexRow formRow>
@@ -87,6 +105,13 @@ export default function EditEvent({ event, playerID }: Props) {
                         <UI.Input
                                 placeholder={event.title || titleFlavor}
                                 onChange={(e) => setTitle(e.target.value)} />
+                    </UI.FlexRow>
+                    <UI.FlexRow formRow>
+                        Glitchy
+                        <NumericInput small id="edit-set-roll-glitchiness"
+                                      min={-99} max={99}
+                                      placeholder={`${glitchy}`}
+                                      onSelect={setRollGlitchy} />
                     </UI.FlexRow>
             {/*
                     <UI.FlexRow formRow spaced>

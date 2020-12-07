@@ -37,7 +37,12 @@ export function since(ts: Date, now: Date = new Date()): string {
 }
 
 export function Since({ date }: { date: Date }) {
+    const dateText = since(date);
     return (
-        <UI.SmallText>{since(date) ?? "At some point"}</UI.SmallText>
+        <UI.SmallText>
+            {dateText ?
+                <time dateTime={date.toISOString()}>{dateText}</time>
+                : "At some point"}
+        </UI.SmallText>
     );
 }
