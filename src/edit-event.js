@@ -9,12 +9,8 @@ import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
 import * as Event from 'event';
 import routes from 'routes';
+import theme from 'style/theme';
 import * as srutil from 'srutil';
-
-const TitleBar = styled(UI.FlexRow)`
-    width: 100%;
-    justify-content: space-between;
-`;
 
 type Props = {
     +event: Event.DiceEvent,
@@ -86,13 +82,13 @@ export default function EditEvent({ event, playerID }: Props) {
     }
 
     return (
-        <UI.Card color="#81132a" style={{ padding: '5px'}}>
-            <TitleBar>
-                <UI.CardTitleText color="#842222">
+        <UI.Card padRight bottomGap color={theme.colors.primary}>
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
                     Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
                 </UI.CardTitleText>
-                <UI.LinkButton onClick={cancelEdit}>[ X ]</UI.LinkButton>
-            </TitleBar>
+                <UI.LinkButton minor onClick={cancelEdit}>cancel</UI.LinkButton>
+            </UI.FlexRow>
             <UI.FlexColumn>
                 <UI.FlexRow maxWidth formRow>
                     <EventRecord editing noActions setHeight={()=>{}}

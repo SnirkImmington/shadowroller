@@ -35,10 +35,11 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     line-height: 1;
     user-select: none;
     cursor: pointer;
-    text-decoration: underline;
+    ${({ minor }) => !minor && 'text-decoration: underline;'}
 
-    color: ${({light, theme}) =>
-        light ? theme.colors.secondary : theme.colors.primaryLight
+    color: ${({light, minor, theme}) =>
+        minor ? theme.colors.primaryDesaturated3 :
+        (light ? theme.colors.secondary : theme.colors.primaryLight)
     };
     background-color: transparent;
     border: 0;
@@ -53,7 +54,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     }
 
     &:hover &[disabled=""] {
-        filter: brightness(115%);
+        filter: brightness(125%);
     }
 
     &:active {
@@ -128,34 +129,20 @@ const HiddenInput = styled.input.attrs(props => ({
 const RadioSelector = styled.span`
     line-height: 1.5;
     font-family: ${({theme}) => theme.fonts.monospace};
-    &:before {
-        line-height: 1.5;
-        content: '[';
-        color: ${({light}) => light ? "#eef" : "#222"};
-        font-weight: 400;
-    }
-    &:after {
-        line-height: 1.5;
-        content: ']';
-        color: ${({light}) => light ? "#eef" : "#222"};
-        font-weight: 400;
-    }
     font-weight: bold;
     color: ${({light, theme}) =>
         light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
     };
+    textAlign: center;
 `;
 
 const RadioLabel: StyledComponent<> = styled.label`
     display: inline-flex;
-    align-items: center;
     line-height: 1.5;
     font-size: 1em;
     cursor: pointer !important;
     user-select: none;
     white-space: pre;
-
-    color: ${({light}) => light ? "#222" : "#eef"};
 
     &:hover {
         filter: brightness(180%);
@@ -175,6 +162,7 @@ type RadioLinkProps = {
     light?: bool,
     type: "checkbox" | "radio",
     checked: bool,
+    disabled?: bool,
     onChange: (SyntheticInputEvent<HTMLInputElement>) => void,
     children?: React.Node,
 };
@@ -182,12 +170,14 @@ export const RadioLink = React.memo<RadioLinkProps>(function RadioLink(props) {
     return (
         <RadioLabel htmlFor={props.id} checked={props.checked} edgy={props.edgy} light={props.light}>
             <HiddenInput id={props.id} type={props.type}
-                         value={props.id}
+                         value={props.id} disabled={props.disabled}
                          checked={props.checked} name={props.name}
                          onChange={props.onChange} />
+
             <RadioSelector light={!props.light}>
-                {props.checked? 'X' : ' '}
+                {props.checked? '[X]' : '[ ]'}
             </RadioSelector>
+            <span style={{ width: '.2em'}} />
             {props.children}
         </RadioLabel>
     )

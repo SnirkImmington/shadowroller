@@ -90,8 +90,8 @@ export default function RollInitiativePrompt() {
                     <UI.CardTitleText color="#81132a">
                         Initiative
                     </UI.CardTitleText>
-                    <UI.LinkButton onClick={() => setShown(true)}>
-                        [show]
+                    <UI.LinkButton minor onClick={() => setShown(true)}>
+                        show
                     </UI.LinkButton>
                 </UI.FlexRow>
         );
@@ -102,8 +102,8 @@ export default function RollInitiativePrompt() {
                 <UI.CardTitleText color="#81132a">
                     Initiative
                 </UI.CardTitleText>
-                <UI.LinkButton onClick={() => setShown(false)}>
-                    [hide]
+                <UI.LinkButton minor onClick={() => setShown(false)}>
+                    hide
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="roll-initiative-form">
