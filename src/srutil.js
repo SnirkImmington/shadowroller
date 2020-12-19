@@ -59,7 +59,7 @@ export function pickRandom<T>(items: Array<T>): T {
     return items[Math.floor(Math.random() * items.length)];
 }
 
-export function useFlavor(options: React.Node[]): [React.Node, () => void] {
+export function useFlavor<T>(options: T[]): [T, () => void] {
     const [flavor, setFlavor] = React.useState(() => pickRandom(options));
     return [flavor, () => setFlavor(() => pickRandom(options))];
 }
