@@ -15,6 +15,8 @@ import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import type { Connection } from 'connection';
 
 import SRHeader from 'header';
+import EditPlayerPanel from 'player/edit-panel';
+import NewJoinMenu from 'game/new-join-menu';
 import RollDicePrompt from 'roll-dice';
 import RollInitiativePrompt from 'roll-initiative';
 import EventHistory from 'history-panel';
@@ -27,20 +29,21 @@ const AppLeft: StyledComponent<> = styled(UI.FlexColumn)`
 
     padding: 0.5rem;
 
-    & > *:first-child {
+    & > *:not(last-child) {
         margin-bottom: 1rem;
     }
 
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
-        flex-grow: 1; /* Grows out */
-        padding-right: 14px;
+        flex-grow: 1; /* Balance with right */
+        min-width: 20em;
 
-        padding: 1rem 1.5rem 0 1rem;
+        padding-right: 1rem;
+        padding-top: 1rem;
 
         /* Space out dice and initiative on tablet+ */
-        & > *:first-child {
-            margin-bottom: 4rem;
+        & > *:not(last-child) {
+            margin-bottom: 1.5rem;
         }
     }
 `;
@@ -65,8 +68,8 @@ function Shadowroller() {
     const setConnection = React.useContext(SetConnectionCtx);
     const setStream = React.useContext(Stream.SetterCtx);
 
-    const [menuShown, setMenuShown] = React.useState<bool>(false);
-    const hide = React.useCallback(() => setMenuShown(false), [setMenuShown]);
+    const [menuShown, setMenuShown] = React.useState<bool>(true); // TODO for testing purposes
+    const toggleMenu = React.useCallback(() => setMenuShown(s => !s), [setMenuShown]);
 
     // On first load, read credentials from localStorage and log in.
     React.useEffect(() => {
@@ -97,37 +100,28 @@ function Shadowroller() {
     }, []);
 
     function onGameButtonClick() {
-        setMenuShown(shown => !shown);
+        toggleMenu();
         //
         setConnection((conn: Connection) =>
             conn === "disconnected" || conn === "errored" ? "offline" : conn
         );
     }
 
-    let menu: React.Node = '';
-    if (menuShown) {
-        if (connection === "connected") {
-            menu = <Game.StatusMenu hide={hide} />;
-        }
-        else if (server.session) {
-            menu = <Game.ReconnectMenu hide={hide} />;
-        }
-        else {
-            menu = <Game.JoinMenu hide={hide} />
-        }
-    }
-
     return (
         <ThemeProvider theme={theme}>
-            {process.env.NODE_ENV !== "production" &&
+            {process.env.NODE_ENV !== "production" && false &&
                 <DebugBar />
             }
 
             <SRHeader menuShown={menuShown}
-                      onClick={onGameButtonClick} />
-            { menu }
+                      onClick={toggleMenu} />
             <UI.ColumnToRow grow>
                 <AppLeft>
+                    {menuShown &&
+                        (server.session ?
+                          <EditPlayerPanel hide={toggleMenu} />
+                        : <NewJoinMenu hide={toggleMenu} />)
+                    }
                     <RollDicePrompt />
                     <RollInitiativePrompt />
                 </AppLeft>

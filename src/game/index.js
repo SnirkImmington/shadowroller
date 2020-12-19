@@ -63,7 +63,7 @@ function gameReduce(state: State, action: Action): State {
             }
             return state;
     }
-};
+}
 
 
 export type Reducer = (State, Action) => State;

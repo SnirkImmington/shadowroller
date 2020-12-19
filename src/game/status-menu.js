@@ -57,7 +57,6 @@ export function StatusMenu({ hide }: Props) {
                         {game.player.name}
                     </UI.HashColored>.
                 </Message>
-                <ColorPicker />
                 <LeaveButton light onClick={handleLeave}>
                     Log Out
                 </LeaveButton>
