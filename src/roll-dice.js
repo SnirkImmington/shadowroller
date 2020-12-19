@@ -11,8 +11,9 @@ import * as Event from 'event';
 import { ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
+import theme from 'style/theme';
 
-export const ROLL_TITLE_FLAVOR = [
+export const ROLL_TITLE_FLAVOR: string[] = [
     "look good in a suit",
     "swipe the key card",
     "negotiate for more pay",
@@ -152,6 +153,8 @@ export default function RollDicePrompt() {
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
+    const [shown, setShown] = React.useState(true);
+    const toggleShown = React.useCallback(() => setShown(s => !s), [setShown]);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
 
@@ -236,14 +239,30 @@ export default function RollDicePrompt() {
                       onSelect={setDiceCount} />
     ), [setDiceCount]);
 
+    if (!shown) {
+        return (
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
+                    Roll Dice
+                </UI.CardTitleText>
+                <UI.LinkButton minor onClick={toggleShown}>
+                    show
+                </UI.LinkButton>
+            </UI.FlexRow>
+        );
+    }
+
     // roll title gets game state, dispatch useLocalRoll
     return (
-        <UI.Card color="#81132a">
-            <TitleRow>
-                <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
-            </TitleRow>
+        <UI.Card color={theme.colors.primary}>
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>Roll Dice</UI.CardTitleText>
+                <UI.LinkButton minor onClick={toggleShown}>
+                    hide
+                </UI.LinkButton>
+            </UI.FlexRow>
             <form id="dice-input" onSubmit={onRollClicked}>
-                <UI.ColumnToRow formRow>
+                <UI.ColumnToRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-select-dice">
                             Roll
@@ -263,7 +282,7 @@ export default function RollDicePrompt() {
                                         onChange={rollTitleChanged}
                                         value={title} />
                     </UI.FlexRow>
-                    <UI.FlexRow formRow maxWidth>
+                    <UI.FlexRow formRow>
                         <UI.RadioLink id="roll-enable-edge"
                                       type="checkbox" light
                                       checked={edge}
