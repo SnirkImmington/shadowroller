@@ -36,6 +36,7 @@ type RecordProps = {
     +setHeight: (number) => void,
     +noActions?: boolean,
     +editing?: boolean,
+    +color?: string,
     style?: any
 };
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
@@ -57,7 +58,9 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }
 
     let Inner;
-    const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
+    const color = props.color || (
+        event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id)
+    );
 
     switch (event.ty) {
         case "playerJoin":
@@ -82,7 +85,7 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     return (
         <Record.StyledRecord color={color} editing={editing} style={style}>
             {/* flow-ignore-all-next-line We do pass the events properly here */}
-            <Inner ref={ref} playerID={playerID} event={event} noActions={noActions} />
+            <Inner ref={ref} playerID={playerID} color={color} event={event} noActions={noActions} />
         </Record.StyledRecord>
     );
 }, areEqual);
@@ -255,7 +258,7 @@ export default function EventHistory() {
         {events.editing &&
             <EditEvent playerID={game?.player?.id} event={events.editing} />
         }
-        <UI.Card padRight grow color="#81132a">
+        <UI.Card unpadded padRight grow color="#81132a">
             <UI.FlexRow maxWidth rowCenter>
                 <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
                     {title}
@@ -263,7 +266,9 @@ export default function EventHistory() {
                 </UI.CardTitleText>
                 {game && <PlayerList />}
             </UI.FlexRow>
-            {body}
+            <UI.FlexColumn grow>
+                {body}
+            </UI.FlexColumn>
         </UI.Card>
         </>
     );

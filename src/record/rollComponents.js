@@ -93,18 +93,18 @@ type Props = { event: Event.DiceEvent, result: rollStats.HitsResults };
 function LocalActionsRow({ event, result }: Props) {
     const dispatch = React.useContext(Event.DispatchCtx);
 
-    const onSecondChance = React.useCallback(function onSecondChance() {
+    function onSecondChance() {
         if (!event.dice) { return; }
         dispatch({
             ty: "reroll", id: event.id,
             edit: Date.now().valueOf(),
             round: srutil.rerollFailures(event.dice)
         });
-    }, [event, dispatch]);
+    };
 
-    const onEdit = React.useCallback(function onEdit() {
+    function onEdit() {
         dispatch({ ty: "selectEdit", event: event });
-    }, [event, dispatch]);
+    }
 
     return (
         <UI.FlexRow spaced>
@@ -125,14 +125,14 @@ function GameActionsRow({ event, result }: Props) {
 
     const [connection, setConnection] = React.useState<Connection>("offline");
 
-    const onSecondChance = React.useCallback(function onSecondChance() {
+    function onSecondChance() {
         routes.game.reroll({ rollID: event.id, rerollType: "rerollFailures" })
             .onConnection(setConnection);
-    }, [event]);
+    }
 
-    const onEdit = React.useCallback(function onEdit() {
+    function onEdit() {
         dispatch({ ty: "selectEdit", event: event });
-    }, [event, dispatch]);
+    }
 
     return (
         <UI.FlexRow spaced>

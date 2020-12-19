@@ -10,7 +10,7 @@ import * as Roll from './rollComponents';
 import * as Event from 'event';
 
 type Props = {
-    +event: Event.Initiative, playerID: ?string, +noActions?: bool,
+    +event: Event.Initiative, playerID: ?string, color?: string, +noActions?: bool,
 };
 /*
 type ActionProps = {
@@ -36,14 +36,14 @@ function LocalActionsRow({ event, result }: ActionProps) {
 }
 */
 
-function InitiativeRecord({ event, playerID, noActions }: Props, ref) {
-    const color = Event.colorOf(event);
+function InitiativeRecord({ event, playerID, color, noActions }: Props, ref) {
+    const eventColor = color || Event.colorOf(event);
     //const canModify = !noActions && Event.canModify(event, playerID);
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
-            <UI.HashColored id={event.source.id}>
+            <UI.HashColored id={event.source.id} color={eventColor}>
                 {event.source.name}
             </UI.HashColored>
             &nbsp;rolls
@@ -70,7 +70,7 @@ function InitiativeRecord({ event, playerID, noActions }: Props, ref) {
                     {title}
                 </Roll.Title>
                 </UI.FlexRow>
-                <Roll.StyledResults color={color} style={{ alignSelf: 'flex-start'}}>
+                <Roll.StyledResults color={eventColor} style={{ alignSelf: 'flex-start'}}>
                     {result} <UI.FAIcon icon={icons.faClipboardList} />
                 </Roll.StyledResults>
             </UI.FlexRow>

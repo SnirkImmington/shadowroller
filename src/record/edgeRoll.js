@@ -11,16 +11,16 @@ import * as Event from 'event';
 import * as rollStats from 'rollStats';
 
 type Props = {
-    +event: Event.EdgeRoll, +playerID: ?string, +noActions?: bool
+    +event: Event.EdgeRoll, +playerID: ?string, +color?: string, +noActions?: bool
 }
-function EdgeRollRecord({ event, noActions, playerID }: Props, ref) {
-    const color = Event.colorOf(event);
+function EdgeRollRecord({ event, noActions, color, playerID }: Props, ref) {
+    const eventColor = color || Event.colorOf(event);
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
-            <UI.HashColored id={event.source.id}>
+            <UI.HashColored id={event.source.id} color={eventColor}>
                 {event.source.name}
             </UI.HashColored>
             &nbsp;
@@ -44,12 +44,12 @@ function EdgeRollRecord({ event, noActions, playerID }: Props, ref) {
                     {event.glitchy !== 0 &&
                         ` (glitchy ${Roll.SignDisplayFormat.format(event.glitchy)})`}
                 </Roll.Title>
-                <Roll.Results color={color} result={result} />
+                <Roll.Results color={eventColor} result={result} />
             </UI.FlexRow>
             <Roll.Scrollable>
                 <dice.List rolls={event.rounds[0]} />
                 <UI.FlexRow>
-                    <Roll.Rounds icon={icons.faBolt} color={color}
+                    <Roll.Rounds icon={icons.faBolt} color={eventColor}
                                  rounds={event.rounds.slice(1)} />
                 </UI.FlexRow>
             </Roll.Scrollable>
