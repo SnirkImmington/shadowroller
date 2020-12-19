@@ -113,11 +113,9 @@ export default function DebugBar() {
                 <Item align="end">
                     <UI.LinkButton light onClick={playersClicked}>
                         <b>
-                            Players
-                            ({gameState?.players?.size ?? 0}):
-                            </b>
+                            Players ({gameState?.players?.size ?? 0})
+                        </b>
                     </UI.LinkButton>
-                    <tt>{JSON.stringify(players)}</tt>
                 </Item>
             </Group>
         </StyledBar>
