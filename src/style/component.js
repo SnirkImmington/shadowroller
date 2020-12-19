@@ -42,13 +42,13 @@ export const Flavor: StyledComponent<> = styled.i`
     color: ${props => props.warn ? props.theme.colors.warning : props.light ? "#fffd" : "#333"};
 `;
 
-export const HashColored: StyledComponent<{ id: string, light?: bool }> = styled.b`
+export const HashColored: StyledComponent<{ id?: string, color?: string, light?: bool }> = styled.b`
     white-space: nowrap;
-    color: ${props => srutil.hashedColor(props.id)};
+    color: ${props => props.color || srutil.hashedColor(props.id)};
     ${props => props.light ? "padding: 1px; background: white;" : ""}
 `;
 
-type NameProps = { +id: string, +name: string, light?: bool };
+type NameProps = { +id: string, +name: string, color?: string, light?: bool };
 export function PlayerName({ id, name, light }: NameProps) {
     return (
         <HashColored light={light} id={id}>{name}</HashColored>
