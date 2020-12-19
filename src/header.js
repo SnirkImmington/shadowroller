@@ -73,11 +73,10 @@ const JoinButtonUI = styled.button`
 `;
 
 type Props = {
-    +menuShown: bool,
     +onClick: () => void
 }
 
-function JoinButton({ menuShown, onClick }: Props) {
+function JoinButton({ onClick }: Props) {
     const game = React.useContext(Game.Ctx);
     const connection = React.useContext(ConnectionCtx);
 
@@ -86,15 +85,15 @@ function JoinButton({ menuShown, onClick }: Props) {
     if (!game) {
         switch (connection) {
             case "offline":
-                message = menuShown ? "Cancel" : "Join";
+                message = "Join";
                 break;
             case "disconnected":
-                message = menuShown ? "Cancel" : "Reconnect";
+                message = "Reconnect";
                 break;
             case "connecting":
             case "connected": // If we don't have a game yet
-                message = menuShown ? "Cancel" : "Connecting";
-                disabled = !menuShown;
+                message = "Connecting";
+                disabled = true;
                 break;
             case "errored":
                 message = "Try again";
@@ -107,12 +106,12 @@ function JoinButton({ menuShown, onClick }: Props) {
         switch (connection) {
             case "offline":
             case "disconnected":
-                message = menuShown ? "Close" : "Disconnected";
+                message = "Disconnected";
                 break;
             case "connected":
             case "connecting":
-                message = menuShown ? "Close" : game.player.name;
-                disabled = connection === "connecting" && !menuShown;
+                message = game.player.name;
+                disabled = connection === "connecting";
                 break;
             case "errored":
                 message = "Error";
