@@ -2,25 +2,21 @@
 
 import * as React from 'react';
 
-export type Player = {|
-    +id: string,
-    +name: string
-|};
+import type { PlayerInfo } from 'player';
 
 export type State = ?{|
     +gameID: string,
-    +player: Player,
-    +players: Map<string, string>
+    +players: Map<string, PlayerInfo>
 |};
 
 export const defaultState: State = null;
 
 export type Action =
-| { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
+| { +ty: "join", gameID: string, players: Map<string, PlayerInfo> }
 | { +ty: "leave" }
-| { +ty: "playerName", name: string }
-| { +ty: "setPlayers", players: Map<string, string> }
-| { +ty: "newPlayer", name: string, id: string }
+| { +ty: "newPlayer", info: PlayerInfo }
+| { +ty: "playerUpdate", id: string, update: $Shape<PlayerInfo> }
+| { +ty: "setPlayers", players: Map<string, PlayerInfo> }
 ;
 
 function gameReduce(state: State, action: Action): State {
@@ -28,30 +24,32 @@ function gameReduce(state: State, action: Action): State {
         case "join":
             return {
                 gameID: action.gameID,
-                player: action.player,
                 players: action.players
             };
         case "leave":
             return null;
-        case "playerName":
-            if (!state) { return state; }
-            return {
-                ...state,
-                player: { ...state.player, name: action.name },
-            };
         case "newPlayer":
             if (!state) { return state; }
-            const newPlayers = new Map(state.players);
-            newPlayers.set(action.id, action.name);
+            const newPlayerPlayers = new Map(state.players);
+            newPlayerPlayers.set(action.info.id, action.info);
             return {
                 ...state,
-                players: newPlayers,
+                players: newPlayerPlayers,
             };
+        case "playerUpdate":
+            if (!state) { return state; }
+            const existing = state.players.get(action.id);
+            if (!existing) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.error("Update for unknown player ", action.id, "know of", state);
+                }
+                return state;
+            }
+            const playerUpdatePlayers = new Map(state.players);
+            const updated = { ...existing, ...action.update };
+            return { ...state, players: playerUpdatePlayers };
         case "setPlayers":
             if (!state) { return state; }
-            if (!action.players.get(state.player.id)) {
-                action.players.set(state.player.id, state.player.name);
-            }
             return {
                 ...state,
                 players: action.players,

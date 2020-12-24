@@ -8,18 +8,18 @@ export type PlayerInfo = {|
     +hue: number
 |};
 
-export type User = {|
+export type Player = {|
     ...PlayerInfo,
     +username: string,
 |};
 
-export type State = ?{|
-    user: User,
-|};
+export type State = ?Player;
 export const defaultState = null;
 
 export type Action =
-| { +ty: "userUpdate", values: $Shape<User> }
+| { +ty: "join", self: Player }
+| { +ty: "leave" }
+| { +ty: "updateSelf", values: $Shape<Player> }
 ;
 
 export function colorOf(player: PlayerInfo): string {
@@ -31,9 +31,13 @@ export type Reducer = (State, Action) => State;
 
 function userReduce(state: State, action: Action): State {
     switch (action.ty) {
-        case "userUpdate":
+        case "join":
+            return action.self;
+        case "leave":
+            return null;
+        case "updateSelf":
             if (!state) { return state; }
-            return { ...state, user: { ...state.user, ...action.values } };
+            return { ...state, ...action.values };
         default:
             (action: empty); // eslint-disable-line no-unused-expressions
             if (process.env.NODE_ENV !== 'production') {
@@ -47,7 +51,7 @@ let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {
     reduce = function(state: State, action: Action): State {
         const result = userReduce(state, action);
-        console.log("Player", action.ty, state, action, result);
+        console.log("Reduce Player", action.ty, state, action, result);
         return result;
     }
 }
