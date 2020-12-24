@@ -9,10 +9,8 @@ export type LoginRequest = {|
 |};
 export type LoginResponse = {|
     playerID: string,
-    playerName: string,
     game: GameInfo,
     session: string,
-    lastEvent: number,
 |};
 export function login(request: LoginRequest): BackendRequest<LoginResponse> {
     // flow-ignore-all-next-line
