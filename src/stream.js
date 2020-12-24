@@ -6,6 +6,29 @@ import * as Event from 'event';
 import * as server from 'server';
 import type { SetConnection } from 'connection';
 
+type StreamState =
+| { ty: "offline" }
+| { ty: "connecting", source: EventSource }
+| { ty: "connected", source: EventSource }
+| { ty: "disconnected", source: EventSource, tries: number, reconnect: TimeoutID }
+| { ty: "reconnecting", source: EventSource, tries: number }
+;
+
+type StreamAction =
+| { ty: "connect", url: string }
+| { ty: "close" }
+| { ty: "disconnected" }
+| { ty: "reconnected" }
+;
+
+function onStreamError(e, state, streamDispatch: Function) {
+    console.error(e);
+}
+
+function dispatch() {
+
+}
+
 export type State = ?EventSource;
 export type Setter = (State) => void;
 
