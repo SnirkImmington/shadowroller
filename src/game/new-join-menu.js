@@ -129,7 +129,7 @@ export default function JoinMenu({ hide }: Props) {
                     Join a game
                 </UI.CardTitleText>
                 <UI.LinkButton onClick={hide} minor>
-                    close
+                    hide
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="join-game" onSubmit={onSubmit}>

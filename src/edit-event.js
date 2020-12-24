@@ -87,7 +87,7 @@ export default function EditEvent({ event, playerID }: Props) {
                 <UI.CardTitleText color={theme.colors.primary}>
                     Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
                 </UI.CardTitleText>
-                <UI.LinkButton minor onClick={cancelEdit}>cancel</UI.LinkButton>
+                <UI.LinkButton minor onClick={cancelEdit}>close</UI.LinkButton>
             </UI.FlexRow>
             <UI.FlexColumn>
                 <UI.FlexRow maxWidth formRow>
@@ -148,7 +148,7 @@ export default function EditEvent({ event, playerID }: Props) {
                     <UI.LinkButton disabled={!canUpdate} onClick={updateEvent}>
                         update
                     </UI.LinkButton>
-                    <UI.LinkButton onClick={cancelEdit}>
+                    <UI.LinkButton minor onClick={cancelEdit}>
                         cancel
                     </UI.LinkButton>
                 </UI.FlexRow>
