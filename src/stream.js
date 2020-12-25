@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as server from 'server';
 import type { SetConnection } from 'connection';
 

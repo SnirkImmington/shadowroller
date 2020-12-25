@@ -7,7 +7,7 @@ import * as humanTime from 'humanTime';
 import * as Roll from './rollComponents';
 import * as icons from 'style/icon';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as rollStats from 'rollStats';
 
 type Props = {

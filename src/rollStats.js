@@ -1,6 +1,6 @@
 // @flow
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 
 function sumOnes(dice: number[]): number {
     return dice.reduce((acc, curr) => curr === 1 ? acc + 1 : acc, 0);

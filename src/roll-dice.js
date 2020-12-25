@@ -7,7 +7,7 @@ import * as UI from 'style';
 import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import { ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';

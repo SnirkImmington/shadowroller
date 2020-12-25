@@ -7,7 +7,7 @@ import * as UI from 'style';
 import theme from 'style/theme';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as Stream from './stream';
 import * as server from 'server';
 import routes from 'routes';
@@ -19,7 +19,7 @@ import EditPlayerPanel from 'player/edit-panel';
 import NewJoinMenu from 'game/new-join-menu';
 import RollDicePrompt from 'roll-dice';
 import RollInitiativePrompt from 'roll-initiative';
-import EventHistory from 'history-panel';
+import EventHistory from 'history/history-panel';
 import DebugBar from 'debug-bar';
 
 import 'assets-external/source-code-pro.css';

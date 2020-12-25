@@ -2,7 +2,7 @@
 
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
-import type { Event, DiceEvent } from 'event';
+import type { Event, DiceEvent } from 'history/event';
 
 export type RenameRequest = {|
     name: string

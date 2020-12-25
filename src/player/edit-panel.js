@@ -7,14 +7,14 @@ import * as UI from 'style';
 import theme from 'style/theme';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as server from 'server';
 import * as Stream from '../stream';
 import * as srutil from 'srutil';
 import { SetConnectionCtx } from 'connection';
 
 import ColorPicker from 'color-picker';
-import { EventRecord } from 'history-panel';
+import { EventRecord } from 'history/history-panel';
 import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
 

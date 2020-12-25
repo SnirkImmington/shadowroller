@@ -7,7 +7,7 @@ import * as dice from 'dice';
 import * as humanTime from 'humanTime';
 import * as Roll from './rollComponents';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 
 type Props = {
     +event: Event.Initiative, playerID: ?string, color?: string, +noActions?: bool,

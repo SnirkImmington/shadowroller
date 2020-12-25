@@ -7,11 +7,11 @@ import * as UI from 'style';
 import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import EditEvent from 'edit-event';
+import EditEvent from 'history/edit-event';
 import PlayerList from 'game/player-list';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as Record from 'record';
 import * as server from 'server';
 import routes from 'routes';

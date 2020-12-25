@@ -1,6 +1,6 @@
 // @flow
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as Game from 'game';
 import * as Stream from '../stream';
 import routes from 'routes';

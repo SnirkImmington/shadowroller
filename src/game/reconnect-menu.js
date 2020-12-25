@@ -5,7 +5,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as Stream from '../stream';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import * as server from 'server';

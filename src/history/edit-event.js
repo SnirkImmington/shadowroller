@@ -4,10 +4,10 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'numeric-input';
-import {EventRecord} from 'history-panel';
+import {EventRecord} from 'history/history-panel';
 import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 import routes from 'routes';
 import theme from 'style/theme';
 import * as srutil from 'srutil';

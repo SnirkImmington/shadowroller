@@ -7,7 +7,7 @@ import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as Stream from '../stream';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 

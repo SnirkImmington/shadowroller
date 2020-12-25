@@ -7,7 +7,7 @@ import * as UI from 'style';
 import * as dice from 'dice';
 
 import type { Connection } from 'connection';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as rollStats from 'rollStats';
 import routes from 'routes';
 import * as srutil from 'srutil';

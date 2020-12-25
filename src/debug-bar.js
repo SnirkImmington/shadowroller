@@ -7,7 +7,7 @@ import * as UI from 'style';
 
 import * as server from 'server';
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 import { ConnectionCtx } from 'connection';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
