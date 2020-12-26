@@ -98,6 +98,9 @@ function JoinButton({ onClick }: Props) {
             case "errored":
                 message = "Try again";
                 break;
+            case "retrying":
+                message = "Reconnecting";
+                break;
             default:
                 (connection: empty); // eslint-disable-line no-unused-expressions
         }
@@ -110,8 +113,9 @@ function JoinButton({ onClick }: Props) {
                 break;
             case "connected":
             case "connecting":
+            case "retrying":
                 message = game.player.name;
-                disabled = connection === "connecting";
+                disabled = connection !== "connected";
                 break;
             case "errored":
                 message = "Error";
