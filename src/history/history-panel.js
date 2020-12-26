@@ -3,6 +3,8 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
+import * as icons from 'style/icon';
+import theme from 'style/theme';
 
 import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
@@ -258,9 +260,11 @@ export default function EventHistory() {
         {events.editing &&
             <EditEvent playerID={game?.player?.id} event={events.editing} />
         }
-        <UI.Card unpadded padRight grow color="#81132a">
+        <UI.Card unpadded padRight grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter>
-                <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
+                <UI.CardTitleText color={theme.colors.primary} style={{ marginRight: '0.5rem'}}>
+                    <UI.FAIcon icon={icons.faList} />
+                    &nbsp;
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>

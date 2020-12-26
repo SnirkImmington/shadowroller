@@ -9,6 +9,8 @@ export {
     faIdBadge, faIdCard, faPortrait, faLock, faKey,
     // Icons for in game/GC/local rolls
     faUser, faUsers, faUserFriends, faUserSecret,
+    // History icon
+    faList,
     // Roll icons
     faBolt, faRedo, faClipboardList, faGrimace,
     // dice
