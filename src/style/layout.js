@@ -62,7 +62,7 @@ export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
     color: ${props => props.color};
     font-size: 1.3rem;
     margin-left: 0.4em;
-    line-height: 1.2em;
+    line-height: 1.3em;
 `;
 
 type CardTitleProps = { +color: string, +padRight?: bool };

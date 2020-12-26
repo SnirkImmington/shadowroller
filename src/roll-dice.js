@@ -5,6 +5,7 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import NumericInput from 'numeric-input';
+import { AnimatedDie } from 'dice';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
@@ -12,6 +13,7 @@ import { ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
+import * as icons from 'style/icon';
 
 export const ROLL_TITLE_FLAVOR: string[] = [
     "look good in a suit",
@@ -262,7 +264,11 @@ export default function RollDicePrompt() {
     return (
         <UI.Card color={theme.colors.primary}>
             <UI.FlexRow maxWidth floatRight>
-                <UI.CardTitleText color={theme.colors.primary}>Roll Dice</UI.CardTitleText>
+                <UI.CardTitleText color={theme.colors.primary}>
+            {/*<AnimatedDie unpadded color={theme.colors.primary} />*/}
+                    <UI.FAIcon icon={icons.faDice} />
+                    &nbsp;Roll Dice
+                </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     hide
                 </UI.LinkButton>
@@ -288,7 +294,7 @@ export default function RollDicePrompt() {
                                         onChange={rollTitleChanged}
                                         value={title} />
                     </UI.FlexRow>
-                        <FullWidthSpacing />
+                    <FullWidthSpacing />
                     <UI.FlexRow formRow>
                         <UI.RadioLink id="roll-enable-edge"
                                       type="checkbox" light

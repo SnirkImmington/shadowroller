@@ -12,5 +12,6 @@ export {
     // Roll icons
     faBolt, faRedo, faClipboardList, faGrimace,
     // dice
+    faDice,
     // faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo,
 } from "@fortawesome/free-solid-svg-icons";

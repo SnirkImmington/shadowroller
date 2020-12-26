@@ -4,6 +4,8 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
+import theme from 'style/theme';
+import * as icons from 'style/icon';
 import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
@@ -87,7 +89,8 @@ export default function RollInitiativePrompt() {
     if (!shown) {
         return (
                 <UI.FlexRow maxWidth rowCenter floatRight>
-                    <UI.CardTitleText color="#81132a">
+                    <UI.CardTitleText color={theme.colors.primary}>
+                        <UI.FAIcon icon={icons.faClipboardList} />
                         Initiative
                     </UI.CardTitleText>
                     <UI.LinkButton minor onClick={() => setShown(true)}>
@@ -97,10 +100,11 @@ export default function RollInitiativePrompt() {
         );
     }
     return (
-        <UI.Card color="#81132a">
+        <UI.Card color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter floatRight>
-                <UI.CardTitleText color="#81132a">
-                    Initiative
+                <UI.CardTitleText color={theme.colors.primary}>
+                    <UI.FAIcon icon={icons.faClipboardList} />
+                    &nbsp;Initiative
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={() => setShown(false)}>
                     hide

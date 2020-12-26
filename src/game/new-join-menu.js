@@ -131,7 +131,8 @@ export default function JoinMenu({ hide }: Props) {
         <UI.Card color={theme.colors.primary}>
             <UI.FlexRow maxWidth justifyContent="space-between">
                 <UI.CardTitleText color={theme.colors.primary}>
-                    Join a game
+                    <UI.FAIcon icon={icons.faUsers} />
+                    &nbsp;Join a game
                 </UI.CardTitleText>
                 <UI.LinkButton onClick={hide} minor>
                     hide
