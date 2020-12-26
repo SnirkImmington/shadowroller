@@ -25,23 +25,89 @@ function logMessage(event: MessageEvent) {
 }
 
 function handleEvent(e: MessageEvent, eventDispatch: Event.Dispatch) {
-
+    let eventData;
+    try {
+        // flow-ignore-all-next-line it's json parse
+        eventData = JSON.parse(e.data);
+    }
+    catch (err) {
+        console.error("Unparseable Event received from server:", err, e);
+        return;
+    }
+    const event = server.parseEvent(eventData);
+    if (!event) {
+        console.error("Unable to parseEvent():", eventData, e);
+        return;
+    }
+    eventDispatch({ ty: "newEvent", event });
 }
 
-function handleUpdate(e: MessageEvent, eventDispatch: Event.Dispatch, gameDispatch: Game.Dispatch) {
+function handleEventUpdate(id: number, diff: any, edit: number, dispatch: Event.Dispatch) {
+    if (diff === "del") {
+        dispatch({ ty: "deleteEvent", id });
+    }
+    else if (diff["reroll"]) {
+        dispatch({ ty: "reroll", id, edit, round: diff["reroll"] });
+    }
+    else {
+        dispatch({ ty: "modifyRoll", id, edit, diff });
+    }
+}
 
+function handlePlayerUpdate(diff: $Shape<Player.Player>, edit: number, dispatch: Player.Dispatch) {
+    dispatch({ ty: "updateSelf", values: diff });
+}
+
+function handleGameUpdate(ty: string, id: string, diff: any, edit: number, dispatch: Game.Dispatch) {
+    dispatch({ ty: "playerUpdate", id, update: diff });
+}
+
+function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: Event.Dispatch, gameDispatch: Game.Dispatch, playerDispatch: Player.Dispatch) {
+    let updateData: any[];
+    try {
+        // flow-ignore-all-next-line it's json parse
+        updateData = JSON.parse(e.data);
+    }
+    catch (err) {
+        console.error("Unparseable Update received from server:", err, e);
+        return;
+    }
+
+    if (typeof updateData !== "object" || updateData.length !== 4) {
+        console.error("Invalid update type from server:", updateData);
+        return;
+    }
+
+    const [ty, id, diff, at] = updateData;
+
+    switch (ty) {
+        case "evt":
+            handleEventUpdate(id, diff, at, eventDispatch);
+            return;
+        case "plr":
+            if (id === playerID) {
+                handlePlayerUpdate(diff, at, playerDispatch);
+                return;
+            }
+            handleGameUpdate(ty, id, diff, at, gameDispatch);
+            return;
+        default:
+            console.error("Unexpected event type", ty, "in", updateData);
+            return;
+    }
 }
 
 function StreamProvider() {
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
+    const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx)
 
     const [source, setSource] = React.useState<?EventSource>(null);
     const [retryID, setRetryID] = React.useState<?TimeoutID>(null);
 
     const connect = React.useCallback(
-        function connect(session: string, gameID: string, retries: number = 0) {
+        function connect(session: string, gameID: string, playerID: string, retries: number = 0) {
         setConnection("connecting");
         const source = new EventSource(
             `${server.BACKEND_URL}game/subscription?session=${session}`
@@ -50,7 +116,7 @@ function StreamProvider() {
         source.addEventListener("event", (e: MessageEvent) =>
             handleEvent(e, eventDispatch));
         source.addEventListener("update", (e: MessageEvent) =>
-            handleUpdate(e, eventDispatch, gameDispatch));
+            handleUpdate(e, playerID, eventDispatch, gameDispatch, playerDispatch));
         source.onopen = function () {
             setRetryID(id => (clearTimeout(id), null));
             setConnection("connected");
@@ -76,7 +142,7 @@ function StreamProvider() {
             setRetryID(timeout);
         }
         setSource(source);
-    }, [gameDispatch, eventDispatch, setConnection, setSource, setRetryID]);
+    }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource, setRetryID]);
 
     return connect;
 }
