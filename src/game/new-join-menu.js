@@ -30,7 +30,6 @@ const ENTER_GAME_ID_FLAVOR: React.Node[] = [
 
 const REMEMBER_FLAVOR = [
     "Remember me",
-    "Remember this device",
     "Save my mark",
 ];
 
@@ -62,6 +61,12 @@ const NO_CONNECTION_FLAVOR = [
 type Props = {
     hide: () => void
 };
+
+const CheckmarkOffset = styled.span`
+    @media all and (min-width: 768px) {
+        width: 1.5rem;
+    }
+`;
 
 export default function JoinMenu({ hide }: Props) {
     const gameDispatch = React.useContext(Game.DispatchCtx);
@@ -133,7 +138,7 @@ export default function JoinMenu({ hide }: Props) {
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="join-game" onSubmit={onSubmit}>
-                <UI.FlexColumn style={{padding: '0 .5rem'}}>
+                <UI.FlexColumn>
                     <UI.ColumnToRow formRow>
                         <i>Join a game if you've been given a Game ID.&nbsp;</i>
                         <UI.Flavor warn={warn}>{flavor}</UI.Flavor>
@@ -162,17 +167,22 @@ export default function JoinMenu({ hide }: Props) {
                                       disabled={loginConnection === "connecting"} />
                         </UI.FlexRow>
                     </UI.ColumnToRow>
-                    <UI.FlexRow formRow floatRight spaced>
-                        <span style={{ width: '1.3rem' }} />
-                        <UI.RadioLink type="checkbox" id="join-game-persist"
+                    <UI.FlexRow formRow floatRight>
+                        <CheckmarkOffset />
+                        <UI.RadioLink type="checkbox" id="join-game-persist" light
                                       name="Remember this Game ID"
                                       checked={persist} onChange={e => setPersist(e.target.checked)}
                                       disabled={loginConnection === "connecting"}>
                             {persistFlavor}
                         </UI.RadioLink>
-                        <UI.LinkButton disabled={!ready}>
-                            join game
-                        </UI.LinkButton>
+                        <UI.FlexRow formRow spaced>
+                            <UI.LinkButton disabled={!ready}>
+                                join game
+                            </UI.LinkButton>
+                            <UI.LinkButton minor onClick={hide}>
+                                cancel
+                            </UI.LinkButton>
+                        </UI.FlexRow>
                     </UI.FlexRow>
                 </UI.FlexColumn>
             </form>
