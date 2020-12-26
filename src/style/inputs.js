@@ -143,6 +143,7 @@ const RadioLabel: StyledComponent<> = styled.label`
     cursor: pointer !important;
     user-select: none;
     white-space: pre;
+    font-family: ${({theme}) => theme.fonts.monospace};
 
     &:hover {
         filter: brightness(180%);
