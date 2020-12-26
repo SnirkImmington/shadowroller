@@ -3,9 +3,10 @@
 import * as React from 'react';
 
 export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
-export type SetConnection = (Connection | (Connection => Connection)) => void;
+export type RetryConnection = Connection | "retrying";
+export type SetConnection = (RetryConnection | (RetryConnection => RetryConnection)) => void;
 
-export const ConnectionCtx = React.createContext<Connection>("connected");
+export const ConnectionCtx = React.createContext<RetryConnection>("connected");
 export const SetConnectionCtx = React.createContext<SetConnection>(() => {});
 
 export function connectionFor(response: Response): Connection {
