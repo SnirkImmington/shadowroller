@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-function rollDie(): number {
+export function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;
 }
 

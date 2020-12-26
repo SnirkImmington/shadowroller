@@ -7,6 +7,8 @@ import * as UI from 'style';
 import theme from 'style/theme';
 import 'index.css';
 
+import * as srutil from 'srutil';
+
 // flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
 // flow-ignore-all-next-line Uh it's there
@@ -26,25 +28,52 @@ export function colorForRoll(roll: number): string {
         : theme.colors.dieNone;
 }
 
-type DieProps = { roll: number, small?: bool };
-export const Die = React.memo<DieProps>(function Die({ roll, small }: DieProps) {
-    let Dice = DieOne;
-    let color = theme.colors.dieNone;
+const DiceMap = [DieOne, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
-    switch (roll) {
-        case 1: color = theme.colors.dieOne; break;
-        case 2: Dice = DieTwo; break;
-        case 3: Dice = DieThree; break;
-        case 4: Dice = DieFour; break;
-        case 5: Dice =DieFive; color = theme.colors.dieHit; break;
-        case 6: Dice = DieSix; color = theme.colors.dieHit; break;
-        default:
-            break;
+type DieProps = {| roll: number, style?: any, ...AnimatedProps |};
+export const Die = React.memo<DieProps>(function Die(props: DieProps) {
+    const { color: dieColor, roll, small } = props;
+    let color = dieColor;
+    if (!color && !small) {
+        switch (roll) {
+            case 1:
+                color = theme.colors.dieOne;
+                break;
+            case 5:
+            case 6:
+                color = theme.colors.dieHit;
+                break;
+            default:
+                color = theme.colors.dieNone;
+        }
+    }
+    else if (!color && small) {
+        color = theme.colors.dieNone;
     }
 
-    return <Dice className="sr-die"
-                 color={small ? theme.colors.dieNone : color} />;
+    let Dice = DiceMap[roll] || DieOne;
+
+    return <Dice className="sr-die" {...props} />;
 });
+
+type AnimatedProps = {| small?: bool, color?: string, unpadded?: bool |};
+export function AnimatedDie(props: AnimatedProps) {
+    const { color, small } = props;
+    const [die, setDie] = React.useState<number>(srutil.rollDie);
+
+    React.useEffect(() => {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion)').matches;
+        if (reducedMotion === "prefers-reduced-motion") {
+            return;
+        }
+        const interval = setInterval(function() {
+            setDie(srutil.rollDie());
+        }, 25 * 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return <Die style={{ margin: 0 }} roll={die} {...props} />;
+}
 
 const StyledList: StyledComponent<{ small?:bool, }> = styled(UI.FlexRow)`
     /* Mobile: dice are 1/12 screen width. */
