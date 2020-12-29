@@ -105,7 +105,7 @@ export default function JoinMenu({ hide }: Props) {
         setFlavor(connectingFlavor);
         newConnecting();
 
-        routes.auth.login({ gameID, playerName: username, persist }) // TODO login
+        routes.auth.login({ gameID, username, persist }) // TODO login
             .onConnection(setLoginConnection)
             .onResponse(resp => {
                 server.handleLogin(persist, resp, setConnection, setStream, gameDispatch, eventDispatch);
