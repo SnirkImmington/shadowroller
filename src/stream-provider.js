@@ -121,8 +121,10 @@ export function Provider(props: { children: React.Node }) {
         setSource(s => (s && s.close(), null));
         setRetryID(id => (clearTimeout(id), null));
 
+        let connectionSucessful = false;
+
         const source = new EventSource(
-            `${server.BACKEND_URL}game/subscription?session=${session}`
+            `${server.BACKEND_URL}game/subscription?session=${session}&retries=${retries}`
         );
         source.onmessage = logMessage;
         source.addEventListener("event", (e: MessageEvent) =>
@@ -130,8 +132,9 @@ export function Provider(props: { children: React.Node }) {
         source.addEventListener("update", (e: MessageEvent) =>
             handleUpdate(e, playerID, eventDispatch, gameDispatch, playerDispatch));
         source.onopen = function () {
-            setRetryID(id => (clearTimeout(id), null));
             setConnection("connected");
+            setRetryID(id => (clearTimeout(id), null));
+            connectionSucessful = true;
 
             if (process.env.NODE_ENV !== "production") {
                 // flow-ignore-all-next-line yes we can put that there thanks
@@ -141,16 +144,20 @@ export function Provider(props: { children: React.Node }) {
                 document.title = `${gameID} - Shadowroller`;
             }
         }
-        source.onerror = function() {
+        source.onerror = function(e) {
+            console.log("Source error", source, e, "retry #", retries);
             source.close();
             setSource(null);
             setConnection("retrying");
+            if (connectionSucessful) {
+                retries = 0;
+            }
 
             const timeoutDelay = retries > RETRY_DELAYS.length ?
                 RETRY_MAX : RETRY_DELAYS[retries];
             const timeout = setTimeout(function() {
                 connect({ session, gameID, playerID, retries: retries + 1 });
-            });
+            }, timeoutDelay);
             setRetryID(timeout);
         }
         setSource(source);
