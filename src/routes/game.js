@@ -61,5 +61,11 @@ export type EventsResponse = {|
 |};
 
 export function getEvents(request: EventsRequest): BackendRequest<EventsResponse> {
+    if (!request.oldest) {
+        delete request.oldest;
+    }
+    if (!request.newest) {
+        delete request.newest;
+    }
     return get<EventsRequest, EventsResponse>("game/events", request);
 }
