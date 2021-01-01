@@ -4,17 +4,18 @@ import * as React from 'react';
 
 import type { PlayerInfo } from 'player';
 
-export type State = ?{|
+export type Game = {|
     +gameID: string,
     +players: Map<string, PlayerInfo>
 |};
 
+export type State = ?Game;
 export const defaultState: State = null;
+export type Reducer = (State, Action) => State;
 
 export type Action =
 | { +ty: "join", gameID: string, players: Map<string, PlayerInfo> }
 | { +ty: "leave" }
-| { +ty: "newPlayer", info: PlayerInfo }
 | { +ty: "playerUpdate", id: string, update: $Shape<PlayerInfo> }
 | { +ty: "setPlayers", players: Map<string, PlayerInfo> }
 ;
@@ -28,26 +29,18 @@ function gameReduce(state: State, action: Action): State {
             };
         case "leave":
             return null;
-        case "newPlayer":
-            if (!state) { return state; }
-            const newPlayerPlayers = new Map(state.players);
-            newPlayerPlayers.set(action.info.id, action.info);
-            return {
-                ...state,
-                players: newPlayerPlayers,
-            };
         case "playerUpdate":
             if (!state) { return state; }
             const existing = state.players.get(action.id);
+            const updatedPlayers = new Map(state.players);
             if (!existing) {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.error("Update for unknown player ", action.id, "know of", state);
-                }
-                return state;
+                updatedPlayers.set(action.id, action.update);
             }
-            const playerUpdatePlayers = new Map(state.players);
-            const updated = { ...existing, ...action.update };
-            return { ...state, players: playerUpdatePlayers };
+            else {
+                const updatedPlayer = { ...existing, ...action.update };
+                updatedPlayers.set(action.id, updatedPlayer);
+            }
+            return { ...state, players: updatedPlayers };
         case "setPlayers":
             if (!state) { return state; }
             return {
@@ -62,9 +55,6 @@ function gameReduce(state: State, action: Action): State {
             return state;
     }
 }
-
-
-export type Reducer = (State, Action) => State;
 
 let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {

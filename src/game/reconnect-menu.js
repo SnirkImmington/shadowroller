@@ -45,13 +45,6 @@ export function ReconnectMenu({ hide }: Props) {
             .onConnection(setConnection)
             .onResponse(resp => {
                 hide();
-                server.handleLogin(
-                    false, resp,
-                    setConnection,
-                    setStream,
-                    gameDispatch,
-                    eventDispatch
-                );
             })
             .onClientError(resp => {
                 if (process.env.NODE_ENV !== "production") {
@@ -65,8 +58,6 @@ export function ReconnectMenu({ hide }: Props) {
 
     function handleLeave(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
-
-        server.handleLogout(stream, setStream, setConnection, gameDispatch, eventDispatch);
     }
 
     const buttonsEnabled = connection !== "connecting";

@@ -45,7 +45,6 @@ export function StatusMenu({ hide }: Props) {
 
     function handleLeave(event: SyntheticInputEvent<HTMLInputElement>) {
         event.preventDefault();
-        server.handleLogout(stream, setStream, setConnection, dispatch, eventDispatch);
     }
 
     return (
