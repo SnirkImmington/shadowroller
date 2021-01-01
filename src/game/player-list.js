@@ -34,7 +34,7 @@ export default function PlayerList() {
             <UI.FlexRow key={id}>
                 <UI.FAIcon icon={icons.faUser} style={iconStyle} />
                 <UI.HashColored id={id} key={id}>
-                    {player}
+                    {player.name}
                 </UI.HashColored>
             </UI.FlexRow>
         );
