@@ -10,7 +10,7 @@ export type LoginResponse = {|
     player: Player,
     game: GameInfo,
     session: string,
-    lastEvent: string,
+    lastEvent: number,
 |};
 
 export type LoginRequest = {|
