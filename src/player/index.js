@@ -13,21 +13,20 @@ export type Player = {|
     +username: string,
 |};
 
-export type State = ?Player;
-export const defaultState = null;
-
-export type Action =
-| { +ty: "join", self: Player }
-| { +ty: "leave" }
-| { +ty: "updateSelf", values: $Shape<Player> }
-;
-
 export function colorOf(player: PlayerInfo): string {
     return `hsl(${player.hue}, 80%, 56%)`;
 }
 
+export type State = ?Player;
+export const defaultState: State = null;
 export type Dispatch = (Action) => void;
 export type Reducer = (State, Action) => State;
+
+export type Action =
+| { +ty: "join", self: Player }
+| { +ty: "leave" }
+| { +ty: "update", values: $Shape<Player> }
+;
 
 function userReduce(state: State, action: Action): State {
     switch (action.ty) {
@@ -35,7 +34,7 @@ function userReduce(state: State, action: Action): State {
             return action.self;
         case "leave":
             return null;
-        case "updateSelf":
+        case "update":
             if (!state) { return state; }
             return { ...state, ...action.values };
         default:
