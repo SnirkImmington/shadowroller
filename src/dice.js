@@ -28,32 +28,33 @@ export function colorForRoll(roll: number): string {
         : theme.colors.dieNone;
 }
 
-const DiceMap = [DieOne, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
+const DiceMap = [undefined, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
 type DieProps = {| roll: number, style?: any, ...AnimatedProps |};
 export const Die = React.memo<DieProps>(function Die(props: DieProps) {
-    const { color: dieColor, roll, small } = props;
-    let color = dieColor;
+    const newProps = Object.assign({}, props);
+    let { color, roll, small } = newProps;
     if (!color && !small) {
         switch (roll) {
             case 1:
-                color = theme.colors.dieOne;
+                newProps.color = theme.colors.dieOne;
                 break;
             case 5:
             case 6:
-                color = theme.colors.dieHit;
+                newProps.color = theme.colors.dieHit;
                 break;
             default:
-                color = theme.colors.dieNone;
+                newProps.color = theme.colors.dieNone;
         }
     }
     else if (!color && small) {
-        color = theme.colors.dieNone;
+        newProps.color = theme.colors.dieNone;
     }
+    delete newProps.small;
 
     let Dice = DiceMap[roll] || DieOne;
 
-    return <Dice className="sr-die" {...props} />;
+    return <Dice className="sr-die" {...newProps} />;
 });
 
 type AnimatedProps = {| small?: bool, color?: string, unpadded?: bool |};
