@@ -87,13 +87,13 @@ export default function EditPlayerPanel({ hide }: Props) {
             <form id="player-settings" onSubmit={onSubmit}>
                 <UI.FlexColumn>
                     <UI.FlexRow formRow justifyContent="space-around">
-                        <EventRecord style={{}} noActions setHeight={() => {}}
+                        <EventRecord editing style={{}} noActions setHeight={() => {}}
                             playerID={player.id} color={hueColor} event={exampleEvent} />
                     </UI.FlexRow>
                     <UI.ColumnToRow>
                         <span style={{ flexGrow: 1}} />
                         <UI.FlexRow formRow>
-                            Player name
+                            Name
                             <UI.Input value={name} placeholder={player.name}
                                       onChange={e => setName(e.target.value)} />
                         </UI.FlexRow>
