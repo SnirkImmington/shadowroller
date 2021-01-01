@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Parser, evaluate } from 'math';
+import type { Setter } from 'srutil';
 
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
@@ -16,7 +17,9 @@ type Props = {
     min?: number,
     max?: number,
     small?: bool,
-    value?: number,
+    value?: ?number,
+    text?: string,
+    setText?: Setter<string>,
     placeholder?: string,
     round?: RoundingMode,
 };
@@ -91,13 +94,16 @@ const RoundingBox = styled(Component)`
 */
 
 export default function NumericInput(props: Props) {
-    const [text, setText] = React.useState<string>("");
+    const [textHook, setTextHook] = React.useState<string>("");
     const [state, setState] = React.useState<ValueState>("empty");
     const [round] = React.useState<RoundingMode>(props.round ?? "up");
     //const [showInfo, setInfoShown] = React.useState<bool>(false);
 
+    const text = props.text ?? textHook;
+    const setText = props.setText ?? setTextHook;
+
     function onTextInput(event: SyntheticInputEvent<HTMLInputElement>) {
-        setText(event.target.value);
+        setText(event.target.value ?? "");
         // Handle empty field - this is not an error condition
         if (!event.target.value) {
             setState("empty");

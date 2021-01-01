@@ -166,8 +166,9 @@ export default function RollDicePrompt() {
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
 
+    const [diceText, setDiceText] = React.useState("");
     const [diceCount, setDiceCount] = React.useState<?number>(null);
-    const [title, setTitle] = React.useState('');
+    const [title, setTitle] = React.useState("");
     const [edge, setEdge] = React.useState(false);
     const [glitchy, setGlitchy] = React.useState(0);
     const [localRoll, setLocalRoll] = React.useState(false);
@@ -241,12 +242,6 @@ export default function RollDicePrompt() {
         }
     }
 
-    const numericInput = React.useMemo(() => (
-        <NumericInput id="roll-select-dice"
-                      min={1} max={99}
-                      onSelect={setDiceCount} />
-    ), [setDiceCount]);
-
     if (!shown) {
         return (
             <UI.FlexRow maxWidth floatRight>
@@ -280,7 +275,12 @@ export default function RollDicePrompt() {
                         <label htmlFor="roll-select-dice">
                             Roll
                         </label>
-                        {numericInput}
+                        <NumericInput id="roll-select-dice"
+                                      min={1} max={99}
+                                      text={diceText}
+                                      setText={setDiceText}
+                                      value={diceCount}
+                                      onSelect={setDiceCount} />
                         <label htmlFor="roll-select-dice">
                             dice
                         </label>

@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 
+export type Setter<T> = (T | (T => T)) => void;
+
 export function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;
 }

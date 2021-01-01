@@ -55,8 +55,10 @@ export default function RollInitiativePrompt() {
     //const [loading, setLoading] = React.useState(false);
 
     const [base, setBase] = React.useState<?number>();
+    const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [dice, setDice] = React.useState<number>(1);
+    const [dice, setDice] = React.useState(1);
+    const [diceText, setDiceText] = React.useState("");
     //const [local, setLocal] = React.useState(false);
     const local = game?.gameID == null;
 
@@ -117,11 +119,13 @@ export default function RollInitiativePrompt() {
                             Roll
                         </label>
                         <NumericInput small id="roll-initiative-base"
-                                      min={1}
+                                      min={1} max={69}
+                                      text={baseText} setText={setBaseText}
                                       onSelect={baseChanged} />
                         +
                         <NumericInput small id="roll-initiative-dice"
                                       min={1} max={5} placeholder="1"
+                                      text={diceText} setText={setDiceText}
                                       onSelect={diceChanged} />
                         <label htmlFor="roll-initiative-dice">
                             d6

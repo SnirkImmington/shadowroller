@@ -2,11 +2,12 @@
 
 import * as React from 'react';
 import * as UI from 'style';
+import type { Setter } from 'srutil';
 
 export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
 export type RetryConnection = Connection | "retrying";
-export type SetConnection = (Connection | (Connection => Connection)) => void;
-export type SetRetryConnection = (RetryConnection | (RetryConnection => RetryConnection)) => void;
+export type SetConnection = Setter<Connection>;
+export type SetRetryConnection = Setter<RetryConnection>;
 
 export const ConnectionCtx = React.createContext<RetryConnection>("connected");
 export const SetConnectionCtx = React.createContext<SetRetryConnection>(() => {});
