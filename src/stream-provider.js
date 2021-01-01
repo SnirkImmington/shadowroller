@@ -5,9 +5,11 @@ import * as React from 'react';
 import * as Event from 'history/event';
 import * as Game from 'game';
 import * as Player from 'player';
+import routes from 'routes';
 import * as server from 'server';
 import { SetConnectionCtx } from 'connection';
 import type { RetryConnection as RetryConn, SetConnection } from 'connection';
+import type { BackendRequest } from 'server/request';
 
 // Delays for reconnecting the EventSource (in ms)
 const RETRY_DELAYS = [
@@ -55,7 +57,7 @@ function handleEventUpdate(id: number, diff: any, edit: number, dispatch: Event.
 }
 
 function handlePlayerUpdate(diff: $Shape<Player.Player>, edit: number, dispatch: Player.Dispatch) {
-    dispatch({ ty: "updateSelf", values: diff });
+    dispatch({ ty: "update", values: diff });
 }
 
 function handleGameUpdate(ty: string, id: string, diff: any, edit: number, dispatch: Game.Dispatch) {
@@ -97,7 +99,12 @@ function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: Event.Di
     }
 }
 
-function StreamProvider() {
+export type ConnectFn = ({ session: string, gameID: string, playerID: string, retries: number }) => void;
+export type LogoutFn = () => ?BackendRequest<void>;
+
+export const Ctx = React.createContext<[ConnectFn, LogoutFn]>([() => {}, () => {}]);
+
+export function Provider(props: { children: React.Node }) {
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
@@ -106,9 +113,14 @@ function StreamProvider() {
     const [source, setSource] = React.useState<?EventSource>(null);
     const [retryID, setRetryID] = React.useState<?TimeoutID>(null);
 
-    const connect = React.useCallback(
-        function connect(session: string, gameID: string, playerID: string, retries: number = 0) {
+    const connect: ConnectFn = React.useCallback<ConnectFn>(function connect({
+        session, gameID, playerID, retries
+    }) {
+        retries = retries || 0;
         setConnection("connecting");
+        setSource(s => (s && s.close(), null));
+        setRetryID(id => (clearTimeout(id), null));
+
         const source = new EventSource(
             `${server.BACKEND_URL}game/subscription?session=${session}`
         );
@@ -137,12 +149,27 @@ function StreamProvider() {
             const timeoutDelay = retries > RETRY_DELAYS.length ?
                 RETRY_MAX : RETRY_DELAYS[retries];
             const timeout = setTimeout(function() {
-                connect(session, gameID, retries + 1);
+                connect({ session, gameID, playerID, retries: retries + 1 });
             });
             setRetryID(timeout);
         }
         setSource(source);
     }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource, setRetryID]);
 
-    return connect;
+    const logout = React.useCallback(function logout(): BackendRequest<void> {
+        setConnection("offline");
+        setSource(s => (s && s.close(), null));
+        gameDispatch({ ty: "leave" });
+        eventDispatch({ ty: "clearEvents" });
+        playerDispatch({ ty: "leave" });
+        return routes.auth.logout();
+    }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource]);
+
+    const value = React.useMemo(() => [connect, logout], [connect, logout]);
+
+    return (
+        <Ctx.Provider value={value}>
+            {props.children}
+        </Ctx.Provider>
+    );
 }

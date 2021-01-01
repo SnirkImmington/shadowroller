@@ -114,7 +114,7 @@ function JoinButton({ onClick }: Props) {
             case "connected":
             case "connecting":
             case "retrying":
-                message = game.player.name;
+                message = game.gameID;
                 disabled = connection !== "connected";
                 break;
             case "errored":

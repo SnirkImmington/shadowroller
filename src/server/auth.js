@@ -2,10 +2,12 @@
 
 import * as Event from 'history/event';
 import * as Game from 'game';
+import * as Player from 'player';
 import * as Stream from '../stream';
+import type { ConnectFn } from 'stream-provider';
 import routes from 'routes';
 import type { BackendRequest } from 'server';
-import type { SetConnection } from 'connection';
+import type { SetRetryConnection } from 'connection';
 import * as server from 'server';
 
 export type ACCESS_STATE = "loading" | "found";
@@ -34,52 +36,42 @@ export function saveSession(newSession: string, persist: bool) {
     }
 }
 
-export function handleLogout(
-    stream: Stream.State,
-    setStream: Stream.Setter,
-    setConnection: SetConnection,
-    gameDispatch: Game.Dispatch,
-    eventDispatch: Event.Dispatch,
-): BackendRequest<any> {
-    if (stream) {
-        stream.close();
-    }
-    setStream(null);
-    gameDispatch({ ty: "leave" });
-    eventDispatch({ ty: "clearEvents" });
-    setConnection("offline");
-    // Log out POST is best effort
-    clearSession();
-    return routes.auth.logout();
-}
-
-export function handleLogin(
+type LoginArgs = {
     persist: bool,
     response: routes.auth.LoginResponse,
-    setConnection: SetConnection,
-    setStream: Stream.Setter,
+    connect: ConnectFn,
+    setConnection: SetRetryConnection,
     gameDispatch: Game.Dispatch,
+    playerDispatch: Player.Dispatch,
     eventDispatch: Event.Dispatch
-): BackendRequest<any> {
+};
+export function handleLogin({
+    persist, response, connect,
+    setConnection, gameDispatch, playerDispatch, eventDispatch
+}: LoginArgs): BackendRequest<any> {
     // Prepare the players and game state
-    const players = new Map<string, string>();
+    const players = new Map<string, Player.PlayerInfo>();
     for (let [k, v] of Object.entries(response.game.players)) {
         // flow-ignore-all-next-line it's being weird about Object.entries
         players.set(k, v);
     }
+    playerDispatch({
+        ty: "join",
+        self: response.player
+    });
     gameDispatch({
         ty: "join",
         gameID: response.game.id,
-        player: { id: response.playerID, name: response.playerName },
         players,
     });
     saveSession(response.session, persist);
 
-    const stream = Stream.open(
-        response.game.id, response.session,
-        setConnection, eventDispatch
-    );
-    setStream(stream);
+    connect({
+        session: response.session,
+        gameID: response.game.id,
+        playerID: response.player.id,
+        retries: 0
+    });
 
     eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
     return routes.game.getEvents({ oldest: response.lastEvent })

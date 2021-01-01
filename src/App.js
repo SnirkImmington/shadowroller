@@ -8,11 +8,12 @@ import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
-import * as Stream from './stream';
+import * as Player from 'player';
 import * as server from 'server';
+import * as Stream from 'stream-provider';
 import routes from 'routes';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
-import type { Connection } from 'connection';
+import type { RetryConnection } from 'connection';
 
 import SRHeader from 'header';
 import EditPlayerPanel from 'player/edit-panel';
@@ -65,8 +66,9 @@ function Shadowroller() {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
+    const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
-    const setStream = React.useContext(Stream.SetterCtx);
+    const [connect, logout] = React.useContext(Stream.Ctx);
 
     const [menuShown, setMenuShown] = React.useState<bool>(true); // TODO for testing purposes
     const toggleMenu = React.useCallback(() => setMenuShown(s => !s), [setMenuShown]);
@@ -77,14 +79,14 @@ function Shadowroller() {
         if (server.session) {
             routes.auth.reauth({ session: server.session })
                 .onConnection(setConnection)
-                .onResponse(resp => {
-                    server.handleLogin(
-                        true, resp,
-                        setConnection,
-                        setStream,
+                .onResponse(response => {
+                    server.handleLogin({
+                        persist: true, response,
+                        setConnection, connect,
                         gameDispatch,
+                        playerDispatch,
                         eventDispatch
-                    )
+                    });
                 })
                 .onClientError(resp => {
                     if (process.env.NODE_ENV !== "production") {
@@ -102,7 +104,7 @@ function Shadowroller() {
     function onGameButtonClick() {
         toggleMenu();
         //
-        setConnection((conn: Connection) =>
+        setConnection((conn: RetryConnection) =>
             conn === "disconnected" || conn === "errored" ? "offline" : conn
         );
     }
@@ -135,27 +137,29 @@ function Shadowroller() {
 
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
+    const [player, playerDispatch] = React.useReducer(Player.reduce, Player.defaultState);
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
-    const [connection, setConnection] = React.useState<Connection>("offline");
-    const [stream, setStream] = React.useState<Stream.State>(null);
+    const [connection, setConnection] = React.useState<RetryConnection>("offline");
 
     return (
         <ConnectionCtx.Provider value={connection}>
         <SetConnectionCtx.Provider value={setConnection}>
         <Game.Ctx.Provider value={game}>
-        <Event.Ctx.Provider value={eventList}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
+        <Player.Ctx.Provider value={player}>
+        <Player.DispatchCtx.Provider value={playerDispatch}>
+        <Event.Ctx.Provider value={eventList}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
-        <Stream.Ctx.Provider value={stream}>
-        <Stream.SetterCtx.Provider value={setStream}>
+        <Stream.Provider>
 
             <Shadowroller />
 
-        </Stream.SetterCtx.Provider>
-        </Stream.Ctx.Provider>
+        </Stream.Provider>
         </Event.DispatchCtx.Provider>
-        </Game.DispatchCtx.Provider>
         </Event.Ctx.Provider>
+        </Player.DispatchCtx.Provider>
+        </Player.Ctx.Provider>
+        </Game.DispatchCtx.Provider>
         </Game.Ctx.Provider>
         </SetConnectionCtx.Provider>
         </ConnectionCtx.Provider>

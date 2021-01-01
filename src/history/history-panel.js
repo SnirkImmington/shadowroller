@@ -14,6 +14,7 @@ import PlayerList from 'game/player-list';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
+import * as Player from 'player';
 import * as Record from 'record';
 import * as server from 'server';
 import routes from 'routes';
@@ -232,6 +233,7 @@ const HistoryFlavor = styled(UI.Flavor)`
 
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const events = React.useContext(Event.Ctx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
@@ -252,13 +254,13 @@ export default function EventHistory() {
         body = (<HistoryFlavor>{rollFlavor}</HistoryFlavor>);
     }
     else {
-        body = (<LoadingResultList playerID={game?.player?.id} />);
+        body = (<LoadingResultList playerID={player?.id} />);
     }
 
     return (
         <>
         {events.editing &&
-            <EditEvent playerID={game?.player?.id} event={events.editing} />
+            <EditEvent playerID={player?.id} event={events.editing} />
         }
         <UI.Card unpadded padRight grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter>
