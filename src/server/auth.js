@@ -74,7 +74,7 @@ export function handleLogin({
     });
 
     eventDispatch({ ty: "setHistoryFetch", state: "fetching" });
-    return routes.game.getEvents({ oldest: response.lastEvent })
+    return routes.game.getEvents({ })
         .onConnection(setConnection)
         .onResponse(resp => {
             resp.events.forEach(server.normalizeEvent);
