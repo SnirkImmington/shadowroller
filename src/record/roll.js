@@ -11,18 +11,20 @@ import * as Event from 'history/event';
 import * as rollStats from 'rollStats';
 
 type Props = {
-    +event: Event.Roll, playerID: ?string, color?: string, +noActions?: bool
+    +event: Event.Roll,
+    +playerID: string,
+    +color: string,
+    +noActions?: bool
 }
 function RollRecordInner({ event, playerID, color, noActions }: Props, ref) {
-    const eventColor = color || Event.colorOf(event);
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
-            <UI.HashColored id={event.source.id} color={eventColor}>
+            <UI.PlayerColored color={color}>
                 {event.source.name}
-            </UI.HashColored>
+            </UI.PlayerColored>
             {` rolls`}
         </>
     ) : (
@@ -42,7 +44,7 @@ function RollRecordInner({ event, playerID, color, noActions }: Props, ref) {
                     {event.glitchy !== 0 &&
                         ` (glitchy ${Roll.SignDisplayFormat.format(event.glitchy)})`}
                 </Roll.Title>
-                <Roll.Results color={eventColor} result={result} />
+                <Roll.Results color={color} result={result} />
             </UI.FlexRow>
             <Roll.Scrollable>
                 <dice.List rolls={event.dice} />

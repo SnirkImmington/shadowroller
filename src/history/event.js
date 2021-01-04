@@ -135,10 +135,6 @@ export function timeOf(event: Event): Date {
     return new Date(event.id);
 }
 
-export function colorOf(event: Event): string {
-    return event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
-}
-
 export function canModify(event: Event, playerID: ?string): bool {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
 }

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { PlayerInfo } from 'player';
+import type { Info as PlayerInfo } from 'player';
 
 export type Game = {|
     +gameID: string,
@@ -73,6 +73,4 @@ export type Dispatch = (Action) => void;
 export const Ctx = React.createContext<State>(defaultState);
 export const DispatchCtx = React.createContext<Dispatch>((_) => {});
 
-export { JoinMenu } from './join-menu';
-export { StatusMenu } from './status-menu';
 export { ReconnectMenu } from './reconnect-menu';

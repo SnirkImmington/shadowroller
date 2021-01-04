@@ -96,29 +96,6 @@ export function shallowEqual(a: any, b: any) {
     return true;
 }
 
-// Color generation taken from:
-// https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-
-/// Produces a random HSL color from IDs which are base64 ecoded random bytes.
-export function hashedColor(id: string): string {
-    let converted: string;
-    try {
-        converted = atob(id);
-    }
-    catch {
-        converted = id;
-    }
-
-    // Get a checksum of the ID to use as a unique color hue
-    let sum = 0;
-    for (let i = 0; i < converted.length; i++) {
-        sum += converted.charCodeAt(i);
-    }
-
-    const hue = sum % 360;
-    return `hsl(${hue}, 80%, 56%)`;
-}
-
 export function genRandomID(): string {
     const bytes = [0, 0, 0, 0, 0, 0].map(_ => Math.floor(Math.random() * 256));
     const chars = bytes.map(b => String.fromCharCode(b));

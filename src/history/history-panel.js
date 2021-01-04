@@ -36,18 +36,18 @@ const GAME_EMPTY_FLAVOR = [
 type RecordProps = {
     +event: ?Event.Event,
     +playerID: ?string,
-    +setHeight: (number) => void,
+    +color: string,
+    +setHeight?: (number) => void,
     +noActions?: boolean,
     +editing?: boolean,
-    +color?: string,
     style?: any
 };
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const { event, playerID, setHeight, noActions, editing, style } = props;
+    const { event, playerID, color, setHeight, noActions, editing, style } = props;
 
     const ref = React.useRef<?Element>();
     React.useEffect(() => {
-        if (ref.current) {
+        if (ref.current && setHeight) {
             setHeight(ref.current.getBoundingClientRect().height);
         }
     }, [ref, setHeight]);
@@ -61,14 +61,11 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }
 
     let Inner;
-    const color = props.color || (
-        event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id)
-    );
 
     switch (event.ty) {
         case "playerJoin":
-            Inner = Record.PlayerJoin;
-            break;
+            console.log("Attempt to render player join event", event);
+            return '';
         case "edgeRoll":
             Inner = Record.EdgeRoll;
             break;
@@ -96,6 +93,7 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
 type RowRenderProps = { +style: any, +index: number, +data: Event.Event[] };
 
 export function LoadingResultList({ playerID }: { playerID: ?string }) {
+    const game = React.useContext(Game.Ctx);
     const state = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
@@ -164,14 +162,21 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
-            return <EventRecord event={null} setHeight={setHeight} playerID={playerID} style={style} />;
+            return <EventRecord event={null} color={""} setHeight={setHeight} playerID={playerID} style={style} />;
         }
         else {
             const event = data[index];
             const editing = state.editing != null && state.editing.id === event.id;
-            return <EventRecord event={event} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
+            let color = "lightslategray";
+            if (game?.players && event.source !== "local") {
+                const player = game.players.get(event.source.id);
+                if (player) {
+                    color = Player.colorOf(player);
+                }
+            }
+            return <EventRecord event={event} color={color} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt, playerID, state.editing]);
+    }, [loadedAt, playerID, state.editing, game?.players]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline" || atHistoryEnd) {
