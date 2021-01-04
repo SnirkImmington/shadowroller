@@ -75,7 +75,7 @@ function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: Event.Di
         return;
     }
 
-    if (typeof updateData !== "object" || updateData.length !== 4) {
+    if (typeof updateData !== "object" || updateData.length < 3) {
         console.error("Invalid update type from server:", updateData);
         return;
     }
@@ -89,7 +89,6 @@ function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: Event.Di
         case "plr":
             if (id === playerID) {
                 handlePlayerUpdate(diff, at, playerDispatch);
-                return;
             }
             handleGameUpdate(ty, id, diff, at, gameDispatch);
             return;
