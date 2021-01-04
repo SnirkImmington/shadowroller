@@ -71,7 +71,7 @@ export default function ColorPicker(props: Props) {
     }
 
     function handleSelect(e) {
-        props.onSelect(e.target.value);
+        props.onSelect(parseInt(e.target.value));
     }
     return (
         <RainbowDiv style={props.style}>
