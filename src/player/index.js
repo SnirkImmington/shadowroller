@@ -2,18 +2,18 @@
 
 import * as React from 'react';
 
-export type PlayerInfo = {|
+export type Info = {|
     +id: string,
     +name: string,
     +hue: number
 |};
 
 export type Player = {|
-    ...PlayerInfo,
+    ...Info,
     +username: string,
 |};
 
-export function colorOf(player: PlayerInfo): string {
+export function colorOf(player: Info|Player): string {
     return `hsl(${player.hue}, 80%, 56%)`;
 }
 

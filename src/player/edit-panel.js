@@ -13,6 +13,8 @@ import * as Player from 'player';
 import * as Stream from 'stream-provider';
 import * as srutil from 'srutil';
 import { StatusText, ConnectionCtx, SetConnectionCtx } from 'connection';
+import type { ResponseStatus } from 'connection';
+import routes from 'routes';
 
 import ColorPicker from 'color-picker';
 import { EventRecord } from 'history/history-panel';
@@ -36,11 +38,10 @@ export default function EditPlayerPanel({ hide }: Props) {
     const playerDispatch = React.useContext(Player.DispatchCtx);
     const [_, logout] = React.useContext(Stream.Ctx);
     const connection = React.useContext(ConnectionCtx);
-    const setConnection = React.useContext(SetConnectionCtx);
 
     const [name, setName] = React.useState(player?.name);
-    const [hue, setHue] = React.useState(player?.hue || 0);
-    const [loading, setLoading] = React.useState(false);
+    const [hue, setHue] = React.useState<number>(player?.hue || 0);
+    const [response, setResponse] = React.useState<ResponseStatus>("ready");
 
     const [exampleTitle, updateTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
     const [dice] = React.useState(() => srutil.roll(11));
@@ -49,18 +50,32 @@ export default function EditPlayerPanel({ hide }: Props) {
         return null;
     }
 
-    const changed = name !== player.name || hue != 0;
-    const connected = connection === "connected";
+    const changed = name !== player.name || hue != player.hue;
+    const connected = connection === "connected" && response !== "loading";
 
     function onSubmit(e) {
         e.preventDefault();
         if (!changed) { return; }
-        hide();
+        let diff = {};
+        if (name !== player.name) {
+            diff.name = name;
+        }
+        if (hue !== player.hue) {
+            diff.hue = hue;
+        }
+        setResponse("loading");
+        routes.player.update({ diff })
+            .onResponseStatus(setResponse)
+            .onSuccess(hide)
+            .onAnyError(err => {
+                console.error("Error sending player update", err);
+            });
     }
 
     function onLogout(e) {
         e.preventDefault();
         logout();
+        hide();
     }
 
     let displayName = name || player.name;
@@ -70,7 +85,7 @@ export default function EditPlayerPanel({ hide }: Props) {
         title: exampleTitle, dice, glitchy: 0
     }
 
-    const hueColor = `hsl(${hue}, 80%, 56%)`;
+    const hueColor = Player.colorOf({ ...player, hue });
 
     return (
         <UI.Card color={theme.colors.primary}>
@@ -87,7 +102,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             <form id="player-settings" onSubmit={onSubmit}>
                 <UI.FlexColumn>
                     <UI.FlexRow formRow justifyContent="space-around">
-                        <EventRecord editing style={{}} noActions setHeight={() => {}}
+                        <EventRecord editing style={{}} noActions
                             playerID={player.id} color={hueColor} event={exampleEvent} />
                     </UI.FlexRow>
                     <UI.ColumnToRow>
@@ -95,12 +110,15 @@ export default function EditPlayerPanel({ hide }: Props) {
                         <UI.FlexRow formRow>
                             Name
                             <UI.Input value={name} placeholder={player.name}
-                                      onChange={e => setName(e.target.value)} />
+                                      onChange={e => setName(e.target.value)}
+                                      disabled={!connected} />
                         </UI.FlexRow>
                         <UI.FlexRow formRow>
                             <label htmlFor="player-settings-hue">Hue</label>
                             &nbsp;
-                            <ColorPicker id="player-settings-hue" style={{flexGrow: 1}} value={hue} onSelect={setHue} />
+                            <ColorPicker id="player-settings-hue" style={{flexGrow: 1}}
+                                         value={hue} onSelect={setHue}
+                                         disabled={!connected} />
                         </UI.FlexRow>
                         <span style={{ flexGrow: 1 }} />
                     </UI.ColumnToRow>

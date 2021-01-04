@@ -22,8 +22,8 @@ export function connectionFor(response: Response): Connection {
     return "errored";
 }
 
-export type ResponseStatus = | "success" | "badRequest" | "serverError" | "noConnection";
-export type SetResponse = (ResponseStatus) => void;
+export type ResponseStatus = "ready" | "loading" | "success" | "badRequest" | "serverError" | "noConnection";
+export type SetResponse = Setter<ResponseStatus>;
 
 export function statusFor(response: Response): ResponseStatus {
     if (!response.status) {
