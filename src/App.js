@@ -70,7 +70,7 @@ function Shadowroller() {
     const setConnection = React.useContext(SetConnectionCtx);
     const [connect, logout] = React.useContext(Stream.Ctx);
 
-    const [menuShown, setMenuShown] = React.useState<bool>(true); // TODO for testing purposes
+    const [menuShown, setMenuShown] = React.useState<bool>(false);
     const toggleMenu = React.useCallback(() => setMenuShown(s => !s), [setMenuShown]);
 
     // On first load, read credentials from localStorage and log in.
@@ -111,7 +111,7 @@ function Shadowroller() {
 
     return (
         <ThemeProvider theme={theme}>
-            {process.env.NODE_ENV !== "production" && false &&
+            {process.env.NODE_ENV !== "production" &&
                 <DebugBar />
             }
 

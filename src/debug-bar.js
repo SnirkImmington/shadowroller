@@ -6,8 +6,9 @@ import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as server from 'server';
-import * as Game from 'game';
 import * as Event from 'history/event';
+import * as Game from 'game';
+import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 
 const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
@@ -48,25 +49,12 @@ const Item = styled.div`
 `;
 
 export default function DebugBar() {
-    const gameState = React.useContext(Game.Ctx);
+    const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const connection = React.useContext(ConnectionCtx);
-    const eventState = React.useContext(Event.Ctx);
 
-    const game: any[] = !gameState ? [] : [
-        gameState.gameID, gameState.player.name, gameState.player.id
-    ];
-    const players = !gameState ? "N/A" : Array.from(gameState.players.values());
-    const events = { ...eventState, events: undefined, editing: eventState.editing?.id || null };
-
-    const eventsClicked = React.useCallback(() => {
-        if (eventState.events.length === 0) {
-            console.log("Debug bar: No events.");
-        }
-        else {
-            // flow-ignore-all-next-line It doesn't like console.table
-            console.table(eventState.events);
-        }
-    }, [eventState]);
+    const gameText = game ? game.gameID : "offline";
+    const players = game ? Array.from(game.players.values()).map(p => p.name) : [];
 
     const playersClicked = React.useCallback(() => {
         if (players.length === 0) {
@@ -74,9 +62,9 @@ export default function DebugBar() {
         }
         else {
             // flow-ignore-all-next-line console.table
-            console.table(players);
+            console.table(game?.players);
         }
-    }, [players]);
+    }, [game?.players]);
 
     return (
         <StyledBar>
@@ -99,22 +87,15 @@ export default function DebugBar() {
             <Group>
                 <Item align="start">
                     <b>Game:&nbsp;</b>
-                    <tt>{JSON.stringify(game) ?? 'N/A'}</tt>
+                    <tt>{gameText}</tt>
                 </Item>
                 <Item align="center">
-                    <UI.LinkButton light onClick={eventsClicked}>
-                        <b>
-                            Events
-                            ({eventState.events.length}):&nbsp;
-                        </b>
-                    </UI.LinkButton>
-                    <tt>{JSON.stringify(events)}</tt>
+                    {player ? `Logged in as ${player.name}` : "offline"}
                 </Item>
                 <Item align="end">
                     <UI.LinkButton light onClick={playersClicked}>
-                        <b>
-                            Players ({gameState?.players?.size ?? 0})
-                        </b>
+                        <b>Players:</b>
+                        <tt>{JSON.stringify(players)}</tt>
                     </UI.LinkButton>
                 </Item>
             </Group>
