@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
 
-import * as Game from 'game';
+import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 // flow-ignore-all-next-line
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
@@ -41,7 +41,7 @@ const SRTitle = styled.h1`
     }
 `;
 
-const JoinButtonUI = styled.button`
+const StyledJoinButton = styled.button`
     background: ${({theme}) => theme.colors.header};
     border: 3px solid white;
 
@@ -77,12 +77,12 @@ type Props = {
 }
 
 function JoinButton({ onClick }: Props) {
-    const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const connection = React.useContext(ConnectionCtx);
 
     let disabled = false;
     let message: React.Node = "";
-    if (!game) {
+    if (!player) {
         switch (connection) {
             case "offline":
                 message = "Join";
@@ -111,11 +111,13 @@ function JoinButton({ onClick }: Props) {
             case "disconnected":
                 message = "Disconnected";
                 break;
-            case "connected":
             case "connecting":
+                message = player.name;
+                disabled = true;
+                break;
+            case "connected":
             case "retrying":
-                message = game.gameID;
-                disabled = connection !== "connected";
+                message = player.name;
                 break;
             case "errored":
                 message = "Error";
@@ -126,9 +128,9 @@ function JoinButton({ onClick }: Props) {
     }
 
     return (
-        <JoinButtonUI disabled={disabled} onClick={onClick}>
+        <StyledJoinButton disabled={disabled} onClick={onClick}>
             {message}
-        </JoinButtonUI>
+        </StyledJoinButton>
     );
 }
 
