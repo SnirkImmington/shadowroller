@@ -16,11 +16,8 @@ import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 export const ROLL_TITLE_FLAVOR: string[] = [
-    "look good in a suit",
     "swipe the key card",
     "negotiate for more pay",
-    "eavesdrop on the business meeting",
-    "maniuplate the exec into revealing her plans",
 
     "avoid the oncoming shrapnel",
     "duck out of the way of the troll",
@@ -43,15 +40,12 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "repair the hole in the door",
 
     "swipe the statue",
-    "aim the torpedos",
     "avoid looking at the explosion",
 
     "gamble on the virtual horse racing",
     "backflip out of the plane",
     "pilot my drone under the door",
-    "place explosives",
     "repair the juggernaut",
-    "turn the world to chaos",
     "hack the grenade",
 
     "hack the cleaning drone",
@@ -63,11 +57,9 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "animate objects",
     "hack the cupcake",
     "catch the hacker",
-    "eavesdrop on the queen",
-    "send in the red team",
+    "look at the vampire",
 
     "drive through the storm",
-    "not spray more tags",
     "win the bike race",
     "identify the gang",
     "play the guitar",
@@ -75,20 +67,15 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "find the bandit",
     "jump through the air duct",
     "fireball the door",
-    "shoot between the hostages",
     "pretend to be a chef",
     "smuggle in handcuffs",
     "remember the cocktail list",
     "practice blood magic",
-    "shoot the bandit",
 
     "slice with zappy sword",
-    "soak 6 rounds of burst fire",
     "throw the deck",
     "swipe George's ID card",
     "pretend to be George",
-    "throw a knife",
-    "brick the security system",
     "shoot down the bugs",
     "inspire the intern",
     "wave a sword cane helpfully",
