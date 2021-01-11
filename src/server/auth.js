@@ -50,7 +50,7 @@ export function handleLogin({
     setConnection, gameDispatch, playerDispatch, eventDispatch
 }: LoginArgs): BackendRequest<any> {
     // Prepare the players and game state
-    const players = new Map<string, Player.PlayerInfo>();
+    const players = new Map<string, Player.Info>();
     for (let [k, v] of Object.entries(response.game.players)) {
         // flow-ignore-all-next-line it's being weird about Object.entries
         players.set(k, v);

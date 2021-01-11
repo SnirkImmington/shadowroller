@@ -59,6 +59,7 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
 
 export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
     font-family: "Source Code Pro", monospace;
+    white-space: nowrap;
     color: ${props => props.color};
     font-size: 1.3rem;
     margin-left: 0.4em;

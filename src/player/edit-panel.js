@@ -36,8 +36,14 @@ export default function EditPlayerPanel({ hide }: Props) {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
-    const [_, logout] = React.useContext(Stream.Ctx);
+    const [connect, logout] = React.useContext(Stream.Ctx);
     const connection = React.useContext(ConnectionCtx);
+    const setConnection = React.useContext(SetConnectionCtx);
+
+    const [showGames, toggleShowGames] = srutil.useToggle(false);
+    const [switchGame, setSwitchGame] = React.useState("");
+    const [switchResponse, setSwitchResponse] = React.useState<ResponseStatus>("ready");
+    const handleSwitchGame = React.useCallback((e) => setSwitchGame(e.target.value));
 
     const [name, setName] = React.useState(player?.name);
     const [hue, setHue] = React.useState<number>(player?.hue || 0);
@@ -50,6 +56,7 @@ export default function EditPlayerPanel({ hide }: Props) {
         return null;
     }
 
+    const switchDisabled = !showGames || !switchGame || switchGame === game.gameID || response === "loading";
     const changed = name !== player.name || hue != player.hue;
     const connected = connection === "connected" && response !== "loading";
 
@@ -72,6 +79,24 @@ export default function EditPlayerPanel({ hide }: Props) {
             });
     }
 
+    function onSwitch(e) {
+        e.preventDefault();
+        if (switchDisabled) { return; }
+        // If we've already saved a session, we persist this one.
+        const persist = Boolean(server.session);
+        setSwitchResponse("loading");
+        routes.auth.login({ username: player.username, gameID: switchGame, persist })
+            .onResponseStatus(setSwitchResponse)
+            .onResponse(response => {
+                server.handleLogin({
+                    persist, response,
+                    setConnection, connect,
+                    gameDispatch, playerDispatch, eventDispatch
+                });
+                toggleShowGames();
+            });
+    }
+
     function onLogout(e) {
         e.preventDefault();
         logout();
@@ -89,18 +114,35 @@ export default function EditPlayerPanel({ hide }: Props) {
 
     return (
         <UI.Card color={theme.colors.primary}>
-            <UI.FlexRow maxWidth floatRight>
+            <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
-                    Options for {player.name}
+                    Logged in: {player.name} / {game.gameID}
                 </UI.CardTitleText>
-                <UI.FlexRow spaced>
+                <UI.FlexRow maxWidth spaced>
+                    <span style={{ flexGrow: 1 }} />
                     <UI.LinkButton onClick={onLogout}>log out</UI.LinkButton>
-                    <span />
+                    <UI.LinkButton onClick={toggleShowGames}>switch game</UI.LinkButton>
                     <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
                 </UI.FlexRow>
-            </UI.FlexRow>
+            </UI.ColumnToRow>
             <form id="player-settings" onSubmit={onSubmit}>
                 <UI.FlexColumn>
+                    {showGames && <UI.ColumnToRow maxWidth justifyContent="space-around">
+                        <UI.FlexRow formRow justifyContent="space-around">
+                            Join
+                            <UI.Input value={switchGame} placeholder={game.gameID}
+                                      onChange={handleSwitchGame}
+                                      disabled={!connected} />
+                            <UI.LinkButton disabled={switchDisabled} onClick={onSwitch}>
+                                switch
+                            </UI.LinkButton>
+                        </UI.FlexRow>
+                        {switchResponse !== "ready" && switchResponse !== "success" &&
+                            <UI.FlexRow maxWidth floatRight>
+                                {switchResponse}
+                            </UI.FlexRow>
+                        }
+                    </UI.ColumnToRow>}
                     <UI.FlexRow formRow justifyContent="space-around">
                         <EventRecord editing style={{}} noActions
                             playerID={player.id} color={hueColor} event={exampleEvent} />

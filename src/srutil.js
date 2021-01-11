@@ -66,6 +66,12 @@ export function useFlavor<T>(options: T[]): [T, () => void] {
     return [flavor, () => setFlavor(() => pickRandom(options))];
 }
 
+export function useToggle(initial: bool | () => bool): [bool, () => void] {
+    const [value, setValue] = React.useState<bool>(initial);
+    const toggle = React.useCallback(() => setValue(v => !v), [setValue]);
+    return [value, toggle];
+}
+
 // This shallow comparison seems to be what react is using.
 // Seen in react-redux and gaeron's react-pure-render.
 
