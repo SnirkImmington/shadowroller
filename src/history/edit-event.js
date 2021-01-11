@@ -8,15 +8,16 @@ import {EventRecord} from 'history/history-panel';
 import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
 import * as Event from 'history/event';
+import * as Player from 'player';
 import routes from 'routes';
 import theme from 'style/theme';
 import * as srutil from 'srutil';
 
 type Props = {
     +event: Event.DiceEvent,
-    +playerID: ?string,
 };
-export default function EditEvent({ event, playerID }: Props) {
+export default function EditEvent({ event }: Props) {
+    const player = React.useContext(Player.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [title, setTitle] = React.useState(event.title);
@@ -26,6 +27,7 @@ export default function EditEvent({ event, playerID }: Props) {
     const [deletePrompt, setDeletePrompt] = React.useState(false);
 
     const canUpdate = title !== event.title || glitchy !== event.glitchy;
+    const eventColor = player ? Player.colorOf(player) : "lightslategray";
 
     function cancelEdit() {
         dispatch({ ty: "clearEdit" });
@@ -92,7 +94,8 @@ export default function EditEvent({ event, playerID }: Props) {
             <UI.FlexColumn>
                 <UI.FlexRow maxWidth formRow>
                     <EventRecord editing noActions setHeight={()=>{}}
-                                 style={{ width: '100%'}} playerID={playerID}
+                                 style={{ width: '100%'}} playerID={player?.id}
+                                 color={eventColor}
                                  event={{ ...event, title, glitchy }} />
                 </UI.FlexRow>
                 <UI.ColumnToRow>

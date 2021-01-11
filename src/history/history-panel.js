@@ -265,7 +265,7 @@ export default function EventHistory() {
     return (
         <>
         {events.editing &&
-            <EditEvent playerID={player?.id} event={events.editing} />
+            <EditEvent event={events.editing} />
         }
         <UI.Card unpadded padRight grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter>
