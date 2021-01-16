@@ -5,11 +5,10 @@ import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import NumericInput from 'numeric-input';
-import { AnimatedDie } from 'dice';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
-import { ConnectionCtx } from 'connection';
+import { StatusText, ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
@@ -82,11 +81,6 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "summon the zeppelin",
 ];
 
-const TitleRow = styled(UI.FlexRow)`
-    width: 100%;
-    justify-content: space-between;
-`;
-
 const RollBackground = {
     inGame: `linear-gradient(180deg, #783442 0, #601010)`,
     edgy: `linear-gradient(180deg, #ba4864 0, #cc365b)`,
@@ -121,13 +115,12 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
 `;
 
 const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
-    height: calc(1em + 10px);
     /* Mobile: full width - "name rolls to" */
-    width: calc(100vw - 5em);
 
+    /* Desktop: need to shrink for push the limit button */
     @media all and (min-width: 768px) {
-        width: 23em;
-    }
+        /* flex-shrink: 1; */
+    }*/
 `;
 
 const RollGlitchyLabel = styled.label`
@@ -148,17 +141,16 @@ export default function RollDicePrompt() {
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
-    const [shown, setShown] = React.useState(true);
-    const toggleShown = React.useCallback(() => setShown(s => !s), [setShown]);
+    const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
+    const [localRoll, toggleLocalRoll] = srutil.useToggle(false);
 
     const [diceText, setDiceText] = React.useState("");
     const [diceCount, setDiceCount] = React.useState<?number>(null);
     const [title, setTitle] = React.useState("");
     const [edge, setEdge] = React.useState(false);
     const [glitchy, setGlitchy] = React.useState(0);
-    const [localRoll, setLocalRoll] = React.useState(false);
 
     const connected = connection === "connected";
     const rollDisabled = (
@@ -172,8 +164,6 @@ export default function RollDicePrompt() {
     function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
     }
-
-    const rollLocalClicked = React.useCallback(() => setLocalRoll(l => !l), [setLocalRoll]);
 
     const onEdgeClicked = React.useCallback(
         (event) => setEdge(event.target.checked),
@@ -241,6 +231,29 @@ export default function RollDicePrompt() {
                 </UI.LinkButton>
             </UI.FlexRow>
         );
+    }
+
+    let leftSide: React.Node = '';
+    if (game && connected) {
+        leftSide = (<>
+            <UI.RadioLink id="roll-set-in-game"
+                          name="roll-location"
+                          type="radio" light
+                          checked={!localRoll}
+                          onChange={toggleLocalRoll}>
+                in {game.gameID}
+            </UI.RadioLink>
+            <UI.RadioLink id="roll-set-local"
+                          name="roll-location"
+                          type="radio" light
+                          checked={localRoll}
+                          onChange={toggleLocalRoll}>
+                locally
+            </UI.RadioLink>
+        </>);
+    }
+    else if (game) { // not connected
+        leftSide = <StatusText connection={connection} />;
     }
 
     // roll title gets game state, dispatch useLocalRoll
@@ -320,24 +333,7 @@ export default function RollDicePrompt() {
                     </UI.ColumnToRow>
                 </UI.FlexRow>
                 <UI.FlexRow spaced floatRight>
-                    {connected ?
-                        <>
-                            <UI.RadioLink id="roll-set-in-game"
-                                          name="roll-location"
-                                          type="radio" light
-                                          checked={!localRoll}
-                                          onChange={rollLocalClicked}>
-                                in&nbsp;<tt>{game?.gameID ?? "game"}</tt>
-                            </UI.RadioLink>
-                            <UI.RadioLink id="roll-set-local"
-                                          name="roll-location"
-                                          type="radio" light
-                                          checked={localRoll}
-                                          onChange={rollLocalClicked}>
-                                locally
-                            </UI.RadioLink>
-                        </>
-                    : ''}
+                    {leftSide}
                     <RollButton id="roll-button-submit" type="submit"
                                 disabled={rollDisabled} bg={rollBackgound}
                                 onClick={onRollClicked}>

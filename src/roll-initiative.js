@@ -10,7 +10,7 @@ import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
-//import { ConnectionCtx } from 'connection';
+import { StatusText, ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
@@ -47,34 +47,38 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
     }
 `;
 export default function RollInitiativePrompt() {
-    //const connection = React.useContext(ConnectionCtx);
+    const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
-    const [shown, setShown] = React.useState(true);
-    //const [loading, setLoading] = React.useState(false);
+    const [shown, toggleShown] = srutil.useToggle(true);
+    const [loading, setLoading] = React.useState(false);
+    const [localRoll, toggleLocalRoll] = srutil.useToggle(false);
 
     const [base, setBase] = React.useState<?number>();
     const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
     const [dice, setDice] = React.useState(1);
     const [diceText, setDiceText] = React.useState("");
-    //const [local, setLocal] = React.useState(false);
-    const local = game?.gameID == null;
 
-
-    //const connected = connection === "connected";
+    const connected = connection === "connected";
     const rollReady = base && dice && base > 0 && dice > 0 && dice <= 5;
+    const rollDisabled = (
+        !dice || dice < 0 || dice > 5 || !base || base < 0 || base > 50
+    );
 
-    const titleChanged = React.useCallback((e) => { setTitle(e.target.value); }, [setTitle]);
-    const baseChanged = React.useCallback((value) => { setBase(value); }, [setBase]);
-    const diceChanged = React.useCallback((value) => { setDice(value || 1); }, [setDice]);
+    const titleChanged = React.useCallback((e) => {
+        setTitle(e.target.value); }, [setTitle]);
+    const baseChanged = React.useCallback((value) => {
+        setBase(value); }, [setBase]);
+    const diceChanged = React.useCallback((value) => {
+        setDice(value || 1); }, [setDice]);
 
     const rollClicked = React.useCallback((e) => {
         e.preventDefault();
         if (!rollReady) { return; }
 
-        if (local) {
+        if (localRoll) {
             const initiativeDice = srutil.roll(dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
@@ -86,7 +90,7 @@ export default function RollInitiativePrompt() {
         else {
             routes.game.rollInitiative({ base: base || 0, dice, title });
         }
-    }, [rollReady, dispatch, local, base, dice, title]);
+    }, [rollReady, dispatch, localRoll, base, dice, title]);
 
     if (!shown) {
         return (
@@ -95,12 +99,36 @@ export default function RollInitiativePrompt() {
                         <UI.FAIcon icon={icons.faClipboardList} />
                         &nbsp;Initiative
                     </UI.CardTitleText>
-                    <UI.LinkButton minor onClick={() => setShown(true)}>
+                    <UI.LinkButton minor onClick={toggleShown}>
                         show
                     </UI.LinkButton>
                 </UI.FlexRow>
         );
     }
+
+    let leftSide: React.Node = '';
+    if (game && connected) {
+        leftSide = (<>
+            <UI.RadioLink id="roll-initiative-set-in-game"
+                          name="initiative-location"
+                          type="radio" light
+                          checked={!localRoll}
+                          onChange={toggleLocalRoll}>
+                in {game.gameID}
+            </UI.RadioLink>
+            <UI.RadioLink id="roll-initiative-set-local"
+                          name="initiative-location"
+                          type="radio" light
+                          checked={localRoll}
+                          onChange={toggleLocalRoll}>
+                locally
+            </UI.RadioLink>
+        </>);
+    }
+    else if (game) { // not connected
+        leftSide = <StatusText connection={connection} />;
+    }
+
     return (
         <UI.Card color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter floatRight>
@@ -108,7 +136,7 @@ export default function RollInitiativePrompt() {
                     <UI.FAIcon icon={icons.faClipboardList} />
                     &nbsp;Initiative
                 </UI.CardTitleText>
-                <UI.LinkButton minor onClick={() => setShown(false)}>
+                <UI.LinkButton minor onClick={toggleShown}>
                     hide
                 </UI.LinkButton>
             </UI.FlexRow>
@@ -140,7 +168,8 @@ export default function RollInitiativePrompt() {
                                   value={title} />
                     </UI.FlexRow>
                 </UI.ColumnToRow>
-                <UI.FlexRow floatRight spaced rowCenter>
+                <UI.FlexRow floatRight spaced floatRight>
+                    {leftSide}
                     <RollButton id="roll-initiative-submit" type="submit"
                                 bg={RollBackground.inGame}
                                 disabled={!rollReady} onClick={rollClicked}>
