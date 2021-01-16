@@ -15,6 +15,7 @@ export const FlexRow: StyledComponent<> = styled.div`
     ${props => props.maxWidth && 'width: 100%;'}
     ${props => props.flexWrap && 'flex-wrap: wrap;'}
     ${props => props.formRow && 'margin-bottom: .5rem;'}
+    ${props => props.flexGrow && `flex-grow: 1;`}
     ${props => props.justifyContent && `justify-content: ${props.justifyContent};`}
 
     ${({ floatRight }) => floatRight &&
