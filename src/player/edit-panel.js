@@ -148,21 +148,19 @@ export default function EditPlayerPanel({ hide }: Props) {
                             playerID={player.id} color={hueColor} event={exampleEvent} />
                     </UI.FlexRow>
                     <UI.ColumnToRow>
-                        <span style={{ flexGrow: 1}} />
                         <UI.FlexRow formRow>
                             Name
                             <UI.Input value={name} placeholder={player.name}
                                       onChange={e => setName(e.target.value)}
                                       disabled={!connected} />
                         </UI.FlexRow>
-                        <UI.FlexRow formRow>
+                        <UI.FlexRow formRow flexGrow>
                             <label htmlFor="player-settings-hue">Hue</label>
                             &nbsp;
                             <ColorPicker id="player-settings-hue" style={{flexGrow: 1}}
                                          value={hue} onSelect={setHue}
                                          disabled={!connected} />
                         </UI.FlexRow>
-                        <span style={{ flexGrow: 1 }} />
                     </UI.ColumnToRow>
                     <UI.FlexRow spaced>
                         <StatusText connection={connection}/>

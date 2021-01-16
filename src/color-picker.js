@@ -6,7 +6,7 @@ import type { StyledComponent } from 'styled-components';
 
 const RainbowDiv: StyledComponent<> = styled.div`
     height: 1.5em;
-    width: 26em;
+    width: 100%;
 
     background: linear-gradient(
         to right,
