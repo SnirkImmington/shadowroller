@@ -154,7 +154,8 @@ export default function RollDicePrompt() {
 
     const connected = connection === "connected";
     const rollDisabled = (
-        rollLoading || !diceCount || diceCount < 1 || diceCount > 100
+        !diceCount || diceCount < 1 || diceCount > 100
+        || rollLoading || (game && !localRoll && !connected)
     );
 
     const rollBackgound = connected && !localRoll ?
@@ -333,12 +334,30 @@ export default function RollDicePrompt() {
                     </UI.ColumnToRow>
                 </UI.FlexRow>
                 <UI.FlexRow spaced floatRight>
-                    {leftSide}
-                    <RollButton id="roll-button-submit" type="submit"
-                                disabled={rollDisabled} bg={rollBackgound}
-                                onClick={onRollClicked}>
-                        Roll dice
-                    </RollButton>
+                    {game && <>
+                        <UI.RadioLink id="roll-set-in-game"
+                                      name="roll-location"
+                                      type="radio" light
+                                      checked={!localRoll}
+                                      onChange={toggleLocalRoll}>
+                            in {game.gameID}
+                        </UI.RadioLink>
+                        <UI.RadioLink id="roll-set-local"
+                                      name="roll-location"
+                                      type="radio" light
+                                      checked={localRoll}
+                                      onChange={toggleLocalRoll}>
+                            locally
+                        </UI.RadioLink>
+                    </>}
+                    <UI.FlexRow spaced>
+                        {!connected && <StatusText connection={connection} />}
+                        <RollButton id="roll-button-submit" type="submit"
+                                    disabled={rollDisabled} bg={rollBackgound}
+                                    onClick={onRollClicked}>
+                            Roll dice
+                        </RollButton>
+                    </UI.FlexRow>
                 </UI.FlexRow>
             </form>
         </UI.Card>

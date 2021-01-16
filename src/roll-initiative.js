@@ -62,9 +62,10 @@ export default function RollInitiativePrompt() {
     const [diceText, setDiceText] = React.useState("");
 
     const connected = connection === "connected";
-    const rollReady = base && dice && base > 0 && dice > 0 && dice <= 5;
     const rollDisabled = (
-        !dice || dice < 0 || dice > 5 || !base || base < 0 || base > 50
+        !dice || dice < 0 || dice > 5
+        || !base || base < 0 || base > 50
+        || (game && !localRoll && !connected)
     );
 
     const titleChanged = React.useCallback((e) => {
@@ -76,7 +77,7 @@ export default function RollInitiativePrompt() {
 
     const rollClicked = React.useCallback((e) => {
         e.preventDefault();
-        if (!rollReady) { return; }
+        if (rollDisabled) { return; }
 
         if (localRoll) {
             const initiativeDice = srutil.roll(dice);
@@ -90,7 +91,7 @@ export default function RollInitiativePrompt() {
         else {
             routes.game.rollInitiative({ base: base || 0, dice, title });
         }
-    }, [rollReady, dispatch, localRoll, base, dice, title]);
+    }, [rollDisabled, localRoll, base, dice, title, dispatch]);
 
     if (!shown) {
         return (
@@ -169,12 +170,30 @@ export default function RollInitiativePrompt() {
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <UI.FlexRow floatRight spaced floatRight>
-                    {leftSide}
-                    <RollButton id="roll-initiative-submit" type="submit"
-                                bg={RollBackground.inGame}
-                                disabled={!rollReady} onClick={rollClicked}>
-                        Roll Initiative
-                    </RollButton>
+                    {game && <>
+                        <UI.RadioLink id="roll-initiative-set-in-game"
+                                      name="initiative-location"
+                                      type="radio" light
+                                      checked={!localRoll}
+                                      onChange={toggleLocalRoll}>
+                            in {game.gameID}
+                        </UI.RadioLink>
+                        <UI.RadioLink id="roll-initiative-set-local"
+                                      name="initiative-location"
+                                      type="radio" light
+                                      checked={localRoll}
+                                      onChange={toggleLocalRoll}>
+                            locally
+                        </UI.RadioLink>
+                    </>}
+                    <UI.FlexRow spaced>
+                        {!connected && <StatusText connection={connection} />}
+                        <RollButton id="roll-initiative-submit" type="submit"
+                                    bg={RollBackground.inGame}
+                                    disabled={rollDisabled} onClick={rollClicked}>
+                            Roll Initiative
+                        </RollButton>
+                    </UI.FlexRow>
                 </UI.FlexRow>
             </form>
         </UI.Card>
