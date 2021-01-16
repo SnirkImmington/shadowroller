@@ -5,6 +5,7 @@ import styled, { ThemeProvider } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
+import * as srutil from 'srutil';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
@@ -63,6 +64,7 @@ const AppRight: StyledComponent<> = styled(UI.FlexColumn)`
 `;
 
 function Shadowroller() {
+    const game = React.useContext(Game.Ctx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
@@ -70,8 +72,7 @@ function Shadowroller() {
     const setConnection = React.useContext(SetConnectionCtx);
     const [connect, logout] = React.useContext(Stream.Ctx);
 
-    const [menuShown, setMenuShown] = React.useState<bool>(false);
-    const toggleMenu = React.useCallback(() => setMenuShown(s => !s), [setMenuShown]);
+    const [menuShown, toggleMenuShown] = srutil.useToggle(false);
 
     // On first load, read credentials from localStorage and log in.
     React.useEffect(() => {
@@ -102,8 +103,7 @@ function Shadowroller() {
     }, []);
 
     function onGameButtonClick() {
-        toggleMenu();
-        //
+        toggleMenuShown();
         setConnection((conn: RetryConnection) =>
             conn === "disconnected" || conn === "errored" ? "offline" : conn
         );
@@ -116,13 +116,13 @@ function Shadowroller() {
             }
 
             <SRHeader menuShown={menuShown}
-                      onClick={toggleMenu} />
+                      onClick={toggleMenuShown} />
             <UI.ColumnToRow grow>
                 <AppLeft>
                     {menuShown &&
-                        (server.session ?
-                          <EditPlayerPanel hide={toggleMenu} />
-                        : <NewJoinMenu hide={toggleMenu} />)
+                        (game ?
+                          <EditPlayerPanel hide={toggleMenuShown} />
+                        : <NewJoinMenu hide={toggleMenuShown} />)
                     }
                     <RollDicePrompt />
                     <RollInitiativePrompt />

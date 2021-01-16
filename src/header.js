@@ -91,7 +91,7 @@ function JoinButton({ onClick }: Props) {
                 message = "Reconnect";
                 break;
             case "connecting":
-            case "connected": // If we don't have a game yet
+            case "connected": // Connected but no player - race condition between setStates?
                 message = "Connecting";
                 disabled = true;
                 break;
