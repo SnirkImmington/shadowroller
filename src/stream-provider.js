@@ -8,7 +8,6 @@ import * as Player from 'player';
 import routes from 'routes';
 import * as server from 'server';
 import { SetConnectionCtx } from 'connection';
-import type { RetryConnection as RetryConn, SetConnection } from 'connection';
 import type { BackendRequest } from 'server/request';
 
 // Delays for reconnecting the EventSource (in ms)
@@ -109,16 +108,18 @@ export function Provider(props: { children: React.Node }) {
     const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx)
 
-    const [source, setSource] = React.useState<?EventSource>(null);
-    const [retryID, setRetryID] = React.useState<?TimeoutID>(null);
+    // The actual values from these are not used: we don't handle the eventstream
+    // directly and we only use the retryID via the updater form of setRetryID.
+    const [source, setSource] = React.useState<?EventSource>(null); // eslint-disable-line no-unused-vars
+    const [retryID, setRetryID] = React.useState<?TimeoutID>(null); // eslint-disable-line no-unused-vars
 
     const connect: ConnectFn = React.useCallback<ConnectFn>(function connect({
         session, gameID, playerID, retries
     }) {
         retries = retries || 0;
         setConnection("connecting");
-        setSource(s => (s && s.close(), null));
-        setRetryID(id => (clearTimeout(id), null));
+        setSource(s => { s && s.close(); return null; });
+        setRetryID(id => { clearTimeout(id); return null; });
 
         let connectionSucessful = false;
 
@@ -132,7 +133,7 @@ export function Provider(props: { children: React.Node }) {
             handleUpdate(e, playerID, eventDispatch, gameDispatch, playerDispatch));
         source.onopen = function () {
             setConnection("connected");
-            setRetryID(id => (clearTimeout(id), null));
+            setRetryID(id => { clearTimeout(id); return null; });
             connectionSucessful = true;
 
             if (process.env.NODE_ENV !== "production") {
@@ -171,6 +172,7 @@ export function Provider(props: { children: React.Node }) {
         return routes.auth.logout();
     }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource]);
 
+    // Memoize making a new array every time?
     const value = React.useMemo(() => [connect, logout], [connect, logout]);
 
     return (

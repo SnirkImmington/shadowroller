@@ -3,7 +3,6 @@
 import * as Event from 'history/event';
 import * as Game from 'game';
 import * as Player from 'player';
-import * as Stream from '../stream';
 import type { ConnectFn } from 'stream-provider';
 import routes from 'routes';
 import type { BackendRequest } from 'server';

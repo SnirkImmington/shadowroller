@@ -30,6 +30,7 @@ export function colorForRoll(roll: number): string {
 
 const DiceMap = [undefined, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
+type AnimatedProps = {| small?: bool, color?: string, unpadded?: bool |};
 type DieProps = {| roll: number, style?: any, ...AnimatedProps |};
 export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     const newProps = Object.assign({}, props);
@@ -57,9 +58,7 @@ export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     return <Dice className="sr-die" {...newProps} />;
 });
 
-type AnimatedProps = {| small?: bool, color?: string, unpadded?: bool |};
 export function AnimatedDie(props: AnimatedProps) {
-    const { color, small } = props;
     const [die, setDie] = React.useState<number>(srutil.rollDie);
 
     React.useEffect(() => {

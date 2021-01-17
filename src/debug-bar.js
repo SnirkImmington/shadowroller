@@ -6,7 +6,6 @@ import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 
 import * as server from 'server';
-import * as Event from 'history/event';
 import * as Game from 'game';
 import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
@@ -55,16 +54,17 @@ export default function DebugBar() {
 
     const gameText = game ? game.gameID : "offline";
     const players = game ? Array.from(game.players.values()).map(p => p.name) : [];
+    const gamePlayers = game?.players;
 
     const playersClicked = React.useCallback(() => {
         if (players.length === 0) {
             console.log("Debug bar: no players");
         }
         else {
-            // flow-ignore-all-next-line console.table
-            console.table(game?.players);
+            // flow-ignore-all-next-line console.table is somehow problematic
+            console.table(gamePlayers);
         }
-    }, [game?.players]);
+    }, [players, gamePlayers]);
 
     return (
         <StyledBar>

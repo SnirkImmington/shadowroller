@@ -183,8 +183,11 @@ export default function RollDicePrompt() {
 
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
-        if (!diceCount) { return; }
-        if (localRoll || !connected) {
+        if (rollDisabled || !diceCount) {
+            return;
+        }
+
+        if (localRoll) {
             let localRoll: Event.Event;
             if (edge) {
                 const rounds = srutil.rollExploding(diceCount);
@@ -208,7 +211,7 @@ export default function RollDicePrompt() {
                 .onDone((res, full) => {
                     setRollLoading(false);
                     if (!res && process.env.NODE_ENV !== "production") {
-                        console.log("Error rolling:", full);
+                        console.error("Error rolling:", full);
                     }
                 });
         }
@@ -232,29 +235,6 @@ export default function RollDicePrompt() {
                 </UI.LinkButton>
             </UI.FlexRow>
         );
-    }
-
-    let leftSide: React.Node = '';
-    if (game && connected) {
-        leftSide = (<>
-            <UI.RadioLink id="roll-set-in-game"
-                          name="roll-location"
-                          type="radio" light
-                          checked={!localRoll}
-                          onChange={toggleLocalRoll}>
-                in {game.gameID}
-            </UI.RadioLink>
-            <UI.RadioLink id="roll-set-local"
-                          name="roll-location"
-                          type="radio" light
-                          checked={localRoll}
-                          onChange={toggleLocalRoll}>
-                locally
-            </UI.RadioLink>
-        </>);
-    }
-    else if (game) { // not connected
-        leftSide = <StatusText connection={connection} />;
     }
 
     // roll title gets game state, dispatch useLocalRoll

@@ -5,7 +5,6 @@ import * as UI from 'style';
 import * as dice from 'dice';
 import * as humanTime from 'humanTime';
 import * as Roll from './rollComponents';
-import * as icons from 'style/icon';
 
 import * as Event from 'history/event';
 import * as rollStats from 'rollStats';

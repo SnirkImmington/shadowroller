@@ -47,8 +47,12 @@ export function StatusText({ connection }: { connection: RetryConnection }) {
         case "disconnected":
         case "errored":
             text = connection;
+            break;
         case "retrying":
             text = "Reconnecting";
+            break;
+        default:
+            break;
     }
     if (text) {
         return (

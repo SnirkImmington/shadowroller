@@ -159,6 +159,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         }
     }
 
+    const gamePlayers = game?.players;
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
@@ -168,15 +169,15 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
             const event = data[index];
             const editing = state.editing != null && state.editing.id === event.id;
             let color = "lightslategray";
-            if (game?.players && event.source !== "local") {
-                const player = game.players.get(event.source.id);
+            if (gamePlayers && event.source !== "local") {
+                const player = gamePlayers.get(event.source.id);
                 if (player) {
                     color = Player.colorOf(player);
                 }
             }
             return <EventRecord event={event} color={color} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt, playerID, state.editing, game?.players]);
+    }, [loadedAt, playerID, state.editing, gamePlayers]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline" || atHistoryEnd) {

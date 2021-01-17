@@ -155,7 +155,7 @@ export default function RollInitiativePrompt() {
                                   value={title} />
                     </UI.FlexRow>
                 </UI.ColumnToRow>
-                <UI.FlexRow floatRight spaced floatRight>
+                <UI.FlexRow spaced floatRight>
                     {game && <>
                         <UI.RadioLink id="roll-initiative-set-in-game"
                                       name="initiative-location"

@@ -1,8 +1,6 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
 
@@ -19,12 +17,6 @@ import routes from 'routes';
 import ColorPicker from 'color-picker';
 import { EventRecord } from 'history/history-panel';
 import { ROLL_TITLE_FLAVOR } from 'roll-dice';
-
-
-const TitleRow = styled(UI.FlexRow)`
-    width: 100%;
-    justify-content: space-between;
-`;
 
 type Props = {
     hide: () => void
@@ -43,13 +35,13 @@ export default function EditPlayerPanel({ hide }: Props) {
     const [showGames, toggleShowGames] = srutil.useToggle(false);
     const [switchGame, setSwitchGame] = React.useState("");
     const [switchResponse, setSwitchResponse] = React.useState<ResponseStatus>("ready");
-    const handleSwitchGame = React.useCallback((e) => setSwitchGame(e.target.value));
+    const handleSwitchGame = React.useCallback((e) => setSwitchGame(e.target.value), [setSwitchGame]);
 
     const [name, setName] = React.useState(player?.name);
     const [hue, setHue] = React.useState<number>(player?.hue || 0);
     const [response, setResponse] = React.useState<ResponseStatus>("ready");
 
-    const [exampleTitle, updateTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
+    const [exampleTitle] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
     const [dice] = React.useState(() => srutil.roll(11));
 
     if (!player || !game) {
@@ -57,7 +49,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     }
 
     const switchDisabled = !showGames || !switchGame || switchGame === game.gameID || response === "loading";
-    const changed = name !== player.name || hue != player.hue;
+    const changed = name !== player.name || hue !== player.hue;
     const connected = connection === "connected" && response !== "loading";
 
     function onSubmit(e) {

@@ -50,25 +50,6 @@ type Props = {
 }
 
 export default function ColorPicker(props: Props) {
-    function onMouseMove(e: SyntheticMouseEvent<HTMLDivElement>) {
-        if (!e.buttons) {
-            return;
-        }
-        updateThingie(e, "move");
-    }
-
-    function onClick(e: SyntheticMouseEvent<HTMLDivElement>) {
-        updateThingie(e, "click");
-    }
-
-    function onKeyPressed(e: SyntheticInputEvent<HTMLDivElement>) {
-        console.log("Key pressed", e);
-    }
-
-    function updateThingie(e: SyntheticMouseEvent<HTMLDivElement>, cause: string) {
-        e.persist();
-        console.log("Mouse move", cause, e.clientX, e)
-    }
 
     function handleSelect(e) {
         props.onSelect(parseInt(e.target.value));

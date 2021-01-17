@@ -1,10 +1,7 @@
 // @flow
 
-import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-
-import * as srutil from 'srutil';
 
 const diceFrames = keyframes`
     0%   { content: '\\2680'; }

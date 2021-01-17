@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'numeric-input';
 import {EventRecord} from 'history/history-panel';

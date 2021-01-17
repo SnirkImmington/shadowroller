@@ -11,7 +11,6 @@ export type Game = {|
 
 export type State = ?Game;
 export const defaultState: State = null;
-export type Reducer = (State, Action) => State;
 
 export type Action =
 | { +ty: "join", gameID: string, players: Map<string, PlayerInfo> }
@@ -56,6 +55,7 @@ function gameReduce(state: State, action: Action): State {
     }
 }
 
+export type Reducer = (State, Action) => State;
 let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {
     reduce = function(state: State, action: Action): State {
@@ -72,5 +72,3 @@ export { reduce };
 export type Dispatch = (Action) => void;
 export const Ctx = React.createContext<State>(defaultState);
 export const DispatchCtx = React.createContext<Dispatch>((_) => {});
-
-export { ReconnectMenu } from './reconnect-menu';

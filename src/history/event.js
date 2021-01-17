@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from 'react';
-import * as srutil from 'srutil';
 
 export type GameSource = {| +id: string, +name: string |};
 export type Source =

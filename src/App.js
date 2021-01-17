@@ -67,10 +67,9 @@ function Shadowroller() {
     const game = React.useContext(Game.Ctx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
-    const connection = React.useContext(ConnectionCtx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
-    const [connect, logout] = React.useContext(Stream.Ctx);
+    const [connect] = React.useContext(Stream.Ctx);
 
     const [menuShown, toggleMenuShown] = srutil.useToggle(false);
 
@@ -101,13 +100,6 @@ function Shadowroller() {
         // We want this to only run on startup.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    function onGameButtonClick() {
-        toggleMenuShown();
-        setConnection((conn: RetryConnection) =>
-            conn === "disconnected" || conn === "errored" ? "offline" : conn
-        );
-    }
 
     return (
         <ThemeProvider theme={theme}>

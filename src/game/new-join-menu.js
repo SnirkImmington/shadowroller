@@ -1,4 +1,3 @@
-
 // @flow
 
 import * as React from 'react';
@@ -11,7 +10,7 @@ import * as Game from 'game';
 import * as Event from 'history/event';
 import * as Player from 'player';
 import * as Stream from 'stream-provider';
-import { ConnectionCtx, SetConnectionCtx } from 'connection';
+import { SetConnectionCtx } from 'connection';
 import type { Connection } from 'connection';
 
 import * as server from 'server';
@@ -73,7 +72,7 @@ export default function JoinMenu({ hide }: Props) {
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
-    const [connect, _] = React.useContext(Stream.Ctx);
+    const [connect] = React.useContext(Stream.Ctx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
 
     const [gameID, setGameID] = React.useState('');
@@ -107,7 +106,7 @@ export default function JoinMenu({ hide }: Props) {
         setFlavor(connectingFlavor);
         newConnecting();
 
-        routes.auth.login({ gameID, username, persist }) // TODO login
+        routes.auth.login({ gameID, username, persist })
             .onConnection(setLoginConnection)
             .onResponse(response  => {
                 hide();

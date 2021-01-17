@@ -19,8 +19,6 @@ export function colorOf(player: Info|Player): string {
 
 export type State = ?Player;
 export const defaultState: State = null;
-export type Dispatch = (Action) => void;
-export type Reducer = (State, Action) => State;
 
 export type Action =
 | { +ty: "join", self: Player }
@@ -45,6 +43,9 @@ function userReduce(state: State, action: Action): State {
             return state;
     }
 }
+
+export type Dispatch = (Action) => void;
+export type Reducer = (State, Action) => State;
 
 let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {

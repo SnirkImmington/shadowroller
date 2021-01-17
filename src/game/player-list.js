@@ -4,9 +4,6 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
-import * as icons from 'style/icon';
-import theme from 'style/theme';
-import * as srutil from 'srutil';
 
 import * as Game from 'game';
 import * as Player from 'player';
