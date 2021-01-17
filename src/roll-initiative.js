@@ -65,7 +65,7 @@ export default function RollInitiativePrompt() {
     const rollDisabled = (
         !dice || dice < 0 || dice > 5
         || !base || base < 0 || base > 50
-        || (game && !localRoll && !connected)
+        || loading || (game && !localRoll && !connected)
     );
 
     const titleChanged = React.useCallback((e) => {
@@ -77,7 +77,9 @@ export default function RollInitiativePrompt() {
 
     const rollClicked = React.useCallback((e) => {
         e.preventDefault();
-        if (rollDisabled) { return; }
+        if (rollDisabled) {
+            return;
+        }
 
         if (localRoll) {
             const initiativeDice = srutil.roll(dice);
@@ -89,7 +91,14 @@ export default function RollInitiativePrompt() {
             dispatch({ ty: "newEvent", event });
         }
         else {
-            routes.game.rollInitiative({ base: base || 0, dice, title });
+            setLoading(true);
+            routes.game.rollInitiative({ base: base || 0, dice, title })
+                .onDone((res, full) => {
+                    setLoading(false);
+                    if (!res && process.env.NODE_ENV !== "production") {
+                        console.error("Error rolling initiative:", full);
+                    }
+                })
         }
     }, [rollDisabled, localRoll, base, dice, title, dispatch]);
 
@@ -105,29 +114,6 @@ export default function RollInitiativePrompt() {
                     </UI.LinkButton>
                 </UI.FlexRow>
         );
-    }
-
-    let leftSide: React.Node = '';
-    if (game && connected) {
-        leftSide = (<>
-            <UI.RadioLink id="roll-initiative-set-in-game"
-                          name="initiative-location"
-                          type="radio" light
-                          checked={!localRoll}
-                          onChange={toggleLocalRoll}>
-                in {game.gameID}
-            </UI.RadioLink>
-            <UI.RadioLink id="roll-initiative-set-local"
-                          name="initiative-location"
-                          type="radio" light
-                          checked={localRoll}
-                          onChange={toggleLocalRoll}>
-                locally
-            </UI.RadioLink>
-        </>);
-    }
-    else if (game) { // not connected
-        leftSide = <StatusText connection={connection} />;
     }
 
     return (
