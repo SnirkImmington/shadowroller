@@ -176,7 +176,9 @@ export const RadioLink = React.memo<RadioLinkProps>(function RadioLink(props) {
                          onChange={props.onChange} />
 
             <RadioSelector light={!props.light}>
-                {props.checked? '[X]' : '[ ]'}
+                {props.type === "checkbox" ?
+                    (props.checked ? '[X]' : '[ ]')
+                    : (props.checked ? '(X)' : '( )')}
             </RadioSelector>
             <span style={{ width: '.2em'}} />
             {props.children}
