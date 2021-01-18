@@ -3,6 +3,7 @@
 import * as React from 'react';
 import * as UI from 'style';
 import theme from 'style/theme';
+import * as icons from 'style/icon';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
@@ -108,7 +109,8 @@ export default function EditPlayerPanel({ hide }: Props) {
         <UI.Card color={theme.colors.primary}>
             <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
-                    Logged in: {player.name} / {game.gameID}
+                    <UI.FAIcon icon={icons.faUserEdit} />
+                    &nbsp;Logged in: {player.name} / {game.gameID}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
                     <span style={{ flexGrow: 1 }} />

@@ -10,6 +10,7 @@ import * as Event from 'history/event';
 import * as Player from 'player';
 import routes from 'routes';
 import theme from 'style/theme';
+import * as icons from 'style/icon';
 import * as srutil from 'srutil';
 
 type Props = {
@@ -86,7 +87,8 @@ export default function EditEvent({ event }: Props) {
         <UI.Card padRight bottomGap color={theme.colors.primary}>
             <UI.FlexRow maxWidth floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
-                    Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
+                    <UI.FAIcon icon={icons.faPen} />
+                    &nbsp;Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={cancelEdit}>close</UI.LinkButton>
             </UI.FlexRow>
@@ -100,8 +102,9 @@ export default function EditEvent({ event }: Props) {
                 <UI.ColumnToRow>
                     <UI.FlexRow formRow>
                         Roll to
-                        <UI.Input
-                                placeholder={event.title || titleFlavor}
+                        <UI.Input id="edit-set-title"
+                                value={title}
+                                placeholder={titleFlavor}
                                 onChange={(e) => setTitle(e.target.value)} />
                     </UI.FlexRow>
                     <UI.FlexRow formRow>
