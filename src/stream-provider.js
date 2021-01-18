@@ -97,7 +97,8 @@ function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: Event.Di
     }
 }
 
-export type ConnectFn = ({ session: string, gameID: string, playerID: string, retries: number }) => void;
+type ConnectArgs = {| +session: string, +gameID: string, +playerID: string, +retries: number |};
+export type ConnectFn = (ConnectArgs) => void;
 export type LogoutFn = () => ?BackendRequest<void>;
 
 export const Ctx = React.createContext<[ConnectFn, LogoutFn]>([() => {}, () => {}]);
@@ -113,9 +114,7 @@ export function Provider(props: { children: React.Node }) {
     const [source, setSource] = React.useState<?EventSource>(null); // eslint-disable-line no-unused-vars
     const [retryID, setRetryID] = React.useState<?TimeoutID>(null); // eslint-disable-line no-unused-vars
 
-    const connect: ConnectFn = React.useCallback<ConnectFn>(function connect({
-        session, gameID, playerID, retries
-    }) {
+    function connect({ session, gameID, playerID, retries }: ConnectArgs) {
         retries = retries || 0;
         setConnection("connecting");
         setSource(s => { s && s.close(); return null; });
@@ -161,11 +160,13 @@ export function Provider(props: { children: React.Node }) {
             setRetryID(timeout);
         }
         setSource(source);
-    }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource, setRetryID]);
+    }
+    const connectMemo = React.useCallback(connect,
+        [connect, gameDispatch, eventDispatch, playerDispatch, setConnection, setSource, setRetryID]);
 
     const logout = React.useCallback(function logout(): BackendRequest<void> {
         setConnection("offline");
-        setSource(s => (s && s.close(), null));
+        setSource(s => { s && s.close(); return null; });
         gameDispatch({ ty: "leave" });
         eventDispatch({ ty: "clearEvents" });
         playerDispatch({ ty: "leave" });
@@ -173,7 +174,7 @@ export function Provider(props: { children: React.Node }) {
     }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource]);
 
     // Memoize making a new array every time?
-    const value = React.useMemo(() => [connect, logout], [connect, logout]);
+    const value = React.useMemo(() => [connectMemo, logout], [connectMemo, logout]);
 
     return (
         <Ctx.Provider value={value}>
