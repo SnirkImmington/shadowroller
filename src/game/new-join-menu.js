@@ -99,7 +99,6 @@ export default function JoinMenu({ hide }: Props) {
     }
 
     function onSubmit(event: SyntheticInputEvent<HTMLButtonElement>) {
-        console.log("OnSubmit", event);
         event.preventDefault();
         if (!ready) { return; }
 

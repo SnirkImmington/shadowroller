@@ -64,7 +64,6 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
 
     switch (event.ty) {
         case "playerJoin":
-            console.log("Attempt to render player join event", event);
             return '';
         case "edgeRoll":
             Inner = Record.EdgeRoll;

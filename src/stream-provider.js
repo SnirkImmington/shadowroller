@@ -144,7 +144,6 @@ export function Provider(props: { children: React.Node }) {
             }
         }
         source.onerror = function(e) {
-            console.log("Source error", source, e, "retry #", retries);
             source.close();
             setSource(null);
             setConnection("retrying");
