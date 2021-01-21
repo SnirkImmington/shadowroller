@@ -1,6 +1,6 @@
 // @flow
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 
 export function normalizeEvent(event: any) {
     if (!event.source) {

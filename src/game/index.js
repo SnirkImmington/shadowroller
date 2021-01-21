@@ -2,25 +2,21 @@
 
 import * as React from 'react';
 
-export type Player = {|
-    +id: string,
-    +name: string
-|};
+import type { Info as PlayerInfo } from 'player';
 
-export type State = ?{|
+export type Game = {|
     +gameID: string,
-    +player: Player,
-    +players: Map<string, string>
+    +players: Map<string, PlayerInfo>
 |};
 
+export type State = ?Game;
 export const defaultState: State = null;
 
 export type Action =
-| { +ty: "join", gameID: string, player: Player, players: Map<string, string> }
+| { +ty: "join", gameID: string, players: Map<string, PlayerInfo> }
 | { +ty: "leave" }
-| { +ty: "playerName", name: string }
-| { +ty: "setPlayers", players: Map<string, string> }
-| { +ty: "newPlayer", name: string, id: string }
+| { +ty: "playerUpdate", id: string, update: $Shape<PlayerInfo> }
+| { +ty: "setPlayers", players: Map<string, PlayerInfo> }
 ;
 
 function gameReduce(state: State, action: Action): State {
@@ -28,30 +24,24 @@ function gameReduce(state: State, action: Action): State {
         case "join":
             return {
                 gameID: action.gameID,
-                player: action.player,
                 players: action.players
             };
         case "leave":
             return null;
-        case "playerName":
+        case "playerUpdate":
             if (!state) { return state; }
-            return {
-                ...state,
-                player: { ...state.player, name: action.name },
-            };
-        case "newPlayer":
-            if (!state) { return state; }
-            const newPlayers = new Map(state.players);
-            newPlayers.set(action.id, action.name);
-            return {
-                ...state,
-                players: newPlayers,
-            };
+            const existing = state.players.get(action.id);
+            const updatedPlayers = new Map(state.players);
+            if (!existing) {
+                updatedPlayers.set(action.id, action.update);
+            }
+            else {
+                const updatedPlayer = { ...existing, ...action.update };
+                updatedPlayers.set(action.id, updatedPlayer);
+            }
+            return { ...state, players: updatedPlayers };
         case "setPlayers":
             if (!state) { return state; }
-            if (!action.players.get(state.player.id)) {
-                action.players.set(state.player.id, state.player.name);
-            }
             return {
                 ...state,
                 players: action.players,
@@ -63,11 +53,9 @@ function gameReduce(state: State, action: Action): State {
             }
             return state;
     }
-};
-
+}
 
 export type Reducer = (State, Action) => State;
-
 let reduce: Reducer;
 if (process.env.NODE_ENV !== 'production') {
     reduce = function(state: State, action: Action): State {
@@ -84,7 +72,3 @@ export { reduce };
 export type Dispatch = (Action) => void;
 export const Ctx = React.createContext<State>(defaultState);
 export const DispatchCtx = React.createContext<Dispatch>((_) => {});
-
-export { JoinMenu } from './join-menu';
-export { StatusMenu } from './status-menu';
-export { ReconnectMenu } from './reconnect-menu';

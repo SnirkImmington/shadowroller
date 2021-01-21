@@ -1,12 +1,16 @@
 // @flow
 
 import * as React from 'react';
+import * as UI from 'style';
+import type { Setter } from 'srutil';
 
 export type Connection = "offline" | "connecting" | "connected" | "errored" | "disconnected";
-export type SetConnection = (Connection | (Connection => Connection)) => void;
+export type RetryConnection = Connection | "retrying";
+export type SetConnection = Setter<Connection>;
+export type SetRetryConnection = Setter<RetryConnection>;
 
-export const ConnectionCtx = React.createContext<Connection>("connected");
-export const SetConnectionCtx = React.createContext<SetConnection>(() => {});
+export const ConnectionCtx = React.createContext<RetryConnection>("connected");
+export const SetConnectionCtx = React.createContext<SetRetryConnection>(() => {});
 
 export function connectionFor(response: Response): Connection {
     if (!response.status) {
@@ -18,8 +22,8 @@ export function connectionFor(response: Response): Connection {
     return "errored";
 }
 
-export type ResponseStatus = | "success" | "badRequest" | "serverError" | "noConnection";
-export type SetResponse = (ResponseStatus) => void;
+export type ResponseStatus = "ready" | "loading" | "success" | "badRequest" | "serverError" | "noConnection";
+export type SetResponse = Setter<ResponseStatus>;
 
 export function statusFor(response: Response): ResponseStatus {
     if (!response.status) {
@@ -34,4 +38,29 @@ export function statusFor(response: Response): ResponseStatus {
     else {
         return "badRequest";
     }
+}
+
+export function StatusText({ connection }: { connection: RetryConnection }) {
+    let text = null;
+    switch (connection) {
+        case "connecting":
+        case "disconnected":
+        case "errored":
+            text = connection;
+            break;
+        case "retrying":
+            text = "Reconnecting";
+            break;
+        default:
+            break;
+    }
+    if (text) {
+        return (
+            <i>
+                <UI.DiceSpinner />
+                {text}...
+            </i>
+        );
+    }
+    return null;
 }

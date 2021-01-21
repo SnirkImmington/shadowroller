@@ -3,14 +3,18 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
+import * as icons from 'style/icon';
+import theme from 'style/theme';
 
 import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import EditEvent from 'edit-event';
+import EditEvent from 'history/edit-event';
+import PlayerList from 'game/player-list';
 
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
+import * as Player from 'player';
 import * as Record from 'record';
 import * as server from 'server';
 import routes from 'routes';
@@ -32,17 +36,18 @@ const GAME_EMPTY_FLAVOR = [
 type RecordProps = {
     +event: ?Event.Event,
     +playerID: ?string,
-    +setHeight: (number) => void,
+    +color: string,
+    +setHeight?: (number) => void,
     +noActions?: boolean,
     +editing?: boolean,
     style?: any
 };
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const { event, playerID, setHeight, noActions, editing, style } = props;
+    const { event, playerID, color, setHeight, noActions, editing, style } = props;
 
     const ref = React.useRef<?Element>();
     React.useEffect(() => {
-        if (ref.current) {
+        if (ref.current && setHeight) {
             setHeight(ref.current.getBoundingClientRect().height);
         }
     }, [ref, setHeight]);
@@ -56,7 +61,6 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }
 
     let Inner;
-    const color = event.source === "local" ? "slategray" : srutil.hashedColor(event.source.id);
 
     switch (event.ty) {
         case "playerJoin":
@@ -81,7 +85,7 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     return (
         <Record.StyledRecord color={color} editing={editing} style={style}>
             {/* flow-ignore-all-next-line We do pass the events properly here */}
-            <Inner ref={ref} playerID={playerID} event={event} noActions={noActions} />
+            <Inner ref={ref} playerID={playerID} color={color} event={event} noActions={noActions} />
         </Record.StyledRecord>
     );
 }, areEqual);
@@ -89,6 +93,7 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
 type RowRenderProps = { +style: any, +index: number, +data: Event.Event[] };
 
 export function LoadingResultList({ playerID }: { playerID: ?string }) {
+    const game = React.useContext(Game.Ctx);
     const state = React.useContext(Event.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
@@ -154,17 +159,25 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
         }
     }
 
+    const gamePlayers = game?.players;
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
-            return <EventRecord event={null} setHeight={setHeight} playerID={playerID} style={style} />;
+            return <EventRecord event={null} color={""} setHeight={setHeight} playerID={playerID} style={style} />;
         }
         else {
             const event = data[index];
             const editing = state.editing != null && state.editing.id === event.id;
-            return <EventRecord event={event} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
+            let color = "lightslategray";
+            if (gamePlayers && event.source !== "local") {
+                const player = gamePlayers.get(event.source.id);
+                if (player) {
+                    color = Player.colorOf(player);
+                }
+            }
+            return <EventRecord event={event} color={color} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt, playerID, state.editing]);
+    }, [loadedAt, playerID, state.editing, gamePlayers]);
 
     function loadMoreItems(oldestIx: number): ?Promise<void> {
         if (fetchingEvents || connection === "offline" || atHistoryEnd) {
@@ -226,6 +239,7 @@ const HistoryFlavor = styled(UI.Flavor)`
 
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const events = React.useContext(Event.Ctx);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
@@ -246,22 +260,27 @@ export default function EventHistory() {
         body = (<HistoryFlavor>{rollFlavor}</HistoryFlavor>);
     }
     else {
-        body = (<LoadingResultList playerID={game?.player?.id} />);
+        body = (<LoadingResultList playerID={player?.id} />);
     }
 
     return (
         <>
         {events.editing &&
-            <EditEvent playerID={game?.player?.id} event={events.editing} />
+            <EditEvent event={events.editing} />
         }
-        <UI.Card padRight grow color="#81132a">
+        <UI.Card unpadded padRight grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter>
-                <UI.CardTitleText color="#842222" style={{ marginRight: '0.5rem'}}>
+                <UI.CardTitleText color={theme.colors.primary} style={{ marginRight: '0.5rem'}}>
+                    <UI.FAIcon icon={icons.faList} />
+                    &nbsp;
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>
+                {game && <PlayerList />}
             </UI.FlexRow>
-            {body}
+            <UI.FlexColumn grow>
+                {body}
+            </UI.FlexColumn>
         </UI.Card>
         </>
     );

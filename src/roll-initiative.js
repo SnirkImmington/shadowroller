@@ -4,11 +4,13 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
+import theme from 'style/theme';
+import * as icons from 'style/icon';
 import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
-import * as Event from 'event';
-//import { ConnectionCtx } from 'connection';
+import * as Event from 'history/event';
+import { StatusText, ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
 
@@ -45,32 +47,41 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
     }
 `;
 export default function RollInitiativePrompt() {
-    //const connection = React.useContext(ConnectionCtx);
+    const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
-    const [shown, setShown] = React.useState(true);
-    //const [loading, setLoading] = React.useState(false);
+    const [shown, toggleShown] = srutil.useToggle(true);
+    const [loading, setLoading] = React.useState(false);
+    const [localRoll, toggleLocalRoll] = srutil.useToggle(false);
 
     const [base, setBase] = React.useState<?number>();
+    const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [dice, setDice] = React.useState<number>(1);
-    //const [local, setLocal] = React.useState(false);
-    const local = game?.gameID == null;
+    const [dice, setDice] = React.useState(1);
+    const [diceText, setDiceText] = React.useState("");
 
+    const connected = connection === "connected";
+    const rollDisabled = (
+        !dice || dice < 0 || dice > 5
+        || !base || base < 0 || base > 50
+        || loading || (game && !localRoll && !connected)
+    );
 
-    //const connected = connection === "connected";
-    const rollReady = base && dice && base > 0 && dice > 0 && dice <= 5;
-
-    const titleChanged = React.useCallback((e) => { setTitle(e.target.value); }, [setTitle]);
-    const baseChanged = React.useCallback((value) => { setBase(value); }, [setBase]);
-    const diceChanged = React.useCallback((value) => { setDice(value || 1); }, [setDice]);
+    const titleChanged = React.useCallback((e) => {
+        setTitle(e.target.value); }, [setTitle]);
+    const baseChanged = React.useCallback((value) => {
+        setBase(value); }, [setBase]);
+    const diceChanged = React.useCallback((value) => {
+        setDice(value || 1); }, [setDice]);
 
     const rollClicked = React.useCallback((e) => {
         e.preventDefault();
-        if (!rollReady) { return; }
+        if (rollDisabled) {
+            return;
+        }
 
-        if (local) {
+        if (localRoll) {
             const initiativeDice = srutil.roll(dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
@@ -80,30 +91,40 @@ export default function RollInitiativePrompt() {
             dispatch({ ty: "newEvent", event });
         }
         else {
-            routes.game.rollInitiative({ base: base || 0, dice, title });
+            setLoading(true);
+            routes.game.rollInitiative({ base: base || 0, dice, title })
+                .onDone((res, full) => {
+                    setLoading(false);
+                    if (!res && process.env.NODE_ENV !== "production") {
+                        console.error("Error rolling initiative:", full);
+                    }
+                })
         }
-    }, [rollReady, dispatch, local, base, dice, title]);
+    }, [rollDisabled, localRoll, base, dice, title, dispatch]);
 
     if (!shown) {
         return (
                 <UI.FlexRow maxWidth rowCenter floatRight>
-                    <UI.CardTitleText color="#81132a">
-                        Initiative
+                    <UI.CardTitleText color={theme.colors.primary}>
+                        <UI.FAIcon icon={icons.faClipboardList} />
+                        &nbsp;Initiative
                     </UI.CardTitleText>
-                    <UI.LinkButton onClick={() => setShown(true)}>
-                        [show]
+                    <UI.LinkButton minor onClick={toggleShown}>
+                        show
                     </UI.LinkButton>
                 </UI.FlexRow>
         );
     }
+
     return (
-        <UI.Card color="#81132a">
+        <UI.Card color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter floatRight>
-                <UI.CardTitleText color="#81132a">
-                    Initiative
+                <UI.CardTitleText color={theme.colors.primary}>
+                    <UI.FAIcon icon={icons.faClipboardList} />
+                    &nbsp;Initiative
                 </UI.CardTitleText>
-                <UI.LinkButton onClick={() => setShown(false)}>
-                    [hide]
+                <UI.LinkButton minor onClick={toggleShown}>
+                    hide
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="roll-initiative-form">
@@ -113,11 +134,13 @@ export default function RollInitiativePrompt() {
                             Roll
                         </label>
                         <NumericInput small id="roll-initiative-base"
-                                      min={1}
+                                      min={1} max={69}
+                                      text={baseText} setText={setBaseText}
                                       onSelect={baseChanged} />
                         +
                         <NumericInput small id="roll-initiative-dice"
                                       min={1} max={5} placeholder="1"
+                                      text={diceText} setText={setDiceText}
                                       onSelect={diceChanged} />
                         <label htmlFor="roll-initiative-dice">
                             d6
@@ -132,12 +155,31 @@ export default function RollInitiativePrompt() {
                                   value={title} />
                     </UI.FlexRow>
                 </UI.ColumnToRow>
-                <UI.FlexRow floatRight spaced rowCenter>
-                    <RollButton id="roll-initiative-submit" type="submit"
-                                bg={RollBackground.inGame}
-                                disabled={!rollReady} onClick={rollClicked}>
-                        Roll Initiative
-                    </RollButton>
+                <UI.FlexRow spaced floatRight>
+                    {game && <>
+                        <UI.RadioLink id="roll-initiative-set-in-game"
+                                      name="initiative-location"
+                                      type="radio" light
+                                      checked={!localRoll}
+                                      onChange={toggleLocalRoll}>
+                            in {game.gameID}
+                        </UI.RadioLink>
+                        <UI.RadioLink id="roll-initiative-set-local"
+                                      name="initiative-location"
+                                      type="radio" light
+                                      checked={localRoll}
+                                      onChange={toggleLocalRoll}>
+                            locally
+                        </UI.RadioLink>
+                    </>}
+                    <UI.FlexRow spaced>
+                        {!connected && <StatusText connection={connection} />}
+                        <RollButton id="roll-initiative-submit" type="submit"
+                                    bg={RollBackground.inGame}
+                                    disabled={rollDisabled} onClick={rollClicked}>
+                            Roll Initiative
+                        </RollButton>
+                    </UI.FlexRow>
                 </UI.FlexRow>
             </form>
         </UI.Card>

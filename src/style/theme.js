@@ -7,18 +7,20 @@ export const GREENB = "#10fe5c"; // #01f34f
 
 export default {
     colors: {
-        primary: "#85142C",
+        primary: "#85142C", // hsl(347, 74%, 30%)
         primaryLight: "#c14b4e",
         primaryDesaturated: "#783442",
-        primaryDesaturated2: "hsv(347, 20, 51)",
+        primaryDesaturated2: "hsl(347, 24%, 60%)",
+        primaryDesaturated3: "hsl(347, 30%, 35%)",
 
         warning: "hsl(60, 50%, 50%)",
 
-        secondary: "#31bfc4",
+        secondary: "#31bfc4", // hsl(182, 60%, 48%)
         secondaryPressed: "hsl(182, 60%, 36%)",
         secondaryLight: "#88DFDF",
         secondaryDesaturated: "#94F5F5",
         secondaryDesaturated2: "hsl(182, 20%, 45%)",
+        secondaryDesaturated3: "hsl(182, 30%, 50%)",
         secondaryDark: "#1f777a",
         green: "#228422",
         gray: "#000022",

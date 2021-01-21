@@ -2,7 +2,9 @@
 
 import * as React from 'react';
 
-function rollDie(): number {
+export type Setter<T> = (T | (T => T)) => void;
+
+export function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;
 }
 
@@ -59,9 +61,15 @@ export function pickRandom<T>(items: Array<T>): T {
     return items[Math.floor(Math.random() * items.length)];
 }
 
-export function useFlavor(options: React.Node[]): [React.Node, () => void] {
+export function useFlavor<T>(options: T[]): [T, () => void] {
     const [flavor, setFlavor] = React.useState(() => pickRandom(options));
     return [flavor, () => setFlavor(() => pickRandom(options))];
+}
+
+export function useToggle(initial: bool | () => bool): [bool, () => void] {
+    const [value, setValue] = React.useState<bool>(initial);
+    const toggle = React.useCallback(() => setValue(v => !v), [setValue]);
+    return [value, toggle];
 }
 
 // This shallow comparison seems to be what react is using.
@@ -92,29 +100,6 @@ export function shallowEqual(a: any, b: any) {
     }
 
     return true;
-}
-
-// Color generation taken from:
-// https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-
-/// Produces a random HSL color from IDs which are base64 ecoded random bytes.
-export function hashedColor(id: string): string {
-    let converted: string;
-    try {
-        converted = atob(id);
-    }
-    catch {
-        converted = id;
-    }
-
-    // Get a checksum of the ID to use as a unique color hue
-    let sum = 0;
-    for (let i = 0; i < converted.length; i++) {
-        sum += converted.charCodeAt(i);
-    }
-
-    const hue = sum % 360;
-    return `hsl(${hue}, 80%, 56%)`;
 }
 
 export function genRandomID(): string {

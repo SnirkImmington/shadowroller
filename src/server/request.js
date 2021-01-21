@@ -2,7 +2,7 @@
 
 import * as server from 'server';
 import * as auth from './auth';
-import type { SetConnection, SetResponse } from 'connection';
+import type { SetConnection, SetRetryConnection, SetResponse } from 'connection';
 
 export class BackendRequest<O> {
     request: Promise<Response>;
@@ -11,7 +11,7 @@ export class BackendRequest<O> {
     handleClientError: (Response) => void = () => {};
     handleServerError: (Response) => void = () => {};
     handleNetworkError: (any) => void = () => {};
-    setConnection: SetConnection = () => {};
+    setConnection: SetConnection | SetRetryConnection = () => {};
     setResponse: SetResponse = () => {};
 
     constructor(request: Promise<Response>) {
@@ -128,7 +128,7 @@ export class BackendRequest<O> {
         return this;
     }
 
-    onConnection(setter: SetConnection): BackendRequest<O> {
+    onConnection(setter: SetConnection | SetRetryConnection): BackendRequest<O> {
         this.setConnection = setter;
         setter("connecting");
         return this;

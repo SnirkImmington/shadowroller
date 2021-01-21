@@ -1,26 +1,23 @@
 // @flow
 
 import * as React from 'react';
-import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'numeric-input';
-import {EventRecord} from 'history-panel';
+import {EventRecord} from 'history/history-panel';
 import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
+import * as Player from 'player';
 import routes from 'routes';
+import theme from 'style/theme';
+import * as icons from 'style/icon';
 import * as srutil from 'srutil';
-
-const TitleBar = styled(UI.FlexRow)`
-    width: 100%;
-    justify-content: space-between;
-`;
 
 type Props = {
     +event: Event.DiceEvent,
-    +playerID: ?string,
 };
-export default function EditEvent({ event, playerID }: Props) {
+export default function EditEvent({ event }: Props) {
+    const player = React.useContext(Player.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [title, setTitle] = React.useState(event.title);
@@ -30,6 +27,7 @@ export default function EditEvent({ event, playerID }: Props) {
     const [deletePrompt, setDeletePrompt] = React.useState(false);
 
     const canUpdate = title !== event.title || glitchy !== event.glitchy;
+    const eventColor = player ? Player.colorOf(player) : "lightslategray";
 
     function cancelEdit() {
         dispatch({ ty: "clearEdit" });
@@ -86,24 +84,27 @@ export default function EditEvent({ event, playerID }: Props) {
     }
 
     return (
-        <UI.Card color="#81132a" style={{ padding: '5px'}}>
-            <TitleBar>
-                <UI.CardTitleText color="#842222">
-                    Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
+        <UI.Card padRight bottomGap color={theme.colors.primary}>
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
+                    <UI.FAIcon icon={icons.faPen} />
+                    &nbsp;Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
                 </UI.CardTitleText>
-                <UI.LinkButton onClick={cancelEdit}>[ X ]</UI.LinkButton>
-            </TitleBar>
+                <UI.LinkButton minor onClick={cancelEdit}>close</UI.LinkButton>
+            </UI.FlexRow>
             <UI.FlexColumn>
                 <UI.FlexRow maxWidth formRow>
                     <EventRecord editing noActions setHeight={()=>{}}
-                                 style={{ width: '100%'}} playerID={playerID}
+                                 style={{ width: '100%'}} playerID={player?.id}
+                                 color={eventColor}
                                  event={{ ...event, title, glitchy }} />
                 </UI.FlexRow>
                 <UI.ColumnToRow>
                     <UI.FlexRow formRow>
                         Roll to
-                        <UI.Input
-                                placeholder={event.title || titleFlavor}
+                        <UI.Input id="edit-set-title"
+                                value={title}
+                                placeholder={titleFlavor}
                                 onChange={(e) => setTitle(e.target.value)} />
                     </UI.FlexRow>
                     <UI.FlexRow formRow>
@@ -152,7 +153,7 @@ export default function EditEvent({ event, playerID }: Props) {
                     <UI.LinkButton disabled={!canUpdate} onClick={updateEvent}>
                         update
                     </UI.LinkButton>
-                    <UI.LinkButton onClick={cancelEdit}>
+                    <UI.LinkButton minor onClick={cancelEdit}>
                         cancel
                     </UI.LinkButton>
                 </UI.FlexRow>

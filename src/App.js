@@ -5,19 +5,23 @@ import styled, { ThemeProvider } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
+import * as srutil from 'srutil';
 
 import * as Game from 'game';
-import * as Event from 'event';
-import * as Stream from './stream';
+import * as Event from 'history/event';
+import * as Player from 'player';
 import * as server from 'server';
+import * as Stream from 'stream-provider';
 import routes from 'routes';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
-import type { Connection } from 'connection';
+import type { RetryConnection } from 'connection';
 
 import SRHeader from 'header';
+import EditPlayerPanel from 'player/edit-panel';
+import NewJoinMenu from 'game/new-join-menu';
 import RollDicePrompt from 'roll-dice';
 import RollInitiativePrompt from 'roll-initiative';
-import EventHistory from 'history-panel';
+import EventHistory from 'history/history-panel';
 import DebugBar from 'debug-bar';
 
 import 'assets-external/source-code-pro.css';
@@ -27,20 +31,21 @@ const AppLeft: StyledComponent<> = styled(UI.FlexColumn)`
 
     padding: 0.5rem;
 
-    & > *:first-child {
+    & > *:not(last-child) {
         margin-bottom: 1rem;
     }
 
     /* Tablet+: roll history on right. */
     @media all and (min-width: 768px) {
-        flex-grow: 1; /* Grows out */
-        padding-right: 14px;
+        flex-grow: 1; /* Balance with right */
+        min-width: 20em;
 
-        padding: 1rem 1.5rem 0 1rem;
+        padding-right: 1rem;
+        padding-top: 1rem;
 
         /* Space out dice and initiative on tablet+ */
-        & > *:first-child {
-            margin-bottom: 4rem;
+        & > *:not(last-child) {
+            margin-bottom: 1.5rem;
         }
     }
 `;
@@ -59,14 +64,14 @@ const AppRight: StyledComponent<> = styled(UI.FlexColumn)`
 `;
 
 function Shadowroller() {
+    const game = React.useContext(Game.Ctx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
-    const connection = React.useContext(ConnectionCtx);
+    const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
-    const setStream = React.useContext(Stream.SetterCtx);
+    const [connect] = React.useContext(Stream.Ctx);
 
-    const [menuShown, setMenuShown] = React.useState<bool>(false);
-    const hide = React.useCallback(() => setMenuShown(false), [setMenuShown]);
+    const [menuShown, toggleMenuShown] = srutil.useToggle(false);
 
     // On first load, read credentials from localStorage and log in.
     React.useEffect(() => {
@@ -74,14 +79,14 @@ function Shadowroller() {
         if (server.session) {
             routes.auth.reauth({ session: server.session })
                 .onConnection(setConnection)
-                .onResponse(resp => {
-                    server.handleLogin(
-                        true, resp,
-                        setConnection,
-                        setStream,
+                .onResponse(response => {
+                    server.handleLogin({
+                        persist: true, response,
+                        setConnection, connect,
                         gameDispatch,
+                        playerDispatch,
                         eventDispatch
-                    )
+                    });
                 })
                 .onClientError(resp => {
                     if (process.env.NODE_ENV !== "production") {
@@ -96,27 +101,6 @@ function Shadowroller() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    function onGameButtonClick() {
-        setMenuShown(shown => !shown);
-        //
-        setConnection((conn: Connection) =>
-            conn === "disconnected" || conn === "errored" ? "offline" : conn
-        );
-    }
-
-    let menu: React.Node = '';
-    if (menuShown) {
-        if (connection === "connected") {
-            menu = <Game.StatusMenu hide={hide} />;
-        }
-        else if (server.session) {
-            menu = <Game.ReconnectMenu hide={hide} />;
-        }
-        else {
-            menu = <Game.JoinMenu hide={hide} />
-        }
-    }
-
     return (
         <ThemeProvider theme={theme}>
             {process.env.NODE_ENV !== "production" &&
@@ -124,10 +108,14 @@ function Shadowroller() {
             }
 
             <SRHeader menuShown={menuShown}
-                      onClick={onGameButtonClick} />
-            { menu }
+                      onClick={toggleMenuShown} />
             <UI.ColumnToRow grow>
                 <AppLeft>
+                    {menuShown &&
+                        (game ?
+                          <EditPlayerPanel hide={toggleMenuShown} />
+                        : <NewJoinMenu hide={toggleMenuShown} />)
+                    }
                     <RollDicePrompt />
                     <RollInitiativePrompt />
                 </AppLeft>
@@ -141,27 +129,29 @@ function Shadowroller() {
 
 export default function App(props: {}) {
     const [game, gameDispatch] = React.useReducer(Game.reduce, Game.defaultState);
+    const [player, playerDispatch] = React.useReducer(Player.reduce, Player.defaultState);
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
-    const [connection, setConnection] = React.useState<Connection>("offline");
-    const [stream, setStream] = React.useState<Stream.State>(null);
+    const [connection, setConnection] = React.useState<RetryConnection>("offline");
 
     return (
         <ConnectionCtx.Provider value={connection}>
         <SetConnectionCtx.Provider value={setConnection}>
         <Game.Ctx.Provider value={game}>
-        <Event.Ctx.Provider value={eventList}>
         <Game.DispatchCtx.Provider value={gameDispatch}>
+        <Player.Ctx.Provider value={player}>
+        <Player.DispatchCtx.Provider value={playerDispatch}>
+        <Event.Ctx.Provider value={eventList}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
-        <Stream.Ctx.Provider value={stream}>
-        <Stream.SetterCtx.Provider value={setStream}>
+        <Stream.Provider>
 
             <Shadowroller />
 
-        </Stream.SetterCtx.Provider>
-        </Stream.Ctx.Provider>
+        </Stream.Provider>
         </Event.DispatchCtx.Provider>
-        </Game.DispatchCtx.Provider>
         </Event.Ctx.Provider>
+        </Player.DispatchCtx.Provider>
+        </Player.Ctx.Provider>
+        </Game.DispatchCtx.Provider>
         </Game.Ctx.Provider>
         </SetConnectionCtx.Provider>
         </ConnectionCtx.Provider>

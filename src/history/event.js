@@ -1,7 +1,6 @@
 // @flow
 
 import * as React from 'react';
-import * as srutil from 'srutil';
 
 export type GameSource = {| +id: string, +name: string |};
 export type Source =
@@ -133,10 +132,6 @@ export const defaultState: State = {
 
 export function timeOf(event: Event): Date {
     return new Date(event.id);
-}
-
-export function colorOf(event: Event): string {
-    return event.source !== "local" ? srutil.hashedColor(event.source.id) : 'slategray';
 }
 
 export function canModify(event: Event, playerID: ?string): bool {

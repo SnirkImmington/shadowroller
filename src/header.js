@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { StyledComponent } from 'styled-components';
 import styled from 'styled-components/macro';
 
-import * as Game from 'game';
+import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 // flow-ignore-all-next-line
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
@@ -41,7 +41,7 @@ const SRTitle = styled.h1`
     }
 `;
 
-const JoinButtonUI = styled.button`
+const StyledJoinButton = styled.button`
     background: ${({theme}) => theme.colors.header};
     border: 3px solid white;
 
@@ -73,31 +73,33 @@ const JoinButtonUI = styled.button`
 `;
 
 type Props = {
-    +menuShown: bool,
     +onClick: () => void
 }
 
-function JoinButton({ menuShown, onClick }: Props) {
-    const game = React.useContext(Game.Ctx);
+function JoinButton({ onClick }: Props) {
+    const player = React.useContext(Player.Ctx);
     const connection = React.useContext(ConnectionCtx);
 
     let disabled = false;
     let message: React.Node = "";
-    if (!game) {
+    if (!player) {
         switch (connection) {
             case "offline":
-                message = menuShown ? "Cancel" : "Join";
+                message = "Join";
                 break;
             case "disconnected":
-                message = menuShown ? "Cancel" : "Reconnect";
+                message = "Reconnect";
                 break;
             case "connecting":
-            case "connected": // If we don't have a game yet
-                message = menuShown ? "Cancel" : "Connecting";
-                disabled = !menuShown;
+            case "connected": // Connected but no player - race condition between setStates?
+                message = "Connecting";
+                disabled = true;
                 break;
             case "errored":
                 message = "Try again";
+                break;
+            case "retrying":
+                message = "Reconnecting";
                 break;
             default:
                 (connection: empty); // eslint-disable-line no-unused-expressions
@@ -107,12 +109,15 @@ function JoinButton({ menuShown, onClick }: Props) {
         switch (connection) {
             case "offline":
             case "disconnected":
-                message = menuShown ? "Close" : "Disconnected";
+                message = "Disconnected";
+                break;
+            case "connecting":
+                message = player.name;
+                disabled = true;
                 break;
             case "connected":
-            case "connecting":
-                message = menuShown ? "Close" : game.player.name;
-                disabled = connection === "connecting" && !menuShown;
+            case "retrying":
+                message = player.name;
                 break;
             case "errored":
                 message = "Error";
@@ -123,9 +128,9 @@ function JoinButton({ menuShown, onClick }: Props) {
     }
 
     return (
-        <JoinButtonUI disabled={disabled} onClick={onClick}>
+        <StyledJoinButton disabled={disabled} onClick={onClick}>
             {message}
-        </JoinButtonUI>
+        </StyledJoinButton>
     );
 }
 

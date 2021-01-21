@@ -1,19 +1,19 @@
 // @flow
 
 import * as React from 'react';
-import * as humanTime from 'humanTime';
 import * as UI from 'style';
-
+import * as humanTime from 'humanTime';
 import * as Game from 'game';
-import * as Event from 'event';
+import * as Event from 'history/event';
 
 type PlayerJoinProps = {
     +event: Event.PlayerJoin,
+    +color: string,
 };
-export const PlayerJoin = React.memo<PlayerJoinProps>(React.forwardRef(function PlayerJoin({ event }, ref) {
+export const PlayerJoin = React.memo<PlayerJoinProps>(React.forwardRef(function PlayerJoin({ event, color }, ref) {
     const game = React.useContext(Game.Ctx);
 
-    const name = <UI.PlayerName id={event.source.id} name={event.source.name} />
+    const name = <UI.PlayerColored color={color}>{event.source.name}</UI.PlayerColored>;
     return (
         <UI.FlexColumn ref={ref}>
             <UI.FlexRow>

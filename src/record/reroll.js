@@ -7,24 +7,24 @@ import * as humanTime from 'humanTime';
 import * as icons from 'style/icon';
 import * as Roll from './rollComponents';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as rollStats from 'rollStats';
 
 type Props = {
     +event: Event.RerollFailures,
     +playerID: ?string,
+    +color: string,
     +noActions?: bool
 }
-function RerollRecord({ event, playerID, noActions }: Props, ref) {
-    const color = Event.colorOf(event);
+function RerollRecord({ event, playerID, color, noActions }: Props, ref) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
-            <UI.HashColored id={event.source.id}>
+            <UI.PlayerColored color={color}>
                 {event.source.name}
-            </UI.HashColored>
+            </UI.PlayerColored>
             &nbsp;
             <b>rerolls failures</b>
         </>

@@ -6,22 +6,24 @@ import * as dice from 'dice';
 import * as humanTime from 'humanTime';
 import * as Roll from './rollComponents';
 
-import * as Event from 'event';
+import * as Event from 'history/event';
 import * as rollStats from 'rollStats';
 
 type Props = {
-    +event: Event.Roll, playerID: ?string, +noActions?: bool
+    +event: Event.Roll,
+    +playerID: string,
+    +color: string,
+    +noActions?: bool
 }
-function RollRecordInner({ event, playerID, noActions }: Props, ref) {
-    const color = Event.colorOf(event);
+function RollRecordInner({ event, playerID, color, noActions }: Props, ref) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.Node = event.source !== "local" ? (
         <>
-            <UI.HashColored id={event.source.id}>
+            <UI.PlayerColored color={color}>
                 {event.source.name}
-            </UI.HashColored>
+            </UI.PlayerColored>
             {` rolls`}
         </>
     ) : (

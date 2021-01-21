@@ -7,17 +7,16 @@ import * as UI from 'style';
 import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
-import * as Event from 'event';
-import { ConnectionCtx } from 'connection';
+import * as Event from 'history/event';
+import { StatusText, ConnectionCtx } from 'connection';
 import routes from 'routes';
 import * as srutil from 'srutil';
+import theme from 'style/theme';
+import * as icons from 'style/icon';
 
-export const ROLL_TITLE_FLAVOR = [
-    "look good in a suit",
+export const ROLL_TITLE_FLAVOR: string[] = [
     "swipe the key card",
     "negotiate for more pay",
-    "eavesdrop on the business meeting",
-    "maniuplate the exec into revealing her plans",
 
     "avoid the oncoming shrapnel",
     "duck out of the way of the troll",
@@ -40,15 +39,12 @@ export const ROLL_TITLE_FLAVOR = [
     "repair the hole in the door",
 
     "swipe the statue",
-    "aim the torpedos",
     "avoid looking at the explosion",
 
     "gamble on the virtual horse racing",
     "backflip out of the plane",
     "pilot my drone under the door",
-    "place explosives",
     "repair the juggernaut",
-    "turn the world to chaos",
     "hack the grenade",
 
     "hack the cleaning drone",
@@ -60,11 +56,9 @@ export const ROLL_TITLE_FLAVOR = [
     "animate objects",
     "hack the cupcake",
     "catch the hacker",
-    "eavesdrop on the queen",
-    "send in the red team",
+    "look at the vampire",
 
     "drive through the storm",
-    "not spray more tags",
     "win the bike race",
     "identify the gang",
     "play the guitar",
@@ -72,30 +66,20 @@ export const ROLL_TITLE_FLAVOR = [
     "find the bandit",
     "jump through the air duct",
     "fireball the door",
-    "shoot between the hostages",
     "pretend to be a chef",
     "smuggle in handcuffs",
     "remember the cocktail list",
     "practice blood magic",
-    "shoot the bandit",
 
     "slice with zappy sword",
-    "soak 6 rounds of burst fire",
     "throw the deck",
     "swipe George's ID card",
     "pretend to be George",
-    "throw a knife",
-    "brick the security system",
     "shoot down the bugs",
     "inspire the intern",
     "wave a sword cane helpfully",
     "summon the zeppelin",
 ];
-
-const TitleRow = styled(UI.FlexRow)`
-    width: 100%;
-    justify-content: space-between;
-`;
 
 const RollBackground = {
     inGame: `linear-gradient(180deg, #783442 0, #601010)`,
@@ -131,13 +115,12 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
 `;
 
 const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
-    height: calc(1em + 10px);
     /* Mobile: full width - "name rolls to" */
-    width: calc(100vw - 5em);
 
+    /* Desktop: need to shrink for push the limit button */
     @media all and (min-width: 768px) {
-        width: 23em;
-    }
+        /* flex-shrink: 1; */
+    }*/
 `;
 
 const RollGlitchyLabel = styled.label`
@@ -147,23 +130,32 @@ const RollGlitchyLabel = styled.label`
     }
 `;
 
+const FullWidthSpacing = styled.span`
+    @media all and (min-width: 768px) {
+        flex-grow: 1;
+    }
+`;
+
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
 
+    const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
+    const [localRoll, toggleLocalRoll] = srutil.useToggle(false);
 
+    const [diceText, setDiceText] = React.useState("");
     const [diceCount, setDiceCount] = React.useState<?number>(null);
-    const [title, setTitle] = React.useState('');
+    const [title, setTitle] = React.useState("");
     const [edge, setEdge] = React.useState(false);
     const [glitchy, setGlitchy] = React.useState(0);
-    const [localRoll, setLocalRoll] = React.useState(false);
 
     const connected = connection === "connected";
     const rollDisabled = (
-        rollLoading || !diceCount || diceCount < 1 || diceCount > 100
+        !diceCount || diceCount < 1 || diceCount > 100
+        || rollLoading || (game && !localRoll && !connected)
     );
 
     const rollBackgound = connected && !localRoll ?
@@ -173,8 +165,6 @@ export default function RollDicePrompt() {
     function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
     }
-
-    const rollLocalClicked = React.useCallback(() => setLocalRoll(l => !l), [setLocalRoll]);
 
     const onEdgeClicked = React.useCallback(
         (event) => setEdge(event.target.checked),
@@ -193,8 +183,11 @@ export default function RollDicePrompt() {
 
     function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
         event.preventDefault();
-        if (!diceCount) { return; }
-        if (localRoll || !connected) {
+        if (rollDisabled || !diceCount) {
+            return;
+        }
+
+        if (localRoll) {
             let localRoll: Event.Event;
             if (edge) {
                 const rounds = srutil.rollExploding(diceCount);
@@ -218,7 +211,7 @@ export default function RollDicePrompt() {
                 .onDone((res, full) => {
                     setRollLoading(false);
                     if (!res && process.env.NODE_ENV !== "production") {
-                        console.log("Error rolling:", full);
+                        console.error("Error rolling:", full);
                     }
                 });
         }
@@ -230,25 +223,45 @@ export default function RollDicePrompt() {
         }
     }
 
-    const numericInput = React.useMemo(() => (
-        <NumericInput id="roll-select-dice"
-                      min={1} max={99}
-                      onSelect={setDiceCount} />
-    ), [setDiceCount]);
+    if (!shown) {
+        return (
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
+                    <UI.FAIcon icon={icons.faDice} />
+                    &nbsp;Roll Dice
+                </UI.CardTitleText>
+                <UI.LinkButton minor onClick={toggleShown}>
+                    show
+                </UI.LinkButton>
+            </UI.FlexRow>
+        );
+    }
 
     // roll title gets game state, dispatch useLocalRoll
     return (
-        <UI.Card color="#81132a">
-            <TitleRow>
-                <UI.CardTitleText color="#81132a">Roll Dice</UI.CardTitleText>
-            </TitleRow>
+        <UI.Card color={theme.colors.primary}>
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
+            {/*<AnimatedDie unpadded color={theme.colors.primary} />*/}
+                    <UI.FAIcon icon={icons.faDice} />
+                    &nbsp;Roll Dice
+                </UI.CardTitleText>
+                <UI.LinkButton minor onClick={toggleShown}>
+                    hide
+                </UI.LinkButton>
+            </UI.FlexRow>
             <form id="dice-input" onSubmit={onRollClicked}>
-                <UI.ColumnToRow formRow>
+                <UI.ColumnToRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-select-dice">
                             Roll
                         </label>
-                        {numericInput}
+                        <NumericInput id="roll-select-dice"
+                                      min={1} max={99}
+                                      text={diceText}
+                                      setText={setDiceText}
+                                      value={diceCount}
+                                      onSelect={setDiceCount} />
                         <label htmlFor="roll-select-dice">
                             dice
                         </label>
@@ -263,7 +276,8 @@ export default function RollDicePrompt() {
                                         onChange={rollTitleChanged}
                                         value={title} />
                     </UI.FlexRow>
-                    <UI.FlexRow formRow maxWidth>
+                    <FullWidthSpacing />
+                    <UI.FlexRow formRow>
                         <UI.RadioLink id="roll-enable-edge"
                                       type="checkbox" light
                                       checked={edge}
@@ -300,29 +314,30 @@ export default function RollDicePrompt() {
                     </UI.ColumnToRow>
                 </UI.FlexRow>
                 <UI.FlexRow spaced floatRight>
-                    {connected ?
-                        <>
-                            <UI.RadioLink id="roll-set-in-game"
-                                          name="roll-location"
-                                          type="radio" light
-                                          checked={!localRoll}
-                                          onChange={rollLocalClicked}>
-                                in&nbsp;<tt>{game?.gameID ?? "game"}</tt>
-                            </UI.RadioLink>
-                            <UI.RadioLink id="roll-set-local"
-                                          name="roll-location"
-                                          type="radio" light
-                                          checked={localRoll}
-                                          onChange={rollLocalClicked}>
-                                locally
-                            </UI.RadioLink>
-                        </>
-                    : ''}
-                    <RollButton id="roll-button-submit" type="submit"
-                                disabled={rollDisabled} bg={rollBackgound}
-                                onClick={onRollClicked}>
-                        Roll dice
-                    </RollButton>
+                    {game && <>
+                        <UI.RadioLink id="roll-set-in-game"
+                                      name="roll-location"
+                                      type="radio" light
+                                      checked={!localRoll}
+                                      onChange={toggleLocalRoll}>
+                            in {game.gameID}
+                        </UI.RadioLink>
+                        <UI.RadioLink id="roll-set-local"
+                                      name="roll-location"
+                                      type="radio" light
+                                      checked={localRoll}
+                                      onChange={toggleLocalRoll}>
+                            locally
+                        </UI.RadioLink>
+                    </>}
+                    <UI.FlexRow spaced>
+                        {!connected && <StatusText connection={connection} />}
+                        <RollButton id="roll-button-submit" type="submit"
+                                    disabled={rollDisabled} bg={rollBackgound}
+                                    onClick={onRollClicked}>
+                            Roll dice
+                        </RollButton>
+                    </UI.FlexRow>
                 </UI.FlexRow>
             </form>
         </UI.Card>

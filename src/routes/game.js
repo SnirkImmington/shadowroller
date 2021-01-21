@@ -2,15 +2,7 @@
 
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
-import type { Event, DiceEvent } from 'event';
-
-export type RenameRequest = {|
-    name: string
-|};
-
-export function rename(request: RenameRequest): BackendRequest<void> {
-    return post<RenameRequest, void>("game/rename", request);
-}
+import type { Event, DiceEvent } from 'history/event';
 
 export type ModifyRollRequest = {|
     id: number,
@@ -69,5 +61,11 @@ export type EventsResponse = {|
 |};
 
 export function getEvents(request: EventsRequest): BackendRequest<EventsResponse> {
+    if (!request.oldest) {
+        delete request.oldest;
+    }
+    if (!request.newest) {
+        delete request.newest;
+    }
     return get<EventsRequest, EventsResponse>("game/events", request);
 }

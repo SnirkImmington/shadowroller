@@ -1,10 +1,7 @@
 // @flow
 
-import * as React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
-
-import * as srutil from 'srutil';
 
 const diceFrames = keyframes`
     0%   { content: '\\2680'; }
@@ -42,14 +39,8 @@ export const Flavor: StyledComponent<> = styled.i`
     color: ${props => props.warn ? props.theme.colors.warning : props.light ? "#fffd" : "#333"};
 `;
 
-export const HashColored: StyledComponent<{ id: string, light?: bool }> = styled.b`
-    color: ${props => srutil.hashedColor(props.id)};
+export const PlayerColored: StyledComponent<{ color: string, light?: bool }> = styled.b`
+    white-space: nowrap;
+    color: ${props => props.color};
     ${props => props.light ? "padding: 1px; background: white;" : ""}
 `;
-
-type NameProps = { +id: string, +name: string, light?: bool };
-export function PlayerName({ id, name, light }: NameProps) {
-    return (
-        <HashColored light={light} id={id}>{name}</HashColored>
-    );
-}
