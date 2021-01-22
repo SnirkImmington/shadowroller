@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gomodule/redigo/redis"
 	"github.com/janberktold/sse"
 	"log"
 	"net/http"
@@ -23,6 +24,14 @@ type Request = http.Request
 type Response = http.ResponseWriter
 
 var errExtraBody = errors.New("encountered additional data after end of JSON body")
+
+// closeRedis closes the redis connection and logs any errors found
+func closeRedis(request *Request, conn redis.Conn) {
+	err := conn.Close()
+	if err != nil {
+		rawLog(1, request, "Error closing redis connection: %v", err)
+	}
+}
 
 func requestRemoteAddr(request *Request) string {
 	if config.ClientIPHeader != "" {

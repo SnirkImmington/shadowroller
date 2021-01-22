@@ -100,10 +100,10 @@ var (
 
 	// SSEClientRetrySecs is the amount of time suggested to an SSE client to
 	// wait between reconnects.
-	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 15)
+	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 5)
 	// SSEPingSecs is the amount of time between SSE pings.
 	// Lack of SSE pings may cause the browser to close the SSE connection.
-	SSEPingSecs = readInt("SSE_PING_SECS", 20)
+	SSEPingSecs = readInt("SSE_PING_SECS", 15)
 	// MaxHeaderBytes is the maximum number of header bytes which can be read by
 	// the Go server.
 	MaxHeaderBytes = readInt("MAX_HEADER_BYTES", 1<<20)
@@ -121,6 +121,9 @@ var (
 
 	// RedisURL is the URI used to dial redis.
 	RedisURL = readString("REDIS_URL", "redis://:6379")
+	// RedisRetries controls the number of times a retry is attempted for some retryable
+	// redis queries.
+	RedisRetries = readInt("REDIS_RETRIES", 5)
 
 	// Backend options
 
@@ -141,6 +144,9 @@ var (
 	// HardcodedGameNames is a comma-separated list of GameIDs which the server
 	// creates on startup.
 	HardcodedGameNames = readStringArray("GAME_NAMES", "test1,test2")
+	// HarcodedUsernames is a comma-separated list of usernames which the
+	// server creates on startup.
+	HardcodedUsernames = readStringArray("USERNAMES", "snirk,smark,smirk")
 	// RollBufferSize is the size of the channel buffer from the roll goroutine.
 	RollBufferSize = readInt("ROLL_BUFFER_SIZE", 200)
 	// MaxSingleRoll is the largest roll request the server will handle at once.

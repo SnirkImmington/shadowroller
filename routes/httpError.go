@@ -2,13 +2,10 @@ package routes
 
 import (
 	"net/http"
-	"sr"
 )
 
-var abortedRequestPanicMessage = string(sr.GenUID())
-
 func abortRequest() {
-	panic(abortedRequestPanicMessage)
+	panic(http.ErrAbortHandler)
 }
 
 func httpDoErrorIf(message string, status int, response Response, request *Request, err error) {

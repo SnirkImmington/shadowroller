@@ -1,4 +1,4 @@
-package sr
+package id
 
 import (
 	rand "crypto/rand"

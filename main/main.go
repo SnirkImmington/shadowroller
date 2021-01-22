@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -8,7 +9,10 @@ import (
 	"os"
 	"sr"
 	"sr/config"
+	redisUtil "sr/redis"
 	"sr/routes"
+	"sr/setup"
+	"sr/task"
 	"time"
 )
 
@@ -20,8 +24,10 @@ const SHADOWROLLER = `
 /___//_//_/\_._/ \___/ \___/|__.__//_/   \___//_//_/ \__//_/
 `
 
+var taskFlag = flag.String("task", "", "Select a task to run interactively")
+
 func runServer(name string, server http.Server, tls bool) {
-	log.Print("Running ", name, " server at ", server.Addr, "...")
+	log.Printf("Running %v server at %v...", name, server.Addr)
 
 	for {
 		var err error
@@ -41,7 +47,7 @@ func runServer(name string, server http.Server, tls bool) {
 			}
 			err = server.ListenAndServeTLS(pemFile, keyFile)
 		} else {
-			log.Print("HTTP server started.")
+			log.Print("HTTP (unencrypted) server started.")
 			err = server.ListenAndServe()
 		}
 
@@ -62,23 +68,24 @@ func main() {
 	} else {
 		log.SetFlags(log.Ltime | log.Lshortfile)
 	}
+	flag.Parse()
+	config.VerifyConfig()
+	if taskFlag != nil && *taskFlag != "" {
+		task.RunSelectedTask(*taskFlag, flag.Args())
+	}
 
 	log.Print("Starting up...")
-
+	redisUtil.SetupWithConfig()
 	rand.Seed(time.Now().UnixNano())
 	sr.BeginGeneratingRolls()
-	sr.SetupRedis()
-	config.VerifyConfig()
+	setup.CheckGamesAndPlayers()
 	routes.RegisterTasksViaConfig()
 
 	log.Print("Shadowroller:", SHADOWROLLER, "\n")
-
 	err := routes.DisplaySiteRoutes()
 	if err != nil {
 		panic(fmt.Sprintf("Unable to walk routes: %v", err))
 	}
-
-	log.Print(config.HardcodedGameNames)
 
 	if config.PublishRedirect != "" {
 		redirectServer := routes.MakeHTTPRedirectServer()

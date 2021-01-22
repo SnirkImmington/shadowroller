@@ -1,4 +1,4 @@
-package sr
+package id
 
 import (
 	"crypto/rand"
@@ -83,7 +83,7 @@ func (tuid TUID) UnmarshalJSON(input []byte) error {
 	return nil
 }
 
-// MashalJSON encodes a TUID as an int64.
+// MarshalJSON encodes a TUID as an int64.
 func (tuid TUID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int64(tuid))
 }

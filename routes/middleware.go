@@ -1,13 +1,13 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"net/http"
 	"runtime/debug"
-	"sr"
 	"sr/config"
-	"strings"
+	redisUtil "sr/redis"
 	"time"
 )
 
@@ -38,13 +38,13 @@ func requestContextMiddleware(wrapped http.Handler) http.Handler {
 func localhostOnlyMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		// Not sure if this should just be remote addr.
-		remoteAddr := strings.Split(requestRemoteAddr(request), ":")[0]
-		allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1"
+		remoteAddr := requestRemoteIP(request)
+		allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1" || remoteAddr == "[::1]"
 		message := "disallowed"
 		if allowed {
 			message = "allowed"
 		}
-		logf(request, "localhostOnly: %v %v", remoteAddr, message)
+		logf(request, "localhostOnly: %v %v", requestRemoteAddr(request), message)
 		if !allowed {
 			httpNotFound(response, request, "Not found")
 			return
@@ -56,12 +56,16 @@ func localhostOnlyMiddleware(wrapped http.Handler) http.Handler {
 func recoveryMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		defer func() {
-			if err := recover(); err != nil {
-				if err == abortedRequestPanicMessage {
+			if errVal := recover(); errVal != nil {
+				if errVal == http.ErrAbortHandler {
+					return
+				}
+				err, ok := errVal.(error)
+				if ok && errors.Is(err, http.ErrAbortHandler) {
 					return
 				}
 				logf(request, "Panic serving %v %v: %v",
-					request.Method, request.URL, err,
+					request.Method, request.URL, errVal,
 				)
 				logf(request, string(debug.Stack()))
 				http.Error(response, "Internal Server Error", http.StatusInternalServerError)
@@ -75,8 +79,8 @@ func recoveryMiddleware(wrapped http.Handler) http.Handler {
 
 func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		conn := sr.RedisPool.Get()
-		defer sr.CloseRedis(conn)
+		conn := redisUtil.Connect()
+		defer closeRedis(request, conn)
 
 		// Taken from https://redis.io/commands/incr#pattern-rate-limiter-1
 
