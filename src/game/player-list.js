@@ -30,7 +30,7 @@ export function PlayerName({ player }: PlayerNameProps) {
 }
 
 const ListScroll = styled.div`
-    flex-grrow: 1;
+    flex-grow: 1;
     overflow-x: scroll;
 `;
 
