@@ -5,7 +5,8 @@ import * as React from 'react';
 export type Info = {|
     +id: string,
     +name: string,
-    +hue: number
+    +hue: number,
+    +online?: bool,
 |};
 
 export type Player = {|
