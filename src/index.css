@@ -57,3 +57,9 @@ p {
 .sr-die:nth-child(3n+0) {
     margin-right: 6px;
 }
+
+.sr-icon-svg {
+    height: .8em;
+    width: .8em;
+    margin-right: .3em;
+}

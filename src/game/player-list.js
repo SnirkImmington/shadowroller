@@ -8,6 +8,11 @@ import * as UI from 'style';
 import * as Game from 'game';
 import * as Player from 'player';
 
+// flow-ignore-all-next-line Uh it's there
+import { ReactComponent as OnlineIcon } from 'assets/icon-online.svg';
+// flow-ignore-all-next-line Uh it's there
+import { ReactComponent as OfflineIcon } from 'assets/icon-offline.svg';
+
 const StyledList: StyledComponent<> = styled(UI.FlexRow)`
     flex-grow: 1;
     margin: auto .5em;
@@ -23,9 +28,15 @@ type PlayerNameProps = {
 export function PlayerName({ player }: PlayerNameProps) {
     const color = Player.colorOf(player);
     return (
+        <UI.FlexRow>
+        {player.online ?
+                <OnlineIcon className="sr-icon-svg" />
+                : <OfflineIcon className="sr-icon-svg" />
+        }
         <UI.PlayerColored color={color}>
             {player.name}
         </UI.PlayerColored>
+        </UI.FlexRow>
     );
 }
 
