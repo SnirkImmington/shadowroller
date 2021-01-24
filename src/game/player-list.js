@@ -11,7 +11,6 @@ import * as Player from 'player';
 const StyledList: StyledComponent<> = styled(UI.FlexRow)`
     flex-grow: 1;
     margin: auto .5em;
-    overflow: hidden;
     & > * {
         margin-right: 1em;
     }
@@ -30,6 +29,11 @@ export function PlayerName({ player }: PlayerNameProps) {
     );
 }
 
+const ListScroll = styled.div`
+    flex-grow: 1;
+    overflow-x: scroll;
+`;
+
 export default function PlayerList() {
     const game = React.useContext(Game.Ctx);
     if (!game) {
@@ -43,8 +47,10 @@ export default function PlayerList() {
     });
 
     return (
+        <ListScroll>
         <StyledList>
             {items}
         </StyledList>
+        </ListScroll>
     );
 }
