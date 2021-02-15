@@ -6,7 +6,7 @@ import { post } from 'server';
 import type { BackendRequest } from 'server/request';
 
 export type UpdateRequest = {
-    diff: $Shape<Player.Info>
+    diff: $Shape<Player.Player>
 }
 
 export function update(request: UpdateRequest): BackendRequest<void> {

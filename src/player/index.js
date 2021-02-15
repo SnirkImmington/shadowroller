@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 
+export type OnlineMode = "auto" | "alwaysOnline" | "alwaysOffline";
+
 export type Info = {|
     +id: string,
     +name: string,
@@ -12,6 +14,7 @@ export type Info = {|
 export type Player = {|
     ...Info,
     +username: string,
+    +onlineMode: OnlineMode,
 |};
 
 export function colorOf(player: Info|Player): string {
