@@ -66,10 +66,10 @@ export function useFlavor<T>(options: T[]): [T, () => void] {
     return [flavor, () => setFlavor(() => pickRandom(options))];
 }
 
-export function useToggle(initial: bool | () => bool): [bool, () => void] {
+export function useToggle(initial: bool | () => bool): [bool, () => void, Setter<bool>] {
     const [value, setValue] = React.useState<bool>(initial);
     const toggle = React.useCallback(() => setValue(v => !v), [setValue]);
-    return [value, toggle];
+    return [value, toggle, setValue];
 }
 
 // This shallow comparison seems to be what react is using.
