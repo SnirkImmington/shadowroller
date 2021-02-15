@@ -1,8 +1,7 @@
 @import-normalize;
 
 html {
-    font-size: 4vw;
-    font-size: clamp(16px, 4vw, 18px);
+    font-size: 1rem;
 }
 @media all and (min-width: 768px) {
     html {
