@@ -46,11 +46,6 @@ export function PlayerName({ player }: PlayerNameProps) {
     );
 }
 
-const ListScroll = styled.div`
-    flex-grow: 1;
-    overflow-x: scroll;
-`;
-
 export default function PlayerList() {
     const game = React.useContext(Game.Ctx);
     if (!game) {
@@ -64,10 +59,8 @@ export default function PlayerList() {
     });
 
     return (
-        <ListScroll>
         <StyledList>
             {items}
         </StyledList>
-        </ListScroll>
     );
 }
