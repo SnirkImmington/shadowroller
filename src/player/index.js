@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-export type OnlineMode = typeof OnlineModeAuto | typeof OnlineModeOnline | typeof OnlineModeOffline;
-
 export const OnlineModeAuto = 0;
 export const OnlineModeOnline = 1;
 export const OnlineModeOffline = 2;
+
+export type OnlineMode = typeof OnlineModeAuto | typeof OnlineModeOnline | typeof OnlineModeOffline;
 
 export type Info = {|
     +id: string,
