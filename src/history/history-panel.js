@@ -223,6 +223,7 @@ export function LoadingResultList({ playerID }: { playerID: ?string }) {
                               itemData={state.events}
                               itemSize={itemSize}
                               style={{overflowY: 'scroll'}}
+                              className="scrollable"
                               onItemsRendered={onItemsRendered} ref={ref}>
                             {RenderRow}
                         </List>

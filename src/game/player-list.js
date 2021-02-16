@@ -13,9 +13,15 @@ import { ReactComponent as OnlineIcon } from 'assets/icon-online.svg';
 // flow-ignore-all-next-line Uh it's there
 import { ReactComponent as OfflineIcon } from 'assets/icon-offline.svg';
 
-const StyledList: StyledComponent<> = styled(UI.FlexRow)`
+const StyledList: StyledComponent<> = styled(UI.FlexRow).attrs(
+    props => ({ className: "scrollable" })
+)`
     flex-grow: 1;
-    margin: auto .5em;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    align-content: stretch;
+    line-height: 1.1;
     & > * {
         margin-right: 1em;
     }

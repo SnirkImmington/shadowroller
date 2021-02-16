@@ -19,7 +19,9 @@ export const Title: StyledComponent<> = styled.div`
     padding-left: 2px;
 `;
 
-export const Scrollable: StyledComponent<> = styled(UI.FlexColumn)`
+export const Scrollable: StyledComponent<> = styled(UI.FlexColumn).attrs(
+    props => ({ className: "scrollable" })
+)`
     overflow-x: auto; /* Left-right scroll */
     flex-wrap: nowrap;
     align-content: stretch;
