@@ -103,17 +103,19 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 			limited = true
 		}
 
-		err = conn.Send("multi")
+		err = conn.Send("MULTI")
 		httpInternalErrorIf(response, request, err)
-		err = conn.Send("incr", rateLimitKey)
+		err = conn.Send("INCR", rateLimitKey)
 		httpInternalErrorIf(response, request, err)
-		err = conn.Send("expire", rateLimitKey, "15")
+		err = conn.Send("EXPIRE", rateLimitKey, "15")
 		httpInternalErrorIf(response, request, err)
-		_, err = conn.Do("exec")
+		_, err = conn.Do("EXEC")
 		httpInternalErrorIf(response, request, err)
 
 		if !limited {
-			wrapped.ServeHTTP(response, request)
+			ctx := withRedisConn(request.Context(), conn)
+			newRequest := request.WithContext(ctx)
+			wrapped.ServeHTTP(response, newRequest)
 		}
 	})
 }

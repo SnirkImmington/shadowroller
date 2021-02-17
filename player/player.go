@@ -1,34 +1,53 @@
 package player
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
+	"log"
 	"math/rand"
 	"sr/id"
 	"strings"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // ErrNotFound means a player was not found.
 var ErrNotFound = errors.New("player not found")
+
+// OnlineMode is a toggle for show as online/show as offline
+type OnlineMode = int
+
+// OnlineModeAuto indicates a player will be shown as online when connected to a game
+var OnlineModeAuto OnlineMode
+
+// OnlineModeOnline indicates a player will always be shown as online
+var OnlineModeOnline OnlineMode = 1
+
+// OnlineModeOffline indicates a player will always be shown as offline
+var OnlineModeOffline OnlineMode = 2
 
 // Player is a user of Shadowroller.
 //
 // Players may be registered for a number of games.
 // Within those games, they may have a number of chars.
 type Player struct {
-	ID       id.UID `json:"id" redis:"-"`
-	Username string `json:"username" redis:"uname"`
-	Name     string `json:"name" redis:"name"`
-	Hue      int    `json:"hue" redis:"hue"`
+	ID   id.UID `redis:"-"`
+	Name string `redis:"name"`
+	Hue  int    `redis:"hue"`
+
+	Username    string     `redis:"uname"`
+	Connections int        `redis:"connections"`
+	OnlineMode  OnlineMode `redis:"onlineMode"`
 }
 
 // Info is data other players can see about a player.
 // - `username` is not shown.
 type Info struct {
-	ID   id.UID `json:"id" redis:"-"`
-	Name string `json:"name" redis:"uname"`
-	Hue  int    `json:"hue" redis:"name"`
+	ID     id.UID `json:"id"`
+	Name   string `json:"name"`
+	Hue    int    `json:"hue"`
+	Online bool   `json:"online"`
 }
 
 func (p *Player) String() string {
@@ -37,12 +56,40 @@ func (p *Player) String() string {
 	)
 }
 
+// MarshalJSON writes a player to JSON. It secifies `online` instead of connections.
+func (p *Player) MarshalJSON() ([]byte, error) {
+	fields := make(map[string]interface{}, 5)
+	fields["id"] = p.ID
+	fields["name"] = p.Name
+	fields["hue"] = p.Hue
+	fields["username"] = p.Username
+	fields["online"] = p.IsOnline()
+	fields["onlineMode"] = p.OnlineMode
+	return json.Marshal(fields)
+}
+
 // Info returns game-readable information about the player
 func (p *Player) Info() Info {
 	return Info{
-		ID:   p.ID,
-		Name: p.Name,
-		Hue:  p.Hue,
+		ID:     p.ID,
+		Name:   p.Name,
+		Hue:    p.Hue,
+		Online: p.IsOnline(),
+	}
+}
+
+// IsOnline indicates if a player is actively connected, or has chosen to be seen as such.
+func (p *Player) IsOnline() bool {
+	switch p.OnlineMode {
+	case OnlineModeAuto:
+		return p.Connections > 0
+	case OnlineModeOnline:
+		return true
+	case OnlineModeOffline:
+		return false
+	default:
+		log.Printf("Called IsOnline() on %#v", p)
+		return false
 	}
 }
 
@@ -57,10 +104,12 @@ func (p *Player) RedisKey() string {
 // Make constructs a new Player object, giving it a UID
 func Make(username string, name string) Player {
 	return Player{
-		ID:       id.GenUID(),
-		Username: username,
-		Name:     name,
-		Hue:      RandomHue(),
+		ID:          id.GenUID(),
+		Username:    username,
+		Name:        name,
+		Hue:         RandomHue(),
+		Connections: 0,
+		OnlineMode:  OnlineModeAuto,
 	}
 }
 
@@ -262,4 +311,17 @@ func Create(player *Player, conn redis.Conn) error {
 		return fmt.Errorf("redis error with multi: expected [1, >1], got %v", data)
 	}
 	return nil
+}
+
+// IncreaseConnections is used when a new connection is established
+const IncreaseConnections = +1
+
+// DecreaseConnections is used when a connection is closed
+const DecreaseConnections = -1
+
+// ModifyConnections modifies the Connections attribute of a player; used by the subscription handler
+func ModifyConnections(playerID id.UID, amount int, conn redis.Conn) (int, error) {
+	return redis.Int(conn.Do(
+		"HINCRBY", "player:"+playerID, "connections", amount,
+	))
 }

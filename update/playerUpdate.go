@@ -13,6 +13,40 @@ type Player interface {
 
 	PlayerID() id.UID
 	MakeRedisCommand() (string, redis.Args)
+	IsEmpty() bool
+}
+
+type PlayerOnline struct {
+	id     id.UID
+	online bool
+}
+
+func (update *PlayerOnline) MakeRedisCommand() (string, redis.Args) {
+	panic("MakeRedisCommand called on update.PlayerOnline")
+}
+
+func (update *PlayerOnline) Type() string {
+	return UpdateTypePlayer
+}
+
+func (update *PlayerOnline) PlayerID() id.UID {
+	return update.id
+}
+
+func (update *PlayerOnline) IsEmpty() bool {
+	return false
+}
+
+func (update *PlayerOnline) MarshalJSON() ([]byte, error) {
+	diff := make(map[string]bool, 1)
+	diff["online"] = update.online
+	return json.Marshal([]interface{}{
+		UpdateTypePlayer, update.id, diff,
+	})
+}
+
+func ForPlayerOnline(playerID id.UID, online bool) Player {
+	return &PlayerOnline{id: playerID, online: online}
 }
 
 type playerDiff struct {
@@ -30,6 +64,10 @@ func (update *playerDiff) Type() string {
 
 func (update *playerDiff) PlayerID() id.UID {
 	return update.id
+}
+
+func (update *playerDiff) IsEmpty() bool {
+	return len(update.diff) == 0
 }
 
 func (update *playerDiff) MarshalJSON() ([]byte, error) {
@@ -57,6 +95,10 @@ func (update *playerAdd) Type() string {
 
 func (update *playerAdd) PlayerID() id.UID {
 	return update.player.ID
+}
+
+func (update *playerAdd) IsEmpty() bool {
+	return false
 }
 
 func (update *playerAdd) MarshalJSON() ([]byte, error) {

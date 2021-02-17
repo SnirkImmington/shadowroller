@@ -41,7 +41,7 @@ func handleCoffee(response Response, request *Request) {
 
 type healthCheckResponse struct {
 	Games    int `json:"games"`
-	Sessions int `json:"sessions`
+	Sessions int `json:"sessions"`
 }
 
 var _ = restRouter.HandleFunc("/health-check", handleHealthCheck).Methods("GET")

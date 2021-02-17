@@ -1,13 +1,10 @@
 package event
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
-	redisUtil "sr/redis"
 	"strconv"
-	"strings"
 )
 
 // ValidID returns whether the non-empty-string id is valid.
@@ -92,53 +89,4 @@ func BulkUpdate(gameID string, events []Event, conn redis.Conn) error {
 		)
 	}
 	return nil
-}
-
-// SubscribeToGame starts a goroutine that reads from the given game's history
-// and update channels.
-// Each update is sent over the returned string channel, with a prefix "event:"
-// for events and "update:" for updates.
-// The given context is used for its cancellation function. Errors (such as being
-// canceled) are sent over the error channel.
-func SubscribeToGame(ctx context.Context, gameID string) (<-chan string, <-chan error) {
-	events := make(chan string)
-	errChan := make(chan error, 1)
-
-	conn := redisUtil.Connect()
-
-	sub := redis.PubSubConn{Conn: conn}
-	if err := sub.Subscribe("history:"+gameID, "update:"+gameID); err != nil {
-		errChan <- fmt.Errorf("unable to subscribe to update channels: %w", err)
-		return events, errChan
-	}
-
-	go func() {
-		defer func() {
-			redisUtil.Close(conn)
-			close(events)
-			close(errChan)
-		}()
-		for {
-			select {
-			case <-ctx.Done():
-				errChan <- fmt.Errorf("received done from context: %w", ctx.Err())
-				return
-			default:
-			}
-			switch msg := sub.Receive().(type) {
-			case error:
-				errChan <- fmt.Errorf("error from Redis Receive(): %w", msg)
-				return
-			case redis.Message:
-				message := string(msg.Data)
-				if strings.HasPrefix(msg.Channel, "history") {
-					message = "event:" + message
-				} else {
-					message = "update:" + message
-				}
-				events <- message
-			}
-		}
-	}()
-	return events, errChan
 }

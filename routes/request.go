@@ -27,8 +27,14 @@ var errExtraBody = errors.New("encountered additional data after end of JSON bod
 
 // closeRedis closes the redis connection and logs any errors found
 func closeRedis(request *Request, conn redis.Conn) {
-	err := conn.Close()
-	if err != nil {
+	if config.RedisConnectionsDebug {
+		rawLog(1, request, "Called closeRedis with conn %p", conn)
+	}
+	if conn == nil {
+		rawLog(1, request, "nil connection passed to closeRedis")
+		return
+	}
+	if err := conn.Close(); err != nil {
 		rawLog(1, request, "Error closing redis connection: %v", err)
 	}
 }
@@ -90,18 +96,16 @@ func logRequest(request *Request, values ...string) {
 			}
 			extra = fmt.Sprintf(" %v", grabbed)
 		}
-		rawLog(1, request, fmt.Sprintf(
+		rawLog(1, request,
 			"<< %v%v %v %v %v",
 			requestRemoteIP(request),
 			extra,
 			request.Proto,
 			request.Method,
 			request.URL,
-		))
+		)
 	} else {
-		rawLog(1, request, fmt.Sprintf("<< %v %v",
-			request.Method, request.URL,
-		))
+		rawLog(1, request, "<< %v %v", request.Method, request.URL)
 	}
 }
 
@@ -111,7 +115,12 @@ func logf(request *Request, format string, values ...interface{}) {
 
 func rawLog(stack int, request *Request, format string, values ...interface{}) {
 	id := requestID(request.Context())
-	message := fmt.Sprintf(format, values...)
+	var message string
+	if len(values) == 0 {
+		message = format
+	} else {
+		message = fmt.Sprintf(format, values...)
+	}
 	var logText string
 	if config.IsProduction {
 		logText = fmt.Sprintf("%03x %v", id, message)

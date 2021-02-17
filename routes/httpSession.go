@@ -35,7 +35,7 @@ func requestSession(request *Request) (*session.Session, redis.Conn, error) {
 		logf(request, "Didn't have a session ID")
 		return nil, nil, err
 	}
-	conn := redisUtil.Connect()
+	conn := contextRedisConn(request.Context())
 	session, err := session.GetByID(sessionID, conn)
 	if err != nil {
 		logf(request, "Didn't get %s by id", sessionID)
@@ -50,7 +50,7 @@ func requestParamSession(request *Request) (*session.Session, redis.Conn, error)
 	if err != nil {
 		return nil, nil, err
 	}
-	conn := redisUtil.Connect()
+	conn := contextRedisConn(request.Context())
 	session, err := session.GetByID(sessionID, conn)
 	if err != nil {
 		redisUtil.Close(conn)

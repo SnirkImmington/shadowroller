@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -12,6 +14,7 @@ import (
 	redisUtil "sr/redis"
 	"sr/routes"
 	"sr/setup"
+	"sr/shutdownHandler"
 	"sr/task"
 	"time"
 )
@@ -26,8 +29,26 @@ const SHADOWROLLER = `
 
 var taskFlag = flag.String("task", "", "Select a task to run interactively")
 
-func runServer(name string, server http.Server, tls bool) {
+func runServer(name string, server *http.Server, tls bool) {
 	log.Printf("Running %v server at %v...", name, server.Addr)
+
+	go func() {
+		client := shutdownHandler.MakeClient(fmt.Sprintf("%v server", name))
+		defer client.Close()
+
+		// Wait for interrupt
+		<-client.Channel
+		ctx, cancel := context.WithCancel(context.Background())
+		// Timeout terminate server in 10s
+		go func() {
+			time.Sleep(10 * time.Second)
+			cancel()
+		}()
+		err := server.Shutdown(ctx)
+		if err != nil {
+			log.Printf("%v server closed: %v", name, err)
+		}
+	}()
 
 	for {
 		var err error
@@ -51,6 +72,11 @@ func runServer(name string, server http.Server, tls bool) {
 			err = server.ListenAndServe()
 		}
 
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Printf("%v server has shut down.", name)
+			return
+		}
+
 		if err != nil {
 			log.Print(name, " server failed! Restarting in 10s.", err)
 			time.Sleep(time.Duration(10) * time.Second)
@@ -70,6 +96,7 @@ func main() {
 	}
 	flag.Parse()
 	config.VerifyConfig()
+	shutdownHandler.Init()
 	if taskFlag != nil && *taskFlag != "" {
 		task.RunSelectedTask(*taskFlag, flag.Args())
 	}
@@ -99,4 +126,6 @@ func main() {
 		siteServer := routes.MakeHTTPSSiteServer()
 		runServer("API", siteServer, true)
 	}
+	// Wait for all handlers to finish and return cleanly
+	shutdownHandler.WaitGroup.Wait()
 }

@@ -29,7 +29,7 @@ func GetPlayersIn(gameID string, conn redis.Conn) ([]player.Player, error) {
 		}
 		playerIDs, err := redis.Strings(conn.Do("SMEMBERS", "players:"+gameID))
 		if err != nil {
-			return nil, nil, fmt.Errorf("redis error retrieving player ID list: %w")
+			return nil, nil, fmt.Errorf("redis error retrieving player ID list: %w", err)
 		}
 		if playerIDs == nil || len(playerIDs) == 0 {
 			if _, err := conn.Do("UNWATCH"); err != nil {
@@ -72,12 +72,12 @@ func GetPlayersIn(gameID string, conn redis.Conn) ([]player.Player, error) {
 		} else if errors.Is(err, ErrNotFound) {
 			return nil, err
 		} else if err != nil {
-			return nil, fmt.Errorf("After %s attempt(s): %w", i+1, err)
+			return nil, fmt.Errorf("after %v attempt(s): %w", i+1, err)
 		}
 		break
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Error after max attempts: %w", err)
+		return nil, fmt.Errorf("after max attempts: %w", err)
 	}
 
 	players := make([]player.Player, len(playerMaps))

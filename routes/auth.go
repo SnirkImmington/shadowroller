@@ -5,7 +5,6 @@ import (
 	"sr/auth"
 	"sr/game"
 	"sr/player"
-	redisUtil "sr/redis"
 	"sr/session"
 )
 
@@ -39,9 +38,7 @@ func handleLogin(response Response, request *Request) {
 		login.Username, login.GameID, status,
 	)
 
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
+	conn := contextRedisConn(request.Context())
 	gameInfo, plr, err := auth.LogPlayerIn(login.GameID, login.Username, conn)
 	if err != nil {
 		logf(request, "Login response: %v", err)
@@ -91,9 +88,7 @@ func handleReauth(response Response, request *Request) {
 		"Relogin request for session %v", requestSession,
 	)
 
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
+	conn := contextRedisConn(request.Context())
 	sess, err := session.GetByID(requestSession, conn)
 	httpUnauthorizedIf(response, request, err)
 	logf(request, "Found session %s", sess.String())
