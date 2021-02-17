@@ -1,19 +1,20 @@
-// @flow
-
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import { color, layout } from 'styled-system';
-import typeof Theme from './theme';
+import Theme from './theme';
 
-type InputProps = { monospace? : bool };
-export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(props => ({
+type InputProps = {
+    monospace? : boolean,
+    expand?: boolean,
+    type?: string
+};
+export const Input = styled.input.attrs(props => ({
     type: props.type ?? "text",
-}))`
+}))<InputProps>`
     ${color}
     ${layout}
-    font-family: ${props => props.monospace ? '"Source Code Pro", monospace' : "inherit"};
-    max-width: ${(props) => props.expand ? '100%' : '14em'};
+    font-family: ${({ monospace }) => monospace ? '"Source Code Pro", monospace' : "inherit"};
+    max-width: ${({ expand }) => expand ? '100%' : '14em'};
     height: calc(1em + 10px);
 
     margin: 0px 0.5em;
@@ -28,7 +29,11 @@ export const Input: StyledComponent<InputProps, Theme> = styled.input.attrs(prop
     }
 `;
 
-export const LinkButton: StyledComponent<{}, Theme> = styled.button`
+type LinkButtonProps = {
+    minor?: boolean,
+    light?: boolean,
+}
+export const LinkButton = styled.button<LinkButtonProps>`
     display: inline;
     font-weight: bold;
     font-size: 1em;
@@ -37,7 +42,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     cursor: pointer;
     ${({ minor }) => !minor && 'text-decoration: underline;'}
 
-    color: ${({light, minor, theme}) =>
+    color: ${({ light, minor, theme }) =>
         minor ? theme.colors.primaryDesaturated3 :
         (light ? theme.colors.secondary : theme.colors.primaryLight)
     };
@@ -66,7 +71,7 @@ export const LinkButton: StyledComponent<{}, Theme> = styled.button`
     }
 `;
 
-export const Button: StyledComponent<{}, Theme> = styled.button`
+export const Button = styled.button`
     font-size: 1.05em;
     line-height: 1;
     font-weight: bold;
@@ -117,6 +122,7 @@ export const Button: StyledComponent<{}, Theme> = styled.button`
     }
     ${color}
 `;
+
 const HiddenInput = styled.input.attrs(props => ({
     checked: props.checked, name: props.name, id: props.id, value: props.value,
 }))`
@@ -126,17 +132,17 @@ const HiddenInput = styled.input.attrs(props => ({
     width: 0;
 `;
 
-const RadioSelector = styled.span`
+const RadioSelector = styled.span<{ light?: boolean }>`
     line-height: 1.5;
     font-family: ${({theme}) => theme.fonts.monospace};
     font-weight: bold;
-    color: ${({light, theme}) =>
+    color: ${({ light, theme }) =>
         light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
     };
     textAlign: center;
 `;
 
-const RadioLabel: StyledComponent<> = styled.label`
+const RadioLabel = styled.label`
     display: inline-flex;
     line-height: 1.5;
     font-size: 1em;
@@ -159,17 +165,15 @@ const RadioLabel: StyledComponent<> = styled.label`
 type RadioLinkProps = {
     id: string,
     name?: string,
-    edgy?: bool,
-    light?: bool,
+    light?: boolean,
     type: "checkbox" | "radio",
-    checked: bool,
-    disabled?: bool,
-    onChange: (SyntheticInputEvent<HTMLInputElement>) => void,
-    children?: React.Node,
+    checked: boolean,
+    disabled?: boolean,
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
 };
 export const RadioLink = React.memo<RadioLinkProps>(function RadioLink(props) {
     return (
-        <RadioLabel htmlFor={props.id} checked={props.checked} edgy={props.edgy} light={props.light}>
+        <RadioLabel htmlFor={props.id}>
             <HiddenInput id={props.id} type={props.type}
                          value={props.id} disabled={props.disabled}
                          checked={props.checked} name={props.name}

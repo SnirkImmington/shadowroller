@@ -1,15 +1,23 @@
-// @flow
-
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import type { StyledComponent } from 'styled-components';
 
-export const NoWrap: StyledComponent<> = styled.span`
+export const NoWrap = styled.span`
     white-space: nowrap;
     flex-grow: 1;
 `;
 
-export const FlexRow: StyledComponent<> = styled.div`
+export type FlexRowProps = {
+    alignItems?: "flex-start"|"flex-end"|"center"|"stretch"|"baseline",
+    maxWidth?: boolean,
+    flexWrap?: boolean,
+    formRow?: boolean,
+    flexGrow?: boolean,
+    justifyContent?: "flex-start"|"flex-end"|"center"|"space-between"|"space-around"|"space-evenly",
+    floatRight?: boolean,
+    spaced?: boolean,
+}
+export const FlexRow = styled.div<FlexRowProps>`
     display: flex;
     align-items: ${props => props.alignItems ? props.alignItems : "center"};
     ${props => props.maxWidth && 'width: 100%;'}
@@ -27,13 +35,21 @@ export const FlexRow: StyledComponent<> = styled.div`
     }
 `;
 
-export const FlexColumn: StyledComponent<> = styled.div`
+export type FlexColumnProps = {
+    grow?: boolean,
+    alignItems?: "flex-start"|"flex-end"|"center"|"stretch"|"baseline",
+    maxWidth?: boolean,
+    flexWrap?: boolean,
+    bottomGap?: boolean,
+    spaced?: boolean,
+}
+export const FlexColumn = styled.div<FlexColumnProps>`
     display: flex;
     flex-direction: column;
     ${({ grow }) => grow && 'flex-grow: 1;'}
-    ${props => props.alignItems ? `align-items: ${props.alignItems};` : ''}
-    ${props => props.maxWidth ? 'width: 100%;' : ''}
-    ${props => props.flexWrap ? 'flex-wrap: wrap;' : ''}
+    ${props => props.alignItems && `align-items: ${props.alignItems};`}
+    ${props => props.maxWidth && 'width: 100%;'}
+    ${props => props.flexWrap && 'flex-wrap: wrap;'}
     ${props => props.bottomGap && 'margin-bottom: 1.5rem;'}
 
     ${({ spaced }) => spaced &&
@@ -41,13 +57,22 @@ export const FlexColumn: StyledComponent<> = styled.div`
     }
 `;
 
-export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
-    ${props => props?.grow ? 'height: 100%;' : ''}
+export type ColumnToRowProps = {
+    grow?: boolean,
+    formRow?: boolean,
+    rowCenter?: boolean,
+    maxWidth?: boolean,
+    floatRight?: boolean,
+    justifyContentRow?: "flex-start"|"flex-end"|"center"|"space-between"|"space-around"|"space-evenly",
+    rowSpaced?: boolean,
+}
+export const ColumnToRow = styled(FlexColumn)<ColumnToRowProps>`
+    ${props => props?.grow && 'height: 100%;'}
     ${props => props.formRow && 'margin-bottom: .5rem;'}
     @media all and (min-width: 768px) {
         flex-direction: row;
         ${({ maxWidth }) => maxWidth && 'width: 100%;'}
-        ${props => props.rowCenter ? 'align-items: center;' : ''}
+        ${props => props.rowCenter && 'align-items: center;'}
         ${({ floatRight }) => floatRight &&
             '& > *:last-child { margin-left: auto; }'
         }
@@ -58,7 +83,7 @@ export const ColumnToRow: StyledComponent<{grow?: bool}> = styled(FlexColumn)`
     }
 `;
 
-export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
+export const CardTitleText  = styled.b<{ color: string}>`
     font-family: "Source Code Pro", monospace;
     white-space: nowrap;
     color: ${props => props.color};
@@ -70,28 +95,33 @@ export const CardTitleText: StyledComponent<{ +color: string }> = styled.b`
     }
 `;
 
-type CardTitleProps = { +color: string, +padRight?: bool };
-const CardTitle: StyledComponent<CardTitleProps> = styled(FlexRow)`
+type CardTitleProps = {
+    color: string,
+    padRight?: boolean
+};
+const CardTitle = styled(FlexRow)<CardTitleProps>`
     margin: 0 0 .75rem 0;
     ${({ padRight }) => padRight && 'margin-right: 0.5rem;'}
     border-bottom: 2px solid ${({ color }) => color};
 `;
 
-const CardBodyPadding: StyledComponent<> = styled(FlexColumn)`
+const CardBodyPadding = styled(FlexColumn)`
     padding: 0 .5rem;
     width: 100%;
 `;
 
-type CardProps = {
-    grow?: bool,
-    padRight?: bool,
-    bottomGap?: bool,
-    unpadded?: bool,
+interface CardProps {
+    grow?: boolean,
+    padRight?: boolean,
+    bottomGap?: boolean,
+    unpadded?: boolean,
     color: string,
-    +children: React.Node[]
-};
+    children: React.ReactNode[] // Card wants specific children shape
+}
 export function Card({ color, unpadded, padRight, bottomGap, children, grow }: CardProps) {
-    const inner = unpadded ? children.slice(1) : <CardBodyPadding>{children.slice(1)}</CardBodyPadding>;
+    const inner = unpadded ?
+        children.slice(1) :
+        (<CardBodyPadding>{children.slice(1)}</CardBodyPadding>);
     return (
         <FlexColumn bottomGap={bottomGap} grow={grow}>
             <CardTitle padRight={padRight} color={color}>{ children[0] }</CardTitle>

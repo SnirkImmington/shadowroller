@@ -1,10 +1,7 @@
-// @flow
-
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
-import theme from 'style/theme';
+//import theme from 'style/theme';
 
-export const SmallText: StyledComponent<{}, typeof theme> = styled.div`
+export const SmallText = styled.div`
     white-space: nowrap;
     font-size: .6rem;
     line-height: 1rem;

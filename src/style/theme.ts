@@ -1,5 +1,3 @@
-// @flow
-
 export const RED   = "#842222";
 export const GRAY  = "#2e2e32";
 export const GREEN = "#259550";
