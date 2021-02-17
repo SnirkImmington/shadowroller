@@ -22,11 +22,10 @@ const StyledList: StyledComponent<> = styled(UI.FlexRow).attrs(
     flex-wrap: nowrap;
     align-content: stretch;
     line-height: 1.1;
-    & > * {
+    & > *:not(:last-child) {
         margin-right: 1em;
     }
 `;
-
 
 type PlayerNameProps = {
     +player: Player.Info
@@ -35,13 +34,13 @@ export function PlayerName({ player }: PlayerNameProps) {
     const color = Player.colorOf(player);
     return (
         <UI.FlexRow>
-        {player.online ?
-                <OnlineIcon className="sr-icon-svg" />
-                : <OfflineIcon className="sr-icon-svg" />
-        }
-        <UI.PlayerColored color={color}>
-            {player.name}
-        </UI.PlayerColored>
+            {player.online ?
+                    <OnlineIcon className="sr-icon-svg" />
+                    : <OfflineIcon className="sr-icon-svg" />
+            }
+            <UI.PlayerColored color={color}>
+                {player.name}
+            </UI.PlayerColored>
         </UI.FlexRow>
     );
 }
