@@ -112,7 +112,7 @@ export default function RollInitiativePrompt() {
                 <UI.FlexRow maxWidth rowCenter floatRight>
                     <UI.CardTitleText color={theme.colors.primary}>
                         <UI.FAIcon icon={icons.faClipboardList} />
-                        &nbsp;Initiative
+                        Initiative
                     </UI.CardTitleText>
                     <UI.LinkButton minor onClick={toggleShown}>
                         show
@@ -126,7 +126,7 @@ export default function RollInitiativePrompt() {
             <UI.FlexRow maxWidth rowCenter floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faClipboardList} />
-                    &nbsp;Initiative
+                    Initiative
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     hide

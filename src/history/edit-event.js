@@ -88,7 +88,7 @@ export default function EditEvent({ event }: Props) {
             <UI.FlexRow maxWidth floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faPen} />
-                    &nbsp;Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
+                    Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={cancelEdit}>close</UI.LinkButton>
             </UI.FlexRow>

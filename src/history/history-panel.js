@@ -273,7 +273,6 @@ export default function EventHistory() {
             <UI.FlexRow maxWidth rowCenter>
                 <UI.CardTitleText color={theme.colors.primary} style={{ marginRight: '0.5rem'}}>
                     <UI.FAIcon icon={icons.faList} />
-                    &nbsp;
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>

@@ -233,7 +233,7 @@ export default function RollDicePrompt() {
             <UI.FlexRow maxWidth floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faDice} />
-                    &nbsp;Roll Dice
+                    Roll Dice
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     show
@@ -249,7 +249,7 @@ export default function RollDicePrompt() {
                 <UI.CardTitleText color={theme.colors.primary}>
             {/*<AnimatedDie unpadded color={theme.colors.primary} />*/}
                     <UI.FAIcon icon={icons.faDice} />
-                    &nbsp;Roll Dice
+                    Roll Dice
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     hide
