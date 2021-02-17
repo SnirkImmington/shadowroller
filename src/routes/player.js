@@ -9,6 +9,6 @@ export type UpdateRequest = {
     diff: $Shape<Player.Player>
 }
 
-export function update(request: UpdateRequest): BackendRequest<void> {
-    return post<UpdateRequest, void>("player/update", request);
+export function update(request: UpdateRequest): BackendRequest<$Shape<Player.Player>> {
+    return post<UpdateRequest, $Shape<Player.Player>>("player/update", request);
 }

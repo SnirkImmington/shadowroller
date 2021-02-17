@@ -73,9 +73,11 @@ export default function EditPlayerPanel({ hide }: Props) {
         setResponse("loading");
         routes.player.update({ diff })
             .onResponseStatus(setResponse)
-            .onSuccess(hide)
             .onAnyError(err => {
                 console.error("Error sending player update", err);
+            })
+            .onResponse(resp => {
+                playerDispatch({ ty: "update", values: resp });
             });
     }
 
@@ -117,7 +119,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
-                    &nbsp;Logged in: {player.name} / {game.gameID}
+                    Logged in: {player.name} / {game.gameID}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
                     <span style={{ flexGrow: 1 }} />
@@ -190,7 +192,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                         <StatusText connection={connection}/>
                         <span style={{flexGrow: 1}} />
                         <UI.LinkButton disabled={!changed || !connected}>update</UI.LinkButton>
-                        <UI.LinkButton minor onClick={hide}>cancel</UI.LinkButton>
+                        <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
                     </UI.FlexRow>
                 </UI.FlexColumn>
             </form>
