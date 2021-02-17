@@ -49,11 +49,16 @@ const RollButton: StyledComponent<{ bg: string} > = styled.button`
 export default function RollInitiativePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
+    const gameExists = Boolean(game);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [loading, setLoading] = React.useState(false);
-    const [localRoll, toggleLocalRoll] = srutil.useToggle(false);
+    const [localRoll, toggleLocalRoll, setLocalRoll] = srutil.useToggle(!game);
+    React.useEffect(() =>
+        setLocalRoll(!gameExists),
+        [gameExists, setLocalRoll]
+    );
 
     const [base, setBase] = React.useState<?number>();
     const [baseText, setBaseText] = React.useState("");
@@ -107,7 +112,7 @@ export default function RollInitiativePrompt() {
                 <UI.FlexRow maxWidth rowCenter floatRight>
                     <UI.CardTitleText color={theme.colors.primary}>
                         <UI.FAIcon icon={icons.faClipboardList} />
-                        &nbsp;Initiative
+                        Initiative
                     </UI.CardTitleText>
                     <UI.LinkButton minor onClick={toggleShown}>
                         show
@@ -121,7 +126,7 @@ export default function RollInitiativePrompt() {
             <UI.FlexRow maxWidth rowCenter floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faClipboardList} />
-                    &nbsp;Initiative
+                    Initiative
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     hide

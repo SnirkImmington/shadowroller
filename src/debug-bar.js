@@ -10,7 +10,9 @@ import * as Game from 'game';
 import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 
-const StyledBar: StyledComponent<> = styled(UI.FlexColumn)`
+const StyledBar: StyledComponent<> = styled(UI.FlexColumn).attrs(
+    _ => ({ className: "scrollable" })
+)`
     padding: 4px 8px;
     color: white;
     background-color: ${({theme}) => theme.colors.primary}b0;

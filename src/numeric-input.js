@@ -41,7 +41,7 @@ const StyledInput = styled(UI.Input)`
     border: 0;
     outline: 0;
 
-    width: ${props => props.small ? '3em' : '6em'};
+    width: ${props => props.small ? '3em' : '5em'};
 
     &:focus {
         border: 0;

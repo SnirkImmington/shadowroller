@@ -40,8 +40,12 @@ export default function EditPlayerPanel({ hide }: Props) {
 
     const [name, setName] = React.useState(player?.name);
     const [hue, setHue] = React.useState<number>(player?.hue || 0);
-    const [response, setResponse] = React.useState<ResponseStatus>("ready");
+    const [onlineMode, setOnlineMode] = React.useState<Player.OnlineMode>(player?.onlineMode || Player.OnlineModeAuto);
+    const setOnlineModeAuto = React.useCallback(() => setOnlineMode(Player.OnlineModeAuto), [setOnlineMode]);
+    const setOnlineModeOnline = React.useCallback(() => setOnlineMode(Player.OnlineModeOnline), [setOnlineMode]);
+    const setOnlineModeOffline = React.useCallback(() => setOnlineMode(Player.OnlineModeOffline), [setOnlineMode]);
 
+    const [response, setResponse] = React.useState<ResponseStatus>("ready");
     const [exampleTitle] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
     const [dice] = React.useState(() => srutil.roll(11));
 
@@ -50,7 +54,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     }
 
     const switchDisabled = !showGames || !switchGame || switchGame === game.gameID || response === "loading";
-    const changed = name !== player.name || hue !== player.hue;
+    const changed = name !== player.name || hue !== player.hue || onlineMode !== player.onlineMode;
     const connected = connection === "connected" && response !== "loading";
 
     function onSubmit(e) {
@@ -63,12 +67,17 @@ export default function EditPlayerPanel({ hide }: Props) {
         if (hue !== player.hue) {
             diff.hue = hue;
         }
+        if (onlineMode !== player.onlineMode) {
+            diff.onlineMode = onlineMode;
+        }
         setResponse("loading");
         routes.player.update({ diff })
             .onResponseStatus(setResponse)
-            .onSuccess(hide)
             .onAnyError(err => {
                 console.error("Error sending player update", err);
+            })
+            .onResponse(resp => {
+                playerDispatch({ ty: "update", values: resp });
             });
     }
 
@@ -110,7 +119,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
-                    &nbsp;Logged in: {player.name} / {game.gameID}
+                    Logged in: {player.name} / {game.gameID}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
                     <span style={{ flexGrow: 1 }} />
@@ -156,11 +165,34 @@ export default function EditPlayerPanel({ hide }: Props) {
                                          disabled={!connected} />
                         </UI.FlexRow>
                     </UI.ColumnToRow>
+                    <UI.FlexRow justifyContent="space-around">
+                        Online indicator
+                        <UI.FlexColumn>
+                        <UI.RadioLink id="player-settings-online-auto"
+                                      name="player-settings-online-mode" type="radio" light
+                                      checked={onlineMode === Player.OnlineModeAuto}
+                                      onChange={setOnlineModeAuto}>
+                                When connected
+                        </UI.RadioLink>
+                        <UI.RadioLink id="player-settings-online-always-online"
+                                      name="player-settings-online-mode" type="radio" light
+                                      checked={onlineMode === Player.OnlineModeOnline}
+                                      onChange={setOnlineModeOnline}>
+                                Always online
+                        </UI.RadioLink>
+                        <UI.RadioLink id="player-settings-online-always-offline"
+                                      name="player-settings-online-mode" type="radio" light
+                                      checked={onlineMode === Player.OnlineModeOffline}
+                                      onChange={setOnlineModeOffline}>
+                                Always offline
+                        </UI.RadioLink>
+                        </UI.FlexColumn>
+                    </UI.FlexRow>
                     <UI.FlexRow spaced>
                         <StatusText connection={connection}/>
                         <span style={{flexGrow: 1}} />
                         <UI.LinkButton disabled={!changed || !connected}>update</UI.LinkButton>
-                        <UI.LinkButton minor onClick={hide}>cancel</UI.LinkButton>
+                        <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
                     </UI.FlexRow>
                 </UI.FlexColumn>
             </form>

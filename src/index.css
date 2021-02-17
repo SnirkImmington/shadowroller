@@ -1,8 +1,7 @@
 @import-normalize;
 
 html {
-    font-size: 4vw;
-    font-size: clamp(16px, 4vw, 18px);
+    font-size: 1rem;
 }
 @media all and (min-width: 768px) {
     html {
@@ -25,6 +24,7 @@ html {
 
     font-family: sans-serif; /* source-sans-pro */
     line-height: 1;
+    overflow: hidden; /* No more flickering scrollbars. Hopefully doesn't hide any issues. */
 }
 
 tt {
@@ -47,6 +47,28 @@ p {
     box-sizing: border-box;
 }
 
+.scrollable {
+    --scroll-color: #7b6a70;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-color) transparent;
+}
+
+.scrollable::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-color);
+    border-radius: 0;
+    border: 0 solid;
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
 .sr-die {
     margin: 2px;
     height: 1em;
@@ -56,4 +78,10 @@ p {
 }
 .sr-die:nth-child(3n+0) {
     margin-right: 6px;
+}
+
+.sr-icon-svg {
+    height: .85em;
+    width: .85em;
+    margin-right: .15em;
 }

@@ -139,12 +139,17 @@ const FullWidthSpacing = styled.span`
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
+    const gameExists = Boolean(game);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
-    const [localRoll, toggleLocalRoll] = srutil.useToggle(false);
+    const [localRoll, toggleLocalRoll, setLocalRoll] = srutil.useToggle(!game);
+    React.useEffect(() =>
+        setLocalRoll(!gameExists),
+        [gameExists, setLocalRoll]
+    );
 
     const [diceText, setDiceText] = React.useState("");
     const [diceCount, setDiceCount] = React.useState<?number>(null);
@@ -228,7 +233,7 @@ export default function RollDicePrompt() {
             <UI.FlexRow maxWidth floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faDice} />
-                    &nbsp;Roll Dice
+                    Roll Dice
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     show
@@ -244,7 +249,7 @@ export default function RollDicePrompt() {
                 <UI.CardTitleText color={theme.colors.primary}>
             {/*<AnimatedDie unpadded color={theme.colors.primary} />*/}
                     <UI.FAIcon icon={icons.faDice} />
-                    &nbsp;Roll Dice
+                    Roll Dice
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={toggleShown}>
                     hide

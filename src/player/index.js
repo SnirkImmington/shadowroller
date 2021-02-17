@@ -2,15 +2,23 @@
 
 import * as React from 'react';
 
+export const OnlineModeAuto = 0;
+export const OnlineModeOnline = 1;
+export const OnlineModeOffline = 2;
+
+export type OnlineMode = typeof OnlineModeAuto | typeof OnlineModeOnline | typeof OnlineModeOffline;
+
 export type Info = {|
     +id: string,
     +name: string,
-    +hue: number
+    +hue: number,
+    +online?: bool,
 |};
 
 export type Player = {|
     ...Info,
     +username: string,
+    +onlineMode: OnlineMode,
 |};
 
 export function colorOf(player: Info|Player): string {
