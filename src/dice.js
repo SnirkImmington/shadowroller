@@ -30,8 +30,8 @@ export function colorForRoll(roll: number): string {
 
 const DiceMap = [undefined, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
-type AnimatedProps = {| small?: bool, color?: string, unpadded?: bool |};
-type DieProps = {| roll: number, style?: any, ...AnimatedProps |};
+type AnimatedProps = { small?: bool, color?: string, unpadded?: bool };
+type DieProps = { roll: number, style?: any, ...AnimatedProps };
 export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     const newProps = Object.assign({}, props);
     let { color, roll, small } = newProps;

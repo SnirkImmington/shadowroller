@@ -8,7 +8,8 @@ import NumericInput from 'numeric-input';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
-import { StatusText, ConnectionCtx } from 'connection';
+import { ConnectionCtx } from 'connection';
+import StatusText from 'connection/StatusText';
 import routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
