@@ -2,7 +2,7 @@ import * as Event from 'history/event';
 import * as Game from 'game';
 import * as Player from 'player';
 import { ConnectFn } from 'sseStream';
-import routes from 'routes';
+import * as routes from 'routes';
 import type { BackendRequest } from 'server';
 import type { SetRetryConnection } from 'connection';
 import * as server from 'server';

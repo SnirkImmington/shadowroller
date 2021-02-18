@@ -1,8 +1,9 @@
 import * as server from 'server';
 import * as auth from './auth';
+import type { Json } from 'srutil';
 import type { SetConnection, SetRetryConnection, SetResponse } from 'connection';
 
-export class BackendRequest<O> {
+export class BackendRequest<O extends Json | void> {
     request: Promise<Response>;
     handleSuccess: ((success: boolean, response: Response) => void) | undefined;
     handleResponse: ((value: O, response: Response) => void) | undefined;
@@ -140,18 +141,18 @@ export class BackendRequest<O> {
     }
 }
 
-type ParamsCtor = string | string[][] | Record<string, string> | URLSearchParams | undefined;
+type ParamsCtor = string | string[][] | Record<string, string|number|undefined> | URLSearchParams | undefined;
 
-type FetchArgs<B, P extends ParamsCtor> = {
+type FetchArgs<B extends Json, P extends ParamsCtor> = {
     method: string,
     path: string,
     body?: B,
     params?: P
 };
-function backendFetch<B, P extends ParamsCtor>({ method, path, body, params }: FetchArgs<B, P>): Promise<Response> {
+function backendFetch<B extends Json, P extends ParamsCtor>({ method, path, body, params }: FetchArgs<B, P>): Promise<Response> {
     let url = server.BACKEND_URL + path;
     if (params) {
-        // flow-ignore-all-next-line
+        // @ts-ignore Diff between ParamsCtor and URLSearchParams is ParamsCtor accepts undefined, which is needed for optional values and is fine to send and parse
         url = `${url}?${new URLSearchParams(params).toString()}`;
     }
 
@@ -169,12 +170,12 @@ function backendFetch<B, P extends ParamsCtor>({ method, path, body, params }: F
     });
 }
 
-export function get<I extends ParamsCtor, O>(path: string, params: I): BackendRequest<O> {
+export function get<I extends ParamsCtor, O extends Json>(path: string, params: I): BackendRequest<O> {
     const fetchRequest = backendFetch({ method: "get", path, params });
     return new BackendRequest(fetchRequest);
  }
 
- export function post<B, O>(path: string, body: B): BackendRequest<O> {
+ export function post<B extends Json, O extends Json | void>(path: string, body: B): BackendRequest<O> {
     const fetchRequest = backendFetch({ method: "post", path, body });
     return new BackendRequest(fetchRequest);
  }

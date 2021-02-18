@@ -6,7 +6,7 @@ export const OnlineModeOffline = 2;
 
 export type OnlineMode = typeof OnlineModeAuto | typeof OnlineModeOnline | typeof OnlineModeOffline;
 
-export type Info = {
+export interface Info {
     id: string,
     name: string,
     hue: number,

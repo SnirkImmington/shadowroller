@@ -1,18 +1,15 @@
-// @flow
-
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
 import * as icons from 'style/icon';
-import NumericInput from 'numeric-input';
+import NumericInput from 'NumericInput';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
-import routes from 'routes';
+import * as routes from 'routes';
 import * as srutil from 'srutil';
 
 const RollBackground = {
@@ -21,7 +18,7 @@ const RollBackground = {
     regular: `linear-gradient(180deg, #394341 0, #232928)`
 }
 
-const RollButton: StyledComponent<{ bg: string} > = styled.button`
+const RollButton = styled.button<{bg: string}>`
     font-size: 1.07em;
     font-weight: 600;
     text-align: center;
@@ -61,7 +58,7 @@ export default function RollInitiativePrompt() {
         [gameExists, setLocalRoll]
     );
 
-    const [base, setBase] = React.useState<?number>();
+    const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
     const [dice, setDice] = React.useState(1);
@@ -182,7 +179,7 @@ export default function RollInitiativePrompt() {
                         {!connected && <StatusText connection={connection} />}
                         <RollButton id="roll-initiative-submit" type="submit"
                                     bg={RollBackground.inGame}
-                                    disabled={rollDisabled} onClick={rollClicked}>
+                                    disabled={Boolean(rollDisabled)} onClick={rollClicked}>
                             Roll Initiative
                         </RollButton>
                     </UI.FlexRow>

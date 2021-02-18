@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as Event from 'history/event';
 import * as Game from 'game';
 import * as Player from 'player';
-import routes from 'routes';
+import * as routes from 'routes';
 import * as server from 'server';
 import * as stream from '.';
 import { SetConnectionCtx } from 'connection';
@@ -32,8 +32,10 @@ export function Provider(props: { children: React.ReactNode }) {
             `${server.BACKEND_URL}game/subscription?session=${session}&retries=${retries}`
         );
         source.onmessage = stream.logMessage;
+        // @ts-ignore It doesn't seem to know about the specific event handlers.
         source.addEventListener("event", (e: MessageEvent) =>
             stream.handleEvent(e, eventDispatch));
+        // @ts-ignore It doesn't seem to know about the specific event handlers.
         source.addEventListener("update", (e: MessageEvent) =>
             stream.handleUpdate(e, playerID, eventDispatch, gameDispatch, playerDispatch));
         source.onopen = function () {

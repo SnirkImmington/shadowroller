@@ -2,6 +2,15 @@ import * as React from 'react';
 
 export type Setter<T> = (valOrSetter: T | ((prev: T) => T)) => void;
 
+export type Json =
+| null
+| undefined // Can be sent to parser and back. Allows for types with undefined fields.
+| boolean
+| number
+| string
+| { [property: string]: Json } // Interestingly, TS complains if you do Record<string, Json> here
+| Json[]
+
 export function rollDie(): number {
     return Math.floor(Math.random() * 6) + 1;
 }

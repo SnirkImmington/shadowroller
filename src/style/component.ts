@@ -1,4 +1,4 @@
-import styled, { StyledComponent, keyframes } from 'styled-components/macro';
+import styled, { keyframes } from 'styled-components/macro';
 
 const diceFrames = keyframes`
     0%   { content: '\\2680'; }
@@ -36,11 +36,11 @@ export type FlavorProps = {
     warn?: boolean,
     light?: boolean,
 }
-export const Flavor: StyledComponent<"i", any, FlavorProps> = styled.i`
+export const Flavor = styled.i<FlavorProps>`
     color: ${props => props.warn ? props.theme.colors.warning : props.light ? "#fffd" : "#333"};
 `;
 
-export const PlayerColored: StyledComponent<"b", any, { color: string, light?: boolean }> = styled.b`
+export const PlayerColored = styled.b<{ color: string, light?: boolean }>`
     white-space: nowrap;
     color: ${props => props.color};
     ${props => props.light ? "padding: 1px; background: white;" : ""}

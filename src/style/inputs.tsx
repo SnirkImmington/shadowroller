@@ -1,7 +1,5 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import { color, layout } from 'styled-system';
-import Theme from './theme';
 
 type InputProps = {
     monospace? : boolean,
@@ -11,8 +9,6 @@ type InputProps = {
 export const Input = styled.input.attrs(props => ({
     type: props.type ?? "text",
 }))<InputProps>`
-    ${color}
-    ${layout}
     font-family: ${({ monospace }) => monospace ? '"Source Code Pro", monospace' : "inherit"};
     max-width: ${({ expand }) => expand ? '100%' : '14em'};
     height: calc(1em + 10px);
@@ -120,7 +116,6 @@ export const Button = styled.button`
         cursor: not-allowed;
         color: ${props=>props.theme.colors.secondaryDesaturated2};
     }
-    ${color}
 `;
 
 const HiddenInput = styled.input.attrs(props => ({
