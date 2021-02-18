@@ -1,10 +1,7 @@
-// @flow
-
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
-import NumericInput from 'numeric-input';
+import NumericInput from 'NumericInput';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
@@ -88,7 +85,7 @@ const RollBackground = {
     regular: `linear-gradient(180deg, #394341 0, #232928)`
 }
 
-const RollButton: StyledComponent<{ bg: string} > = styled.button`
+const RollButton = styled.button<{ bg: string}>`
     font-size: 1.07em;
     font-weight: 600;
     text-align: center;

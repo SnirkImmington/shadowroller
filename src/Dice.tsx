@@ -1,25 +1,16 @@
-// @flow
-
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import type { StyledComponent } from 'styled-components';
 import * as UI from 'style';
 import theme from 'style/theme';
 import 'index.css';
 
 import * as srutil from 'srutil';
 
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieTwo } from 'assets/die-2.svg';
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieThree } from 'assets/die-3.svg';
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieFour } from 'assets/die-4.svg';
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieFive } from 'assets/die-5.svg';
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as DieSix } from 'assets/die-6.svg';
 
 export function colorForRoll(roll: number): string {
@@ -30,8 +21,16 @@ export function colorForRoll(roll: number): string {
 
 const DiceMap = [undefined, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
-type AnimatedProps = { small?: bool, color?: string, unpadded?: bool };
-type DieProps = { roll: number, style?: any, ...AnimatedProps };
+type AnimatedProps = {
+    small?: boolean,
+    color?: string,
+    unpadded?: boolean
+};
+interface DieProps extends AnimatedProps {
+    roll: number,
+    style?: React.StyleHTMLAttributes<HTMLOrSVGElement> // TODO style prop
+};
+
 export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     const newProps = Object.assign({}, props);
     let { color, roll, small } = newProps;
@@ -62,7 +61,7 @@ export function AnimatedDie(props: AnimatedProps) {
     const [die, setDie] = React.useState<number>(srutil.rollDie);
 
     React.useEffect(() => {
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion)').matches;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion)').media;
         if (reducedMotion === "prefers-reduced-motion") {
             return;
         }
@@ -75,7 +74,7 @@ export function AnimatedDie(props: AnimatedProps) {
     return <Die style={{ margin: 0 }} roll={die} {...props} />;
 }
 
-const StyledList: StyledComponent<{ small?:bool, }> = styled(UI.FlexRow)`
+const StyledList = styled(UI.FlexRow)`
     /* Mobile: dice are 1/12 screen width. */
     font-size: 7vw;
 
@@ -84,12 +83,16 @@ const StyledList: StyledComponent<{ small?:bool, }> = styled(UI.FlexRow)`
     }
 `;
 
-const SmallStyledList: StyledComponent<> = styled(UI.FlexRow)`
+const SmallStyledList = styled(UI.FlexRow)`
     font-size: 1.2em;
     display: inline-flex;
 `;
 
-type ListProps = { rolls: number[], small?: bool, children?: React.ChildrenArray<any> };
+type ListProps = {
+    rolls: number[],
+    small?: boolean,
+    children?: React.ReactChildren
+};
 export function List({ rolls, small, children }: ListProps) {
     const Wrapper = small ? SmallStyledList : StyledList;
     return (
