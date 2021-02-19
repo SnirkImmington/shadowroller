@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled, { StyledComponent } from 'styled-components/macro';
+import styled from 'styled-components/macro';
 import * as UI from 'style';
 
 import * as server from 'server';
@@ -38,7 +38,7 @@ type ItemProps = {
     align?: string,
     capped?: boolean
 }
-const Item: StyledComponent<"div", any, ItemProps> = styled.div`
+const Item = styled.div<ItemProps>`
     width: 100%;
     @media all and (min-width: 768px) {
         width: 33%;

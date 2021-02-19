@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled, { StyledComponent } from 'styled-components/macro';
+import styled from 'styled-components/macro';
 import * as UI from 'style';
 import * as dice from 'dice';
 
@@ -32,7 +32,7 @@ export const Scrollable = styled(UI.FlexColumn).attrs(
     }
 `;
 
-export const StyledResults: StyledComponent<"b", any, { color: string }> = styled.b`
+export const StyledResults = styled.b<{ color: string }>`
     color: ${props => props.color};
 
     align-self: flex-start;

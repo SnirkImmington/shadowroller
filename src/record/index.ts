@@ -1,4 +1,4 @@
-import styled, { StyledComponent } from 'styled-components/macro';
+import styled from 'styled-components/macro';
 
 type RecordProps = {
     style: any,
@@ -10,7 +10,7 @@ type RecordProps = {
 // Spacing between event records
 const GUTTER_SIZE = 4;
 
-export const StyledRecord: StyledComponent<"div", any, RecordProps> = styled.div.attrs(
+export const StyledRecord = styled.div.attrs(
     props => {
         const style = {
             ...props.style,
@@ -22,7 +22,7 @@ export const StyledRecord: StyledComponent<"div", any, RecordProps> = styled.div
                 "#efefef" : props.color.replace("80%", "8%").replace("56%", "96%");
         }
         return { style };
-})`
+})<RecordProps>`
     padding-bottom: 4px;
     padding-left: 5px;
     padding-right: 2px;

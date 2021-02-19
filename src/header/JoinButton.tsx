@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled, { StyledComponent } from 'styled-components/macro';
+import styled from 'styled-components/macro';
 
 import * as Player from 'player';
 import { RetryConnection, ConnectionCtx } from 'connection';
@@ -8,7 +8,7 @@ type ButtonProps = {
     expanded?: boolean
 };
 
-const StyledJoinButton: StyledComponent<"button", any, ButtonProps> = styled.button`
+const StyledJoinButton = styled.button<ButtonProps>`
     background: ${({theme}) => theme.colors.header};
     border: 3px solid white;
 
