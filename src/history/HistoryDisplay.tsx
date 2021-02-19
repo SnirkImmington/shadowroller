@@ -32,8 +32,8 @@ const GAME_EMPTY_FLAVOR = [
 ];
 
 type RecordProps = {
-    event: ?Event.Event,
-    playerID: ?string,
+    event: Event.Event|null,
+    playerID: string|null,
     color: string,
     setHeight?: (height: number) => void,
     noActions?: boolean,
@@ -43,7 +43,7 @@ type RecordProps = {
 export const EventRecord = React.memo(function EventRecord(props: RecordProps) {
     const { event, playerID, color, setHeight, noActions, editing, style } = props;
 
-    const ref = React.useRef<?Element>();
+    const ref = React.useRef<Element|null>();
     React.useEffect(() => {
         if (ref.current && setHeight) {
             setHeight(ref.current.getBoundingClientRect().height);

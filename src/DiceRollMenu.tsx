@@ -150,7 +150,7 @@ export default function RollDicePrompt() {
     );
 
     const [diceText, setDiceText] = React.useState("");
-    const [diceCount, setDiceCount] = React.useState<?number>(null);
+    const [diceCount, setDiceCount] = React.useState<number|null>(null);
     const [title, setTitle] = React.useState("");
     const [edge, setEdge] = React.useState(false);
     const [glitchy, setGlitchy] = React.useState(0);
@@ -180,7 +180,7 @@ export default function RollDicePrompt() {
     );
 
     const setRollGlitchy = React.useCallback(
-        (g: ?number) => { g != null && setGlitchy(g); },
+        (g: number|null) => { g != null && setGlitchy(g); },
         [setGlitchy]
     );
 

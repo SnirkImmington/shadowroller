@@ -6,7 +6,7 @@ import JoinButton from "./JoinButton";
 
 const StyledHeader = styled.header`
     background-color: ${({theme}) => theme.colors.header};
-    height: 3.4rem;
+    height: 2.5rem;
     color: white;
     display: flex;
     align-items: center;
@@ -22,13 +22,12 @@ const StyledDie = styled(DieOne)`
 `;
 
 const SRTitle = styled.h1`
-    font-size: 2em;
+    font-size: 1.5em;
     font-style: oblique;
     font-weight: 900;
     letter-spacing: 1px;
     text-align: center;
     display: flex;
-
 
     margin-left: .5rem;
     @media all and (min-width: 768px) {

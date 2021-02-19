@@ -132,7 +132,7 @@ export function timeOf(event: Event): Date {
     return new Date(event.id);
 }
 
-export function canModify(event: Event, playerID: ?string): boolean {
+export function canModify(event: Event, playerID: string|null): boolean {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
 }
 

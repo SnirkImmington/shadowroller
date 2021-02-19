@@ -8,6 +8,7 @@ export type Json =
 | boolean
 | number
 | string
+| {}
 | { [property: string]: Json } // Interestingly, TS complains if you do Record<string, Json> here
 | Json[]
 

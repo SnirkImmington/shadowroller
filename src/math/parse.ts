@@ -1,9 +1,9 @@
-import type { Expression, BindingPower, MinPower } from '.';
+import { Expression, BindingPower, MinPower } from '.';
 import { powerOf, Tokenizer } from 'math';
 import type { Token } from 'math/tokenize';
 
 // eslint-disable-next-line no-use-before-define
-type PrefixParser = (parser: Parser, current: Token) => ?Expression;
+type PrefixParser = (parser: Parser, current: Token) => Expression|null ;
 
 const PREFIX_PARSERS: Record<string, PrefixParser> = {
     // eslint-disable-next-line no-use-before-define
@@ -48,7 +48,7 @@ function isInfixChar(char: string): boolean {
 }
 
 // eslint-disable-next-line no-use-before-define
-function parseInfix(parser: Parser, left: Expression, symbol: string): ?Expression {
+function parseInfix(parser: Parser, left: Expression, symbol: string): Expression|null {
     switch (symbol) {
         // Treat an infix left paren as a multiplication expression.
         case '(': {
@@ -79,14 +79,14 @@ function parseInfix(parser: Parser, left: Expression, symbol: string): ?Expressi
 
 export class Parser {
     tokenizer: Tokenizer;
-    lookahead: ?Token;
+    lookahead: Token|null;
 
     constructor(text: string) {
         this.tokenizer = new Tokenizer(text);
         this.lookahead = null;
     }
 
-    peek = (): ?Token => {
+    peek = (): Token|null => {
         if (this.lookahead == null) {
             const next = this.tokenizer.next();
             if (next == null) { return null; }
@@ -95,7 +95,7 @@ export class Parser {
         return this.lookahead;
     }
 
-    token = (): ?Token => {
+    token = (): Token|null => {
         if (this.lookahead == null) {
             return this.tokenizer.next();
         }
