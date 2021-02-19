@@ -9,7 +9,7 @@ import * as stream from '.';
 import { SetConnectionCtx } from 'connection';
 import type { BackendRequest } from 'server/request';
 
-export function Provider(props: { children: React.ReactNode }) {
+export default function Provider(props: { children: React.ReactNode }) {
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const playerDispatch = React.useContext(Player.DispatchCtx);

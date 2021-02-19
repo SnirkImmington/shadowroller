@@ -8,18 +8,19 @@ import * as Game from 'game';
 import * as Event from 'history/event';
 import * as Player from 'player';
 import * as server from 'server';
-import * as Stream from 'stream-provider';
+import * as stream from 'sseStream';
+import StreamProvider from 'sseStream/Provider';
 import * as routes from 'routes';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import type { RetryConnection } from 'connection';
 
 import SRHeader from 'header/SRHeader';
-import EditPlayerPanel from 'player/edit-panel';
-import NewJoinMenu from 'game/new-join-menu';
-import RollDicePrompt from 'roll-dice';
-import RollInitiativePrompt from 'roll-initiative';
-import EventHistory from 'history/history-panel';
-import DebugBar from 'debug-bar';
+import PlayerEditMenu from 'player/EditMenu';
+import GameJoinMenu from 'game/JoinMenu';
+import RollDiceMenu from 'DiceRollMenu';
+import RollInitiativeMenu from 'InitiativeRollMenu';
+import EventHistory from 'history/HistoryDisplay';
+import DebugBar from 'DebugBar';
 
 import 'assets-external/source-code-pro.css';
 
@@ -66,7 +67,7 @@ function Shadowroller() {
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
-    const [connect] = React.useContext(Stream.Ctx);
+    const [connect] = React.useContext(stream.Ctx);
 
     const [menuShown, toggleMenuShown] = srutil.useToggle(false);
 
@@ -104,17 +105,16 @@ function Shadowroller() {
                 <DebugBar />
             }
 
-            <SRHeader menuShown={menuShown}
-                      onClick={toggleMenuShown} />
+            <SRHeader onClick={toggleMenuShown} />
             <UI.ColumnToRow grow>
                 <AppLeft>
                     {menuShown &&
                         (game ?
-                          <EditPlayerPanel hide={toggleMenuShown} />
-                        : <NewJoinMenu hide={toggleMenuShown} />)
+                          <PlayerEditMenu hide={toggleMenuShown} />
+                        : <GameJoinMenu hide={toggleMenuShown} />)
                     }
-                    <RollDicePrompt />
-                    <RollInitiativePrompt />
+                    <RollDiceMenu />
+                    <RollInitiativeMenu />
                 </AppLeft>
                 <AppRight>
                     <EventHistory />
@@ -139,11 +139,11 @@ export default function App(_props: {}) {
         <Player.DispatchCtx.Provider value={playerDispatch}>
         <Event.Ctx.Provider value={eventList}>
         <Event.DispatchCtx.Provider value={eventDispatch}>
-        <Stream.Provider>
+        <StreamProvider>
 
             <Shadowroller />
 
-        </Stream.Provider>
+        </StreamProvider>
         </Event.DispatchCtx.Provider>
         </Event.Ctx.Provider>
         </Player.DispatchCtx.Provider>
