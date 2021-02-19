@@ -152,7 +152,7 @@ export class Parser {
         const nextToken = this.peek();
         if (nextToken == null ||
             nextToken.type !== 'symbol') {
-            return (0: MinPower);
+            return MinPower;
         }
         else {
             return powerOf(nextToken.value, prefix);

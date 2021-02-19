@@ -7,7 +7,7 @@ import * as icons from 'style/icon';
 import * as Game from 'game';
 import * as Event from 'history/event';
 import * as Player from 'player';
-import * as Stream from 'stream-provider';
+import * as Stream from 'sseStream';
 import { SetConnectionCtx } from 'connection';
 import type { Connection } from 'connection';
 
@@ -89,14 +89,14 @@ export default function JoinMenu({ hide }: Props) {
 
     const ready = gameID !== '' && username !== '';
 
-    function onGameIDChange(event: SyntheticInputEvent<HTMLInputElement>) {
+    function onGameIDChange(event: React.ChangeEvent<HTMLInputElement>) {
         setGameID(event.target.value ?? '');
     }
-    function onUsernameChange(event: SyntheticInputEvent<HTMLInputElement>) {
+    function onUsernameChange(event: React.ChangeEvent<HTMLInputElement>) {
         setUsername(event.target.value ?? '');
     }
 
-    function onSubmit(event: SyntheticInputEvent<HTMLButtonElement>) {
+    function onSubmit(event: React.SubmitEvent<HTMLButtonElement>) {
         event.preventDefault();
         if (!ready) { return; }
 
@@ -152,8 +152,8 @@ export default function JoinMenu({ hide }: Props) {
                                        fixedWidth transform="grow-5" />
                             <UI.Input monospace id="join-game-id"
                                       placeholder="Game ID"
-                                      autocomplete="on" autocapitalize="none"
-                                      spellcheck="false"
+                                      autoComplete="on" autoCapitalize="none"
+                                      spellCheck="false"
                                       value={gameID} onChange={onGameIDChange}
                                       disabled={loginConnection === "connecting"} />
                         </UI.FlexRow>
@@ -163,8 +163,8 @@ export default function JoinMenu({ hide }: Props) {
                                        fixedWidth transform="grow-5" />
                             <UI.Input id="join-username"
                                       placeholder="Username"
-                                      autoComplete="on" autocapitalize="none"
-                                      spellcheck="false"
+                                      autoComplete="on" autoCapitalize="none"
+                                      spellCheck="false"
                                       value={username} onChange={onUsernameChange}
                                       disabled={loginConnection === "connecting"} />
                         </UI.FlexRow>

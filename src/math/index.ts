@@ -25,12 +25,12 @@ export type Expression =
 | { type: "unaryOp", op: UnaryOp, expr: Expression }
 ;
 
-export type MinPower = 0;
-export type NegatePower = 1;
-export type AddSubPower = 2;
-export type MulDivPower = 3;
-export type ExpPower = 4;
-export type ParensPower = 5;
+export const MinPower = 0;
+export const NegatePower = 1;
+export const AddSubPower = 2;
+export const MulDivPower = 3;
+export const ExpPower = 4;
+export const ParensPower = 5;
 
 export type BindingPower =
 | MinPower
@@ -49,13 +49,13 @@ export function powerOf(symbol: string, prefix: boolean): BindingPower {
         case '-':
             return prefix ? NegatePower.valueOf : AddSubPower;
         case '*': case '/':
-            return (3: MulDivPower);
+            return MulDivPower;
         case '^':
-            return (4: ExpPower);
+            return ExpPower;
         case '(': case ')':
-            return (5: ParensPower);
+            return ParensPower;
         default:
-            return (0: MinPower);
+            return MinPower;
     }
 }
 
