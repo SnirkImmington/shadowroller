@@ -6,7 +6,7 @@ import { ROLL_TITLE_FLAVOR } from 'roll-dice';
 
 import * as Event from 'history/event';
 import * as Player from 'player';
-import routes from 'routes';
+import * as routes from 'routes';
 import theme from 'style/theme';
 import * as icons from 'style/icon';
 import * as srutil from 'srutil';

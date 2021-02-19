@@ -7,7 +7,7 @@ import * as Game from 'game';
 import * as Event from 'history/event';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
-import routes from 'routes';
+import * as routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
 import * as icons from 'style/icon';

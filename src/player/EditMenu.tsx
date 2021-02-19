@@ -12,7 +12,7 @@ import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import type { ResponseStatus } from 'connection';
-import routes from 'routes';
+import * as routes from 'routes';
 
 import ColorPicker from 'color-picker';
 import { EventRecord } from 'history/HistoryDisplay';

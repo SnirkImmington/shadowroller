@@ -6,7 +6,7 @@ import * as dice from 'dice';
 import type { Connection } from 'connection';
 import * as Event from 'history/event';
 import * as rollStats from 'rollStats';
-import routes from 'routes';
+import * as routes from 'routes';
 import * as srutil from 'srutil';
 
 export const SignDisplayFormat = new Intl.NumberFormat(undefined, { signDisplay: "always" });

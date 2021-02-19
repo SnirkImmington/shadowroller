@@ -13,7 +13,7 @@ import type { Connection } from 'connection';
 
 import * as server from 'server';
 import * as srutil from 'srutil';
-import routes from 'routes';
+import * as routes from 'routes';
 
 const ENTER_GAME_ID_FLAVOR: React.ReactNode[] = [
     <span><tt>foofaraw</tt> isn't a Game ID.</span>,

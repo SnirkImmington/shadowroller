@@ -9,7 +9,7 @@ import * as Event from 'history/event';
 import * as Player from 'player';
 import * as server from 'server';
 import * as Stream from 'stream-provider';
-import routes from 'routes';
+import * as routes from 'routes';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import type { RetryConnection } from 'connection';
 

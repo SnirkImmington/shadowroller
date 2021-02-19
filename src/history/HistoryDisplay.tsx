@@ -15,7 +15,7 @@ import * as Event from 'history/event';
 import * as Player from 'player';
 import * as Record from 'record';
 import * as server from 'server';
-import routes from 'routes';
+import * as routes from 'routes';
 import * as srutil from 'srutil';
 import { ConnectionCtx } from 'connection';
 
