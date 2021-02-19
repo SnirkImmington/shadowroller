@@ -1,5 +1,3 @@
-// @flow
-
 import * as React from 'react';
 
 export type GameSource = { id: string, name: string };
@@ -122,7 +120,7 @@ Invariants:
 export type State = {
     events: Event[],
     historyFetch: HistoryFetchState,
-    editing: ?DiceEvent,
+    editing: DiceEvent | null,
 };
 export const defaultState: State = {
     events: [],
