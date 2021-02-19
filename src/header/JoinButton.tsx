@@ -45,10 +45,7 @@ export type Props = {
 
 export default function JoinButton({ onClick }: Props) {
     const player = React.useContext(Player.Ctx);
-    let connection: RetryConnection | false | true = React.useContext(ConnectionCtx);
-    if (Math.random()) {
-        connection = false;
-    }
+    let connection: RetryConnection = React.useContext(ConnectionCtx);
 
     let disabled = false;
     let message: React.ReactNode = "";
@@ -72,7 +69,10 @@ export default function JoinButton({ onClick }: Props) {
                 message = "Reconnecting";
                 break;
             default:
-                const _: never = connection; // eslint-ignore-line noUnusedLocals
+                const connection_: never = connection; // eslint-ignore-line noUnusedLocals
+                if (process.env.NODE_ENV !== "production") {
+                    console.error("Invalid connection type:", connection_);
+                }
         }
     }
     else { // Connected to game
