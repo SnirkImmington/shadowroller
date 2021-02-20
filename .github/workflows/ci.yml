@@ -1,20 +1,17 @@
-name: CI
+name: npm test
 
-on:
-    pull-request:
-        branches:
-            - master
+on: [ pull_request ]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-
-        steps:
-        - uses: actions/checkout@v2
-            with:
-                fetch-depth: 5
-        - uses: actions/setup-node@v1
-        - name: Run npm ci
-            run: npm ci
-        - name: Test
-            run: npm test
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+    - name: Install Node
+      uses: actions/setup-node@v1
+    - name: Run npm ci
+      run: npm ci
+    - name: Test
+      run: npm test
