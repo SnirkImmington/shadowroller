@@ -1,0 +1,20 @@
+name: CI
+
+on:
+    pull-request:
+        branches:
+            - master
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v2
+            with:
+                fetch-depth: 5
+        - uses: actions/setup-node@v1
+        - name: Run npm ci
+            run: npm ci
+        - name: Test
+            run: npm test
