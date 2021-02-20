@@ -1,6 +1,6 @@
 # Shadowroller (https://shadowroller.net/)
 
-Shadowroller is work-in-progress a website that lets you roll lots of d6's and follow Shadowrun's dice rules.
+Shadowroller (https://shadowroller.net/) is work-in-progress a website that lets you roll lots of d6's and follow Shadowrun's dice rules.
 
 ![Desktop screenshot Oct 02 2020](https://user-images.githubusercontent.com/1468114/94968996-ea440600-04cf-11eb-97eb-faca0af677f3.png)
 
