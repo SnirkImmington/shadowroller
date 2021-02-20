@@ -37,7 +37,7 @@ function LocalActionsRow({ event, result }: ActionProps) {
 }
 */
 
-function InitiativeRecord({ event, playerID, color, noActions }: Props, ref: React.Ref<any>) {
+function InitiativeRecord({ event, color }: Props, ref: React.Ref<any>) {
     //const canModify = !noActions && Event.canModify(event, playerID);
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
 

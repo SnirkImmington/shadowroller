@@ -33,12 +33,12 @@ export const ExpPower = 4;
 export const ParensPower = 5;
 
 export type BindingPower =
-| MinPower
-| NegatePower
-| AddSubPower
-| MulDivPower
-| ExpPower
-| ParensPower
+| typeof MinPower
+| typeof NegatePower
+| typeof AddSubPower
+| typeof MulDivPower
+| typeof ExpPower
+| typeof ParensPower
 ;
 
 export const CALCULATOR_CHAR = "🖩";
@@ -47,7 +47,7 @@ export function powerOf(symbol: string, prefix: boolean): BindingPower {
     switch (symbol) {
         case '+':
         case '-':
-            return prefix ? NegatePower.valueOf : AddSubPower;
+            return prefix ? NegatePower : AddSubPower;
         case '*': case '/':
             return MulDivPower;
         case '^':

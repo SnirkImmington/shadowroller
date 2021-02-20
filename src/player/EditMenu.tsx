@@ -56,7 +56,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     const changed = name !== player.name || hue !== player.hue || onlineMode !== player.onlineMode;
     const connected = connection === "connected" && response !== "loading";
 
-    function onSubmit(e) {
+    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (!changed || !player) {
             return;
@@ -82,7 +82,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             });
     }
 
-    function onSwitch(e) {
+    function onSwitch(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         if (switchDisabled || !player) {
             return;
@@ -102,7 +102,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             });
     }
 
-    function onLogout(e) {
+    function onLogout(e: React.MouseEvent<HTMLButtonElement>) {
         e.preventDefault();
         logout();
         hide();
@@ -133,7 +133,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             </UI.ColumnToRow>
             <form id="player-settings" onSubmit={onSubmit}>
                 <UI.FlexColumn>
-                    {showGames && <UI.ColumnToRow maxWidth justifyContent="space-around">
+                    {showGames && <UI.ColumnToRow maxWidth justifyContentRow="space-around">
                         <UI.FlexRow formRow justifyContent="space-around">
                             Join
                             <UI.Input value={switchGame} placeholder={game.gameID}
@@ -194,7 +194,9 @@ export default function EditPlayerPanel({ hide }: Props) {
                     <UI.FlexRow spaced>
                         <StatusText connection={connection}/>
                         <span style={{flexGrow: 1}} />
-                        <UI.LinkButton disabled={!changed || !connected}>update</UI.LinkButton>
+                        <UI.LinkButton type="submit" disabled={!changed || !connected}>
+                            update
+                        </UI.LinkButton>
                         <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
                     </UI.FlexRow>
                 </UI.FlexColumn>

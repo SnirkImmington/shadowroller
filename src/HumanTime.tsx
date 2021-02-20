@@ -6,10 +6,12 @@ const MINUTE = 60,
       DAY = HOUR * 24,
       WEEK = DAY * 7;
 
+// @ts-ignore Looks good to me: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
 const HOUR_FORMAT = new Intl.DateTimeFormat(undefined, { timeStyle: "short" });
 const WEEK_DAY = new Intl.DateTimeFormat(undefined, { weekday: "long" });
 const MONTH_FORMAT = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
 const DATE_FORMAT = new Intl.DateTimeFormat(undefined, {
+    // @ts-ignore Also looks good to me
     timeStyle: "short", dateStyle: "medium"
 });
 

@@ -9,7 +9,7 @@ type PlayerJoinProps = {
     playerID: string|null,
     color: string,
 };
-export const PlayerJoin = React.memo<PlayerJoinProps>(React.forwardRef(function PlayerJoin({ event, color }, ref) {
+export const PlayerJoin = React.memo(React.forwardRef<HTMLDivElement, PlayerJoinProps>(function PlayerJoin({ event, color }: PlayerJoinProps, ref) {
     const game = React.useContext(Game.Ctx);
 
     const name = <UI.PlayerColored color={color}>{event.source.name}</UI.PlayerColored>;
@@ -29,7 +29,7 @@ export const PlayerJoin = React.memo<PlayerJoinProps>(React.forwardRef(function 
     );
 }), (prev, next) => prev.event.id === next.event.id);
 
-export const Loading = React.memo(React.forwardRef(function LoadingIndicator(_props, ref: React.Ref<HTMLSpanElement>) {
+export const Loading = React.memo(React.forwardRef<HTMLElement, {}>(function LoadingIndicator(_props, ref) {
     return (
         <span ref={ref}>Getting some rolls... <UI.DiceSpinner /></span>
     );

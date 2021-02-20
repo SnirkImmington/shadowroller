@@ -23,13 +23,11 @@ export const StyledRecord = styled.div.attrs<RecordProps>(
                 "#efefef" : props.color.replace("80%", "8%").replace("56%", "96%");
         }
         return { style };
-})`
+})<RecordProps>`
     padding-bottom: 4px;
     padding-left: 5px;
     padding-right: 2px;
-    ${({color}) =>
-        `border-left: 5px solid ${color};`
-    }
+    border-left: 5px solid ${({color}) => color};
     line-height: 1;
 `;
 

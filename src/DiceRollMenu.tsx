@@ -174,8 +174,10 @@ export default function RollDicePrompt() {
         [setEdge]
     );
 
-    const onGlitchyClicked = React.useCallback(
-        (e) => setGlitchy(g => g === 0 ? 1 : 0),
+    const onGlitchyChanged = React.useCallback(
+        (_e: React.ChangeEvent<HTMLInputElement>) => {
+            setGlitchy(g => g === 0 ? 1 : 0);
+        },
         [setGlitchy]
     );
 
@@ -295,7 +297,7 @@ export default function RollDicePrompt() {
                             <UI.RadioLink id="roll-use-glitchy"
                                           type="checkbox" light
                                           checked={glitchy !== 0}
-                                          onChange={onGlitchyClicked}>
+                                          onChange={onGlitchyChanged}>
                                 Glitchy
                             </UI.RadioLink>
                             {glitchy !== 0 &&

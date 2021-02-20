@@ -91,9 +91,8 @@ const SmallStyledList = styled(UI.FlexRow)`
 type ListProps = {
     rolls: number[],
     small?: boolean,
-    children?: React.ReactChildren
 };
-export function List({ rolls, small, children }: ListProps) {
+export function List({ rolls, small, children }: React.PropsWithChildren<ListProps>) {
     const Wrapper = small ? SmallStyledList : StyledList;
     return (
         <Wrapper>

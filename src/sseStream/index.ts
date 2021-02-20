@@ -50,11 +50,11 @@ export function handleEventUpdate(id: number, diff: any, edit: number, dispatch:
     }
 }
 
-export function handlePlayerUpdate(diff: Partial<Player.Player>, edit: number, dispatch: Player.Dispatch) {
+export function handlePlayerUpdate(diff: Partial<Player.Player>, _edit: number, dispatch: Player.Dispatch) {
     dispatch({ ty: "update", values: diff });
 }
 
-export function handleGameUpdate(ty: string, id: string, diff: any, edit: number, dispatch: Game.Dispatch) {
+export function handleGameUpdate(_ty: string, id: string, diff: any, _edit: number, dispatch: Game.Dispatch) {
     dispatch({ ty: "playerUpdate", id, update: diff });
 }
 

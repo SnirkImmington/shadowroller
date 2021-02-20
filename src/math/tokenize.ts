@@ -25,7 +25,7 @@ export class Tokenizer {
             this.position++;
         }
         // It's a number.
-        if (!isNaN(nextChar) || nextChar === '.') {
+        if (!isNaN(nextChar as any) || nextChar === '.') {
             const numberChars: string[] = [nextChar];
             // Keep taking number characters until we hit a non-
             // number or EOF.
@@ -34,7 +34,7 @@ export class Tokenizer {
                 if (peeked == null) {
                     break;
                 }
-                else if (!isNaN(peeked) || peeked === '.') {
+                else if (!isNaN(peeked as any) || peeked === '.') {
                     // If we have another number char (a 2+ digit number),
                     // append it to the array.
                     numberChars.push(peeked);

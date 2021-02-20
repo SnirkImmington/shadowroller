@@ -68,7 +68,7 @@ export function Rounds({ rounds, icon, transform, color }: RoundsProps) {
             <UI.FlexRow>
                 <UI.FAIcon icon={icon} color={color} className="sr-die"
                             fixedWidth transform={transform} />
-                <tt>:(</tt>
+                <tt>:{`(`}</tt>
             </UI.FlexRow>
         );
     }
@@ -77,7 +77,7 @@ export function Rounds({ rounds, icon, transform, color }: RoundsProps) {
             {rounds.map((rolls, ix) =>
                 <dice.List key={ix} rolls={rolls}>
                     <UI.FAIcon icon={icon} color={color} className="sr-die"
-                        style={{margin:'2px calc(.1em + 1px)'}} size="sm" />
+                               style={{ margin: '2px calc(.1em + 1px)' }} size="sm" />
                 </dice.List>
             )}
         </UI.FlexRow>

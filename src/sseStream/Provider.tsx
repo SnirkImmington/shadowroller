@@ -50,7 +50,7 @@ export default function Provider(props: { children: React.ReactNode }) {
                 document.title = `${gameID} - Shadowroller`;
             }
         }
-        source.onerror = function(e) {
+        source.onerror = function() {
             source.close();
             setSource(null);
             setConnection("retrying");

@@ -4,7 +4,8 @@ import * as UI from 'style';
 import * as icons from 'style/icon';
 import theme from 'style/theme';
 
-import { VariableSizeList as List, areEqual } from 'react-window';
+import { VariableSizeList as List, areEqual, ListOnItemsRenderedProps } from 'react-window';
+// @ts-ignore For some reason, they wrote the module wrong here. I don't want to enable AllowSyntheticDefaultImports to fix everything else.
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import EditEventMenu from 'history/EditEventMenu';
@@ -43,7 +44,7 @@ type RecordProps = {
 export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     const { event, playerID, color, setHeight, noActions, editing, style } = props;
 
-    const ref = React.useRef<any>();
+    const ref = React.useRef<HTMLDivElement|null>(null);
     React.useEffect(() => {
         if (ref.current && setHeight) {
             setHeight(ref.current.getBoundingClientRect().height);
@@ -80,12 +81,12 @@ export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
                 const event_: never = event;
                 console.error("Attempt to render unknown event", event_);
             }
-            return '';
+            return null;
     }
     return (
         <Record.StyledRecord color={color} editing={editing} style={style}>
-            {/* flow-ignore-all-next-line We do pass the events properly here */}
-            <Inner ref={ref} playerID={playerID} color={color} event={event} noActions={noActions} />
+            {/* We do make sure we have the right event, given the switch above. */}
+            <Inner ref={ref} playerID={playerID} color={color} event={event as never} noActions={noActions} />
         </Record.StyledRecord>
     );
 }, areEqual);
@@ -104,8 +105,8 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
     const itemCount = eventsLength + (
         atHistoryEnd || connection === "offline" || connection === "disconnected" ? 0 : 1);
 
-    const listRef = React.useRef(null);
-    const itemSizes = React.useRef([]);
+    const listRef = React.useRef<InfiniteLoader|null>(null);
+    const itemSizes = React.useRef<number[]>([]);
 
     // Once we've connected this ref to the list,
     // we want to ask the list to stop caching the item sizes whenever we push
@@ -113,13 +114,12 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
     // but that's okay. And when we are pushing items to the top, it's just
     // recalculating the first ~9.
     React.useEffect(() => {
-        if (listRef.current && listRef.current._listRef) {
+        if (listRef?.current?._listRef) {
             listRef.current._listRef.resetAfterIndex(0);
         }
         else {
-            let timeout;
-            timeout = setTimeout(function resetLength() {
-                if (listRef.current && listRef.current._listRef) {
+            let timeout = setTimeout(function resetLength() {
+                if (listRef.current?._listRef) {
                     listRef.current._listRef.resetAfterIndex(0);
                 }
                 else {
@@ -216,7 +216,7 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
                     itemCount={itemCount}
                     isItemLoaded={loadedAt}
                     loadMoreItems={loadMoreItems}>
-                    {({ onItemsRendered, ref}) => (
+                    {({ onItemsRendered, ref}: { onItemsRendered: (props: ListOnItemsRenderedProps) => any, ref: any }) => (
                         <List height={height} width={width}
                               itemCount={itemCount}
                               itemKey={itemKey}
@@ -261,7 +261,7 @@ export default function EventHistory() {
         body = (<HistoryFlavor>{rollFlavor}</HistoryFlavor>);
     }
     else {
-        body = (<LoadingResultList playerID={player?.id} />);
+        body = (<LoadingResultList playerID={player?.id ?? null} />);
     }
 
     return (
@@ -270,7 +270,7 @@ export default function EventHistory() {
             <EditEventMenu event={events.editing} />
         }
         <UI.Card unpadded padRight grow color={theme.colors.primary}>
-            <UI.FlexRow maxWidth rowCenter>
+            <UI.FlexRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary} style={{ marginRight: '0.5rem'}}>
                     <UI.FAIcon icon={icons.faList} />
                     {title}

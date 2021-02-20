@@ -107,7 +107,7 @@ export default function RollInitiativePrompt() {
 
     if (!shown) {
         return (
-                <UI.FlexRow maxWidth rowCenter floatRight>
+                <UI.FlexRow maxWidth floatRight>
                     <UI.CardTitleText color={theme.colors.primary}>
                         <UI.FAIcon icon={icons.faClipboardList} />
                         Initiative
@@ -121,7 +121,7 @@ export default function RollInitiativePrompt() {
 
     return (
         <UI.Card color={theme.colors.primary}>
-            <UI.FlexRow maxWidth rowCenter floatRight>
+            <UI.FlexRow maxWidth floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faClipboardList} />
                     Initiative
@@ -132,7 +132,7 @@ export default function RollInitiativePrompt() {
             </UI.FlexRow>
             <form id="roll-initiative-form">
                 <UI.ColumnToRow>
-                    <UI.FlexRow formRow rowCenter>
+                    <UI.FlexRow formRow>
                         <label htmlFor="roll-initiative-base">
                             Roll
                         </label>
@@ -150,7 +150,7 @@ export default function RollInitiativePrompt() {
                         </label>
                         &nbsp;
                     </UI.FlexRow>
-                    <UI.FlexRow maxWidth formRow rowCenter>
+                    <UI.FlexRow maxWidth formRow>
                         for
                         <UI.Input expand id="roll-initiative-title"
                                   placeholder="initiative"
