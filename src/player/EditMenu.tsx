@@ -15,7 +15,7 @@ import type { ResponseStatus } from 'connection';
 import * as routes from 'routes';
 
 import ColorPicker from 'ColorPicker';
-import { EventRecord } from 'history/HistoryDisplay';
+import EventRecord from 'history/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
 type Props = {
