@@ -6,7 +6,10 @@ import JoinButton from "./JoinButton";
 
 const StyledHeader = styled.header`
     background-color: ${({theme}) => theme.colors.header};
-    height: 2.5rem;
+    height: 2.6rem;
+    @media all and (min-width: 768px) {
+        height: 2.56rem;
+    }
     color: white;
     display: flex;
     align-items: center;
@@ -31,7 +34,7 @@ const SRTitle = styled.h1`
 
     margin-left: .5rem;
     @media all and (min-width: 768px) {
-        margin-left: 4rem;
+        margin-left: 3.5rem;
     }
 `;
 

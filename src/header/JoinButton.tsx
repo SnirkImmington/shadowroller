@@ -18,7 +18,7 @@ const StyledJoinButton = styled.button<ButtonProps>`
 
     font-size: 1rem;
     font-weight: 500;
-    padding: 0.2em 0.75em;
+    padding: 0.1em 0.5em;
     text-align: center;
     cursor: pointer;
 
@@ -26,7 +26,7 @@ const StyledJoinButton = styled.button<ButtonProps>`
 
     margin-right: 0.5rem;
     @media all and (min-width: 768px) {
-        margin-right: 4rem;
+        margin-right: 3.5rem;
     }
 
     &:hover {
