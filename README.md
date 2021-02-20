@@ -1,14 +1,14 @@
-# Shadowroller
+# Shadowroller (https://shadowroller.net/)
 
-Shadowroller is work-in-progress a website that lets you roll lots of d6's and follow Shadowrun's dice rules. 
+Shadowroller (https://shadowroller.net/) is work-in-progress a website that lets you roll lots of d6's and follow Shadowrun's dice rules.
 
 ![Desktop screenshot Oct 02 2020](https://user-images.githubusercontent.com/1468114/94968996-ea440600-04cf-11eb-97eb-faca0af677f3.png)
 
-Shadowroller is avaialable at https://shadowroller.net/. 
+[![build badge](https://github.com/SnirkImmington/shadowroller/actions/workflows/ci.yml/badge.svg)](https://github.com/SnirkImmington/shadowroller/actions/workflows/ci.yml)
 
 There is a server ([sr-server](https://github.com/SnirkImmington/sr-server)) which runs games for my friends.
-This system is not available for the general internet at the moment. 
-You can run a local version of the server yourself if you'd like - it's rather straightforward if you're comfortable with the command line.
+This system is not available for the general internet at the moment.
+You can run a local version of the server yourself if you'd like - it's easy if you're comfortable with the command line and port forwarding.
 
 ## Credits & Attribution
 
@@ -16,12 +16,12 @@ Shadowroller's source code is licensed under the MIT license available in the
 `LICENSE` file. Shadowroller is free software; you may redistribute or modify it
 to your liking.
 
-Shadwroller's non-software assets (such as our dice icons) are licensed under
+Shadwroller's non-software assets in `assets/` (such as our dice icons) are licensed under
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) - they may
 be shared and adapted non-commercially and with attribution.
 
 Shadowroller is built with [React](https://reactjs.org), with developer experience
-greatly improved by [Flow](https://flow.org/).
+greatly improved by [Typescript](https://typescriptlang.org/).
 Site UI and CSS is done via [Styled Components](https://styled-components.com).
 [React window](https://react-window.now.sh/) provides a nicer scrolling experience.
 

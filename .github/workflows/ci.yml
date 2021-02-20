@@ -1,0 +1,17 @@
+name: Build
+
+on: [ pull_request ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+    - name: Install Node
+      uses: actions/setup-node@v1
+    - name: Run npm ci
+      run: npm ci
+    - name: Test
+      run: npm test
