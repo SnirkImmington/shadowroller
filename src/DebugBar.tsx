@@ -18,7 +18,7 @@ const StyledBar = styled(UI.FlexColumn).attrs(
     white-space: pre;
     width: 100%;
 
-    height: 6.25em;
+    height: 4.75em;
     overflow-y: scroll;
     @media all and (min-width:768px) {
         height: auto;

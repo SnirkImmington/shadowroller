@@ -101,9 +101,6 @@ function Shadowroller() {
 
     return (
         <ThemeProvider theme={theme}>
-            {process.env.NODE_ENV !== "production" &&
-                <DebugBar />
-            }
 
             <SRHeader onClick={toggleMenuShown} />
             <UI.ColumnToRow grow>
@@ -120,6 +117,9 @@ function Shadowroller() {
                     <EventHistory />
                 </AppRight>
             </UI.ColumnToRow>
+            {process.env.NODE_ENV !== "production" &&
+                <DebugBar />
+            }
         </ThemeProvider>
     );
 }
