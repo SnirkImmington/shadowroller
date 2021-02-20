@@ -166,7 +166,7 @@ type RadioLinkProps = {
     disabled?: boolean,
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
 };
-export const RadioLink = React.memo<RadioLinkProps>(function RadioLink(props) {
+export const RadioLink = React.memo<React.PropsWithChildren<RadioLinkProps>>(function RadioLink(props) {
     return (
         <RadioLabel htmlFor={props.id}>
             <HiddenInput id={props.id} type={props.type}

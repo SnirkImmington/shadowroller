@@ -93,7 +93,7 @@ function LocalActionsRow({ event, result }: Props) {
     const dispatch = React.useContext(Event.DispatchCtx);
 
     function onSecondChance() {
-        if (!event.dice) { return; }
+        if (!("dice" in event)) { return; }
         dispatch({
             ty: "reroll", id: event.id,
             edit: Date.now().valueOf(),

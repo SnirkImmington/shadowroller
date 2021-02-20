@@ -9,7 +9,7 @@ import * as rollStats from 'rollStats';
 
 type Props = {
     event: Event.Roll,
-    playerID: string,
+    playerID: string|null,
     color: string,
     noActions?: boolean
 }

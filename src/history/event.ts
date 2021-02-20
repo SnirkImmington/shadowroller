@@ -149,15 +149,17 @@ export function titleOf(event: Event) {
         case "playerJoin":
             return `${event.source.name} joined`;
         default:
-            const _: never = event;
+            if (process.env.NODE_ENV !== "production") {
+                const event_: never = event;
+                console.error("Called titleOf with unknown event", event_)
+            }
             return "event";
     }
 }
 
 export function wouldScroll(event: DiceEvent): boolean {
-    return (event?.dice && event.dice.length > 12)
-    // flow-ignore-all-next-line this check works fine
-        || (event?.rounds && event.rounds.flatMap(r => r).length > 10);
+    return ("dice" in event && event.dice.length > 12)
+        || ("rounds" in event && event.rounds.flatMap(r => r).length > 10);
 }
 
 export function newID(): number {

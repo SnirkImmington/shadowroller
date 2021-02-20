@@ -43,6 +43,7 @@ type Props = {
     style?: any;
     id?: string;
     value: number;
+    disabled?: boolean;
     onSelect: (value: number) => void;
 }
 
@@ -52,7 +53,7 @@ export default function ColorPicker(props: Props) {
     }
     return (
         <RainbowDiv style={props.style}>
-            <HueInput id={props.id} value={props.value} onChange={handleSelect} />
+            <HueInput disabled={props.disabled} id={props.id} value={props.value} onChange={handleSelect} />
         </RainbowDiv>
     );
 }

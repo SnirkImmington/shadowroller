@@ -31,7 +31,8 @@ function gameReduce(state: State, action: Action): State {
             const existing = state.players.get(action.id);
             const updatedPlayers = new Map(state.players);
             if (!existing) {
-                updatedPlayers.set(action.id, action.update);
+                // assertion: We'd better not get a partial player info if we're getting a new one
+                updatedPlayers.set(action.id, action.update as PlayerInfo);
             }
             else {
                 const updatedPlayer = { ...existing, ...action.update };

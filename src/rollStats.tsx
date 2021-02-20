@@ -30,7 +30,6 @@ export function isGlitched(event: Event.DiceEvent): boolean {
     else if (event.ty === "edgeRoll") {
         // Given the way Push the Limit is phrased, your total dice pool includes
         // those dice that you reroll.
-        // flow-ignore-all-next-line it forces flat() to be mixed
         const allDice: number[] = event.rounds.flat();
         return (sumOnes(allDice) + event.glitchy) > (allDice.length / 2);
     }
@@ -52,21 +51,19 @@ export type HitsResults = {
     rounds: number,
 };
 export function results(event: Event.DiceEvent): HitsResults {
-    const dice: number[] = event.dice ? event.dice : event.rounds.flat();
+    const dice: number[] = "dice" in event ? event.dice : event.rounds.flat();
     const rerolled = event.ty === "rerollFailures";
     const glitched = isGlitched(event);
-    // flow-ignore-all-next-line More mixed
     const hits = sumHits(dice);
 
     const critical = glitched && hits === 0;
-    // flow-ignore-all-next-line We're checking for null here, flow
-    const edged = event?.rounds != null;
+    const edged = "rounds" in event;
     let rounds = 1;
     if (rerolled) {
-        // flow-ignore-all-next-line rerolled indicates it's a rerollFailures
+        // @ts-ignore Didn't bother adding an event is RerollEvent.
         rounds = event.rounds.length - 1;
     }
-    else if (event.rounds) {
+    else if ("rounds" in event) {
         rounds = event.rounds.length;
     }
     const shouldDisplay = (

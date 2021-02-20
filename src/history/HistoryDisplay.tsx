@@ -40,10 +40,10 @@ type RecordProps = {
     editing?: boolean,
     style?: any
 };
-export const EventRecord = React.memo(function EventRecord(props: RecordProps) {
+export const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     const { event, playerID, color, setHeight, noActions, editing, style } = props;
 
-    const ref = React.useRef<Element|null>();
+    const ref = React.useRef<any>();
     React.useEffect(() => {
         if (ref.current && setHeight) {
             setHeight(ref.current.getBoundingClientRect().height);
@@ -76,7 +76,10 @@ export const EventRecord = React.memo(function EventRecord(props: RecordProps) {
             Inner = Record.Initiative;
             break;
         default:
-            const event_: never = event;
+            if (process.env.NODE_ENV !== "production") {
+                const event_: never = event;
+                console.error("Attempt to render unknown event", event_);
+            }
             return '';
     }
     return (

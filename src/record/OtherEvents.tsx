@@ -6,6 +6,7 @@ import * as Event from 'history/event';
 
 type PlayerJoinProps = {
     event: Event.PlayerJoin,
+    playerID: string|null,
     color: string,
 };
 export const PlayerJoin = React.memo<PlayerJoinProps>(React.forwardRef(function PlayerJoin({ event, color }, ref) {

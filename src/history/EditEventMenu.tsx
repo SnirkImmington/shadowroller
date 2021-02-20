@@ -52,7 +52,8 @@ export default function EditEventMenu({ event }: Props) {
         selected != null && setGlitchy(selected);
     }
 
-    function updateEvent() {
+    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
         if (!canUpdate) {
             return;
         }
@@ -90,72 +91,74 @@ export default function EditEventMenu({ event }: Props) {
                 </UI.CardTitleText>
                 <UI.LinkButton minor onClick={cancelEdit}>close</UI.LinkButton>
             </UI.FlexRow>
-            <UI.FlexColumn>
-                <UI.FlexRow maxWidth formRow>
-                    <EventRecord editing noActions setHeight={()=>{}}
-                                 style={{ width: '100%'}} playerID={player?.id}
-                                 color={eventColor}
-                                 event={{ ...event, title, glitchy }} />
-                </UI.FlexRow>
-                <UI.ColumnToRow>
-                    <UI.FlexRow formRow>
-                        Roll to
-                        <UI.Input id="edit-set-title"
-                                value={title}
-                                placeholder={titleFlavor}
-                                onChange={(e) => setTitle(e.target.value)} />
+            <form id="edit-roll-form" onSubmit={onSubmit}>
+                <UI.FlexColumn>
+                    <UI.FlexRow maxWidth formRow>
+                        <EventRecord editing noActions setHeight={()=>{}}
+                                     style={{ width: '100%'}} playerID={player ? player.id : null}
+                                     color={eventColor}
+                                     event={{ ...event, title, glitchy }} />
                     </UI.FlexRow>
-                    <UI.FlexRow formRow>
-                        Glitchy
-                        <NumericInput small id="edit-set-roll-glitchiness"
-                                      min={-99} max={99}
-                                      placeholder={`${glitchy}`}
-                                      onSelect={setRollGlitchy} />
-                    </UI.FlexRow>
-            {/*
-                    <UI.FlexRow formRow spaced>
-                        Dice pool
-                        <NumericInput id="edit-event-dice-pool" max={99} min={1}
-                                      placeholder="9" onSelect={setNewPool} />
-                        <UI.LinkButton>-2</UI.LinkButton>
-                        <UI.LinkButton>-1</UI.LinkButton>
-                        <UI.LinkButton>+1</UI.LinkButton>
-                        <UI.LinkButton>+2</UI.LinkButton>
-                    </UI.FlexRow>
-            */}
-                </UI.ColumnToRow>
-            {/*
-                <UI.FlexRow formRow>
-                    <i>
-                        Removing dice from the pool removes them from the right.
-                    </i>
-                </UI.FlexRow>
-            */}
-                <UI.FlexRow spaced>
-                    <UI.LinkButton onClick={() => setDeletePrompt(p => !p)}>
-                        delete
-                    </UI.LinkButton>
-                    {deletePrompt && (
-                        <UI.FlexRow>
-                            <i>You sure?</i>&nbsp;
-                            <UI.LinkButton onClick={deleteEvent}>
-                                [ yes ]
-                            </UI.LinkButton>
-                            &nbsp;/&nbsp;
-                            <UI.LinkButton onClick={() => setDeletePrompt(false)}>
-                                no
-                            </UI.LinkButton>
+                    <UI.ColumnToRow>
+                        <UI.FlexRow formRow>
+                            Roll to
+                            <UI.Input id="edit-set-title"
+                                    value={title}
+                                    placeholder={titleFlavor}
+                                    onChange={(e) => setTitle(e.target.value)} />
                         </UI.FlexRow>
-                    )}
-                    <span style={{flexGrow: 1}} />
-                    <UI.LinkButton disabled={!canUpdate} onClick={updateEvent}>
-                        update
-                    </UI.LinkButton>
-                    <UI.LinkButton minor onClick={cancelEdit}>
-                        cancel
-                    </UI.LinkButton>
-                </UI.FlexRow>
-            </UI.FlexColumn>
+                        <UI.FlexRow formRow>
+                            Glitchy
+                            <NumericInput small id="edit-set-roll-glitchiness"
+                                          min={-99} max={99}
+                                          placeholder={`${glitchy}`}
+                                          onSelect={setRollGlitchy} />
+                        </UI.FlexRow>
+                {/*
+                        <UI.FlexRow formRow spaced>
+                            Dice pool
+                            <NumericInput id="edit-event-dice-pool" max={99} min={1}
+                                          placeholder="9" onSelect={setNewPool} />
+                            <UI.LinkButton>-2</UI.LinkButton>
+                            <UI.LinkButton>-1</UI.LinkButton>
+                            <UI.LinkButton>+1</UI.LinkButton>
+                            <UI.LinkButton>+2</UI.LinkButton>
+                        </UI.FlexRow>
+                */}
+                    </UI.ColumnToRow>
+                {/*
+                    <UI.FlexRow formRow>
+                        <i>
+                            Removing dice from the pool removes them from the right.
+                        </i>
+                    </UI.FlexRow>
+                */}
+                    <UI.FlexRow spaced>
+                        <UI.LinkButton onClick={() => setDeletePrompt(p => !p)}>
+                            delete
+                        </UI.LinkButton>
+                        {deletePrompt && (
+                            <UI.FlexRow>
+                                <i>You sure?</i>&nbsp;
+                                <UI.LinkButton onClick={deleteEvent}>
+                                    [ yes ]
+                                </UI.LinkButton>
+                                &nbsp;/&nbsp;
+                                <UI.LinkButton onClick={() => setDeletePrompt(false)}>
+                                    no
+                                </UI.LinkButton>
+                            </UI.FlexRow>
+                        )}
+                        <span style={{flexGrow: 1}} />
+                        <UI.LinkButton type="submit" disabled={!canUpdate}>
+                            update
+                        </UI.LinkButton>
+                        <UI.LinkButton minor onClick={cancelEdit}>
+                            cancel
+                        </UI.LinkButton>
+                    </UI.FlexRow>
+                </UI.FlexColumn>
+            </form>
         </UI.Card>
     )
 }

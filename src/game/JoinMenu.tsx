@@ -96,7 +96,7 @@ export default function JoinMenu({ hide }: Props) {
         setUsername(event.target.value ?? '');
     }
 
-    function onSubmit(event: React.SubmitEvent<HTMLButtonElement>) {
+    function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!ready) { return; }
 
@@ -178,7 +178,7 @@ export default function JoinMenu({ hide }: Props) {
                             {persistFlavor}
                         </UI.RadioLink>
                         <UI.FlexRow formRow spaced>
-                            <UI.LinkButton disabled={!ready}>
+                            <UI.LinkButton type="submit" disabled={!ready}>
                                 join game
                             </UI.LinkButton>
                             <UI.LinkButton minor onClick={hide}>

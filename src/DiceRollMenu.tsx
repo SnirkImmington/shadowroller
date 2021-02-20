@@ -165,7 +165,7 @@ export default function RollDicePrompt() {
         (edge ? RollBackground.edgy : RollBackground.inGame)
         : RollBackground.regular;
 
-    function rollTitleChanged(event: SyntheticInputEvent<HTMLInputElement>) {
+    function rollTitleChanged(event: React.ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
     }
 
@@ -184,7 +184,7 @@ export default function RollDicePrompt() {
         [setGlitchy]
     );
 
-    function onRollClicked(event: SyntheticInputEvent<HTMLButtonElement>) {
+    function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (rollDisabled || !diceCount) {
             return;
@@ -253,7 +253,7 @@ export default function RollDicePrompt() {
                     hide
                 </UI.LinkButton>
             </UI.FlexRow>
-            <form id="dice-input" onSubmit={onRollClicked}>
+            <form id="dice-input" onSubmit={onSubmit}>
                 <UI.ColumnToRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-select-dice">
@@ -336,8 +336,7 @@ export default function RollDicePrompt() {
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
                         <RollButton id="roll-button-submit" type="submit"
-                                    disabled={rollDisabled} bg={rollBackgound}
-                                    onClick={onRollClicked}>
+                                    disabled={Boolean(rollDisabled)} bg={rollBackgound}>
                             Roll dice
                         </RollButton>
                     </UI.FlexRow>

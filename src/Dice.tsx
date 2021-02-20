@@ -71,7 +71,7 @@ export function AnimatedDie(props: AnimatedProps) {
         return () => clearInterval(interval);
     }, []);
 
-    return <Die style={{ margin: 0 }} roll={die} {...props} />;
+    return <Die roll={die} {...props} />; // margin: 0
 }
 
 const StyledList = styled(UI.FlexRow)`

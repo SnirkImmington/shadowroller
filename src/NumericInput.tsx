@@ -31,7 +31,7 @@ type ValueState =
 | ["expr", number, boolean]
 ;
 
-const StyledInput = styled(UI.Input)`
+const StyledInput = styled(UI.Input)<{ small?: boolean }>`
     margin-left: 0;
     margin-right: 0;
 
@@ -159,7 +159,7 @@ export default function NumericInput(props: Props) {
         props.onSelect(value);
     }
 
-    /*function roundingModeToggle(event: SyntheticInputEvent<HTMLButtonElement>) {
+    /*function roundingModeToggle(event: React.TouchEvent<HTMLButtonElement>) {
         setRound(round => round === 'up' ? 'down' : 'up');
     }*/
 
