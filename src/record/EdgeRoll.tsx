@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as UI from 'style';
-import * as dice from 'dice';
+import * as dice from 'Dice';
 import * as humanTime from 'HumanTime';
 import * as icons from 'style/icon';
-import * as Roll from './rollComponents';
+import * as Roll from './RollComponents';
 
 import * as Event from 'history/event';
 import * as rollStats from 'rollStats';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as UI from 'style';
-import * as dice from 'dice';
+import * as dice from 'Dice';
 import * as humanTime from 'HumanTime';
 import * as Roll from './RollComponents';
 

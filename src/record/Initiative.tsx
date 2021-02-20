@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as UI from 'style';
 import * as icons from 'style/icon';
-import * as dice from 'dice';
+import * as dice from 'Dice';
 import * as humanTime from 'HumanTime';
 import * as Roll from './RollComponents';
 

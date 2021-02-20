@@ -7,8 +7,8 @@ import theme from 'style/theme';
 import { VariableSizeList as List, areEqual } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import EditEvent from 'history/edit-event';
-import PlayerList from 'game/player-list';
+import EditEventMenu from 'history/EditEventMenu';
+import PlayerList from 'game/PlayerList';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
@@ -264,7 +264,7 @@ export default function EventHistory() {
     return (
         <>
         {events.editing &&
-            <EditEvent event={events.editing} />
+            <EditEventMenu event={events.editing} />
         }
         <UI.Card unpadded padRight grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth rowCenter>

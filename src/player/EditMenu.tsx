@@ -7,16 +7,16 @@ import * as Game from 'game';
 import * as Event from 'history/event';
 import * as server from 'server';
 import * as Player from 'player';
-import * as Stream from 'stream-provider';
+import * as Stream from 'sseStream';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import type { ResponseStatus } from 'connection';
 import * as routes from 'routes';
 
-import ColorPicker from 'color-picker';
+import ColorPicker from 'ColorPicker';
 import { EventRecord } from 'history/HistoryDisplay';
-import { ROLL_TITLE_FLAVOR } from 'roll-dice';
+import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
 type Props = {
     hide: () => void

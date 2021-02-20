@@ -106,7 +106,7 @@ export class Parser {
         }
     }
 
-    expression = (power: BindingPower = 0): ?Expression => {
+    expression = (power: BindingPower = 0): Expression|null => {
         let current = this.token();
         // If we're asking for an expression when we're done, we have a problem.
         if (current == null || current.type === 'done') {

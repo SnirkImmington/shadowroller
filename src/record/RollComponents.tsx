@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
-import * as dice from 'dice';
+import * as dice from 'Dice';
 
 import type { Connection } from 'connection';
 import * as Event from 'history/event';

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as UI from 'style';
-import NumericInput from 'numeric-input';
-import {EventRecord} from 'history/history-panel';
-import { ROLL_TITLE_FLAVOR } from 'roll-dice';
+import NumericInput from 'NumericInput';
+import {EventRecord} from 'history/HistoryDisplay';
+import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
 import * as Event from 'history/event';
 import * as Player from 'player';
