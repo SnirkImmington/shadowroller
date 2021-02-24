@@ -1,8 +1,12 @@
-import { Parser, Expression, evaluate } from '.';
+import { Parser, evaluate } from '.';
 
 function evalText(text: string): number {
     const parser = new Parser(text);
-    return evaluate(parser.expression());
+    const expression = parser.expression();
+    if (!expression) {
+        throw new Error(`Did not parse an expression from "${text}"`);
+    }
+    return evaluate(expression);
 }
 
 type Case = { in: string, out: number, name?: string};

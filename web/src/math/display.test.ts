@@ -2,7 +2,11 @@ import { lispy, Parser, Expression } from '.';
 
 function parseText(text: string): Expression {
     const parser = new Parser(text);
-    return parser.expression();
+    const expression = parser.expression();
+    if (!expression) {
+        throw new Error(`Unable to parse "${expression}"`);
+    }
+    return expression;
 }
 
 type Case = { in: string, out: string, name?: string};
