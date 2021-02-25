@@ -1,9 +1,16 @@
 import * as React from 'react';
 
-export type GameSource = { id: string, name: string };
+export type GameSource = { id: string, name: string, share?: SharingMode };
 export type Source =
 | "local"
 | GameSource
+
+/** SharingModeShared allows all players to see the event */
+export const ShareWithGame = 0;
+/** SharingModePrivate limits the event to the roller */
+export const SharePrivate = 1;
+
+export type SharingMode = typeof ShareWithGame | typeof SharePrivate;
 
 export type Roll = {
     ty: "roll",
