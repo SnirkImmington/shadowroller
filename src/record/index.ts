@@ -19,7 +19,7 @@ export const StyledRecord = styled.div.attrs<RecordProps>(
             height: (props.style?.height - GUTTER_SIZE) || 'auto',
         };
         if (props.editing) {
-            props.style.backgroundColor = props.color === "slategray" ?
+            props.style.backgroundColor = props.color === "lightslategray" ?
                 "#efefef" : props.color.replace("80%", "8%").replace("56%", "96%");
         }
         return { style };
