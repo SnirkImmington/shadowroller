@@ -18,7 +18,7 @@ export interface Player extends Info {
     onlineMode: OnlineMode,
 };
 
-export function colorOf(player: Info|Player): string {
+export function colorOf(player: Info): string {
     return `hsl(${player.hue}, 80%, 56%)`;
 }
 
