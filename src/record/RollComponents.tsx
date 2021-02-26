@@ -2,6 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
 import * as dice from 'Dice';
+import * as icons from 'style/icon';
 
 import type { Connection } from 'connection';
 import * as Event from 'history/event';
@@ -109,6 +110,7 @@ function LocalActionsRow({ event, result }: Props) {
         <UI.FlexRow spaced>
             {canSecondChance(result) &&
                 <UI.LinkButton onClick={onSecondChance}>
+                    <UI.FAIcon icon={icons.faRedo} />
                     second chance
                 </UI.LinkButton>
             }
@@ -138,6 +140,7 @@ function GameActionsRow({ event, result }: Props) {
             {canSecondChance(result) &&
                 <UI.LinkButton disabled={connection === "connecting"}
                                onClick={onSecondChance}>
+                    <UI.FAIcon icon={icons.faRedo} />
                     second chance
                 </UI.LinkButton>
             }
@@ -146,7 +149,7 @@ function GameActionsRow({ event, result }: Props) {
             </UI.LinkButton>
         </UI.FlexRow>
     );
-}
+};
 
 export function ActionsRow({ event, result }: Props) {
     if (event.source === "local") {

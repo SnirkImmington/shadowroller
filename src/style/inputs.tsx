@@ -36,14 +36,15 @@ export const LinkButton = styled.button<LinkButtonProps>`
     line-height: 1;
     user-select: none;
     cursor: pointer;
-    ${({ minor }) => !minor && 'text-decoration: underline;'}
-
     color: ${({ light, minor, theme }) =>
         minor ? theme.colors.primaryDesaturated3 :
         (light ? theme.colors.secondary : theme.colors.primaryLight)
     };
     background-color: transparent;
     border: 0;
+    ${({ minor, light, theme }) => !minor &&
+        `border-bottom: 1.5px solid ${light ? theme.colors.secondary : theme.colors.primaryLight};`
+    }
     outline: 0;
     padding: 2px;
     white-space: pre;
@@ -51,10 +52,11 @@ export const LinkButton = styled.button<LinkButtonProps>`
     &[disabled] {
         cursor: not-allowed !important;
         text-decoration: none;
+        border-bottom: 2px solid transparent;
         color: ${({theme}) => theme.colors.dieNone};
     }
 
-    &:hover &[disabled=""] {
+    &[disabled=""]:hover {
         filter: brightness(125%);
     }
 
@@ -65,56 +67,11 @@ export const LinkButton = styled.button<LinkButtonProps>`
     &:focus {
         filter: brightness(85%);
     }
-`;
 
-export const Button = styled.button`
-    font-size: 1.05em;
-    line-height: 1;
-    font-weight: bold;
-    padding: 0.1em 0;
-    text-align: center;
-    border: 0px;
-    margin: 0;
-    cursor: pointer;
-    color: ${props => props.theme.colors.secondary};
-    background-color: transparent;
-    white-space: pre;
-
-    &:before {
-        content: "[";
-        margin: 0 0.01em 0 0.1em;
-        font-family: "Source Code Pro", monospace;
-    }
-    &:after {
-        content: "]";
-        margin: 0 0.1em 0 0.01em;
-        font-family: "Source Code Pro", monospace;
-    }
-
-    &:hover {
-        &:before {
-            content: "[";
-        }
-
-        &:after {
-            content: "]";
-        }
-    }
-    &:focus {
-        &:before { content: "["; }
-        &:after { content: "]"; }
-    }
-
-    &:active {
-        color: ${props => props.theme.colors.secondaryPressed};
-        &:before { content: "[" }
-        &:after { content: "]" }
-    }
-
-    &[disabled] {
-        pointer-events: none;
-        cursor: not-allowed;
-        color: ${props=>props.theme.colors.secondaryDesaturated2};
+    & > svg:first-child {
+        margin-right: 0.2em;
+        height: 0.8em;
+        width: 0.8em;
     }
 `;
 
@@ -127,17 +84,20 @@ const HiddenInput = styled.input.attrs(props => ({
     width: 0;
 `;
 
-const RadioSelector = styled.span<{ light?: boolean }>`
+const RadioSelector = styled.span<{ light?: boolean, disabled?: boolean }>`
     line-height: 1.5;
     font-family: ${({theme}) => theme.fonts.monospace};
     font-weight: bold;
-    color: ${({ light, theme }) =>
-        light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated
-    };
+    color: ${({ light, theme }) => light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated};
     textAlign: center;
+    margin-right: 0.2em;
+
+    &[disabled] {
+        color: ${({ theme }) => theme.colors.dieNone};
+    }
 `;
 
-const RadioLabel = styled.label`
+const RadioLabel = styled.label<{ disabled?: boolean }>`
     display: inline-flex;
     line-height: 1.5;
     font-size: 1em;
@@ -145,16 +105,19 @@ const RadioLabel = styled.label`
     user-select: none;
     white-space: pre;
     font-family: ${({theme}) => theme.fonts.monospace};
+    border-bottom: 1px solid transparent;
 
-    &:hover {
-        filter: brightness(180%);
+    ${({ disabled, theme }) => disabled ?
+        `
+        pointer-effects: none;
+        cursor: not-allowed !important;
+        ` :
+        `
+        &:hover {
+            border-bottom: 1px solid ${theme.colors.primary};
+        }
+        `
     }
-
-    & *:checked {
-        filter: brightness(50%);
-        text-decoration: underline;
-    }
-
 `;
 
 type RadioLinkProps = {
@@ -168,18 +131,17 @@ type RadioLinkProps = {
 };
 export const RadioLink = React.memo<React.PropsWithChildren<RadioLinkProps>>(function RadioLink(props) {
     return (
-        <RadioLabel htmlFor={props.id}>
+        <RadioLabel htmlFor={props.id} disabled={props.disabled}>
             <HiddenInput id={props.id} type={props.type}
                          value={props.id} disabled={props.disabled}
                          checked={props.checked} name={props.name}
                          onChange={props.onChange} />
 
-            <RadioSelector light={!props.light}>
+            <RadioSelector light={!props.light} disabled={props.disabled}>
                 {props.type === "checkbox" ?
                     (props.checked ? '[X]' : '[ ]')
                     : (props.checked ? '(X)' : '( )')}
             </RadioSelector>
-            <span style={{ width: '.2em'}} />
             {props.children}
         </RadioLabel>
     )

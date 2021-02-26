@@ -3,10 +3,12 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'NumericInput';
 
-import * as Game from 'game';
 import * as Event from 'history/event';
+import * as Game from 'game';
+import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
+import PublicityOptions from 'game/PublicityOptions';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
@@ -137,6 +139,7 @@ const FullWidthSpacing = styled.span`
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const gameExists = Boolean(game);
     const dispatch = React.useContext(Event.DispatchCtx);
 
@@ -256,7 +259,7 @@ export default function RollDicePrompt() {
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="dice-input" onSubmit={onSubmit}>
-                <UI.ColumnToRow>
+                <UI.ColumnToRow formRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-select-dice">
                             Roll
@@ -287,11 +290,14 @@ export default function RollDicePrompt() {
                                       type="checkbox" light
                                       checked={edge}
                                       onChange={onEdgeClicked}>
-                            Push the limit
+                            <UI.TextWithIcon color={Player.colorOf(player)}>
+                                <UI.FAIcon transform="grow-2" icon={icons.faBolt} />
+                                Push the limit
+                            </UI.TextWithIcon>
                         </UI.RadioLink>
                     </UI.FlexRow>
                 </UI.ColumnToRow>
-                <UI.FlexRow maxWidth>
+                <UI.FlexRow formRow maxWidth>
                     <UI.ColumnToRow rowCenter>
                         <UI.FlexRow>
                             <UI.RadioLink id="roll-use-glitchy"
@@ -319,22 +325,9 @@ export default function RollDicePrompt() {
                     </UI.ColumnToRow>
                 </UI.FlexRow>
                 <UI.FlexRow spaced floatRight>
-                    {game && <>
-                        <UI.RadioLink id="roll-set-in-game"
-                                      name="roll-location"
-                                      type="radio" light
-                                      checked={!localRoll}
-                                      onChange={toggleLocalRoll}>
-                            in {game.gameID}
-                        </UI.RadioLink>
-                        <UI.RadioLink id="roll-set-local"
-                                      name="roll-location"
-                                      type="radio" light
-                                      checked={localRoll}
-                                      onChange={toggleLocalRoll}>
-                            locally
-                        </UI.RadioLink>
-                    </>}
+                    {game &&
+                        <PublicityOptions prefix="roll2"
+                                          state="inGame" onChange={function() {}} />}
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
                         <RollButton id="roll-button-submit" type="submit"

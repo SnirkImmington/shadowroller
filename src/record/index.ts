@@ -24,9 +24,7 @@ export const StyledRecord = styled.div.attrs<RecordProps>(
         }
         return { style };
 })<RecordProps>`
-    padding-bottom: 4px;
-    padding-left: 5px;
-    padding-right: 2px;
+    padding: 2px 2px 4px 6px;
     border-left: 5px solid ${({color}) => color};
     line-height: 1;
 `;

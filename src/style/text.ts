@@ -1,5 +1,4 @@
 import styled from 'styled-components/macro';
-//import theme from 'style/theme';
 
 export const SmallText = styled.div`
     white-space: nowrap;

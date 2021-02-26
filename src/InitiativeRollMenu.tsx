@@ -9,6 +9,7 @@ import * as Game from 'game';
 import * as Event from 'history/event';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
+import PublicityOptions from 'game/PublicityOptions';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
 
@@ -73,9 +74,9 @@ export default function RollInitiativePrompt() {
 
     const titleChanged = React.useCallback((e) => {
         setTitle(e.target.value); }, [setTitle]);
-    const baseChanged = React.useCallback((value) => {
+    const baseChanged = React.useCallback((value: number | null) => {
         setBase(value); }, [setBase]);
-    const diceChanged = React.useCallback((value) => {
+    const diceChanged = React.useCallback((value: number | null) => {
         setDice(value || 1); }, [setDice]);
 
     const rollClicked = React.useCallback((e) => {
@@ -131,13 +132,13 @@ export default function RollInitiativePrompt() {
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="roll-initiative-form">
-                <UI.ColumnToRow>
+                <UI.ColumnToRow formRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-initiative-base">
                             Roll
                         </label>
                         <NumericInput small id="roll-initiative-base"
-                                      min={1} max={69}
+                                      min={0} max={69}
                                       text={baseText} setText={setBaseText}
                                       onSelect={baseChanged} />
                         +
@@ -159,22 +160,9 @@ export default function RollInitiativePrompt() {
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <UI.FlexRow spaced floatRight>
-                    {game && <>
-                        <UI.RadioLink id="roll-initiative-set-in-game"
-                                      name="initiative-location"
-                                      type="radio" light
-                                      checked={!localRoll}
-                                      onChange={toggleLocalRoll}>
-                            in {game.gameID}
-                        </UI.RadioLink>
-                        <UI.RadioLink id="roll-initiative-set-local"
-                                      name="initiative-location"
-                                      type="radio" light
-                                      checked={localRoll}
-                                      onChange={toggleLocalRoll}>
-                            locally
-                        </UI.RadioLink>
-                    </>}
+                    {game &&
+                        <PublicityOptions prefix="roll-initiative"
+                                          state="inGame" onChange={function() {}} />}
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
                         <RollButton id="roll-initiative-submit" type="submit"
