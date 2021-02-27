@@ -16,7 +16,9 @@ Shadowroller's source code is licensed under the MIT license available in the
 `LICENSE` file. Shadowroller is free software; you may redistribute or modify it
 to your liking.
 
-Shadwroller's non-software assets in `assets/` (such as our dice icons) are licensed under
+Shadowroller's logo is (c) Alyssa Colon, licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). She's `@colon_capers` on Instagram.
+
+Shadwroller's other non-software assets in `assets/` (such as our dice icons) are licensed under
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) - they may
 be shared and adapted non-commercially and with attribution.
 

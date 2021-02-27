@@ -3,18 +3,22 @@
     "name": "Shadowroller",
     "icons": [
         {
-            "sizes": "200x200",
-            "src": "logo-200px.png",
-            "type": "image/png"
+            "src": "favicon.svg",
+            "type": "image/svg",
         },
         {
-            "sizes": "800x800",
-            "src": "logo-800px.png",
-            "type": "image/png"
+            "src": "favicon.png",
+            "type": "image/png",
+            "sizes": "1455x1009"
+        },
+        {
+            "src": "favicon.webp",
+            "type": "image/webp",
+            "sizes": "1455x1009"
         }
     ],
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#000000",
-    "background_color": "#ffffff"
+    "theme_color": "#85142C",
+    "background_color": "#4e4e62"
 }
