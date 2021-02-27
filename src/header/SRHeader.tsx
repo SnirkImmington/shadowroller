@@ -1,31 +1,30 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 
-import { ReactComponent as DieOne } from 'assets/die-1.svg';
+import { ReactComponent as Logo } from 'assets/logo/logo-dark-mode.svg';
 import JoinButton from "./JoinButton";
 
 const StyledHeader = styled.header`
     background-color: ${({theme}) => theme.colors.header};
-    height: 2.6rem;
-    @media all and (min-width: 768px) {
-        height: 2.56rem;
-    }
+    height: 3rem;
     color: white;
     display: flex;
     align-items: center;
 `;
 
-const StyledDie = styled(DieOne)`
-    height: 1em;
-    width: 1em;
+const StyledLogo = styled(Logo)`
+    height: 2rem;
+    width: auto;
     margin-top: auto;
     margin-bottom: auto;
-    margin-right: .25em;
-    color: ${({theme}) => theme.colors.primaryLight};
+    margin-right: 0.3em;
+    @media all and (min-width: 768px) {
+        margin-right: 0.5em;
+    }
 `;
 
 const SRTitle = styled.h1`
-    font-size: 1.5em;
+    font-size: 2rem;
     font-style: oblique;
     font-weight: 900;
     letter-spacing: 1px;
@@ -46,7 +45,7 @@ export default function SRHeader(props: Props) {
     return (
         <StyledHeader>
                 <SRTitle>
-                    <StyledDie />
+                    <StyledLogo />
                     Shadowroller
                 </SRTitle>
             <JoinButton {...props} />
