@@ -110,6 +110,7 @@ const RadioLabel = styled.label<{ disabled?: boolean }>`
     ${({ disabled, theme }) => disabled ?
         `
         pointer-effects: none;
+        text-decoration: line-through;
         cursor: not-allowed !important;
         ` :
         `
@@ -126,6 +127,7 @@ type RadioLinkProps = {
     light?: boolean,
     type: "checkbox" | "radio",
     checked: boolean,
+    value?: string,
     disabled?: boolean,
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
 };
@@ -133,8 +135,8 @@ export const RadioLink = React.memo<React.PropsWithChildren<RadioLinkProps>>(fun
     return (
         <RadioLabel htmlFor={props.id} disabled={props.disabled}>
             <HiddenInput id={props.id} type={props.type}
-                         value={props.id} disabled={props.disabled}
-                         checked={props.checked} name={props.name}
+                         disabled={props.disabled}
+                         checked={props.checked} value={props.value} name={props.name}
                          onChange={props.onChange} />
 
             <RadioSelector light={!props.light} disabled={props.disabled}>

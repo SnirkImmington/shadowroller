@@ -8,7 +8,7 @@ import * as Game from 'game';
 import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
-import PublicityOptions from 'game/PublicityOptions';
+import PublicityOptions, { State as PublicityState } from 'game/PublicityOptions';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
@@ -146,9 +146,9 @@ export default function RollDicePrompt() {
     const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
-    const [localRoll, toggleLocalRoll, setLocalRoll] = srutil.useToggle(!game);
+    const [localRoll, setLocalRoll] = React.useState<PublicityState>(() => game ? "inGame" : "private");
     React.useEffect(() =>
-        setLocalRoll(!gameExists),
+        setLocalRoll(gameExists ? "inGame" : "private"),
         [gameExists, setLocalRoll]
     );
 
@@ -327,7 +327,7 @@ export default function RollDicePrompt() {
                 <UI.FlexRow spaced floatRight>
                     {game &&
                         <PublicityOptions prefix="roll2"
-                                          state="inGame" onChange={function() {}} />}
+                                          state={localRoll} onChange={setLocalRoll} />}
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
                         <RollButton id="roll-button-submit" type="submit"
