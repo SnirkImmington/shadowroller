@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as UI from 'style';
 import styled from 'styled-components/macro';
-import * as icons from 'style/icon';
 
 export type State = "inGame" | "private"
 
@@ -26,35 +25,30 @@ const StyledRow = styled(UI.ColumnToRow)`
 `;
 
 export default function PublicityOptions({ prefix, state, onChange }: Props) {
-    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) =>
-        onChange(e.target.value as State), [onChange]);
+    const handleChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            console.log("handleChange", e);
+            onChange(e.target.value as State);
+        },
+    [onChange]);
 
     return ( // TODO formgroup or similar
         <StyledRow>
             <UI.RadioLink id={`${prefix}-set-in-game`} name={`${prefix}-location`}
-                          type="radio" light value={state}
+                          type="radio" light value="inGame"
                           checked={state === "inGame"} onChange={handleChange}>
-                <UI.TextWithIcon>
-                    <UI.FAIcon transform="grow-5" icon={icons.faUsers} />
-                    in game
-                </UI.TextWithIcon>
+                in game
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-to-gm`} name={`${prefix}-location`}
-                          type="radio" light disabled value={state}
+                          type="radio" light disabled value=""
                           checked={false} onChange={function() {}}>
-                <UI.TextWithIcon>
-                    <UI.FAIcon transform="grow-3" icon={icons.faUserFriends} />
-                    to GM
-                </UI.TextWithIcon>
+                to GM
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-private`} name={`${prefix}-location`}
-                          type="radio" light value={state}
+                          type="radio" light value="private"
                           checked={state === "private"}
                           onChange={handleChange}>
-                <UI.TextWithIcon>
-                    <UI.FAIcon transform="grow-2" icon={icons.faUserSecret} />
-                    just me
-                </UI.TextWithIcon>
+                just me
             </UI.RadioLink>
         </StyledRow>
     );
