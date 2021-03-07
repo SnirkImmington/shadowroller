@@ -96,7 +96,7 @@ export default function RollInitiativePrompt() {
         }
         else {
             setLoading(true);
-            routes.game.rollInitiative({ base: base || 0, dice, title })
+            routes.game.rollInitiative({ base: base ?? 0, dice, title, share })
                 .onDone((res, full) => {
                     setLoading(false);
                     if (!res && process.env.NODE_ENV !== "production") {
