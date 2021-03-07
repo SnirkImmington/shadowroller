@@ -3,6 +3,9 @@
     "name": "Shadowroller",
     "icons": [
         {
+            "src": "favicon.ico",
+        }
+        {
             "src": "favicon.svg",
             "type": "image/svg",
         },
