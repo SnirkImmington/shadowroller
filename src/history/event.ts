@@ -1,16 +1,11 @@
 import * as React from 'react';
 
-export type GameSource = { id: string, name: string, share?: SharingMode };
+import * as Share from 'share';
+
+export type GameSource = { id: string, name: string, share: Share.Mode };
 export type Source =
 | "local"
 | GameSource
-
-/** SharingModeShared allows all players to see the event */
-export const ShareWithGame = 0;
-/** SharingModePrivate limits the event to the roller */
-export const SharePrivate = 1;
-
-export type SharingMode = typeof ShareWithGame | typeof SharePrivate;
 
 export type Roll = {
     ty: "roll",
@@ -235,10 +230,9 @@ function eventReduce(state: State, action: Action): State {
                 if (process.env.NODE_ENV !== "production") {
                     console.log("Reducer assigning ID to ", action.event);
                 }
-                // flow-ignore-all-next-line
                 action.event.id = newID();
             }
-            return { ...state, events: [action.event, ...state.events] };
+            return appendEventsReduce(state, [action.event]);
         case "mergeEvents":
             return appendEventsReduce(state, action.events);
         case "clearEvents":
