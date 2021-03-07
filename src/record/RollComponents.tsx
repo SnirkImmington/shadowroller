@@ -6,6 +6,7 @@ import * as icons from 'style/icon';
 
 import type { Connection } from 'connection';
 import * as Event from 'history/event';
+import * as Share from 'share';
 import * as rollStats from 'rollStats';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
@@ -135,8 +136,20 @@ function GameActionsRow({ event, result }: Props) {
         dispatch({ ty: "selectEdit", event: event });
     }
 
+    function onReveal() {
+        routes.game.editShare({ id: event.id, share: Share.InGame })
+            .onConnection(setConnection);
+    }
+
     return (
         <UI.FlexRow spaced>
+            {event.source !== "local" && event.source.share !== Share.InGame &&
+                <UI.LinkButton disabled={connection === "connecting"}
+                               onClick={onReveal}>
+                    <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
+                    {' reveal'}
+                </UI.LinkButton>
+            }
             {canSecondChance(result) &&
                 <UI.LinkButton disabled={connection === "connecting"}
                                onClick={onSecondChance}>
