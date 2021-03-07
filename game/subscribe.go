@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gomodule/redigo/redis"
+	"sr/id"
 	redisUtil "sr/redis"
 )
 
@@ -35,8 +36,6 @@ type Message struct {
 // I'm going to ignore it for now and switch libraries by next major release.
 func subscribeTask(ctx context.Context, cleanup func(), messages chan Message, errs chan error, sub redis.PubSubConn) {
 	defer cleanup()
-	sub.Receive()
-	sub.Receive() // skip the subscription messages
 	for {
 		// Check if we have received done yet
 		select {
@@ -71,7 +70,7 @@ func subscribeTask(ctx context.Context, cleanup func(), messages chan Message, e
 // Subscribe runs a task in a separate goroutine that will send new `Message`s to the `messages` channel
 // and errors to the error channel. Both channels will be closed upon completion.
 // ctx is used to cancel the remote task and must also have been initialized with a redis connection.
-func Subscribe(ctx context.Context, gameID string, messages chan Message, errors chan error) error {
+func Subscribe(ctx context.Context, gameID string, playerID id.UID, messages chan Message, errors chan error) error {
 	conn, err := redisUtil.ConnectWithContext(ctx)
 	if err != nil {
 		close(errors)
@@ -90,7 +89,10 @@ func Subscribe(ctx context.Context, gameID string, messages chan Message, errors
 		close(messages)
 	}
 
-	if err := sub.Subscribe("history:"+gameID, "update:"+gameID); err != nil {
+	if err := sub.Subscribe(
+		"history:"+gameID, "history:"+string(playerID)+":"+gameID,
+		"update:"+gameID, "update:"+string(playerID)+":"+gameID,
+	); err != nil {
 		cleanup()
 		return fmt.Errorf("subscribing to events and history: %w", err)
 	}

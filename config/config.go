@@ -26,7 +26,7 @@ var (
 	// RedisConnectionsDebug toggles logging when redis connections are obtained and freed.
 	RedisConnectionsDebug = readBool("REDIS_CONNECTIONS", false)
 
-	// ShutdownHandlersDbug toggles logging of shutdown handlers being registered and used.
+	// ShutdownHandlersDebug toggles logging of shutdown handlers being registered and used.
 	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", false)
 
 	// StreamDebug toggles extra logging for the SSE stream tasks
@@ -153,8 +153,7 @@ var (
 	// HardcodedGameNames is a comma-separated list of GameIDs which the server
 	// creates on startup.
 	HardcodedGameNames = readStringArray("GAME_NAMES", "test1,test2")
-	// HarcodedUsernames is a comma-separated list of usernames which the
-	// server creates on startup.
+	// HardcodedUsernames is a comma-separated list of usernames which the server creates on startup
 	HardcodedUsernames = readStringArray("USERNAMES", "snirk,smark,smirk")
 	// RollBufferSize is the size of the channel buffer from the roll goroutine.
 	RollBufferSize = readInt("ROLL_BUFFER_SIZE", 200)

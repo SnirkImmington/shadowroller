@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sr/id"
 	"sr/player"
+	"strconv"
 )
 
 // Event is the common interface of all events.
@@ -13,6 +14,8 @@ type Event interface {
 	GetID() int64
 	GetType() string
 	GetPlayerID() id.UID
+	GetShare() Share
+	SetShare(share Share)
 	GetPlayerName() string
 	GetEdit() int64
 	SetEdit(edited int64)
@@ -23,6 +26,7 @@ type core struct {
 	ID         int64  `json:"id"`             // ID of the event
 	Type       string `json:"ty"`             // Type of the event
 	Edit       int64  `json:"edit,omitempty"` // Edit time of the event
+	Share      int    `json:"share"`          // share state of the event
 	PlayerID   id.UID `json:"pID"`            // ID of the player who posted the event
 	PlayerName string `json:"pName"`          // Name of the player who posted the event
 }
@@ -51,6 +55,16 @@ func (c *core) GetPlayerName() string {
 // GetEdit gets the event's edit time
 func (c *core) GetEdit() int64 {
 	return c.Edit
+}
+
+// GetShare gets the event's share state
+func (c *core) GetShare() Share {
+	return Share(c.Share)
+}
+
+// SetShare sets the event's share state
+func (c *core) SetShare(share Share) {
+	c.Share = int(share)
 }
 
 // SetEdit updates the event's edit time
@@ -106,11 +120,12 @@ func Parse(input []byte) (Event, error) {
 }
 
 // makeCore produces an EventCore of the given type using the given player.
-func makeCore(ty string, player *player.Player) core {
+func makeCore(ty string, player *player.Player, share Share) core {
 	return core{
 		ID:         id.NewEventID(),
 		Type:       ty,
 		Edit:       0,
+		Share:      int(share),
 		PlayerID:   player.ID,
 		PlayerName: player.Name,
 	}
@@ -121,6 +136,7 @@ func makeCore(ty string, player *player.Player) core {
 // as it'd come back escaped.
 var eventTyParse = regexp.MustCompile(`"ty":"([^"]+)"`)
 var eventIDParse = regexp.MustCompile(`"id":(\d+)`)
+var eventShareParse = regexp.MustCompile(`"share":(\d+)`)
 
 // ParseTy gives the `ty` field for an event string.
 // This should only be used for logging.
@@ -140,4 +156,16 @@ func ParseID(event string) string {
 		return "????????"
 	}
 	return match[1]
+}
+
+// ParseShare gives the `share` field for an event.
+func ParseShare(event string) (Share, bool) {
+	match := eventShareParse.FindStringSubmatch(event)
+	if len(match) != 1 {
+		return -1, false
+	}
+	if share, err := strconv.Atoi(match[1]); err != nil {
+		return Share(share), IsShare(share)
+	}
+	return -1, false
 }

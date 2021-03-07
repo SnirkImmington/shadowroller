@@ -64,7 +64,7 @@ func handleSubscription(response Response, request *Request) {
 	ctx, cancel := context.WithCancel(request.Context())
 	messages := make(chan game.Message)
 	errors := make(chan error, 1)
-	err = game.Subscribe(ctx, sess.GameID, messages, errors)
+	err = game.Subscribe(ctx, sess.GameID, sess.PlayerID, messages, errors)
 	httpInternalErrorIf(response, request, err)
 	logf(request, "Subscription task for %v established", sess.GameID)
 	defer cancel()
@@ -77,7 +77,7 @@ func handleSubscription(response Response, request *Request) {
 		if _, err := sess.Expire(conn); err != nil {
 			logf(request, "^^ Error resetting session: %v", err)
 		} else {
-			logf(request, "^^ Reset session timer for %v", sess.ID)
+			logf(request, "^^ Reset session %v for %v", sess.ID, sess.PlayerID)
 		}
 	}()
 
@@ -93,7 +93,7 @@ func handleSubscription(response Response, request *Request) {
 		); err != nil {
 			logf(request, "^^ Error decrementing player connections: %v", err)
 		} else {
-			logf(request, "^^ Decremented online status for %v", sess.PlayerID)
+			logf(request, "^^ Update online %v for %v", sess.ID, sess.PlayerID)
 		}
 	}()
 

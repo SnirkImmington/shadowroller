@@ -14,5 +14,5 @@ type PlayerJoin struct {
 
 // ForPlayerJoin makes the EventCore of a PlayerJoinEvent.
 func ForPlayerJoin(player *player.Player) Event {
-	return &PlayerJoin{makeCore(EventTypePlayerJoin, player)}
+	return &PlayerJoin{makeCore(EventTypePlayerJoin, player, ShareInGame)}
 }

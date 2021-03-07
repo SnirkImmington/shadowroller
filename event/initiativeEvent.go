@@ -16,9 +16,9 @@ type InitiativeRoll struct {
 }
 
 // ForInitiativeRoll makes an InitiativeRollEvent.
-func ForInitiativeRoll(player *player.Player, title string, base int, dice []int) InitiativeRoll {
+func ForInitiativeRoll(player *player.Player, share Share, title string, base int, dice []int) InitiativeRoll {
 	return InitiativeRoll{
-		core:  makeCore(EventTypeInitiativeRoll, player),
+		core:  makeCore(EventTypeInitiativeRoll, player, share),
 		Title: title,
 		Base:  base,
 		Dice:  dice,

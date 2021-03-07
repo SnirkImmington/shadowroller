@@ -42,6 +42,7 @@ func AddPlayer(gameID string, player *player.Player, conn redis.Conn) error {
 	return nil
 }
 
+// UpdatePlayerConnections tracks a player's online status, and updates the game accordingly
 func UpdatePlayerConnections(gameID string, playerID id.UID, mod int, conn redis.Conn) (int, error) {
 	newConns, err := player.ModifyConnections(playerID, mod, conn)
 	if err != nil {

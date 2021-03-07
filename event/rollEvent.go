@@ -16,9 +16,9 @@ type Roll struct {
 }
 
 // ForRoll makes a RollEvent.
-func ForRoll(player *player.Player, title string, dice []int, glitchy int) Roll {
+func ForRoll(player *player.Player, share Share, title string, dice []int, glitchy int) Roll {
 	return Roll{
-		core:    makeCore(EventTypeRoll, player),
+		core:    makeCore(EventTypeRoll, player, share),
 		Title:   title,
 		Dice:    dice,
 		Glitchy: glitchy,
@@ -37,9 +37,9 @@ type EdgeRoll struct {
 }
 
 // ForEdgeRoll makes an EdgeRollEvent.
-func ForEdgeRoll(player *player.Player, title string, rounds [][]int, glitchy int) EdgeRoll {
+func ForEdgeRoll(player *player.Player, share Share, title string, rounds [][]int, glitchy int) EdgeRoll {
 	return EdgeRoll{
-		core:    makeCore(EventTypeEdgeRoll, player),
+		core:    makeCore(EventTypeEdgeRoll, player, share),
 		Title:   title,
 		Rounds:  rounds,
 		Glitchy: glitchy,
@@ -62,7 +62,7 @@ type Reroll struct {
 // ForReroll constructs a Reroll
 func ForReroll(player *player.Player, previous *Roll, rounds [][]int) Reroll {
 	return Reroll{
-		core:    makeCore(EventTypeReroll, player),
+		core:    makeCore(EventTypeReroll, player, previous.GetShare()),
 		PrevID:  previous.ID,
 		Title:   previous.Title,
 		Rounds:  rounds,
