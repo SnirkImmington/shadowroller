@@ -77,7 +77,7 @@ p {
     min-width: 1em;
 }
 .sr-die:nth-child(3n+0) {
-    margin-right: 6px;
+    margin-right: 9px;
 }
 
 .sr-icon-svg {

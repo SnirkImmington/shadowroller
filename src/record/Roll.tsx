@@ -5,6 +5,7 @@ import * as humanTime from 'HumanTime';
 import * as Roll from './RollComponents';
 
 import * as Event from 'history/event';
+import * as Share from 'share';
 import * as rollStats from 'rollStats';
 
 type Props = {
@@ -20,6 +21,8 @@ function RollRecordInner({ event, playerID, color, noActions }: Props, ref: Reac
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
             <UI.PlayerColored color={color}>
+                {(event.source.share !== Share.InGame) &&
+                    <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </UI.PlayerColored>
             {` rolls`}

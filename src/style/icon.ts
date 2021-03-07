@@ -1,3 +1,5 @@
+import "./iconStyles.css";
+
 export {
     // Angles and arrows
     // faAngleRight, // faArrowUp, faArrowDown,

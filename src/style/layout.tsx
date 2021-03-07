@@ -82,6 +82,13 @@ export const ColumnToRow = styled(FlexColumn)<ColumnToRowProps>`
     }
 `;
 
+export const TextWithIcon = styled.span<{ color?: string }>`
+    & > svg:first-child {
+        color: ${({color, theme}) => color || theme.colors.dieNone};
+        margin-right: 0.25em;
+    }
+`;
+
 export const CardTitleText  = styled.b<{ color: string}>`
     font-family: "Source Code Pro", monospace;
     white-space: nowrap;
@@ -89,7 +96,7 @@ export const CardTitleText  = styled.b<{ color: string}>`
     font-size: 1.3rem;
     margin-left: 0.4em;
     line-height: 1.3em;
-    & > *:first-child {
+    & > svg:first-child {
         margin-right: 0.4em;
     }
 `;

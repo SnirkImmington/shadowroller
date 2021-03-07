@@ -6,6 +6,7 @@ import * as humanTime from 'HumanTime';
 import * as Roll from './RollComponents';
 
 import * as Event from 'history/event';
+import * as Share from 'share';
 
 type Props = {
     event: Event.Initiative,
@@ -44,6 +45,8 @@ function InitiativeRecord({ event, color }: Props, ref: React.Ref<any>) {
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
             <UI.PlayerColored color={color}>
+                {(event.source.share !== Share.InGame) &&
+                    <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </UI.PlayerColored>
             &nbsp;rolls

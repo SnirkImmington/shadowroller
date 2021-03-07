@@ -8,6 +8,7 @@ import * as Event from 'history/event';
 import * as server from 'server';
 import * as Player from 'player';
 import * as Stream from 'sseStream';
+import * as Share from 'share';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
@@ -111,7 +112,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     let displayName = name || player.name;
     const exampleEvent: Event.Roll = {
         ty: "roll", id: new Date().valueOf(),
-        source: { id: player.id, name: displayName },
+        source: { id: player.id, name: displayName, share: Share.InGame },
         title: exampleTitle, dice, glitchy: 0
     }
 

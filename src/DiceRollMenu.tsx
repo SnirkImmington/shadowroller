@@ -3,10 +3,13 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'NumericInput';
 
-import * as Game from 'game';
 import * as Event from 'history/event';
+import * as Game from 'game';
+import * as Player from 'player';
+import * as Share from 'share';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
+import ShareOptions from 'share/Options';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
@@ -83,7 +86,7 @@ const RollBackground = {
     inGame: `linear-gradient(180deg, #783442 0, #601010)`,
     edgy: `linear-gradient(180deg, #ba4864 0, #cc365b)`,
     regular: `linear-gradient(180deg, #394341 0, #232928)`
-}
+};
 
 const RollButton = styled.button<{ bg: string}>`
     font-size: 1.07em;
@@ -96,6 +99,10 @@ const RollButton = styled.button<{ bg: string}>`
     color: white;
     background-image: ${props => props.bg};
 
+    & > *:first-child {
+        margin-right: 0.5rem;
+    }
+
     &:hover {
         text-decoration: none;
     }
@@ -105,7 +112,6 @@ const RollButton = styled.button<{ bg: string}>`
     }
 
     &[disabled] {
-        pointer-events: none;
         cursor: not-allowed;
         color: #ccc;
         filter: saturate(40%) brightness(85%);
@@ -113,12 +119,6 @@ const RollButton = styled.button<{ bg: string}>`
 `;
 
 const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
-    /* Mobile: full width - "name rolls to" */
-
-    /* Desktop: need to shrink for push the limit button */
-    @media all and (min-width: 768px) {
-        /* flex-shrink: 1; */
-    }*/
 `;
 
 const RollGlitchyLabel = styled.label`
@@ -137,17 +137,14 @@ const FullWidthSpacing = styled.span`
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const gameExists = Boolean(game);
     const dispatch = React.useContext(Event.DispatchCtx);
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
-    const [localRoll, toggleLocalRoll, setLocalRoll] = srutil.useToggle(!game);
-    React.useEffect(() =>
-        setLocalRoll(!gameExists),
-        [gameExists, setLocalRoll]
-    );
+    const [share, setShare] = React.useState<Share.Mode>(Share.InGame);
 
     const [diceText, setDiceText] = React.useState("");
     const [diceCount, setDiceCount] = React.useState<number|null>(null);
@@ -158,10 +155,10 @@ export default function RollDicePrompt() {
     const connected = connection === "connected";
     const rollDisabled = (
         !diceCount || diceCount < 1 || diceCount > 100
-        || rollLoading || (game && !localRoll && !connected)
+        || rollLoading || (gameExists && !connected)
     );
 
-    const rollBackgound = connected && !localRoll ?
+    const rollBackgound = connected && gameExists ?
         (edge ? RollBackground.edgy : RollBackground.inGame)
         : RollBackground.regular;
 
@@ -192,7 +189,7 @@ export default function RollDicePrompt() {
             return;
         }
 
-        if (localRoll) {
+        if (!gameExists) {
             let localRoll: Event.Event;
             if (edge) {
                 const rounds = srutil.rollExploding(diceCount);
@@ -212,7 +209,7 @@ export default function RollDicePrompt() {
         }
         else {
             setRollLoading(true);
-            routes.game.roll({ count: diceCount, title, edge, glitchy })
+            routes.game.roll({ count: diceCount, title, share, edge, glitchy })
                 .onDone((res, full) => {
                     setRollLoading(false);
                     if (!res && process.env.NODE_ENV !== "production") {
@@ -256,7 +253,7 @@ export default function RollDicePrompt() {
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="dice-input" onSubmit={onSubmit}>
-                <UI.ColumnToRow>
+                <UI.ColumnToRow formRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-select-dice">
                             Roll
@@ -276,10 +273,10 @@ export default function RollDicePrompt() {
                         <label htmlFor="roll-title">
                             to
                         </label>
-                        <RollTitleInput id="roll-title"
-                                        placeholder={titleFlavor}
-                                        onChange={rollTitleChanged}
-                                        value={title} />
+                        <UI.Input id="roll-title" expand
+                                  placeholder={titleFlavor}
+                                  onChange={rollTitleChanged}
+                                  value={title} />
                     </UI.FlexRow>
                     <FullWidthSpacing />
                     <UI.FlexRow formRow>
@@ -287,11 +284,14 @@ export default function RollDicePrompt() {
                                       type="checkbox" light
                                       checked={edge}
                                       onChange={onEdgeClicked}>
-                            Push the limit
+                            <UI.TextWithIcon color={Player.colorOf(player)}>
+                                <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faBolt} />
+                                Push the limit
+                            </UI.TextWithIcon>
                         </UI.RadioLink>
                     </UI.FlexRow>
                 </UI.ColumnToRow>
-                <UI.FlexRow maxWidth>
+                <UI.FlexRow formRow maxWidth>
                     <UI.ColumnToRow rowCenter>
                         <UI.FlexRow>
                             <UI.RadioLink id="roll-use-glitchy"
@@ -319,26 +319,17 @@ export default function RollDicePrompt() {
                     </UI.ColumnToRow>
                 </UI.FlexRow>
                 <UI.FlexRow spaced floatRight>
-                    {game && <>
-                        <UI.RadioLink id="roll-set-in-game"
-                                      name="roll-location"
-                                      type="radio" light
-                                      checked={!localRoll}
-                                      onChange={toggleLocalRoll}>
-                            in {game.gameID}
-                        </UI.RadioLink>
-                        <UI.RadioLink id="roll-set-local"
-                                      name="roll-location"
-                                      type="radio" light
-                                      checked={localRoll}
-                                      onChange={toggleLocalRoll}>
-                            locally
-                        </UI.RadioLink>
-                    </>}
+                    {gameExists &&
+                        <ShareOptions prefix="roll-dice"
+                                      state={share} onChange={setShare} />}
                     <UI.FlexRow spaced>
-                        {!connected && <StatusText connection={connection} />}
+                        {!connected &&
+                            <StatusText connection={connection} />}
                         <RollButton id="roll-button-submit" type="submit"
                                     disabled={Boolean(rollDisabled)} bg={rollBackgound}>
+                            {gameExists && share !== Share.InGame &&
+                                <UI.FAIcon icon={Share.icon(share)}
+                                       transform="grow-4" />}
                             Roll dice
                         </RollButton>
                     </UI.FlexRow>
