@@ -1,8 +1,13 @@
 import * as Event from 'history/event';
+import * as Share from 'share';
 
 export function normalizeEvent(event: any) {
     if (!event.source) {
-        event.source = { id: event.pID, name: event.pName };
+        event.source = {
+            id: event.pID,
+            name: event.pName,
+            share: event.share ?? Share.InGame
+        };
         delete event.pID;
         delete event.pName;
     }
@@ -21,7 +26,9 @@ export function parseEvent(event: any): Event.Event | null {
             let rollResult: Event.Roll = {
                 ty: "roll", id: event.id, edit: event.edit,
                 source: {
-                    id: event.pID, name: event.pName,
+                    id: event.pID,
+                    name: event.pName,
+                    share: event.share ?? Share.InGame
                 },
                 title: event.title ?? '',
                 dice: event.dice,
@@ -32,7 +39,9 @@ export function parseEvent(event: any): Event.Event | null {
             return {
                 ty: "edgeRoll", id: event.id, edit: event.edit,
                 source: {
-                    id: event.pID, name: event.pName,
+                    id: event.pID,
+                    name: event.pName,
+                    share: event.share ?? Share.InGame
                 },
                 title: event.title ?? '',
                 rounds: event.rounds,
@@ -42,7 +51,9 @@ export function parseEvent(event: any): Event.Event | null {
             return {
                 ty: "rerollFailures", id: event.id, edit: event.edit,
                 source: {
-                    id: event.pID, name: event.pName,
+                    id: event.pID,
+                    name: event.pName,
+                    share: event.share ?? Share.InGame
                 },
                 rollID: event.rollID,
                 title: event.title ?? "",
@@ -53,7 +64,9 @@ export function parseEvent(event: any): Event.Event | null {
             return {
                 ty: "initiativeRoll", id: event.id, edit: event.edit,
                 source: {
-                    id: event.pID, name: event.pName,
+                    id: event.pID,
+                    name: event.pName,
+                    share: event.share ?? Share.InGame
                 },
                 title: event.title ?? "",
                 base: event.base, dice: event.dice,
@@ -61,7 +74,7 @@ export function parseEvent(event: any): Event.Event | null {
         case "playerJoin":
             return {
                 ty: "playerJoin", id: event.id,
-                source: { id: event.pID, name: event.pName },
+                source: { id: event.pID, name: event.pName, share: Share.InGame },
             };
         default:
             if (process.env.NODE_ENV !== 'production') {
