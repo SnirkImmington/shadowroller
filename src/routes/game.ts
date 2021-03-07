@@ -1,6 +1,7 @@
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
 import type { Event, DiceEvent } from 'history/event';
+import type { Mode as ShareMode } from 'share';
 
 export type ModifyRollRequest = {
     id: number,
@@ -24,6 +25,7 @@ export type RollRequest = {
     title: string,
     edge: boolean,
     glitchy: number,
+    share: ShareMode,
 };
 
 export function roll(request: RollRequest): BackendRequest<void> {
@@ -46,6 +48,15 @@ export type RerollRequest = {
 
 export function reroll(request: RerollRequest): BackendRequest<void> {
     return post<RerollRequest, void>("game/reroll", request);
+}
+
+export type EditShareRequest = {
+    id: number,
+    share: ShareMode
+};
+
+export function editShare(request: EditShareRequest): BackendRequest<void> {
+    return post<EditShareRequest, void>("game/edit-share", request);
 }
 
 export type EventsRequest = {
