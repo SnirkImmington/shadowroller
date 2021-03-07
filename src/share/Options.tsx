@@ -2,12 +2,12 @@ import * as React from 'react';
 import * as UI from 'style';
 import styled from 'styled-components/macro';
 
-export type State = "inGame" | "private"
+import * as Share from 'share';
 
 type Props = {
     prefix: string
-    state: State
-    onChange: (state: State) => void
+    state: Share.Mode
+    onChange: (share: Share.Mode) => void
 };
 
 const StyledRow = styled(UI.ColumnToRow)`
@@ -27,16 +27,26 @@ const StyledRow = styled(UI.ColumnToRow)`
 export default function PublicityOptions({ prefix, state, onChange }: Props) {
     const handleChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
-            console.log("handleChange", e);
-            onChange(e.target.value as State);
+            switch (e.target.value) {
+                case "in-game":
+                    onChange(Share.InGame);
+                    return;
+                case "private":
+                    onChange(Share.Private);
+                    return;
+                default:
+                    if (process.env.NODE_ENV !== "production") {
+                        console.log("ShareOptions received unknown select:", e);
+                    }
+            }
         },
     [onChange]);
 
     return ( // TODO formgroup or similar
         <StyledRow>
             <UI.RadioLink id={`${prefix}-set-in-game`} name={`${prefix}-location`}
-                          type="radio" light value="inGame"
-                          checked={state === "inGame"} onChange={handleChange}>
+                          type="radio" light value="in-game"
+                          checked={state === Share.InGame} onChange={handleChange}>
                 in game
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-to-gm`} name={`${prefix}-location`}
@@ -46,7 +56,7 @@ export default function PublicityOptions({ prefix, state, onChange }: Props) {
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-private`} name={`${prefix}-location`}
                           type="radio" light value="private"
-                          checked={state === "private"}
+                          checked={state === Share.Private}
                           onChange={handleChange}>
                 just me
             </UI.RadioLink>

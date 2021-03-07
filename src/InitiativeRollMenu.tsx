@@ -7,9 +7,10 @@ import NumericInput from 'NumericInput';
 
 import * as Game from 'game';
 import * as Event from 'history/event';
+import * as Share from 'share';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
-import PublicityOptions from 'game/PublicityOptions';
+import ShareOptions from 'share/Options';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
 
@@ -17,7 +18,7 @@ const RollBackground = {
     inGame: `linear-gradient(180deg, #783442 0, #601010)`,
     edgy: `linear-gradient(180deg, #ba4864 0, #cc365b)`,
     regular: `linear-gradient(180deg, #394341 0, #232928)`
-}
+};
 
 const RollButton = styled.button<{bg: string}>`
     font-size: 1.07em;
@@ -30,6 +31,10 @@ const RollButton = styled.button<{bg: string}>`
     color: white;
     background-image: ${props => props.bg};
 
+    & > *:first-child {
+        margin-right: 0.5rem;
+    }
+
     &:hover {
         text-decoration: none;
     }
@@ -39,7 +44,6 @@ const RollButton = styled.button<{bg: string}>`
     }
 
     &[disabled] {
-        pointer-events: none;
         cursor: not-allowed;
         color: #ccc;
         filter: saturate(40%) brightness(85%);
@@ -53,11 +57,7 @@ export default function RollInitiativePrompt() {
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [loading, setLoading] = React.useState(false);
-    const [localRoll, toggleLocalRoll, setLocalRoll] = srutil.useToggle(!game);
-    React.useEffect(() =>
-        setLocalRoll(!gameExists),
-        [gameExists, setLocalRoll]
-    );
+    const [share, setShare] = React.useState<Share.Mode>(Share.InGame);
 
     const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
@@ -67,9 +67,9 @@ export default function RollInitiativePrompt() {
 
     const connected = connection === "connected";
     const rollDisabled = (
-        !dice || dice < 0 || dice > 5
-        || !base || base < 0 || base > 50
-        || loading || (game && !localRoll && !connected)
+        !dice || dice < 1 || dice > 5
+        || !base || base < -2 || base > 69
+        || loading || (gameExists && !connected)
     );
 
     const titleChanged = React.useCallback((e) => {
@@ -85,7 +85,7 @@ export default function RollInitiativePrompt() {
             return;
         }
 
-        if (localRoll) {
+        if (!gameExists) {
             const initiativeDice = srutil.roll(dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
@@ -104,7 +104,7 @@ export default function RollInitiativePrompt() {
                     }
                 })
         }
-    }, [rollDisabled, localRoll, base, dice, title, dispatch]);
+    }, [rollDisabled, gameExists, base, dice, title, dispatch]);
 
     if (!shown) {
         return (
@@ -138,7 +138,7 @@ export default function RollInitiativePrompt() {
                             Roll
                         </label>
                         <NumericInput small id="roll-initiative-base"
-                                      min={0} max={69}
+                                      min={-2} max={69}
                                       text={baseText} setText={setBaseText}
                                       onSelect={baseChanged} />
                         +
@@ -160,15 +160,18 @@ export default function RollInitiativePrompt() {
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <UI.FlexRow spaced floatRight>
-                    {game &&
-                        <PublicityOptions prefix="roll-initiative"
-                                          state="inGame" onChange={function() {}} />}
+                    {gameExists &&
+                        <ShareOptions prefix="roll-initiative"
+                                          state={share} onChange={setShare} />}
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
                         <RollButton id="roll-initiative-submit" type="submit"
                                     bg={RollBackground.inGame}
                                     disabled={Boolean(rollDisabled)} onClick={rollClicked}>
-                            Roll Initiative
+                            {gameExists && share !== Share.InGame &&
+                                <UI.FAIcon icon={Share.icon(share)}
+                                           transform="grow-4" />}
+                            Initiative
                         </RollButton>
                     </UI.FlexRow>
                 </UI.FlexRow>
