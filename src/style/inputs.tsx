@@ -89,7 +89,7 @@ const RadioSelector = styled.span<{ light?: boolean, disabled?: boolean }>`
     font-family: ${({theme}) => theme.fonts.monospace};
     font-weight: bold;
     color: ${({ light, theme }) => light ? theme.colors.secondaryDark : theme.colors.primaryDesaturated};
-    textAlign: center;
+    text-align: center;
     margin-right: 0.2em;
 
     &[disabled] {
@@ -109,7 +109,6 @@ const RadioLabel = styled.label<{ disabled?: boolean }>`
 
     ${({ disabled, theme }) => disabled ?
         `
-        pointer-effects: none;
         text-decoration: line-through;
         cursor: not-allowed !important;
         ` :
