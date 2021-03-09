@@ -7,7 +7,7 @@
         },
         {
             "src": "favicon.svg",
-            "type": "image/svg",
+            "type": "image/svg"
         },
         {
             "src": "favicon.png",
