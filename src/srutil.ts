@@ -80,36 +80,6 @@ export function useToggle(initial: boolean | (() => boolean)): [boolean, () => v
     return [value, toggle, setValue];
 }
 
-// This shallow comparison seems to be what react is using.
-// Seen in react-redux and gaeron's react-pure-render.
-
-export function shallowEqual(a: any, b: any) {
-    if (a === b) {
-        return true;
-    }
-
-    if (typeof a !== 'object' || a === null
-        || typeof b !== 'object' || b === null) {
-        return false;
-    }
-
-    const aKeys = Object.keys(a);
-    const bKeys = Object.keys(b);
-
-    if (aKeys.length !== bKeys.length) {
-        return false;
-    }
-
-    const bHasOwnProperty = Object.prototype.hasOwnProperty.bind(b);
-    for (let i = 0; i < aKeys.length; i++) {
-        if (!bHasOwnProperty(aKeys[i]) || a[aKeys[i]] !== b[bKeys[i]]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 export function genRandomID(): string {
     const bytes = [0, 0, 0, 0, 0, 0].map(_ => Math.floor(Math.random() * 256));
     const chars = bytes.map(b => String.fromCharCode(b));

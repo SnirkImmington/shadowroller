@@ -3,7 +3,7 @@ import { RetryConnection } from "connection";
 import * as UI from "style";
 
 export default function StatusText({ connection }: { connection: RetryConnection }) {
-    let text = null;
+    let text = "";
     switch (connection) {
         case "connecting":
         case "disconnected":
@@ -16,7 +16,7 @@ export default function StatusText({ connection }: { connection: RetryConnection
         default:
             break;
     }
-    if (text) {
+    if (text !== "") {
         return (
             <i>
                 <UI.DiceSpinner />
