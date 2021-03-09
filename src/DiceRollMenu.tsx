@@ -118,9 +118,6 @@ const RollButton = styled.button<{ bg: string}>`
     }
 `;
 
-const RollTitleInput = styled(UI.Input).attrs({ expand: true})`
-`;
-
 const RollGlitchyLabel = styled.label`
     padding: .5em;
     @media all and (min-width: 768px) {

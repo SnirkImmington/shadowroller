@@ -61,7 +61,7 @@
         ]
     },
     "typeCoverage": {
-        "atLeast": 94,
+        "atLeast": 95,
         "strict": true
     },
     "browserslist": [
