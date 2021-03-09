@@ -44,10 +44,15 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
+        "postbuild": "presite",
         "test": "react-scripts test",
         "coverage": "typescript-coverage-report",
         "predeploy": "npm run build",
-        "deploy": "gh-pages -f -d build"
+        "deploy": "gh-pages -f -d build-presite"
+    },
+    "presite": {
+        "baseDir": "./build",
+        "outDir": "build-presite"
     },
     "eslintConfig": {
         "extends": [
