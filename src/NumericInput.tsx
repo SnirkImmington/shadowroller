@@ -31,7 +31,11 @@ type ValueState =
 | ["expr", number, boolean]
 ;
 
-const StyledInput = styled(UI.Input)<{ small?: boolean }>`
+type InputProps = { small?: boolean };
+
+const StyledInput = styled(UI.Input).attrs<InputProps>(
+    (_props) => ({ "type": "tel" })
+)<InputProps>`
     margin-left: 0;
     margin-right: 0;
 
@@ -164,7 +168,7 @@ export default function NumericInput(props: Props) {
     }*/
 
     let components: React.ReactNode[] = [
-        <StyledInput type="tel" aria-label="Calculator" inputMode="numeric"
+        <StyledInput aria-label="Calculator" inputMode="numeric"
                value={text} onChange={onTextInput} key="input"
                placeholder={props.placeholder} small={props.small}
                />,
