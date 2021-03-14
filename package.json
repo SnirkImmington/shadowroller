@@ -1,10 +1,10 @@
 {
     "name": "shadowroller",
     "description": "Roll dice from random.org",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "author": "S. B. Immington",
     "license": "MIT",
-    "homepage": "https://snirkimmington.github.io/shadowroller",
+    "homepage": "https://shadowroller.net/",
     "repository": {
         "type": "git",
         "url": "https://github.com/SnirkImmington/shadowroller.git"
@@ -26,6 +26,7 @@
         "@types/react-window-infinite-loader": "^1.0.3",
         "@types/styled-components": "^5.1.7",
         "gh-pages": "^2.2.0",
+        "presite": "^2.1.2",
         "react-scripts": "4.0.2",
         "typescript": "^4.1.5",
         "typescript-coverage-report": "^0.5.0"
@@ -44,15 +45,18 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
-        "postbuild": "presite",
+        "postbuild": "npx presite",
         "test": "react-scripts test",
         "coverage": "typescript-coverage-report",
         "predeploy": "npm run build",
-        "deploy": "gh-pages -f -d build-presite"
+        "deploy": "gh-pages -f -d build-presite",
+        "clean": "rm -rvf ./build ./build-presite"
     },
     "presite": {
+        "routes": [ "/" ],
         "baseDir": "./build",
-        "outDir": "build-presite"
+        "outDir": "./build-presite",
+        "wait": 3000
     },
     "eslintConfig": {
         "extends": [
