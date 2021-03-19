@@ -1,4 +1,3 @@
-import * as React from "react";
 import { RetryConnection } from "connection";
 import * as UI from "style";
 

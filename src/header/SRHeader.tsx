@@ -1,4 +1,3 @@
-import * as React from 'react';
 import styled from 'styled-components/macro';
 
 import { ReactComponent as Logo } from 'assets/logo/logo-dark-mode.svg';
