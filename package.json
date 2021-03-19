@@ -4,7 +4,7 @@
     "version": "0.12.0",
     "author": "S. B. Immington",
     "license": "MIT",
-    "homepage": "https://shadowroller.net/",
+    "homepage": "https://shadowroller.net",
     "repository": {
         "type": "git",
         "url": "https://github.com/SnirkImmington/shadowroller.git"
@@ -55,8 +55,7 @@
     "presite": {
         "routes": [ "/" ],
         "baseDir": "./build",
-        "outDir": "./build-presite",
-        "wait": 3000
+        "outDir": "./build-presite"
     },
     "eslintConfig": {
         "extends": [
