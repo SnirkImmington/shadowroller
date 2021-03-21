@@ -10,13 +10,24 @@ import (
 	"strings"
 )
 
-var _ = restRouter.HandleFunc("/", handleRoot).Methods("GET")
-
 func handleRoot(response Response, request *Request) {
 	logRequest(request)
-	http.Redirect(response, request, config.FrontendAddress, http.StatusSeeOther)
-	cacheIndefinitely(request, response)
-	logf(request, ">> 307 %v", config.FrontendAddress)
+	response.Header().Set("Content-Type", "text/plain")
+	httpNotFound(response, request, "Yep, this is the API.")
+}
+
+func handleFrontendRedirect(response Response, request *Request) {
+	var status int
+	if config.FrontendRedirectPermanent {
+		status = http.StatusMovedPermanently
+		response.Header().Set("Cache-Control", "max-age=31536000, public, immutable")
+	} else {
+		status = http.StatusSeeOther
+		response.Header().Add("Cache-Control", "max-age=86400, public")
+	}
+	http.Redirect(response, request, config.FrontendOrigin.String(), status)
+	dur := displayRequestDuration(request.Context())
+	logf(request, ">> %v Redirect %v (%v)", status, config.FrontendOrigin.String(), dur)
 }
 
 var _ = restRouter.HandleFunc("/robots.txt", handleRobots).Methods("GET")
@@ -24,9 +35,10 @@ var _ = restRouter.HandleFunc("/robots.txt", handleRobots).Methods("GET")
 func handleRobots(response Response, request *Request) {
 	logRequest(request)
 	// No bots in the API please
+	response.Header().Set("Content-Type", "text/plain")
+	response.Header().Set("Cache-Control", "max-age=31536000, public, immutable")
 	_, err := response.Write([]byte("user-agent: *\ndisallow: *"))
 	httpInternalErrorIf(response, request, err)
-	cacheIndefinitely(request, response)
 	httpSuccess(response, request, "user-agent: * disallow: *")
 }
 
@@ -34,6 +46,7 @@ var _ = restRouter.HandleFunc("/coffee", handleCoffee).Methods("GET")
 
 func handleCoffee(response Response, request *Request) {
 	logRequest(request)
+	response.Header().Set("Content-Type", "text/plain")
 	http.Error(response, "Soy coffee only", http.StatusTeapot)
 	cacheIndefinitely(request, response)
 	logf(request, ">> 418 Soy coffee only")

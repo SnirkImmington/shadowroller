@@ -1,5 +1,7 @@
 # Shadowroller Server
 
+_This repository will be merged with https://github.com/SnirkImmington/shadowroller before the next major update._
+
 ![Shadowroller server logs](https://user-images.githubusercontent.com/1468114/94967935-09da2f00-04ce-11eb-9b36-ce3b842abdda.png)
 
 This repository contains the backend code for running the server behind https://shadowroller.net which supports the "multiplayer" aspect of Shadowroller.
@@ -37,6 +39,8 @@ want to get ahead of myself when there are features to write.
 
 # Run it yourself
 
+_The ability to host the frontend was just introduced, and the repo merge is upcoming. More CI scripts (that run on production) and documentation will be added to the merged repo._
+
 ## Docker
 
 There's a `Dockerfile` and `docker-compose.yml` included to run the project with Docker.
@@ -48,7 +52,7 @@ It uses the `golang` and `redis` packages, as well as [`reflex`](https://github.
 Right now, the server only has two parts: the REST API and Redis database. As long as you have Go and Redis installed, you can run it without other
 dependencies.
 
-`sr-server` is a Go 1.14 module. You can build it with `go build`, or use a tool like [reflex](https://github.com/cespare/reflex) like the Dockerfile does.
+`sr-server` is a Go 1.16 module. You can build it with `go build`, or use a tool like [reflex](https://github.com/cespare/reflex) like the Dockerfile does.
 The API exposes itself at `0.0.0.0:3001` by default (configurable), which allows devices on your LAN to connect.
 If you run the [frontend](https://github.com/SnirkImmington/shadowroller), in dev mode as well, it will find the backend.
 
@@ -70,3 +74,13 @@ Let's Encrypt TLS server inspired by: https://blog.kowalczyk.info/article/Jl3G/h
 Gist of the above: https://github.com/kjk/go-cookbook/blob/master/free-ssl-certificates/main.go
 
 TLS hardening options copied from: https://blog.cloudflare.com/exposing-go-on-the-internet/
+
+Backend routing via the Gorilla mux library https://github.com/gorilla/mux
+
+CORS support via https://github.com/rs/cors
+
+SSE helper https://github.gom/janberktold/sse
+
+Current Redis library https://github.com/gomodule/redigo
+
+Let's Encrypt support (if enabled) via `acme` of https://golang.org/x/crypto

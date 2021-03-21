@@ -81,7 +81,7 @@ func writeBodyJSON(response Response, value interface{}) error {
 	return json.NewEncoder(response).Encode(value)
 }
 
-func logRequest(request *Request, values ...string) {
+func logRequest(request *Request) {
 	if config.IsProduction {
 		extra := ""
 		if len(config.LogExtraHeaders) != 0 {
@@ -106,6 +106,34 @@ func logRequest(request *Request, values ...string) {
 		)
 	} else {
 		rawLog(1, request, "<< %v %v", request.Method, request.URL)
+	}
+}
+
+func logFrontendRequest(request *Request) {
+	if config.IsProduction {
+		extra := ""
+		if len(config.LogExtraHeaders) != 0 {
+			grabbed := make([]string, len(config.LogExtraHeaders))
+			for i, header := range config.LogExtraHeaders {
+				found := request.Header.Get(header)
+				if found != "" {
+					grabbed[i] = found
+				} else {
+					grabbed[i] = "??"
+				}
+			}
+			extra = fmt.Sprintf(" %v", grabbed)
+		}
+		rawLog(1, request,
+			"<* %v%v %v %v %v",
+			requestRemoteIP(request),
+			extra,
+			request.Proto,
+			request.Method,
+			request.URL,
+		)
+	} else {
+		rawLog(1, request, "<* %v %v", request.Method, request.URL)
 	}
 }
 
@@ -139,4 +167,13 @@ func httpSuccess(response Response, request *Request, message ...interface{}) {
 	}
 	dur := displayRequestDuration(request.Context())
 	rawLog(1, request, fmt.Sprintf(">> 200 %v (%v)", fmt.Sprint(message...), dur))
+}
+
+func logServedContent(response Response, request *Request, fileName string, zipped bool) {
+	dur := displayRequestDuration(request.Context())
+	msg := "zipped"
+	if !zipped {
+		msg = "unzipped"
+	}
+	rawLog(1, request, fmt.Sprintf("*> Served %v %v (%v)", fileName, msg, dur))
 }

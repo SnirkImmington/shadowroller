@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -36,32 +37,80 @@ var (
 	// This value is ignored on production.
 	SlowResponsesDebug = readBool("SLOW_RESPONSES_DEBUG", false)
 
-	// Go Server Configuration
+	// Go Servers Configuration
 	//
-	// Shadowroller's API can run on either an HTTP or HTTPS server (both cannot
-	// be set). An HTTP redirect server which redirects requests to HTTPS can be
-	// run. If you are running on production behind a SSL-terminating reverse
-	// proxy, you will need to set ReverseProxied to true. Otherwise, all options
-	// are available in non-production environments.
+	// Shadowroller runs web servers for a few different functions:
+	// - API: an API server that acts as the interface to the backend
+	// - FRONTEND: a frontend server that hosts the code for the frontend (a subpath of API)
+	// - REDIRECT: a redirect server that forwards HTTP requests to HTTPS
+	//
+	// The system used here is designed for some flexibility in a few environments:
+	// development, as a do-it-all standalone server, and as the backend with separate
+	// frontend hosting. However, the three components are not generally standalone servers.
+	// Shadowroller is not written to only run the frontend server or run the frontend server
+	// on a different port than the API server. If you need these features, please file an
+	// issue or open a pull request.
+	//
+	// Local/Development:
+	//
+	// In development, the API server can run with no redirect, and the frontend should
+	// run separately via Node. HTTPS may be used for the API if desired.
+	// The default publish options are designed for this:
+	// - MAIN_LISTEN_HTTP=<port> (3001 default)
+	// - // alternatively, API_PUBLISH_HTTPS=<port>, along with API_HTTPS_* fields.
+	// - REDIRECT_LISTEN_HTTP unset (default)
+	// - HOST_FRONTEND unset (default)
+	// You can disable CORS (auto-respond with *) in a private environment:
+	// - DISABLE_CORS_CHECKS unset (!isProduction default, optional)
+	// - API_ORIGIN=<url> (http://localhost default, something else if desired or using a different port)
+	// - FRONTEND_ORIGIN=<url> (optional, http://localhost:3000 default to match the frontend dev server)
+	//
+	//
+	// Full Stack:
+	//
+	// With this configuration, sr-server hosts the frontend static site code and runs the
+	// backend over HTTPS. This also includes an HTTP redirect server (which isn't super
+	// relevant these days).
+	// Set publishing options:
+	// - MAIN_LISTEN_HTTPS=<port>     (< you should use other ports and forward to 80/443 if possible)
+	// - REDIRECT_LISTEN_HTTP=<port> (< this makes running as non-root user a non-issue)
+	// - HOST_FRONTEND=by-host-header (default unset, publish the frontend/api via a Host header check)
+	// The frontend publishes at the Host/subdomain specified in the CORS options:
+	// - FRONTEND_ORIGIN=<origin> (i.e. https://my.site)
+	// - API_ORIGIN=<origin> (i.e. https://api.my.site)
+	//
+	//
+	// Backend Only:
+	//
+	// In this configuration, you run the frontend through a static provider
+	// (it should work with anything that supports an SPA) and the backend on its
+	// own. You may not need the redirect server if you're behind a reverse proxy.
+	// HTTP API server behind a reverse proxy:
+	// - REVERSE_PROXIED=true (required to set in production)
+	// - MAIN_LISTEN_HTTP=<port>
+	// Or to publish HTTPS:
+	// - MAIN_LISTEN_HTTPS=<port>
+	// Don't publish the redirect or frontend:
+	// - REDIRECT_LISTEN_HTTP unset (default)
+	// - HOST_FRONTEND unset (default)
+	// CORS:
+	// - FRONTEND_ORIGIN=<origin> (still needed for CORS)
+	// - API_ORIGIN=<origin> (still needed for CORS)
 
-	// PublishHTTPS sets a port at which an HTTPS server will run the REST API.
-	// Alternatively, an HTTP server may be used (in development or if proxied).
-	// This is required on production if ReverseProxied is not set.
-	PublishHTTPS = readString("PUBLISH_HTTPS", "")
-	// PublishRedirect sets a port at which a server will run an HTTP->HTTPS
-	// redirect server (giving a 307 response to HTTP requests).
-	PublishRedirect = readString("PUBLISH_REDIRECT", "")
-	// PublishHTTP sets a port at which an HTTP server will run the REST API.
-	// Alternatively, an HTTPS server may be used.
-	// If used on production, ReverseProxied must be set to true.
-	PublishHTTP = readString("PUBLISH_HTTP", ":3001")
-	// ClientIPHeader sets a header to use for client IP addresses instead
-	// of just using the request's RemoteAddr. If the header is not found,
-	// RemoteAddr is used.
-	ClientIPHeader = readString("CLIENT_IP_HEADER", "")
-	// LogExtraHeaders allows for more headers to be logged with each request
-	LogExtraHeaders = readStringArray("LOG_EXTRA_HEADERS", "")
-	// ReverseProxied must be set to true if an HTTP API server is used on
+	// Main server configuration (API and optional frontend)
+
+	// MainListenHTTP is the port which the main server listens for HTTP requests
+	MainListenHTTP = readString("MAIN_LISTEN_HTTP", ":3001")
+	// MainListenHTTPS is the port which the main server listens for HTTPS requests
+	MainListenHTTPS = readString("MAIN_LISTEN_HTTPS", "")
+	// HostFrontend determines if and how the frontend site is hosted
+	HostFrontend = readString("HOST_FRONTEND", "")
+
+	// Redirect server configuration (HTTP -> HTTPS forwarder)
+
+	// RedirectListenHTTP is the port which the redirect server listens for HTTP requests
+	RedirectListenHTTP = readString("REDIRECT_LISTEN_HTTP", "")
+	// ReverseProxied must be set to true if an HTTP-only main server is used on
 	// production. It is ignored otherwise.
 	ReverseProxied = readBool("REVERSE_PROXIED", false)
 
@@ -74,25 +123,38 @@ var (
 	// using an external system to update your pem&key files, or submit an issue
 	// or pull request.
 
-	// TLSHostname is the domain name of the server, used for HTTP redirects and
-	// HTTPS configuration.
-	// This must be set if PublishHTTPS is used.
-	TLSHostname = readString("TLS_HOSTNAME", "localhost")
 	// TLSAutocertDir is the directory where Let's Encrypt certificates are kept.
 	TLSAutocertDir = readString("TLS_AUTOCERT_CERT_DIR", "")
 	// TLSCertFiles is a list of the file names for the pem, private key cert files.
 	TLSCertFiles = readStringArray("TLS_CERT_FILES", "")
 
-	// Frontend Configuration
-	// These options allow the frontend to be deployed on a separate server or
-	// domain from the server. These values are used locally and in production.
+	// CORS options
+	// These are the origins that we allow cross-origin requests between.
+	// If the frontend is hosted by sr-server, it uses the FrontendOrigin to check
+	// the Host header of requests.
 
-	// FrontendDomain is the origin domain of the frontend, used for CORS requests.
-	FrontendDomain = readString("FRONTEND_DOMAIN", "http://localhost:3000")
-	// FrontendAddress is the redirect address that / should redirect to.
-	// This is a full URL, useful for i.e. Github project sites.
-	// If unset, the root URL will not redirect.
-	FrontendAddress = readString("FRONTEND_ADDRESS", FrontendDomain)
+	// DisableCORS disables the CORS checks and sends the host forward. Not compatible
+	// with a production environment. If CORS checks are disabled and the frontend isn't
+	// being hosted or redirected to (as is the typical development case), FrontendOrigin is unused.
+	DisableCORS = readBool("DISABLE_CORS_CHECKS", !IsProduction)
+	// BackendOrigin is the origin (scheme://host:port) for the backend server
+	BackendOrigin = readOrigin("BACKEND_ORIGIN", "http://localhost:3001")
+	// FrontendOrigin is the origin (scheme://host:port) for the frontend server
+	FrontendOrigin = readOrigin("FRONTEND_ORIGIN", "http://localhost:3000")
+
+	// Frontend server configuration
+	// These options are used when the frontend site is hosted via the main server.
+
+	// FrontendBasePath is the base path for the frontend.
+	FrontendBasePath = readString("FRONTEND_BASE_PATH", "")
+	// FrontendGzipped indicates a .gz copy of each file on the frontend is pregenerated
+	FrontendGzipped = readBool("FRONTEND_GZIPPED", true)
+	// UnhostedFrontendRedirect toggles whether the root URL of the main server should point
+	// to the frontend domain, when the frontend is not being hosted.
+	UnhostedFrontendRedirect = readBool("UNHOSTED_FRONTEND_REDIRECT", true)
+	// FrontendRedirectPermanent toggles whether the redirect to the frontend domain is permanent.
+	// This should really only be used for shadowroller.net
+	FrontendRedirectPermanent = readBool("FRONTEND_REDIRECT_PERMANENT", false)
 
 	// Timeouts
 
@@ -118,13 +180,22 @@ var (
 	MaxHeaderBytes = readInt("MAX_HEADER_BYTES", 1<<20)
 	// MaxRequestsPer10Secs is a per-address rate limit for all endpoints.
 	// For details, see `middleware.go`.
-	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 16)
+	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 30)
 
 	// TempSessionTTLSecs is the amount of time a temporary session is stored
 	// in redis after the subscription disconnects.
 	TempSessionTTLSecs = readInt("TEMP_SESSION_TTL_SECS", 15*60)
 	// PersistSessionTTLDays is the amount of time persistent sessions last.
 	PersistSessionTTLDays = readInt("PERSIST_SESSION_TTL_DAYS", 30)
+
+	// HTTP options
+
+	// ClientIPHeader sets a header to use for client IP addresses instead
+	// of just using the request's RemoteAddr. If the header is not found,
+	// RemoteAddr is used.
+	ClientIPHeader = readString("CLIENT_IP_HEADER", "")
+	// LogExtraHeaders allows for more headers to be logged with each request
+	LogExtraHeaders = readStringArray("LOG_EXTRA_HEADERS", "")
 
 	// Library Options
 
@@ -144,7 +215,7 @@ var (
 	// EnableTasks enables the /task route, which includes administrative commands.
 	// It is recommended you run a separate sr-server instance with this enabled to
 	// perform administrative tasks.
-	EnableTasks = readBool("ENABLE_TASKS", false)
+	EnableTasks = readBool("ENABLE_TASKS", !IsProduction)
 	// TasksLocalhostOnly enables the localhost filter on the tasks route.
 	// Don't use this to conceal /task from the internet! Shadowroller cannot guarantee
 	// you won't receive a request pretending to be from localhost.
@@ -211,6 +282,23 @@ func readBool(name string, defaultValue bool) bool {
 	return val
 }
 
+func readOrigin(name string, defaultValue string) *url.URL {
+	envVal, ok := os.LookupEnv("SR_" + name)
+	if !ok {
+		parsed, err := url.Parse(defaultValue)
+		if err != nil {
+			panic(fmt.Sprintf("error parsing default value origin for SR_%v: `%v`", name, defaultValue))
+		}
+		return parsed
+	}
+	log.Print("config: read env origin SR_", name)
+	val, err := url.Parse(envVal)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to parse SR_", name, ": ", envVal))
+	}
+	return val
+}
+
 func readKeyFile(name string, defaultValue string) []byte {
 	envVal, ok := os.LookupEnv("SR_" + name)
 	var contents string
@@ -235,41 +323,46 @@ func readKeyFile(name string, defaultValue string) []byte {
 	return val
 }
 
-// VerifyConfig performs sanity checks and normalizes config settings.
+// VerifyConfig performs sanity checks and prints warnings.
 func VerifyConfig() {
 	if IsProduction {
 		if SlowResponsesDebug {
-			log.Print("Config normalization: set SlowResponsesDebug = false")
-			SlowResponsesDebug = false
+			log.Print("Warning: SlowResponsesDebug = false on production")
 		}
-		if PublishHTTP != "" && !ReverseProxied {
+		if MainListenHTTP != "" && !ReverseProxied {
 			panic("Must set ReverseProxied if using an HTTP server on production")
 		}
-		if TLSHostname == "localhost" {
-			log.Print("Warning: TLSHostname set to localhost on production")
+		if BackendOrigin.Host == "localhost" {
+			log.Print("Warning: Hostname = \"localhost\" on production")
 		}
 		if len(HealthCheckSecretKey) != 0 && len(HealthCheckSecretKey) < 256 {
 			panic("HealthcheckSecretKey should be longer")
 		}
-	} else {
-		if !EnableTasks {
-			EnableTasks = true
-		}
 	}
-	if PublishRedirect == PublishHTTPS && PublishHTTPS != "" {
+	if RedirectListenHTTP == MainListenHTTPS && MainListenHTTPS != "" {
 		panic("Cannot publish HTTP redirect and HTTPS servers on the same port!")
 	}
-	if (PublishHTTP == "") == (PublishHTTPS == "") {
-		panic("Must set one of PublishHTTP and PublishHTTPS!")
+	if (MainListenHTTP == "") == (MainListenHTTPS == "") {
+		panic("Must set one of MAIN_LISTEN_HTTP and MAIN_LISTEN_HTTPS!")
 	}
-	if PublishRedirect != "" {
-		if PublishHTTP == PublishRedirect {
+	if RedirectListenHTTP != "" {
+		if MainListenHTTP == RedirectListenHTTP {
 			panic("Cannot publish HTTP server and redirect server on the same port!")
-		} else if PublishHTTP != "" {
-			log.Print("Warning: publishing HTTP server and HTTP redirect server.")
+		} else if MainListenHTTP != "" {
+			log.Print("Warning: publishing HTTP main server and HTTP redirect server.")
 		}
 	}
-	if PublishHTTPS != "" && ((TLSAutocertDir == "") == (len(TLSCertFiles) == 0)) {
+	if MainListenHTTPS != "" && ((TLSAutocertDir == "") == (len(TLSCertFiles) == 0)) {
 		panic("Must set one of TLSAutocertDir and TLSCertFiles!")
+	}
+
+	if HostFrontend != "" && HostFrontend != "by-domain" && HostFrontend != "redirect" && HostFrontend != "subroute" {
+		panic("Invalid value for HostFrontend; expected unset, redirect, subroute, or by-domain!")
+	}
+	if HostFrontend == "by-domain" && (FrontendOrigin.Host == BackendOrigin.Host) {
+		panic("Must have differing FRONTEND_DOMAIN and BACKEND_DOMAIN hosts for HOST_FRONTEND=by-domain")
+	}
+	if HostFrontend != "" && HostFrontend != "redirect" && FrontendBasePath == "" {
+		panic("Frontend is hosted, FRONTEND_BASE_PATH must be set!")
 	}
 }

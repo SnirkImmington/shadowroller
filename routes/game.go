@@ -395,7 +395,7 @@ func handleReroll(response Response, request *Request) {
 func collectRolls(in interface{}) ([]int, error) {
 	rolls, ok := in.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Unable to assert %v as []interface{}", in)
+		return nil, fmt.Errorf("unable to assert %v as []interface{}", in)
 	}
 	out := make([]int, len(rolls))
 	for i, val := range rolls {

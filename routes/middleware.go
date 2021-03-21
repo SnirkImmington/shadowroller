@@ -18,10 +18,16 @@ func tlsHeadersMiddleware(wrapped http.Handler) http.Handler {
 	})
 }
 
-func headersMiddleware(wrapped http.Handler) http.Handler {
+func universalHeadersMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
+		response.Header().Set("X-Content-Type-Options", "nosniff")
+		wrapped.ServeHTTP(response, request)
+	})
+}
+
+func restHeadersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		response.Header().Set("Cache-Control", "no-store")
-		response.Header().Set("X-Content-Type-Options", "nosniff")
 		wrapped.ServeHTTP(response, request)
 	})
 }
@@ -37,7 +43,6 @@ func requestContextMiddleware(wrapped http.Handler) http.Handler {
 
 func localhostOnlyMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		// Not sure if this should just be remote addr.
 		remoteAddr := requestRemoteIP(request)
 		allowed := remoteAddr == "localhost" || remoteAddr == "127.0.0.1" || remoteAddr == "[::1]"
 		message := "disallowed"

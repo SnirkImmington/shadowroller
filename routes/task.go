@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
-	"net/http"
 	"sr/config"
 	"sr/game"
 	"sr/id"
@@ -18,7 +17,6 @@ import (
 // It must be called after config values are loaded.
 func RegisterTasksViaConfig() {
 	if config.EnableTasks {
-		tasksRouter.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 		restRouter.PathPrefix("/task").Handler(tasksRouter)
 	}
 	if config.TasksLocalhostOnly {
@@ -26,7 +24,7 @@ func RegisterTasksViaConfig() {
 	}
 }
 
-var tasksRouter = apiRouter().PathPrefix("/task").Subrouter()
+var tasksRouter = makeTasksRouter()
 
 var _ = tasksRouter.HandleFunc("/clear-all-sessions", handleClearSessions).Methods("GET")
 

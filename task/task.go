@@ -19,7 +19,7 @@ func RunSelectedTask(task string, args []string) {
 	switch task {
 	case "migrate":
 		if len(args) != 1 {
-			log.Printf("Usage: migrate <gameID>")
+			log.Print("Usage: migrate <gameID>")
 			os.Exit(1)
 		}
 		gameID := args[0]
@@ -33,8 +33,18 @@ func RunSelectedTask(task string, args []string) {
 			log.Printf("Error with task: %v", err)
 			os.Exit(1)
 		}
-
-		log.Printf("Task finished successfully.")
-		os.Exit(0)
+		break
+	case "ppr": // post prerender
+		if len(args) != 2 {
+			log.Print("Usage: ppr <src> <dest>")
+			os.Exit(1)
+		}
+		if err := handleRewritePresiteIndexTask(args[0], args[1]); err != nil {
+			log.Printf("Error with task: %v", err)
+			os.Exit(1)
+		}
+		break
 	}
+	log.Printf("Task finished successfully.")
+	os.Exit(0)
 }
