@@ -76,7 +76,10 @@ export const LinkButton = styled.button<LinkButtonProps>`
 `;
 
 const HiddenInput = styled.input.attrs(props => ({
-    checked: props.checked, name: props.name, id: props.id, value: props.value,
+    checked: props.checked,
+    name: props.name,
+    id: props.id, type: props.type,
+    value: props.value, disabled: props.disabled,
 }))`
     position: absolute;
     opacity: 0;
@@ -133,11 +136,7 @@ type RadioLinkProps = {
 export const RadioLink = React.memo<React.PropsWithChildren<RadioLinkProps>>(function RadioLink(props) {
     return (
         <RadioLabel htmlFor={props.id} disabled={props.disabled}>
-            <HiddenInput id={props.id} type={props.type}
-                         disabled={props.disabled}
-                         checked={props.checked} value={props.value} name={props.name}
-                         onChange={props.onChange} />
-
+            <HiddenInput onChange={props.onChange} />
             <RadioSelector light={!props.light} disabled={props.disabled}>
                 {props.type === "checkbox" ?
                     (props.checked ? '[X]' : '[ ]')

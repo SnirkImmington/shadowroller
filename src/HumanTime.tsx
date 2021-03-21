@@ -1,4 +1,3 @@
-import * as React from 'react';
 import * as UI from 'style';
 
 const MINUTE = 60,
