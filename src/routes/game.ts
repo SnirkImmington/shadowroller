@@ -37,6 +37,8 @@ export type RollInitiativeRequest = {
     dice: number,
     title: string,
     share: ShareMode,
+    seized: boolean,
+    blitzed: boolean,
 };
 export function rollInitiative(request: RollInitiativeRequest): BackendRequest<void> {
     return post<RollInitiativeRequest, void>("game/roll-initiative", request);

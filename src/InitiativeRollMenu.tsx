@@ -64,6 +64,8 @@ export default function RollInitiativePrompt() {
     const [title, setTitle] = React.useState("");
     const [dice, setDice] = React.useState(1);
     const [diceText, setDiceText] = React.useState("");
+    const [blitz, setBlitz] = React.useState(false);
+    const [seize, setSeize] = React.useState(false)
 
     const connected = connection === "connected";
     const rollDisabled = (
@@ -78,6 +80,18 @@ export default function RollInitiativePrompt() {
         setBase(value); }, [setBase]);
     const diceChanged = React.useCallback((value: number | null) => {
         setDice(value || 1); }, [setDice]);
+    const blitzChanged = React.useCallback((value: boolean) => {
+        if (value) {
+            setSeize(false);
+        }
+        setBlitz(value);
+    }, [setBlitz, setSeize]);
+    const seizeChanged = React.useCallback((value: boolean) => {
+        if (value) {
+            setBlitz(false);
+        }
+        setSeize(value);
+    }, [setSeize, setBlitz]);
 
     const rollClicked = React.useCallback((e) => {
         e.preventDefault();
@@ -89,7 +103,7 @@ export default function RollInitiativePrompt() {
             const initiativeDice = srutil.roll(dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
-                base: base || 0, dice: initiativeDice, title
+                base: base || 0, dice: initiativeDice, title, seized, blitz,
             };
 
             dispatch({ ty: "newEvent", event });

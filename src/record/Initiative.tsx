@@ -16,15 +16,11 @@ type Props = {
 };
 /*
 type ActionProps = {
-    +event: Event.Initiative, result: number,
+    event: Event.Initiative, result: number,
 }
 
 function LocalActionsRow({ event, result }: ActionProps) {
     const dispatch = React.useContext(Event.DispatchCtx);
-
-    function onEdit() {
-        dispatch({ ty: "selectEdit", event });
-    }
 
     return (
         <UI.FlexRow spaced>
@@ -39,7 +35,6 @@ function LocalActionsRow({ event, result }: ActionProps) {
 */
 
 function InitiativeRecord({ event, color }: Props, ref: React.Ref<any>) {
-    //const canModify = !noActions && Event.canModify(event, playerID);
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
 
     const intro: React.ReactNode = event.source !== "local" ? (

@@ -46,6 +46,8 @@ export type Initiative = {
     title: string,
     base: number,
     dice: number[],
+    seized: boolean,
+    blitz: boolean,
 };
 
 export type PlayerJoin = {
