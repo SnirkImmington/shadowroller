@@ -136,7 +136,7 @@ type RadioLinkProps = {
 export const RadioLink = React.memo<React.PropsWithChildren<RadioLinkProps>>(function RadioLink(props) {
     return (
         <RadioLabel htmlFor={props.id} disabled={props.disabled}>
-            <HiddenInput onChange={props.onChange} />
+            <HiddenInput {...props} children={undefined} />
             <RadioSelector light={!props.light} disabled={props.disabled}>
                 {props.type === "checkbox" ?
                     (props.checked ? '[X]' : '[ ]')
