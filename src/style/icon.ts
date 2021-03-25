@@ -12,7 +12,7 @@ export {
     // Menu icons
     faList, faPen, faUserEdit,
     // Roll icons
-    faBolt, faRedo, faClipboardList, faGrimace,
+    faBolt, faRedo, faClipboardList, faGrimace, faSortAmountUp,
     // dice
     faDice,
     // faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo,
