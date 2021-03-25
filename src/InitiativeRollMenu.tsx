@@ -102,7 +102,7 @@ export default function RollInitiativePrompt() {
         }
 
         if (!gameExists) {
-            const initiativeDice = srutil.roll(dice);
+            const initiativeDice = srutil.roll(blitzed ? 5 : dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
                 base: base || 0, dice: initiativeDice, title, seized, blitzed,
@@ -113,16 +113,15 @@ export default function RollInitiativePrompt() {
         else {
             setLoading(true);
             routes.game.rollInitiative({
-                base: base ?? 0, dice, title, share, seized, blitzed,
-            })
-                .onDone((res, full) => {
-                    setLoading(false);
-                    if (!res && process.env.NODE_ENV !== "production") {
-                        console.error("Error rolling initiative:", full);
-                    }
-                })
+                base: base ?? 0, dice: blitzed ? 5 : dice, title, share, seized, blitzed,
+            }).onDone((res, full) => {
+                setLoading(false);
+                if (!res && process.env.NODE_ENV !== "production") {
+                    console.error("Error rolling initiative:", full);
+                }
+            });
         }
-    }, [rollDisabled, gameExists, base, dice, title, dispatch]);
+    }, [rollDisabled, gameExists, base, dice, title, seized, blitzed, dispatch]);
 
     if (!shown) {
         return (
@@ -149,7 +148,7 @@ export default function RollInitiativePrompt() {
                     hide
                 </UI.LinkButton>
             </UI.FlexRow>
-            <form id="roll-initiative-form">
+            <form id="roll-initiative">
                 <UI.ColumnToRow formRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-initiative-base">
@@ -162,7 +161,8 @@ export default function RollInitiativePrompt() {
                         +
                         <NumericInput small id="roll-initiative-dice"
                                       min={1} max={5} placeholder="1"
-                                      text={diceText} setText={setDiceText}
+                                      text={blitzed ? "5" : diceText} setText={setDiceText}
+                                      disabled={blitzed}
                                       onSelect={diceChanged} />
                         <label htmlFor="roll-initiative-dice">
                             d6
@@ -176,17 +176,17 @@ export default function RollInitiativePrompt() {
                                   onChange={titleChanged}
                                   value={title} />
                     </UI.FlexRow>
-                </UI.ColumnToRow>
-                <UI.FlexRow spaced formRow>
-                    <UI.RadioLink id="roll-initiative-blitz" type="checkbox"
-                                   checked={blitzed} onChange={blitzedChanged}>
+                    <UI.FlexRow formRow formSpaced>
+                        <UI.RadioLink id="roll-initiative-blitz" type="checkbox" light
+                                      checked={blitzed} onChange={blitzedChanged}>
                             Blitz
-                    </UI.RadioLink>
-                    <UI.RadioLink id="roll-initiative-seize-the-initiative" type="checkbox"
-                                   checked={seized} onChange={seizedChanged}>
+                        </UI.RadioLink>
+                        <UI.RadioLink id="roll-initiative-seize-the-initiative" type="checkbox" light
+                                      checked={seized} onChange={seizedChanged}>
                             Seize the initiative
-                    </UI.RadioLink>
-                </UI.FlexRow>
+                        </UI.RadioLink>
+                    </UI.FlexRow>
+                </UI.ColumnToRow>
                 <UI.FlexRow spaced floatRight>
                     {gameExists &&
                         <ShareOptions prefix="roll-initiative"
