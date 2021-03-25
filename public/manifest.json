@@ -4,20 +4,6 @@
     "icons": [
         {
             "src": "favicon.ico"
-        },
-        {
-            "src": "favicon.svg",
-            "type": "image/svg"
-        },
-        {
-            "src": "favicon.png",
-            "type": "image/png",
-            "sizes": "1455x1009"
-        },
-        {
-            "src": "favicon.webp",
-            "type": "image/webp",
-            "sizes": "1455x1009"
         }
     ],
     "start_url": ".",
