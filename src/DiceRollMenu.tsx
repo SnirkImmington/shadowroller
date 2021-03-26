@@ -250,7 +250,7 @@ export default function RollDicePrompt() {
                 </UI.LinkButton>
             </UI.FlexRow>
             <form id="dice-input" onSubmit={onSubmit}>
-                <UI.ColumnToRow formRow>
+                <UI.ColumnToRow formRow floatRight>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-select-dice">
                             Roll
@@ -275,7 +275,6 @@ export default function RollDicePrompt() {
                                   onChange={rollTitleChanged}
                                   value={title} />
                     </UI.FlexRow>
-                    <FullWidthSpacing />
                     <UI.FlexRow formRow>
                         <UI.RadioLink id="roll-enable-edge"
                                       type="checkbox" light

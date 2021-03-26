@@ -1,6 +1,6 @@
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
-import type { Event, DiceEvent } from 'history/event';
+import type { Event, DiceEvent, Initiative } from 'history/event';
 import type { Mode as ShareMode } from 'share';
 
 export type ModifyRollRequest = {
@@ -10,6 +10,15 @@ export type ModifyRollRequest = {
 
 export function modifyRoll(request: ModifyRollRequest): BackendRequest<void> {
     return post<ModifyRollRequest, void>("game/modify-roll", request);
+}
+
+export type ModifyInitiativeRequest = {
+    id: number,
+    diff: Partial<Initiative>
+}
+
+export function editInitiative(request: ModifyInitiativeRequest): BackendRequest<void> {
+    return post<ModifyInitiativeRequest, void>("game/edit-initiative", request);
 }
 
 export type DeleteEventRequest = {
@@ -37,6 +46,8 @@ export type RollInitiativeRequest = {
     dice: number,
     title: string,
     share: ShareMode,
+    seized: boolean,
+    blitzed: boolean,
 };
 export function rollInitiative(request: RollInitiativeRequest): BackendRequest<void> {
     return post<RollInitiativeRequest, void>("game/roll-initiative", request);

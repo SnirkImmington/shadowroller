@@ -66,10 +66,12 @@ export function parseEvent(event: any): Event.Event | null {
                 source: {
                     id: event.pID,
                     name: event.pName,
-                    share: event.share ?? Share.InGame
+                    share: event.share ?? Share.InGame,
                 },
                 title: event.title ?? "",
                 base: event.base, dice: event.dice,
+                seized: event.seized ?? false,
+                blitzed: event.blitzed ?? false,
             };
         case "playerJoin":
             return {

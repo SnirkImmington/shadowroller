@@ -14,7 +14,7 @@ type Props = {
     color: string,
     noActions?: boolean
 }
-function RollRecordInner({ event, playerID, color, noActions }: Props, ref: React.Ref<any>) {
+function RollRecordInner({ event, playerID, color, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 

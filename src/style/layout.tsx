@@ -15,6 +15,7 @@ export type FlexRowProps = {
     justifyContent?: "flex-start"|"flex-end"|"center"|"space-between"|"space-around"|"space-evenly",
     floatRight?: boolean,
     spaced?: boolean,
+    formSpaced?: boolean,
 }
 export const FlexRow = styled.div<FlexRowProps>`
     display: flex;
@@ -31,6 +32,10 @@ export const FlexRow = styled.div<FlexRowProps>`
 
     ${({ spaced }) => spaced &&
         '& > * { margin-right: .5rem; } & > *:last-child { margin-right: inherit; }'
+    }
+
+    ${({ formSpaced }) => formSpaced &&
+        '& > * { margin-right: 1.25rem; } & > *:last-child { margin-right: inherit; }'
     }
 `;
 

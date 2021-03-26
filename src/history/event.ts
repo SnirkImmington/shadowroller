@@ -46,6 +46,8 @@ export type Initiative = {
     title: string,
     base: number,
     dice: number[],
+    seized: boolean,
+    blitzed: boolean,
 };
 
 export type PlayerJoin = {
@@ -76,8 +78,10 @@ export type Action =
 | { ty: "clearEdit" }
 
 | { ty: "modifyRoll", id: number, edit: number, diff: Partial<DiceEvent> }
-| { ty: "reroll", id: number, edit: number, round: number[] }
 | { ty: "deleteEvent", id: number }
+
+| { ty: "seizeInitiative", id: number, edit: number }
+| { ty: "reroll", id: number, edit: number, round: number[] }
 ;
 
 /*
@@ -243,13 +247,20 @@ function eventReduce(state: State, action: Action): State {
             const deletedEvents = state.events.filter(e => e.id !== action.id);
             return { ...state, events: deletedEvents };
         case "modifyRoll":
-            const newEvents = state.events.map(e =>
+            const newEventsWithRoll = state.events.map(e =>
+                // Server dispatches this for initiative seized changes
                 e.id === action.id && e.ty !== "playerJoin" ?
                     { ...e, edit: action.edit, ...action.diff }
                     : e
+            ) as Event[];
+            return { ...state, events: newEventsWithRoll };
+        case "seizeInitiative":
+            const newEventsWithInitiative: Event[] = state.events.map(e =>
+                e.id === action.id && e.ty === "initiativeRoll" ?
+                    { ...e, edit: action.edit, seized: true }
+                    : e
             );
-            // @ts-ignore
-            return { ...state, events: newEvents };
+            return { ...state, events: newEventsWithInitiative };
         case "reroll":
             const eventsWithReroll = state.events.map(e => {
                 if (e.id === action.id && e.ty === "roll") {

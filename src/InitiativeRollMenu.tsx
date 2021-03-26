@@ -62,49 +62,69 @@ export default function RollInitiativePrompt() {
     const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [dice, setDice] = React.useState(1);
+    const [dice, setDice] = React.useState<number>(1);
     const [diceText, setDiceText] = React.useState("");
+    const [blitzed, setBlitzed] = React.useState(false);
+    const [seized, setSeized] = React.useState(false)
 
     const connected = connection === "connected";
     const rollDisabled = (
-        !dice || dice < 1 || dice > 5
-        || !base || base < -2 || base > 69
+        dice < 1 || dice > 5
+        || base == null || base < -2 || base > 69
         || loading || (gameExists && !connected)
     );
 
     const titleChanged = React.useCallback((e) => {
-        setTitle(e.target.value); }, [setTitle]);
+        setTitle(e.target.value);
+    }, [setTitle]);
     const baseChanged = React.useCallback((value: number | null) => {
-        setBase(value); }, [setBase]);
+        setBase((prev) => value ?? prev);
+    }, [setBase]);
     const diceChanged = React.useCallback((value: number | null) => {
-        setDice(value || 1); }, [setDice]);
+        setDice((prev) => value ?? prev);
+    }, [setDice]);
+    const blitzedChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.checked;
+        if (value) {
+            setSeized(false);
+        }
+        setBlitzed(value);
+    }, [setBlitzed, setSeized]);
+    const seizedChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.checked;
+        if (value) {
+            setBlitzed(false);
+        }
+        setSeized(value);
+    }, [setSeized, setBlitzed]);
 
-    const rollClicked = React.useCallback((e) => {
+    const rollClicked = React.useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         if (rollDisabled) {
             return;
         }
 
         if (!gameExists) {
-            const initiativeDice = srutil.roll(dice);
+            const initiativeDice = srutil.roll(blitzed ? 5 : dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
-                base: base || 0, dice: initiativeDice, title
+                base: base ?? 0, dice: initiativeDice, title, seized, blitzed,
             };
 
             dispatch({ ty: "newEvent", event });
         }
         else {
             setLoading(true);
-            routes.game.rollInitiative({ base: base ?? 0, dice, title, share })
-                .onDone((res, full) => {
-                    setLoading(false);
-                    if (!res && process.env.NODE_ENV !== "production") {
-                        console.error("Error rolling initiative:", full);
-                    }
-                })
+            routes.game.rollInitiative({
+                base: base ?? 0, dice: blitzed ? 5 : dice, title, share, seized, blitzed,
+            }).onDone((res, full) => {
+                setLoading(false);
+                if (!res && process.env.NODE_ENV !== "production") {
+                    console.error("Error rolling initiative:", full);
+                }
+            });
         }
-    }, [rollDisabled, gameExists, base, dice, title, dispatch]);
+    }, [rollDisabled, gameExists, base, dice, title, seized, blitzed, dispatch]);
 
     if (!shown) {
         return (
@@ -131,7 +151,7 @@ export default function RollInitiativePrompt() {
                     hide
                 </UI.LinkButton>
             </UI.FlexRow>
-            <form id="roll-initiative-form">
+            <form id="roll-initiative">
                 <UI.ColumnToRow formRow>
                     <UI.FlexRow formRow>
                         <label htmlFor="roll-initiative-base">
@@ -144,7 +164,8 @@ export default function RollInitiativePrompt() {
                         +
                         <NumericInput small id="roll-initiative-dice"
                                       min={1} max={5} placeholder="1"
-                                      text={diceText} setText={setDiceText}
+                                      text={blitzed ? "5" : diceText} setText={setDiceText}
+                                      disabled={blitzed}
                                       onSelect={diceChanged} />
                         <label htmlFor="roll-initiative-dice">
                             d6
@@ -157,6 +178,16 @@ export default function RollInitiativePrompt() {
                                   placeholder="initiative"
                                   onChange={titleChanged}
                                   value={title} />
+                    </UI.FlexRow>
+                    <UI.FlexRow formRow formSpaced>
+                        <UI.RadioLink id="roll-initiative-blitz" type="checkbox" light
+                                      checked={blitzed} onChange={blitzedChanged}>
+                            Blitz
+                        </UI.RadioLink>
+                        <UI.RadioLink id="roll-initiative-seize-the-initiative" type="checkbox" light
+                                      checked={seized} onChange={seizedChanged}>
+                            Seize the initiative
+                        </UI.RadioLink>
                     </UI.FlexRow>
                 </UI.ColumnToRow>
                 <UI.FlexRow spaced floatRight>
