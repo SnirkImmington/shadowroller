@@ -76,7 +76,7 @@ p {
     min-height: 1em;
     min-width: 1em;
 }
-.sr-die:nth-child(3n+0) {
+.sr-die-padded:nth-child(3n+0) {
     margin-right: 9px;
 }
 

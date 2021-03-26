@@ -54,7 +54,7 @@ export const Die = React.memo<DieProps>(function Die(props: DieProps) {
 
     let Dice = DiceMap[roll] || DieOne;
 
-    return <Dice className="sr-die" {...newProps} />;
+    return <Dice className={!small ? "sr-die sr-die-padded" : "sr-die"} {...newProps} />;
 });
 
 export function AnimatedDie(props: AnimatedProps) {
