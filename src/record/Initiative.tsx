@@ -5,8 +5,10 @@ import * as dice from 'Dice';
 import * as humanTime from 'HumanTime';
 import * as Roll from './RollComponents';
 
+import type { Connection } from 'connection';
 import * as Event from 'history/event';
 import * as Share from 'share';
+import * as routes from 'routes';
 
 type Props = {
     event: Event.Initiative,
@@ -16,34 +18,63 @@ type Props = {
 };
 
 type ActionProps = {
-    event: Event.Initiative, result: number,
+    event: Event.Initiative,
 }
 
-function LocalActionsRow({ event, result }: ActionProps) {
+function LocalActionsRow({ event }: ActionProps) {
     const dispatch = React.useContext(Event.DispatchCtx);
     const canSeize = !event.blitzed && !event.seized;
 
-    function onEdit() {
-        // dispatch the edit thing
+    function onSeize() {
+        dispatch({ ty: "seizeInitiative", id: event.id, edit: Date.now().valueOf() });
     }
 
     return (
         <UI.FlexRow spaced>
-            <UI.LinkButton>-10</UI.LinkButton>
-            <UI.LinkButton>-5</UI.LinkButton>
-            <UI.LinkButton>-1</UI.LinkButton>
-            <UI.LinkButton>+1</UI.LinkButton>
             {canSeize &&
-               <UI.LinkButton>seize the initiative</UI.LinkButton>
+               <UI.LinkButton onClick={onSeize}>seize the initiative</UI.LinkButton>
             }
-            <UI.LinkButton onClick={onEdit}>edit</UI.LinkButton>
         </UI.FlexRow>
     );
 }
 
-function InitiativeRecord({ event, color }: Props, ref: React.Ref<HTMLDivElement>) {
+function GameActionsRow({ event }: ActionProps) {
+    const [connection, setConnection] = React.useState<Connection>("offline");
+
+    const canSeize = !event.blitzed && !event.seized;
+
+    function onSeize() {
+        if (!canSeize) { return; }
+        routes.game.editInitiative({ id: event.id, diff: { seized: true } })
+            .onConnection(setConnection);
+    }
+
+    function onReveal() {
+        routes.game.editShare({ id: event.id, share: Share.InGame })
+            .onConnection(setConnection);
+    }
+
+    return (
+        <UI.FlexRow spaced>
+            {event.source !== "local" && event.source.share !== Share.InGame &&
+                <UI.LinkButton disabled={connection === "connecting"} onClick={onReveal}>
+                    <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
+                    {' reveal'}
+                </UI.LinkButton>
+            }
+            {canSeize &&
+                <UI.LinkButton disabled={connection === "connecting"} onClick={onSeize}>
+                    <UI.FAIcon icon={icons.faSortAmountUp} />
+                    seize the initiative
+                </UI.LinkButton>
+            }
+        </UI.FlexRow>
+    );
+}
+
+function InitiativeRecord({ event, playerID, color, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
-    const canModify = true;
+    const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
@@ -62,38 +93,40 @@ function InitiativeRecord({ event, color }: Props, ref: React.Ref<HTMLDivElement
     );
     const dieList = (
         <>
-            &nbsp;{event.base || "?"} +&nbsp;<dice.List small rolls={event.dice} />
+            &nbsp;{event.base ?? "0"} +&nbsp;<dice.List small rolls={event.dice} />
         </>
     );
-    let icon: React.ReactNode = "";
-    if (event.blitzed) {
-        icon = (<UI.FAIcon icon={icons.faBolt} color={color} fixedWidth className="sr-die" />);
-    }
-    if (event.seized) {
-        icon = (<UI.FAIcon icon={icons.faSortAmountUp} color={color} fixedWidth className="sr-die" />);
-    }
 
     return (
         <UI.FlexColumn ref={ref}>
             <UI.FlexRow>
                 <UI.FlexRow flexWrap>
-                    {icon}
                     {intro}
                     {dieList}
+                    {event.blitzed &&
+                        <UI.FAIcon icon={icons.faBolt} color={color} fixedWidth />
+                    }
                 <Roll.Title>
                     {title}
                 </Roll.Title>
                 </UI.FlexRow>
-                <Roll.StyledResults color={color} style={{ alignSelf: 'flex-start'}}>
-                    {result} <UI.FAIcon icon={icons.faClipboardList} />
+                <Roll.StyledResults color={color}>
+                    {result}&nbsp;
+                    {event.seized ?
+                       <UI.FAIcon icon={icons.faSortAmountUp} />
+                       : <UI.FAIcon icon={icons.faClipboardList} />
+                    }
                 </Roll.StyledResults>
             </UI.FlexRow>
             <UI.FlexRow formRow={canModify} floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
                 {event.edit &&
                     <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
-                {canModify &&
-                <LocalActionsRow event={event} result={result} />}
+                {canModify && (
+                    event.source === "local" ?
+                        <LocalActionsRow event={event} />
+                        : <GameActionsRow event={event} />
+                )}
             </UI.FlexRow>
         </UI.FlexColumn>
     );
