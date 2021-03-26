@@ -74,6 +74,14 @@ func ForSecondChance(event event.Event, round []int) Event {
 	return &update
 }
 
+// ForSeizeInitiative constructs an update for a seize the initiative
+// initiative roll.
+func ForSeizeInitiative(event event.Event) Event {
+	update := makeEventDiff(event)
+	update.diff["seized"] = true
+	return &update
+}
+
 // eventDelete is a specific update type for deleting events
 type eventDelete struct {
 	id int64

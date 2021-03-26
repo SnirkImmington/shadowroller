@@ -25,6 +25,19 @@ func universalHeadersMiddleware(wrapped http.Handler) http.Handler {
 	})
 }
 
+/*
+func frontendHeadersMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
+		response.Header().Set("X-Frame-Options", "DENY")
+		response.Header().Set(
+			"Content-Security-Policy",
+			"default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'none'; frame-ancestors 'none'",
+		)
+		wrapped.ServeHTTP(response, request)
+	})
+}
+*/
+
 func restHeadersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		response.Header().Set("Cache-Control", "no-store")

@@ -25,6 +25,11 @@ type Response = http.ResponseWriter
 
 var errExtraBody = errors.New("encountered additional data after end of JSON body")
 
+type updateEventRequest struct {
+	ID   int64                  `json:"id"`
+	Diff map[string]interface{} `json:"diff"`
+}
+
 // closeRedis closes the redis connection and logs any errors found
 func closeRedis(request *Request, conn redis.Conn) {
 	if config.RedisConnectionsDebug {

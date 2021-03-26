@@ -39,11 +39,6 @@ type renameRequest struct {
 
 var _ = gameRouter.HandleFunc("/modify-roll", handleUpdateEvent).Methods("POST")
 
-type updateEventRequest struct {
-	ID   int64                  `json:"id"`
-	Diff map[string]interface{} `json:"diff"`
-}
-
 func handleUpdateEvent(response Response, request *Request) {
 	logRequest(request)
 	sess, conn, err := requestSession(request)
@@ -110,58 +105,6 @@ func handleUpdateEvent(response Response, request *Request) {
 	logf(request, "Event %v diff %v", evt.GetID(), diff)
 	err = game.UpdateEvent(sess.GameID, evt, update, conn)
 	httpInternalErrorIf(response, request, err)
-}
-
-var _ = gameRouter.HandleFunc("/edit-share", handleShareEvent).Methods("POST")
-
-type shareEventRequest struct {
-	ID    int64 `json:"id"`
-	Share int   `json:"share"`
-}
-
-func handleShareEvent(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
-	httpUnauthorizedIf(response, request, err)
-
-	var shareRequest shareEventRequest
-	err = readBodyJSON(request, &shareRequest)
-	httpInternalErrorIf(response, request, err)
-
-	if !event.IsShare(shareRequest.Share) {
-		httpBadRequest(response, request, "Invalid share type")
-	}
-	share := event.Share(shareRequest.Share)
-
-	logf(request,
-		"%v requests to share %v %v",
-		sess.PlayerID, shareRequest.ID, share.String(),
-	)
-
-	eventText, err := event.GetByID(sess.GameID, shareRequest.ID, conn)
-	httpBadRequestIf(response, request, err)
-	evt, err := event.Parse([]byte(eventText))
-	httpInternalErrorIf(response, request, err)
-
-	if evt.GetPlayerID() != sess.PlayerID {
-		httpForbidden(response, request, "You may not edit this event")
-	}
-	if evt.GetType() == event.EventTypePlayerJoin {
-		httpForbidden(response, request, "You may not edit this event")
-	}
-
-	// Gotta be idempotent
-	if evt.GetShare() == share {
-		httpSuccess(response, request, "No change")
-		return
-	}
-
-	err = game.UpdateEventShare(sess.GameID, evt, share, conn)
-	httpInternalErrorIf(response, request, err)
-
-	httpSuccess(response, request,
-		"Event ", evt.GetID(), " is now share ", share.String(),
-	)
 }
 
 var _ = gameRouter.HandleFunc("/delete-roll", handleDeleteEvent).Methods("POST")
@@ -251,13 +194,12 @@ func handleRoll(response Response, request *Request) {
 	} else {
 		dice := make([]int, roll.Count)
 		hits := sr.FillRolls(dice)
-		logf(request, "%v rolls %v dice %v (%v hits)",
-			sess.PlayerInfo(), dice, share.String(), hits,
+		logf(request, "%v rolls %v %v (%v hits)",
+			sess.PlayerID, dice, share.String(), hits,
 		)
 		rollEvent := event.ForRoll(
 			player, share, roll.Title, dice, roll.Glitchy,
 		)
-		logf(request, "%#v", rollEvent)
 		evt = &rollEvent
 	}
 	err = game.PostEvent(sess.GameID, evt, conn)
@@ -265,66 +207,6 @@ func handleRoll(response Response, request *Request) {
 	httpSuccess(
 		response, request,
 		"OK; roll ", evt.GetID(), " posted",
-	)
-}
-
-type initiativeRollRequest struct {
-	Title string `json:"title"`
-	Share int    `json:"share"`
-	Base  int    `json:"base"`
-	Dice  int    `json:"dice"`
-}
-
-var _ = gameRouter.HandleFunc("/roll-initiative", handleRollInitiative).Methods("POST")
-
-// $ POST /roll-initiative title base dice
-func handleRollInitiative(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
-	httpUnauthorizedIf(response, request, err)
-
-	var roll initiativeRollRequest
-	err = readBodyJSON(request, &roll)
-	httpInternalErrorIf(response, request, err)
-	displayedTitle := "initiative"
-	if roll.Title != "" {
-		displayedTitle = roll.Title
-	}
-	if roll.Dice < 1 {
-		httpBadRequest(response, request, "Invalid dice count")
-	}
-	if roll.Base < -2 {
-		httpBadRequest(response, request, "Invalid initiative base")
-	}
-	if roll.Dice > 5 {
-		httpBadRequest(response, request, "Cannot roll more than 5 dice")
-	}
-	if !event.IsShare(roll.Share) {
-		httpBadRequest(response, request, "share: invalid")
-	}
-	share := event.Share(roll.Share)
-
-	logf(request, "Initiative request from %v to roll %v + %vd6 %v (%v)",
-		sess.String(), roll.Base, roll.Dice, share.String(), displayedTitle,
-	)
-
-	player, err := sess.GetPlayer(conn)
-	httpInternalErrorIf(response, request, err)
-
-	dice := make([]int, roll.Dice)
-	sr.FillRolls(dice)
-
-	logf(request, "%v rolls %v + %v %v for `%v`",
-		sess.PlayerInfo(), roll.Base, dice, share.String(), roll.Title,
-	)
-	event := event.ForInitiativeRoll(
-		player, share, roll.Title, roll.Base, dice,
-	)
-	err = game.PostEvent(sess.GameID, &event, conn)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(
-		response, request,
-		"Initiative ", event.GetID(), " posted",
 	)
 }
 

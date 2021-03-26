@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"sr"
@@ -102,8 +101,8 @@ func main() {
 
 	log.Print("Starting up...")
 	redisUtil.SetupWithConfig()
-	rand.Seed(time.Now().UnixNano())
-	sr.BeginGeneratingRolls()
+	sr.SeedRand()
+	sr.GenerateRolls()
 	setup.CheckGamesAndPlayers()
 	routes.RegisterTasksViaConfig()
 
