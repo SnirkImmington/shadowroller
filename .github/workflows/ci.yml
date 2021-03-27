@@ -1,11 +1,17 @@
 name: Build
 
-on: [ pull_request ]
+on:
+  pull_request:
+    paths:
+      - 'web/**'
 
 jobs:
-  build:
-    name: Build
+  build-web:
+    name: Build Web
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
     - name: Git Checkout
       uses: actions/checkout@v2

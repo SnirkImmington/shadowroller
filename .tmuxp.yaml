@@ -1,0 +1,18 @@
+session_name: Shadowroller
+windows:
+- window-name: Shadowroller
+  layout: 07be,189x46,0,0{94x46,0,0[94x7,0,0,0,94x27,0,8,50,94x10,0,36,51],94x46,95,0[94x23,95,0,48,94x22,95,24,49]}
+  options: {}
+  panes:
+  - shell_command:
+    - redis-server redis.conf
+  - shell_command:
+    - reflex -sr '.*.go' -d none go run main/main.go
+  - shell_command:
+    - cd ../shadowroller
+    - npm run start
+  - shell_command:
+    - git status
+  - shell_command:
+    - cd ../shadowroller
+    - git status
