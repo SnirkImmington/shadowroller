@@ -9,7 +9,19 @@ import * as stream from '.';
 import { SetConnectionCtx } from 'connection';
 import type { BackendRequest } from 'server/request';
 
-export default function Provider(props: { children: React.ReactNode }) {
+function clearRetryID(id: NodeJS.Timeout|null): NodeJS.Timeout|null {
+    clearTimeout(id!);
+    return null;
+}
+
+function clearSource(source: EventSource|null): EventSource|null {
+    if (source) {
+        source.close();
+    }
+    return null;
+}
+
+export default function Provider({ children }: React.PropsWithChildren<{}>) {
     const eventDispatch = React.useContext(Event.DispatchCtx);
     const gameDispatch = React.useContext(Game.DispatchCtx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
@@ -23,8 +35,8 @@ export default function Provider(props: { children: React.ReactNode }) {
     function connect({ session, gameID, playerID, retries }: stream.ConnectArgs) {
         retries = retries || 0;
         setConnection("connecting");
-        setSource(s => { s && s.close(); return null; });
-        setRetryID(id => { clearTimeout(id!); return null; });
+        setSource(clearSource);
+        setRetryID(clearRetryID);
 
         let connectionSucessful = false;
 
@@ -32,12 +44,10 @@ export default function Provider(props: { children: React.ReactNode }) {
             `${server.BACKEND_URL}game/subscription?session=${session}&retries=${retries}`
         );
         source.onmessage = stream.logMessage;
-        // @ts-ignore It doesn't seem to know about the specific event handlers.
-        source.addEventListener("event", (e: MessageEvent) =>
-            stream.handleEvent(e, eventDispatch));
-        // @ts-ignore It doesn't seem to know about the specific event handlers.
-        source.addEventListener("update", (e: MessageEvent) =>
-            stream.handleUpdate(e, playerID, eventDispatch, gameDispatch, playerDispatch));
+        source.addEventListener("event", (e: Event) =>
+            stream.handleEvent(e as MessageEvent, eventDispatch));
+        source.addEventListener("update", (e: Event) =>
+            stream.handleUpdate(e as MessageEvent, playerID, eventDispatch, gameDispatch, playerDispatch));
         source.onopen = function () {
             setConnection("connected");
             setRetryID(id => { clearTimeout(id!); return null; });
@@ -58,6 +68,9 @@ export default function Provider(props: { children: React.ReactNode }) {
                 retries = 0;
             }
 
+            if (retries > stream.RETRY_DELAYS.length) {
+            }
+
             const timeoutDelay = retries > stream.RETRY_DELAYS.length ?
                 stream.RETRY_MAX : stream.RETRY_DELAYS[retries];
             const timeout = setTimeout(function() {
@@ -72,7 +85,8 @@ export default function Provider(props: { children: React.ReactNode }) {
 
     const logout = React.useCallback(function logout(): BackendRequest<void> {
         setConnection("offline");
-        setSource(s => { s && s.close(); return null; });
+        setSource(clearSource);
+        setRetryID(clearRetryID);
         gameDispatch({ ty: "leave" });
         eventDispatch({ ty: "clearEvents" });
         playerDispatch({ ty: "leave" });
@@ -86,7 +100,7 @@ export default function Provider(props: { children: React.ReactNode }) {
 
     return (
         <stream.Ctx.Provider value={value}>
-            {props.children}
+            {children}
         </stream.Ctx.Provider>
     );
 }
