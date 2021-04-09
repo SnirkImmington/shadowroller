@@ -25,7 +25,6 @@ func universalHeadersMiddleware(wrapped http.Handler) http.Handler {
 	})
 }
 
-/*
 func frontendHeadersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		response.Header().Set("X-Frame-Options", "DENY")
@@ -36,7 +35,6 @@ func frontendHeadersMiddleware(wrapped http.Handler) http.Handler {
 		wrapped.ServeHTTP(response, request)
 	})
 }
-*/
 
 func restHeadersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
