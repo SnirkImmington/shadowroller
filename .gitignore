@@ -1,6 +1,15 @@
-#
+# Common
+########
+
+# Built stuff
+out/
+# Prod stuff... affects filenames
+prod*
+# Redis db
+*.rdb
+
 # Frontend
-#
+##########
 
 # Dependencies
 web/node_modules
@@ -19,13 +28,3 @@ web/*.production
 
 # NPM logs
 web/npm-debug.log*
-
-#
-# Backend
-#
-
-# Prod stuff
-prod*
-
-# Redis db
-*.rdb
