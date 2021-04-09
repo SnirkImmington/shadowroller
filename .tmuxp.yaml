@@ -5,14 +5,15 @@ windows:
   options: {}
   panes:
   - shell_command:
-    - redis-server redis.conf
+    - redis-server redis/redis.conf
   - shell_command:
+    - cd server
     - reflex -sr '.*.go' -d none go run main/main.go
   - shell_command:
-    - cd ../shadowroller
+    - cd web
     - npm run start
   - shell_command:
     - git status
+    - cd server
   - shell_command:
-    - cd ../shadowroller
-    - git status
+    - cd web
