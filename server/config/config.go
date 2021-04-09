@@ -14,7 +14,8 @@ import (
 var (
 	// IsProduction toggles a variety of safety checks, logs, and the deployment of
 	// an HTTPS server. **Set this to true if exposing yourself to the internet.**
-	IsProduction = readBool("IS_PRODUCTION", false)
+	IsProduction bool
+	_ = configBool(&IsProduction, "isProduction", false, "toggle production checks")
 
 	// Debugging flags
 
@@ -104,6 +105,9 @@ var (
 	// MainListenHTTPS is the port which the main server listens for HTTPS requests
 	MainListenHTTPS = readString("MAIN_LISTEN_HTTPS", "")
 	// HostFrontend determines if and how the frontend site is hosted
+	// - "by-domain": check Host header and the {Front,Back}endOrigin config options
+	// - "subroute": host frontend at / and API at /api
+	// - "redirect": redirect / to FrontendOrigin
 	HostFrontend = readString("HOST_FRONTEND", "")
 
 	// Redirect server configuration (HTTP -> HTTPS forwarder)
