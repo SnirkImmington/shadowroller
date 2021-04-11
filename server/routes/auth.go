@@ -143,8 +143,8 @@ var _ = authRouter.HandleFunc("/logout", handleLogout).Methods("POST")
 func handleLogout(response Response, request *Request) {
 	logRequest(request)
 	sess, conn, err := requestSession(request)
-	defer closeRedis(request, conn)
 	httpUnauthorizedIf(response, request, err)
+	defer closeRedis(request, conn)
 
 	err = sess.Remove(conn)
 	httpInternalErrorIf(response, request, err)
