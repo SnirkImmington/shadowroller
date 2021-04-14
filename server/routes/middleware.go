@@ -30,7 +30,7 @@ func frontendHeadersMiddleware(wrapped http.Handler) http.Handler {
 		response.Header().Set("X-Frame-Options", "DENY")
 		response.Header().Set(
 			"Content-Security-Policy",
-			"default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'none'; frame-ancestors 'none'",
+			"default-src 'self' " + config.BackendOrigin.String() + "; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'none'",
 		)
 		wrapped.ServeHTTP(response, request)
 	})
