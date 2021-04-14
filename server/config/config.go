@@ -103,7 +103,10 @@ var (
 	MainListenHTTP = readString("MAIN_LISTEN_HTTP", ":3001")
 	// MainListenHTTPS is the port which the main server listens for HTTPS requests
 	MainListenHTTPS = readString("MAIN_LISTEN_HTTPS", "")
-	// HostFrontend determines if and how the frontend site is hosted
+	// HostFrontend determines if and how the frontend site is hosted:
+	// - by-domain: check Host header and {Front, Back}endOrigin config values
+	// - subroute: host frontend at / and API at /api
+	// - redirect: redirect / to FrontendOrigin
 	HostFrontend = readString("HOST_FRONTEND", "")
 
 	// Redirect server configuration (HTTP -> HTTPS forwarder)
