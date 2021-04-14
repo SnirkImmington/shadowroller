@@ -8,18 +8,36 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
-    expose:
-      - "6379"
-  sr_server:
-    build: . # use the Dockerfile from project root
-    container_name: sr_server
     volumes:
-     - .:/var/sr_server/app
-     #- $GOPATH/pkg/mod/cache:/go/pkg/mod/cache # This allows you to share your gopkg cache with the container
+      - ./redis:/usr/local/etc/redis # for redis.conf, should be editable
+      - ./redis:/data # for dump.rdb
+    user: 1000:1000
+    ports:
+      - "6379:6379"
+    entrypoint: redis-server --logfile "" --loglevel notice --dbfilename sr-server.rdb
+  # server needs to be rebuild when backend dependencies change
+  server:
+    build: ./server
+    working_dir: /go/src/sr
+    container_name: server
+    volumes:
+     - ./server:/go/src/sr:ro
+     - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache # This allows you to share your gopkg cache with the container
      # well, it's supposed to, didn't work for me.
     environment:
       - SR_REDIS_URL=redis://redis:6379
-    working_dir: /var/sr_server/app
     ports:
      - "3001:3001"
-    entrypoint: reflex -svr .*.go go run main/main.go
+    entrypoint: reflex -sr .*.go -d none go run main/main.go
+  # web needs to be rebuilt when frontend dependencies change
+  web:
+    build: ./web
+    container_name: web
+    volumes:
+      - ./web/src:/var/code/src:ro
+      - ./web/public:/var/code/public:ro
+      - ./web/build:/var/code/build
+      - ./web/build-presite:/var/code/build-presite
+    ports:
+      - "3000:3000"
+    entrypoint: npm run start

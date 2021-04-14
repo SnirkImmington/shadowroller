@@ -5,8 +5,14 @@
 
 # https://threedots.tech/post/go-docker-dev-environment-with-go-modules-and-live-code-reloading/
 
-FROM golang:latest
-WORKDIR .
-RUN go get github.com/cespare/reflex
-RUN go build
-ENTRYPOINT ["reflex", "-s", "-r" ".*.go", "go run main/main.go"]
+FROM golang:1.16.3-alpine
+
+WORKDIR /go/src/sr
+COPY . .
+
+RUN go get -v github.com/cespare/reflex
+RUN go install -v github.com/cespare/reflex
+
+RUN go build -v
+
+ENTRYPOINT ["go", "run", "main/main.go"]

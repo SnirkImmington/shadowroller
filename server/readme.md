@@ -1,12 +1,10 @@
 # Shadowroller Server
 
-_This repository will be merged with https://github.com/SnirkImmington/shadowroller before the next major update._
-
 ![Shadowroller server logs](https://user-images.githubusercontent.com/1468114/94967935-09da2f00-04ce-11eb-9b36-ce3b842abdda.png)
 
-This repository contains the backend code for running the server behind https://shadowroller.net which supports the "multiplayer" aspect of Shadowroller.
+This folder contains the backend code for running the server behind https://shadowroller.net which supports the "multiplayer" aspect of Shadowroller.
 
-The frontend can be found at http://github.com/SnirkImmington/shadowroller. It's currently hosted by GitHub Pages, although this will change in the future.
+The frontend can be found in the `web/` folder.
 
 If you'd like to hear more about the code, read on or check out [the architecture file](/architecture.org). Otherwise, skip to "Run it yourself."
 

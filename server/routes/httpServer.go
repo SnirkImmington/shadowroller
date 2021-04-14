@@ -46,9 +46,7 @@ func makeAPIRouter() *mux.Router {
 
 func makeFrontendRouter() *mux.Router {
 	router := mux.NewRouter()
-	// router.Use(
-	//     // No frontend middleware
-	// )
+	router.Use(mux.MiddlewareFunc(frontendHeadersMiddleware))
 	router.PathPrefix("/static").HandlerFunc(handleFrontendStatic).Methods("GET")
 	router.NewRoute().Name("/").HandlerFunc(handleFrontendBase).Methods("GET")
 	return router
