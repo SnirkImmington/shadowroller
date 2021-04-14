@@ -1,0 +1,25 @@
+name: Build Server
+
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+
+jobs:
+  build-server:
+    name: Build Server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.16.2'
+    - name: Run go build
+      run: go build -v -o out/sr-server ./main
+    - name: Test
+      run: go test -v -cover
