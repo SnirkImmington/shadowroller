@@ -6,7 +6,7 @@ import * as humanTime from 'HumanTime';
 import * as Roll from './RollComponents';
 
 import type { Connection } from 'connection';
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Share from 'share';
 import * as routes from 'routes';
 

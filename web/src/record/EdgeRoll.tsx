@@ -5,7 +5,7 @@ import * as humanTime from 'HumanTime';
 import * as icons from 'style/icon';
 import * as Roll from './RollComponents';
 
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Share from 'share';
 import * as rollStats from 'rollStats';
 

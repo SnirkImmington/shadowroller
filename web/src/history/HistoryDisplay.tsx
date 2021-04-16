@@ -5,7 +5,7 @@ import * as icons from 'style/icon';
 import theme from 'style/theme';
 
 import * as Game from 'game';
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Player from 'player';
 import * as srutil from 'srutil';
 

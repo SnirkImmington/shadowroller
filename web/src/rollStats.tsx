@@ -1,4 +1,4 @@
-import * as Event from 'history/event';
+import * as Event from 'event';
 
 function sumOnes(dice: number[]): number {
     return dice.reduce((acc, curr) => curr === 1 ? acc + 1 : acc, 0);

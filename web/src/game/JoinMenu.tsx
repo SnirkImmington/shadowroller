@@ -5,7 +5,7 @@ import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Player from 'player';
 import * as Stream from 'sseStream';
 import { SetConnectionCtx } from 'connection';

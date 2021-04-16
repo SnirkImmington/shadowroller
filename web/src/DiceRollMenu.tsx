@@ -3,7 +3,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'NumericInput';
 
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
 import * as Share from 'share';

@@ -1,4 +1,4 @@
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
 import { ConnectFn } from 'sseStream';
