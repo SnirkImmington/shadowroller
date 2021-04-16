@@ -26,22 +26,132 @@ function renderRollMenu(options?: RenderOptions) {
     );
 }
 
-const getDiceCount = () => screen.getByLabelText("Calculator");
+const getDiceCount = () => screen.getByRole("textbox", { name: "Roll" });
+const setDiceCount = (value: string) => fireEvent.change(getDiceCount(), { target: { value } });
 
-const getRollSubmit = () => screen.getByText(/Roll dice/i, { selector: "button" });
+const getRollTitle = () => screen.getByRole("textbox", { name: "to" });
+const setRollTitle = (value: string) => fireEvent.change(getRollTitle(), { target: { value }});
 
-it("does not enable roll button by default", async () => {
+const getLimitPush = () => screen.getByRole("checkbox", { name: "[ ] Push the limit" });
+const toggleLimitPush = () => fireEvent.click(getLimitPush());
+
+const getGlitchy = () => screen.getByRole("checkbox", { name: "[ ] Glitchy" });
+const toggleGlitchy = () => fireEvent.click(getGlitchy());
+
+const getGlitchyCount = () => screen.getByRole("textbox", { name: "Reduce number of 1s needed to glitch by 1" });
+const queryGlitchyCount = () => screen.queryByRole("texbox", { name: "Reduce number of 1s needed to glitch by 1" });
+
+const getRollSubmit = () => screen.getByText("Roll dice", { selector: "button" });
+const submitRoll = () => fireEvent.click(getRollSubmit());
+
+function validateCounts(values:[input: string, expected: boolean][]) {
+    for (const [input, expected] of values) {
+        it(`${expected ? "enables" : "disables"} roll button for ${input} dice`, async () => {
+            renderRollMenu();
+
+            await setDiceCount(input);
+
+            const expectSubmit = expect(getRollSubmit());
+            if (expected) {
+                expectSubmit.toBeEnabled();
+            }
+            else {
+                expectSubmit.toBeDisabled();
+            }
+        });
+    }
+}
+
+//
+// Roll button
+//
+
+it("does not enable roll button by default", () => {
     renderRollMenu();
 
     expect(getRollSubmit()).toBeDisabled();
 });
 
+describe("dice input validation", function() {
+    validateCounts([
+        ["0", false],
+        ["1", true],
+        ["-1", false],
+        ["10", true],
+        ["2 * 4", true],
+        ["69", true],
+    ]);
+});
 
-it("enables button when dice is set", async () => {
-    renderRollMenu();
+//
+// Roll title
+//
 
-    await fireEvent.change(getDiceCount(), { target: { value: "12" } });
+it("keeps the title in local roll", async () => {
+    const [dispatch, actions] = eventTests.mockDispatch();
+    const game: Game.State = null;
+    renderRollMenu({ dispatch, actions, game });
 
+    const rollTitle = "This is the roll. And this is the title of the roll.";
+
+    await setDiceCount("1");
+    await setRollTitle(rollTitle);
     expect(getRollSubmit()).toBeEnabled();
 
+    await submitRoll();
+    expect(actions).toHaveLength(1);
+    const event: Event.Action = actions[0];
+    expect(event.ty).toBe("newEvent");
+    expect(event.event.title).toBe(rollTitle);
+});
+
+it("allows for roll with no title", async() => {
+    const [dispatch, actions] = eventTests.mockDispatch();
+    const game: Game.State = null;
+    renderRollMenu({ dispatch, actions, game });
+
+    await setDiceCount("1");
+    await submitRoll();
+    expect(actions).toHaveLength(1);
+    const event: Event.Action = actions[0];
+    expect(event.ty).toBe("newEvent");
+    expect(event.event.title).toBe("");
+});
+
+it("rolls with limit push", async () => {
+    const [dispatch, actions] = eventTests.mockDispatch();
+    const game: Game.State = null;
+    renderRollMenu({ dispatch, actions, game });
+
+    await setDiceCount("1");
+    await toggleLimitPush();
+    expect(getRollSubmit()).toBeEnabled();
+
+    await submitRoll();
+    expect(actions).toHaveLength(1);
+    const event: Event.Action = actions[0];
+    expect(event.ty).toBe("newEvent");
+    expect(event.event.ty).toBe("edgeRoll");
+});
+
+it("does not show glitchy level set by default", () => {
+    renderRollMenu();
+
+    expect(queryGlitchyCount()).toBe(null);
+});
+
+it("rolls with glitchy starting at 1", async() => {
+    const [dispatch, actions] = eventTests.mockDispatch();
+    const game: Game.State = null;
+    renderRollMenu({ dispatch, actions, game });
+
+    await setDiceCount("1");
+    await toggleGlitchy();
+    expect(getRollSubmit()).toBeEnabled();
+
+    await submitRoll();
+    expect(actions).toHaveLength(1);
+    const event: Event.Action = actions[0];
+    expect(event.ty).toBe("newEvent");
+    expect(event.event.glitchy).toBe(1);
 });
