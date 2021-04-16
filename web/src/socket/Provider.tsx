@@ -18,7 +18,7 @@ function clearSocket(source: WebSocket | null): WebSocket | null {
 }
 
 /** API protocol code for frontend */
-const SR_PROTOCOL = "sr-1.0.0";
+const SR_PROTOCOL = "sr-1.0";
 
 function connect({ session, eventDispatch, gameDispatch, playerDispatch, setConnection }) {
     const socket = new WebSocket(`wss://localhost:3001/game/socket?session=${session}`, [SR_PROTOCOL]);

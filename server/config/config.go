@@ -172,6 +172,10 @@ var (
 	// have write timeouts for regular requests AND sse.
 	//SSEWriteTimeoutSecs = readInt("SSE_WRITE_TIMEOUT_SECS", 30)
 
+	// WSPingSecs is the amount of time between Websocket pings.
+	// We will disconnect the client if they don't ping the connection during this time.
+	WSPingSecs = readInt("WS_PING_SECS", 30)
+
 	// SSEClientRetrySecs is the amount of time suggested to an SSE client to
 	// wait between reconnects.
 	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 5)
