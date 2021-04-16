@@ -5,5 +5,6 @@ import App from './App';
 it('renders without crashing', () => {
     render(<App />);
 
-    const header = screen.getByText()
+    const header = screen.getByText(/Shadowroller/i);
+    expect(header).toBeInTheDocument();
 });
