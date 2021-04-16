@@ -19,7 +19,7 @@ export function colorForRoll(roll: number): string {
         : theme.colors.dieNone;
 }
 
-const DiceMap = [undefined, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
+const DiceMap = [DieOne, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
 type AnimatedProps = {
     small?: boolean,
@@ -35,17 +35,7 @@ export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     const newProps = Object.assign({}, props);
     let { color, roll, small } = newProps;
     if (!color && !small) {
-        switch (roll) {
-            case 1:
-                newProps.color = theme.colors.dieOne;
-                break;
-            case 5:
-            case 6:
-                newProps.color = theme.colors.dieHit;
-                break;
-            default:
-                newProps.color = theme.colors.dieNone;
-        }
+        newProps.color = colorForRoll(roll);
     }
     else if (!color && small) {
         newProps.color = theme.colors.dieNone;
