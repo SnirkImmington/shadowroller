@@ -31,6 +31,7 @@ export const AddSubPower = 2;
 export const MulDivPower = 3;
 export const ExpPower = 4;
 export const ParensPower = 5;
+export const NumberPower = 6;
 
 export type BindingPower =
 | typeof MinPower
@@ -39,11 +40,15 @@ export type BindingPower =
 | typeof MulDivPower
 | typeof ExpPower
 | typeof ParensPower
+| typeof NumberPower
 ;
 
 export const CALCULATOR_CHAR = "🖩";
 
-export function powerOf(symbol: string, prefix: boolean): BindingPower {
+export function powerOf(symbol: string | number, prefix: boolean): BindingPower {
+    if (typeof symbol === "number") {
+        return NumberPower;
+    }
     switch (symbol) {
         case '+':
         case '-':
@@ -56,6 +61,19 @@ export function powerOf(symbol: string, prefix: boolean): BindingPower {
             return ParensPower;
         default:
             return MinPower;
+    }
+}
+
+export function lispy(expr: Expression): string {
+    switch (expr.type) {
+        case "number":
+            return expr.value.toString();
+        case "unaryOp":
+            return `[${expr.op} ${lispy(expr.expr)}]`;
+        case "binOp":
+            return `(${expr.op} ${lispy(expr.left)} ${lispy(expr.right)})`;
+        default:
+            return `!!!`;
     }
 }
 

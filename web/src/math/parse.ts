@@ -2,11 +2,9 @@ import { Expression, BindingPower, MinPower } from '.';
 import { powerOf, Tokenizer } from 'math';
 import type { Token } from 'math/tokenize';
 
-// eslint-disable-next-line no-use-before-define
 type PrefixParser = (parser: Parser, current: Token) => Expression|null ;
 
 const PREFIX_PARSERS: Record<string, PrefixParser> = {
-    // eslint-disable-next-line no-use-before-define
     '(': (parser: Parser, _current: Token) => {
         // Grab expression within parens.
         const inner = parser.expression();
@@ -21,13 +19,11 @@ const PREFIX_PARSERS: Record<string, PrefixParser> = {
         }
         return inner;
     },
-    // eslint-disable-next-line no-use-before-define
     '-': (parser: Parser, _current: Token) => {
         const inner = parser.expression();
         if (inner == null) { return null; }
         return { type: "unaryOp", op: "-", expr: inner };
     },
-    // eslint-disable-next-line no-use-before-define
     '+': (parser: Parser, _current: Token) => {
         const inner = parser.expression();
         if (inner == null) { return null; }
@@ -150,8 +146,7 @@ export class Parser {
 
     currentPower = (prefix: boolean): BindingPower => {
         const nextToken = this.peek();
-        if (nextToken == null ||
-            nextToken.type !== 'symbol') {
+        if (nextToken == null || nextToken.type == "done") {
             return MinPower;
         }
         else {
