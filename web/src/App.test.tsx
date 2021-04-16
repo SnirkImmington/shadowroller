@@ -1,10 +1,9 @@
-import * as ReactDOM from 'react-dom';
+import * as React from 'react';
+import { render, screen } from '@testing-library/react';
 import App from './App';
 
-// Flow type for the tests.
-/*:: declare var it: (name: string, action: () => void) => void; */
-
 it('renders without crashing', () => {
-  const div = document.createElement('div');
-  ReactDOM.render(<App />, div);
+    render(<App />);
+
+    const header = screen.getByText()
 });
