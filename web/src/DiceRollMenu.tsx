@@ -261,9 +261,7 @@ export default function RollDicePrompt() {
                                       setText={setDiceText}
                                       value={diceCount}
                                       onSelect={setDiceCount} />
-                        <label htmlFor="roll-select-dice">
-                            dice
-                        </label>
+                        <span>dice</span>
                         &nbsp;
                     </UI.FlexRow>
                     <UI.FlexRow formRow>
