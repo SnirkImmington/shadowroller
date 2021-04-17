@@ -38,8 +38,9 @@ const toggleLimitPush = () => fireEvent.click(getLimitPush());
 const getGlitchy = () => screen.getByRole("checkbox", { name: "[ ] Glitchy" });
 const toggleGlitchy = () => fireEvent.click(getGlitchy());
 
-const getGlitchyCount = () => screen.getByRole("textbox", { name: "Reduce number of 1s needed to glitch by 1" });
-const queryGlitchyCount = () => screen.queryByRole("texbox", { name: "Reduce number of 1s needed to glitch by 1" });
+const getGlitchiness = () => screen.getByRole("textbox", { name: /Reduce number of 1s/ });
+const queryGlitchiness = () => screen.queryByRole("texbox", { name: /Reduce number of 1s/ });
+const setGlitchiness = (value: string) => fireEvent.change(getGlitchiness(), { target: { value } });
 
 const getRollSubmit = () => screen.getByText("Roll dice", { selector: "button" });
 const submitRoll = () => fireEvent.click(getRollSubmit());
@@ -118,6 +119,10 @@ it("allows for roll with no title", async() => {
     expect(event.event.title).toBe("");
 });
 
+//
+// Push Limit
+//
+
 it("rolls with limit push", async () => {
     const [dispatch, actions] = eventTests.mockDispatch();
     const game: Game.State = null;
@@ -134,19 +139,40 @@ it("rolls with limit push", async () => {
     expect(event.event.ty).toBe("edgeRoll");
 });
 
+//
+// Glitchy
+//
+
 it("does not show glitchy level set by default", () => {
     renderRollMenu();
 
-    expect(queryGlitchyCount()).toBe(null);
+    expect(queryGlitchiness()).toBe(null);
 });
 
-it("rolls with glitchy starting at 1", async() => {
+it("rolls with glitchy starting at 1", async () => {
     const [dispatch, actions] = eventTests.mockDispatch();
     const game: Game.State = null;
     renderRollMenu({ dispatch, actions, game });
 
     await setDiceCount("1");
     await toggleGlitchy();
+    expect(getRollSubmit()).toBeEnabled();
+
+    await submitRoll();
+    expect(actions).toHaveLength(1);
+    const event: Event.Action = actions[0];
+    expect(event.ty).toBe("newEvent");
+    expect(event.event.glitchy).toBe(1);
+});
+
+it("rolls with set amount of glitchy", async () => {
+    const [dispatch, actions] = eventTests.mockDispatch();
+    const game: Game.State = null;
+    renderRollMenu({ dispatch, actions, game });
+
+    await setDiceCount("1");
+    await toggleGlitchy();
+    await setGlitchiness("1");
     expect(getRollSubmit()).toBeEnabled();
 
     await submitRoll();
