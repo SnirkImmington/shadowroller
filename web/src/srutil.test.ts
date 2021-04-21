@@ -72,7 +72,7 @@ describe("pluralize()", function() {
         ["things", 1, "things"],
         ["foo", 2, "foos"],
         ["water", 221, "waters"],
-        ["foos", 3, "fooses"],
+        ["hobbits", 2, "hobbitses"],
     ]);
 });
 
