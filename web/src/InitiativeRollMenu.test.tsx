@@ -38,11 +38,14 @@ const setBase = (value: string) => fireEvent.change(getBase(), { target: { value
 const getDice = () => screen.getByRole("textbox", { name: "d6" });
 const setDice = (value: string) => fireEvent.change(getDice(), { target: { value } });
 
-const getTitle = () => screen.getByRole("textbox", { name: "initiative" });
+const getTitle = () => screen.getByRole("textbox", { name: "" });
 const setTitle = (value: string) => fireEvent.change(getTitle(), { target: { value }});
 
-const getBlitz = () => screen.getByRole("checkbox", { name: "[ ] Push the limit" });
-const toggleBlitz = () => fireEvent.click(getBlitz());
+const getBlitz = () => screen.getByRole("checkbox", { name: /Blitz/ });
+const clickBlitz = () => fireEvent.click(getBlitz());
+
+const getSeize = () => screen.getByRole("checkbox", { name: /Seize the initiative/ });
+const clickSeize = () => fireEvent.click(getSeize());
 
 const getSubmit = () => screen.getByText("Initiative", { selector: "button" });
 const clickSubmit = () => fireEvent.click(getSubmit());
@@ -126,7 +129,119 @@ describe("local initiative rolls", function() {
         const event: Event.Initiative = actions[0];
         expect(event.ty).toBe("newEvent");
         expect(event.event.ty).toBe("initiativeRoll");
-        expect(event.event.base).toBe("12");
+        expect(event.event.base).toBe(12);
         expect(event.event.dice).toHaveLength(2);
+    });
+
+    it("rolls with initiative title", async() => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await setBase("8");
+        await setDice("1");
+        await setTitle("go last");
+        expect(getSubmit()).toBeEnabled();
+        await clickSubmit();
+
+        expect(actions).toHaveLength(1);
+        const event: Event.Initiative = actions[0];
+        expect(event.ty).toBe("newEvent");
+        expect(event.event.ty).toBe("initiativeRoll");
+        expect(event.event.title).toBe("go last");
+    });
+
+
+    it("rolls with seize the initiative", async () => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await setBase("8");
+        await setDice("1");
+        await clickSeize();
+        expect(getSubmit()).toBeEnabled();
+        await clickSubmit();
+
+        expect(actions).toHaveLength(1);
+        const event: Event.Initiative = actions[0];
+        expect(event.ty).toBe("newEvent");
+        expect(event.event.ty).toBe("initiativeRoll");
+        expect(event.event.seized).toBe(true);
+    });
+});
+
+describe("blitz", function() {
+    it("rolls with blitz", async () => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await setBase("8");
+        await setDice("1");
+        await clickBlitz();
+        expect(getSubmit()).toBeEnabled();
+        await clickSubmit();
+
+        expect(actions).toHaveLength(1);
+        const event: Event.Initiative = actions[0];
+        expect(event.ty).toBe("newEvent");
+        expect(event.event.ty).toBe("initiativeRoll");
+        expect(event.event.blitzed).toBe(true);
+    });
+
+    it("disables dice when blitz is clicked", async () => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await clickBlitz();
+        const dice = getDice();
+        expect(dice).toBeDisabled();
+        expect(dice).toHaveValue("5");
+    });
+
+    it("swaps off after clicking seize", async() => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await clickBlitz();
+        expect(getSeize()).toBeEnabled();
+        await clickSeize();
+        expect(getBlitz()).not.toBeChecked();
+        expect(getSeize()).toBeChecked();
+    });
+});
+
+describe("seize the initiative", function() {
+    it("rolls with seized", async () => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await setBase("8");
+        await setDice("1");
+        await clickSeize();
+        expect(getSubmit()).toBeEnabled();
+        await clickSubmit();
+
+        expect(actions).toHaveLength(1);
+        const event: Event.Initiative = actions[0];
+        expect(event.ty).toBe("newEvent");
+        expect(event.event.ty).toBe("initiativeRoll");
+        expect(event.event.seized).toBe(true);
+    });
+
+    it("swaps off after clicking blitz", async() => {
+        const [dispatch, actions] = eventTests.mockDispatch();
+        const game: Game.State = null;
+        renderInitiativeMenu({ dispatch, actions, game });
+
+        await clickSeize();
+        expect(getBlitz()).toBeEnabled();
+        await clickBlitz();
+        expect(getSeize()).not.toBeChecked();
+        expect(getBlitz()).toBeChecked();
     });
 });
