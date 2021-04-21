@@ -4,9 +4,9 @@ import theme from 'style/theme';
 import { render, fireEvent, screen } from '@testing-library/react';
 
 import * as Event from 'event';
-import * as eventTests from 'event/test';
+import * as eventTests from 'event/event.test';
 import * as Game from 'game';
-import * as gameTests from 'game/test';
+import * as gameTests from 'game/game.test';
 import DiceRollMenu from './DiceRollMenu';
 
 export type RenderOptions = {
