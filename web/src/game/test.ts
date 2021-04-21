@@ -26,3 +26,35 @@ export function mockState(): Game.Game {
         players
     };
 }
+
+// Things to test
+// - join
+// - leave
+// - playerUpdate
+// - setPlayers
+// - default
+
+describe("reduce()", function() {
+    it("handles joining a new game", function() {
+        const action: Game.Action = {
+            ty: "join", gameID: "foo", players: new Map()
+        };
+        const state = null;
+        const result = game.reduce(state, action);
+        expect(result).not.toBeNull();
+        expect(result.gameID).toBe("foo");
+    });
+
+    it("handles joining an existing game", function() {
+        const action: Game.Action = {
+            ty: "join", gameID: "bar", players: new Map()
+        };
+        const state: Game.State = {
+            gameID: "foo",
+            players: new Map()
+        };
+        const result = game.reduce(state, action);
+        expect(result).not.toBeNull();
+        expect(result.gameID).toBe("bar");
+    });
+});

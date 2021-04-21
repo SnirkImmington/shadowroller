@@ -5,3 +5,13 @@ export function mockDispatch(): [Event.Dispatch, Event.Action[]] {
     let actions: Event.Action[] = [];
     return [jest.fn((action: Event.Action) => { actions.push(action); }), actions];
 }
+
+// Things to test:
+// - titleOf
+// - appendEventsReduce
+//   + newEvent, mergeEvents
+// - clearEvents
+// - deleteEvent
+// - modifyRoll
+// - seizeInitiative
+// - reroll
