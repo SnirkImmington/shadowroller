@@ -9,48 +9,72 @@ function parseText(text: string): Expression {
     return expression;
 }
 
-type Case = { in: string, out: Expression, name?: string};
-
-function describeCases(title: string, cases: Case[]) {
-    for (const { in: input, out, name } of cases) {
+function itMatches(title: string, cases: [string, string, Expression][]) {
+    for (const [input, out, name ] of cases) {
         it(`${title}: ${name ?? input}`, () =>
             expect(lispy(parseText(input))).toEqual(lispy(out))
         );
     }
 }
-describeCases('parses positive numbers', [
-    { in: "0", out: { type: "number", value: 0 } },
-    { in: "1", out: { type: "number", value: 1 } },
-    { in: "34", out: { type: "number", value: 34 } },
-    { in: "245", out: { type: "number", value: 245 } },
-]);
 
-describeCases('parses infix with spaces', [
-    { in: "0+1", out: { type: "binOp", op: "+",
-        left: { type: "number", value: 0 }, right: { type: "number", value: 1 }}},
-    { in: "0 + 1", out: { type: "binOp", op: "+",
-        left: { type: "number", value: 0 }, right: { type: "number", value: 1 }}},
-    { in: "0\t+ \n1\n", out: { type: "binOp", op: "+",
-        left: { type: "number", value: 0 }, right: { type: "number", value: 1 }}},
-]);
+describe('parse literals', function() {
+    itMatches('parses positive numbers', [
+        ["0", { type: "number", value: 0 }],
+        ["1", { type: "number", value: 1 }],
+        ["34", { type: "number", value: 34 }],
+        ["245", { type: "number", value: 245 }],
+    ]);
 
-describeCases('parses prefix +-', [
-    { in: "-1", out: { type: "unaryOp", op: "-", expr: { type: "number", value: 1 }}},
-    { in: "+1", out: { type: "unaryOp", op: "+", expr: { type: "number", value: 1 }}},
-    { in: "-1", out: { type: "unaryOp", op: "-", expr: { type: "number", value: 1 }}},
-]);
+    itMatches('parses numbers with +', [
+        ["+0", { type: "number", value: 0 }],
+        ["+1", { type: "number", value: 1 }],
+        ["+34", { type: "number", value: 34 }],
+        ["+245", { type: "number", value: 245 }],
+    ]);
 
-describeCases('parses infix +- with prefix exprs', [
-    { in: "0 + -1", out: { type: "binOp", op: "+",
-        left: { type: "number", value: 0 },
-        right: { type: "unaryOp", op: "-", expr: { type: "number", value: 1 }}}},
-    { in: "0 + +1", out: { type: "binOp", op: "+",
-        left: { type: "number", value: 0 },
-        right: { type: "unaryOp", op: "+", expr: { type: "number", value: 1 }}}},
-    { in: "0 - +1", out: { type: "binOp", op: "-",
-        left: { type: "number", value: 0 },
-        right: { type: "unaryOp", op: "+", expr: { type: "number", value: 1 }}}},
-    { in: "-0 + 1", out: { type: "binOp", op: "+",
-        left: { type: "unaryOp", op: "+", expr: { type: "number", value: 0 }},
-        right: { type: "number", value: 1 }}},
-]);
+    itMatches('parses negative numbers', [
+        ["-0", { type: "number", value: 0 }],
+        ["-1", { type: "number", value: -1 }],
+        ["-34", { type: "number", value: -34 }],
+        ["-245", { type: "number", value: -245 }],
+    ]);
+})
+
+describe('infix parsing', function() {
+    itMatches('parses infix with spaces', [
+        ["0+1", {
+            type: "binOp", op: "+",
+            left: { type: "number", value: 0 }, right: { type: "number", value: 1 }
+        }],
+        ["0 + 1", {
+            type: "binOp", op: "+",
+            left: { type: "number", value: 0 }, right: { type: "number", value: 1 }
+        }],
+        ["0\t+ \n1\n", {
+            type: "binOp", op: "+",
+            left: { type: "number", value: 0 }, right: { type: "number", value: 1 }
+        }],
+    ]);
+    itMatches('parses infix +- with prefix exprs', [
+        ["0 + -1", {
+            type: "binOp", op: "+",
+            left: { type: "number", value: 0 },
+            right: { type: "number", value: -1 }
+        }],
+        ["0 + +1", {
+            type: "binOp", op: "+",
+            left: { type: "number", value: 0 },
+            right: { type: "number", value: 1 }
+        }],
+        ["0 - +1", {
+            type: "binOp", op: "-",
+            left: { type: "number", value: 0 },
+            right: { type: "number", value: 1 }
+        }],
+        ["-0 + 1", {
+            type: "binOp", op: "+",
+            left: { type: "number", value: 0 },
+            right: { type: "number", value: 1 }
+        }],
+    ]);
+});

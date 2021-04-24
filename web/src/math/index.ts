@@ -45,7 +45,6 @@ export enum BindingPower {
     AddSub = 2,
     MulDiv = 3,
     Parens = 4,
-    Number = 5,
 }
 
 export const CALCULATOR_CHAR = "🖩";

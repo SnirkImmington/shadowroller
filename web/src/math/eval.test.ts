@@ -20,7 +20,7 @@ function describeCases(title: string, cases: Case[]) {
 }
 
 it('Evaluates -0', () => {
-    expect(evalText("-0")).toBe(-0);
+    expect(evalText("-0")).toBe(0);
 });
 
 describeCases('Evaluates whole numbers', [
@@ -57,6 +57,24 @@ describeCases('Evaluates add expressions', [
     { in: "1-1", out: 0 },
     { in: "-1 + 1", out: 0},
     { in: "-1 +1", out: 0 },
-    { in: "-1 - -1", out: -2 },
-    { in: "-2--2", out: -4 },
+    { in: "-1 - -1", out: 0 },
+    { in: "-2--2", out: 0 },
+    { in: "-1 + -1", out: -2 },
+    { in: "-2+-2", out: -4 }
+]);
+
+describeCases('Evaluates multiplication expressions', [
+    { in: "1*1", out: 1 },
+    { in: "2*3", out: 6 },
+    { in: "2*2*2*2", out: 16 },
+    { in: "2*2/2*2/2", out: 2 },
+    { in: "2  *    2", out: 4 },
+    { in: "1 *1", out: 1 },
+    { in: "1 *0", out: 0 },
+    { in: "-1 * 1", out: -1 },
+    { in: "-1 *1", out: -1 },
+    { in: "-1 * -1", out: 1 },
+    { in: "-2*-2", out: 4 },
+    { in: "-1 / -1", out: 1 },
+    { in: "-2/-2", out: 1 }
 ]);

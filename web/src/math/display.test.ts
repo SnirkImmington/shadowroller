@@ -27,12 +27,12 @@ describeCases('lispy numbers', [
 ]);
 
 describeCases('lispy unary ops', [
-    { in: "-1.43", out: "[- 1.43]" },
-    { in: "+1.43", out: "[+ 1.43]" },
+    { in: "-1.43", out: "-1.43" },
+    { in: "+1.43", out: "1.43" },
 ]);
 
 describeCases('lispy binary ops', [
     { in: "0 + 1", out: "(+ 0 1)" },
     { in: "220 - 1", out: "(- 220 1)" },
-    { in: ".23 - 1 - 1", out: "(- (- .23 1) 1)" },
+    { in: ".23 - 1 - 1", out: "(- (- 0.23 1) 1)" },
 ]);

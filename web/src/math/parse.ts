@@ -22,12 +22,28 @@ const PREFIX_PARSERS: Record<string, PrefixParser> = {
         return inner;
     },
     '-': (parser: Parser, _current: Token) => {
-        const inner = parser.expression();
+        let peeked = parser.peek();
+        if (peeked != null && peeked.type === "number") {
+            peeked = parser.token();
+            if (peeked.type !== "number") {
+                return null; // Should not happen because we peeked
+            }
+            return { type: "number", value: peeked.value === 0 ? 0 : -peeked.value };
+        }
+        const inner = parser.expression(BindingPower.Max);
         if (inner == null) { return null; }
         return { type: "unaryOp", op: UnaryOp.Negate, expr: inner };
     },
     '+': (parser: Parser, _current: Token) => {
-        const inner = parser.expression();
+        let peeked = parser.peek();
+        if (peeked != null && peeked.type === "number") {
+            peeked = parser.token();
+            if (peeked.type !== "number") {
+                return null; // Should not happen because we peeked
+            }
+            return { type: "number", value: peeked.value };
+        }
+        const inner = parser.expression(BindingPower.Max);
         if (inner == null) { return null; }
         return { type: "unaryOp", op: UnaryOp.Positive, expr: inner };
     }
@@ -98,18 +114,15 @@ export class Parser {
         }
     }
 
-    expression = (currPower?: BindingPower): Expression|null => {
-        let power: typeof BindingPower[keyof typeof BindingPower] = BindingPower.Min;
-        if (currPower) {
-            power = currPower as typeof BindingPower[keyof typeof BindingPower];
-        }
+    expression = (power?: BindingPower): Expression|null => {
+        power = power ?? BindingPower.Min;
         let current = this.token();
         // If we're asking for an expression when we're done, we have a problem.
         if (current == null || current.type === 'done') {
             return null;
         }
         let left: Expression;
-        // If we got a number, return a number.
+        // If we got a number, return a number; don't need to parse.
         if (current.type === 'number') {
             left =  { type: 'number', value: current.value };
         }
@@ -124,7 +137,7 @@ export class Parser {
             if (parsedLeft == null) { return null; }
             left = parsedLeft;
         }
-        while (power <= this.currentPower(false)) {
+        while (power < this.nextTokenPower()) {
             // We might have an infix char after this prefix expr.
             const infixToken = this.peek();
             // If we've reached the end, then it was just that expression we parsed.
@@ -144,13 +157,13 @@ export class Parser {
         return left;
     }
 
-    currentPower = (prefix: boolean): BindingPower => {
+    nextTokenPower = (): BindingPower => {
         const nextToken = this.peek();
         if (nextToken == null || nextToken.type === "done") {
             return BindingPower.Min;
         }
         else {
-            return powerOf(nextToken.value, prefix);
+            return powerOf(nextToken.value, false);
         }
     }
 
