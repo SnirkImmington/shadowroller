@@ -9,72 +9,78 @@ function evalText(text: string): number {
     return evaluate(expression);
 }
 
-type Case = { in: string, out: number, name?: string};
-
-function describeCases(title: string, cases: Case[]) {
-    for (const { in: input, out, name } of cases) {
-        it(`${title}: ${name ?? input}`, () =>
-            expect(evalText(input)).toBe(out)
-        );
-    }
+function describeCases(title: string, cases: (string|number)[]) {
+    describe(`${title}`, function() {
+        for (let i = 0; i < cases.length; i += 2) {
+            let input = cases[i] as string;
+            let output = cases[i + 1] as number;
+            it(`eval("${input}") = ${output}`,
+               () => expect(evalText(input)).toBe(output));
+        }
+    });
 }
 
-it('Evaluates -0', () => {
-    expect(evalText("-0")).toBe(0);
-});
-
-describeCases('Evaluates whole numbers', [
-    { in: "0", out: 0 },
-    { in: "1", out: 1 },
-    { in: "2", out: 2 },
-    { in: "32", out: 32 },
-    { in: "34456", out: 34456 },
-    { in: "1234567890", out: 1234567890 },
-    { in: "666", out: 666 },
-    { in: "-122", out: -122 },
-    { in: "-33256", out: -33256 },
+describeCases('Whole numbers', [
+    "0", 0,
+    "1", 1,
+    "2", 2,
+    "32", 32,
+    "34456", 34456,
+    "1234567890", 1234567890,
+    "666", 666,
+    "-0", 0,
+    "-122", -122,
+    "-33256", -33256,
 ]);
 
-describeCases('Evaluates basic decimals', [
-    { in: "0.0", out: 0 },
-    { in: "1.0000", out: 1 },
-    { in: "0.2", out: 0.2 },
-    { in: "3.2", out: 3.2 },
-    { in: "34.456", out: 34.456 },
-    { in: ".1234567890", out: 0.1234567890 },
-    { in: "-1.22", out: -1.22 },
-    { in: "-.33256", out: -0.33256 },
+describeCases('Decimals', [
+    "0.0", 0,
+    "1.0000", 1,
+    "0.2", 0.2,
+    "3.2", 3.2,
+    "34.456", 34.456,
+    ".1234567890", 0.1234567890,
+    "-1.22", -1.22,
+    "-.33256", -0.33256,
 ]);
 
-describeCases('Evaluates add expressions', [
-    { in: "1+1", out: 2 },
-    { in: "2+3", out: 5 },
-    { in: "1+1+1+1", out: 4 },
-    { in: "1+1-1+1-1", out: 1 },
-    { in: "1  +    1", out: 2 },
-    { in: "1 +1", out: 2 },
-    { in: "1 -1", out: 0 },
-    { in: "1-1", out: 0 },
-    { in: "-1 + 1", out: 0},
-    { in: "-1 +1", out: 0 },
-    { in: "-1 - -1", out: 0 },
-    { in: "-2--2", out: 0 },
-    { in: "-1 + -1", out: -2 },
-    { in: "-2+-2", out: -4 }
+describeCases('Addition and subtraction', [
+    "1+1", 2,
+    "2+3", 5,
+    "1+1+1+1", 4,
+    "1+1-1+1-1", 1,
+    "1  +    1", 2,
+    "1 +1", 2,
+    "1 -1", 0,
+    "1-1", 0,
+    "-1 + 1", 0,
+    "-1 +1", 0,
+    "-1 - -1", 0,
+    "-2--2", 0,
+    "-1 + -1", -2,
+    "-2+-2", -4
 ]);
 
-describeCases('Evaluates multiplication expressions', [
-    { in: "1*1", out: 1 },
-    { in: "2*3", out: 6 },
-    { in: "2*2*2*2", out: 16 },
-    { in: "2*2/2*2/2", out: 2 },
-    { in: "2  *    2", out: 4 },
-    { in: "1 *1", out: 1 },
-    { in: "1 *0", out: 0 },
-    { in: "-1 * 1", out: -1 },
-    { in: "-1 *1", out: -1 },
-    { in: "-1 * -1", out: 1 },
-    { in: "-2*-2", out: 4 },
-    { in: "-1 / -1", out: 1 },
-    { in: "-2/-2", out: 1 }
+describeCases('Multiplication and division', [
+    "1*1", 1,
+    "2*3", 6,
+    "2*2*2*2", 16,
+    "2*2/2*2/2", 2,
+    "2  *    2", 4,
+    "1 *1", 1,
+    "1 *0", 0,
+    "-1 * 1", -1,
+    "-1 *1", -1,
+    "-1 * -1", 1,
+    "-2*-2", 4,
+    "-1 / -1", 1,
+    "-2/-2", 1,
+]);
+
+describeCases('Pemdas handling', [
+    "1 + 3 * 2", 7,
+    "3 * 2 + 1", 7,
+    "3 + 2 * 1", 5,
+    "2 * 1 + 3", 5,
+    "1 * 3 + 1 * 3", 6,
 ]);
