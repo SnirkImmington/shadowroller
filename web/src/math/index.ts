@@ -1,69 +1,76 @@
-/** Binary operator, i.e. `+`, `-`, `*`, etc. */
-export type BinOp =
-| "+"
-| "-"
-| "*"
-| "/"
-| "^"
-;
+/** Binary operator = `+`, `-`, `*`, etc. */
+export enum BinOp {
+    Plus = "+",
+    Minus = "-",
+    Times = "*",
+    Divide = "/",
+}
 
-/** Unary operator: negative and positive */
-export type UnaryOp =
-| "-"
-| "+"
-;
+export function binOpOf(symbol: string): BinOp {
+    switch (symbol) {
+        case "+": return BinOp.Plus;
+        case "-": return BinOp.Minus;
+        case "*": return BinOp.Times;
+        case "/": return BinOp.Divide;
+        default:
+            throw new Error("Attempted to get an invalid binOp")
+    }
+}
 
-/**  */
-export type RoundingMode =
-| "up"
-| "down"
-;
+/** Unary operator = negative and (no-op) positive */
+export enum UnaryOp {
+    /** -(expression) */
+    Negate = "-",
+    /** Technically a no-op */
+    Positive = "+",
+}
 
+/** Whether to round up or down. */
+export enum Round {
+    Up = "up",
+    Down = "down",
+}
+
+/** An AST for expressions written in a NumericInput */
 export type Expression =
 | { type: "number", value: number }
 | { type: "binOp", op: BinOp, left: Expression, right: Expression }
 | { type: "unaryOp", op: UnaryOp, expr: Expression }
 ;
 
-export const MinPower = 0;
-export const NegatePower = 1;
-export const AddSubPower = 2;
-export const MulDivPower = 3;
-export const ExpPower = 4;
-export const ParensPower = 5;
-export const NumberPower = 6;
-
-export type BindingPower =
-| typeof MinPower
-| typeof NegatePower
-| typeof AddSubPower
-| typeof MulDivPower
-| typeof ExpPower
-| typeof ParensPower
-| typeof NumberPower
-;
+/** The precedence of an expression or operator in pemdas */
+export enum BindingPower {
+    Min = 0,
+    Negate = 1,
+    AddSub = 2,
+    MulDiv = 3,
+    Parens = 4,
+    Number = 5,
+}
 
 export const CALCULATOR_CHAR = "🖩";
 
+/** The binding power of a given symbol (optionally in prefix/unary op position) */
 export function powerOf(symbol: string | number, prefix: boolean): BindingPower {
     if (typeof symbol === "number") {
-        return NumberPower;
+        return BindingPower.Number;
     }
     switch (symbol) {
         case '+':
         case '-':
-            return prefix ? NegatePower : AddSubPower;
-        case '*': case '/':
-            return MulDivPower;
-        case '^':
-            return ExpPower;
-        case '(': case ')':
-            return ParensPower;
+            return prefix ? BindingPower.Negate : BindingPower.AddSub;
+        case '*':
+        case '/':
+            return BindingPower.MulDiv;
+        case '(':
+        case ')':
+            return BindingPower.Parens;
         default:
-            return MinPower;
+            return BindingPower.Min;
     }
 }
 
+/** Exports the function as an S-expression. Uses square brackets for unary ops. */
 export function lispy(expr: Expression): string {
     switch (expr.type) {
         case "number":
@@ -77,31 +84,30 @@ export function lispy(expr: Expression): string {
     }
 }
 
+/** Evaluates the given expression. */
 export function evaluate(expr: Expression): number {
     switch (expr.type) {
         case 'number':
             return expr.value;
         case 'unaryOp':
             switch (expr.op) {
-                case '+':
+                case UnaryOp.Positive:
                     return evaluate(expr.expr);
-                case '-':
+                case UnaryOp.Negate:
                     return -1 * evaluate(expr.expr);
                 default:
                     return NaN;
             }
         case 'binOp':
             switch (expr.op) {
-                case '+':
+                case BinOp.Plus:
                     return evaluate(expr.left) + evaluate(expr.right);
-                case '-':
+                case BinOp.Minus:
                     return evaluate(expr.left) - evaluate(expr.right);
-                case '*':
+                case BinOp.Times:
                     return evaluate(expr.left) * evaluate(expr.right);
-                case '/':
+                case BinOp.Divide:
                     return evaluate(expr.left) / evaluate(expr.right);
-                case '^':
-                    return Math.pow(evaluate(expr.left), evaluate(expr.right));
                 default:
                     return NaN;
             }

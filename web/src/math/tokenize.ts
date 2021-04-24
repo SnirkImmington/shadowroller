@@ -4,6 +4,7 @@ export type Token =
 | { type: "number", value: number }
 ;
 
+/** Tokenizer is built around a string and next() produces the next token in the string. */
 export class Tokenizer {
     text: string;
     position: number;
