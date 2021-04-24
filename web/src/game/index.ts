@@ -2,14 +2,19 @@ import * as React from 'react';
 
 import type { Info as PlayerInfo } from 'player';
 
+/** Game is the state of a currently-connected online game. */
 export type Game = {
+    /** Unique ID for the game */
     gameID: string,
+    /** Info we know about players in the game. */
     players: Map<string, PlayerInfo>
 };
 
+/** Currently connected game (null if not connected) */
 export type State = Game | null;
 export const defaultState: State = null;
 
+/** Updates to game state */
 export type Action =
 | { ty: "join", gameID: string, players: Map<string, PlayerInfo> }
 | { ty: "leave" }

@@ -15,6 +15,7 @@ import * as server from 'server';
 import * as srutil from 'srutil';
 import * as routes from 'routes';
 
+/** Flavor for the login menu */
 const ENTER_GAME_ID_FLAVOR: React.ReactNode[] = [
     <span><tt>foofaraw</tt> isn't a Game ID.</span>,
 
@@ -26,17 +27,20 @@ const ENTER_GAME_ID_FLAVOR: React.ReactNode[] = [
     "We probably won't burn your SIN.",
 ];
 
+/** Description of the "remember me" button */
 const REMEMBER_FLAVOR = [
     "Remember me",
     "Save my mark",
 ];
 
+/** Flavor while login request is loading */
 const LOADING_FLAVOR = [
     "Hacking you in...",
     "Acquiring marks...",
     "Accessing game node...",
     "Asking for permission...",
 ];
+/** Flavor for 400 errors */
 const CLIENT_ERROR_FLAVOR = [
     "I don't think that Game ID exists.",
     "You put in the right Game ID?",
@@ -45,12 +49,14 @@ const CLIENT_ERROR_FLAVOR = [
     "That's no Game ID.",
     "Access denied! SIN burned!",
 ];
+/** Flavor for 500 errors */
 const SERVER_ERROR_FLAVOR = [
     "Something went wrong with the server.",
     "The server is having an issue.",
     "The server is having issues, okay?",
     "Server glitched attempting to check your ID.",
 ];
+/** Flavor for request failing before an error */
 const NO_CONNECTION_FLAVOR = [
     "Can't connect to the server.",
     "Too much Noise to connect.",
