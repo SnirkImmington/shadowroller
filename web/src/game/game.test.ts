@@ -40,7 +40,7 @@ describe("reduce()", function() {
             ty: "join", gameID: "foo", players: new Map()
         };
         const state = null;
-        const result = game.reduce(state, action);
+        const result = Game.reduce(state, action);
         expect(result).not.toBeNull();
         expect(result.gameID).toBe("foo");
     });
@@ -53,7 +53,7 @@ describe("reduce()", function() {
             gameID: "foo",
             players: new Map()
         };
-        const result = game.reduce(state, action);
+        const result = Game.reduce(state, action);
         expect(result).not.toBeNull();
         expect(result.gameID).toBe("bar");
     });
