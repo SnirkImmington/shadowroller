@@ -51,7 +51,7 @@ function gameReduce(state: State, action: Action): State {
                 players: action.players,
             };
         default:
-            if (process.env.NODE_ENV !== 'production') {
+            if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
                 const action_: never = action;
                 console.error("GameReduce: invalid action", action_);
             }
@@ -61,7 +61,7 @@ function gameReduce(state: State, action: Action): State {
 
 export type Reducer = (state: State, action: Action) => State;
 let reduce: Reducer;
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
     reduce = function(state: State, action: Action): State {
         const result = gameReduce(state, action);
         console.log("Game", action.ty, state, action, result);

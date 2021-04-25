@@ -1,4 +1,4 @@
-name: Build Web
+name: Frontend Tests
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-web:
-    name: Build Web
+    name: Frontend Tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,5 +21,5 @@ jobs:
       run: npm ci
     - name: Test
       run: npm test
-    - name: Coverage
+    - name: Type Coverage
       run: npm run coverage
