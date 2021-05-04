@@ -118,7 +118,7 @@ func openFrontendFile(request *Request, filePath string, useZipped bool, useDefa
 			return file, true, true, nil
 		}
 		// allow for not found but if we asked for zipping and didn't zip index.html something's up
-		log.Print("Warning: Error opening /index.html.gz with zipping: %v", err)
+		log.Printf("Warning: Error opening /index.html.gz with zipping: %v", err)
 	}
 	// ignore not found, could still be a name issue
 	// Try to open index.html

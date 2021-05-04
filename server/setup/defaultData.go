@@ -53,7 +53,7 @@ func addHardcodedPlayers(conn redis.Conn) error {
 			}
 		}
 		if players[i] == "" {
-			log.Printf("Need mapping for %v -> %v", playerID)
+			log.Printf("Need mapping for %v", playerID)
 		}
 	}
 	log.Printf("Players (%v): %v", len(players), players)
@@ -69,7 +69,7 @@ func addHardcodedPlayers(conn redis.Conn) error {
 			for _, gameID := range games {
 				err := game.AddPlayer(gameID, &plr, conn)
 				if err != nil {
-					return fmt.Errorf("adding %v to %v: %w", username, gameID)
+					return fmt.Errorf("adding %v to %v: %w", username, gameID, err)
 				}
 			}
 		}

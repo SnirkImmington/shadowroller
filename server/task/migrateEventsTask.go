@@ -34,7 +34,7 @@ func handleGameMigrationTask(gameID string, conn redis.Conn) error {
 
 			if playerName == "" {
 				if skipped {
-					return id.UID(0), ""
+					return id.UID("0"), ""
 				}
 				log.Printf("Empty player name detected - are you sure you want to skip?")
 				skipped = true

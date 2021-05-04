@@ -30,7 +30,7 @@ func streamReadEvents(gameID string, callback func([]event.Event, int) error, co
 		for i, eventText := range events {
 			evt, err := event.Parse([]byte(eventText))
 			if err != nil {
-				return fmt.Errorf("could not parse event #v, %v: %w",
+				return fmt.Errorf("could not parse event #%v, %v: %w",
 					i, eventText, err,
 				)
 			}
@@ -43,7 +43,6 @@ func streamReadEvents(gameID string, callback func([]event.Event, int) error, co
 		count++
 		newestID = fmt.Sprintf("%v", foundEvents[len(foundEvents)-1].GetID())
 	}
-	return nil
 }
 
 func printEvent(evt event.Event) string {
