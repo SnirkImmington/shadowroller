@@ -2,7 +2,10 @@ package roll
 
 import (
 	"context"
+	"errors"
 )
+
+var ErrChannelClosed = errors.New("dice channel closed")
 
 // Roller is an interface for interpreting die rolls from a channel.
 type Roller struct {
@@ -25,7 +28,10 @@ func (r *Roller) Roll(ctx context.Context, count int) (rolls []int, hits int, er
 // Fill replaces the buffer with dice rolls, and reports the number of hits scored.
 func (r *Roller) Fill(ctx context.Context, rolls []int) (hits int, err error) {
 	for i := 0; i < len(rolls); i++ {
-		roll := <- r.dice
+		roll, ok := <- r.dice
+		if !ok {
+			return 0, ErrChannelClosed
+		}
 		rolls[i] = roll
 		if roll == 5 || roll == 6 {
 			hits++
@@ -45,7 +51,10 @@ func (r *Roller) ExplodingSixes(ctx context.Context, pool int) (results [][]int,
 		roundSixes := 0
 		rollRound := make([]int, pool)
 		for i := 0; i < pool; i++ {
-			roll := <- r.dice
+			roll, ok := <- r.dice
+			if !ok {
+				return results, 0, ErrChannelClosed
+			}
 			rollRound[i] = roll
 			if roll == 5 || roll == 6 {
 				totalHits++
