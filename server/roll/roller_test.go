@@ -76,5 +76,12 @@ func TestRerollMisses(t *testing.T) {
 		test.AssertIntsEqual(t, dice, results)
 		test.AssertEqual(t, 4, totalHits)
 	})
+}
 
+func TestSumDice(t *testing.T) {
+	t.Run("it sums dice", func(t *testing.T) {
+		dice := []int{1, 2, 3, 4, 5, 6}
+		result := SumDice(dice)
+		test.AssertEqual(t, 21, result)
+	})
 }
