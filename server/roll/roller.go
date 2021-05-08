@@ -1,6 +1,8 @@
 package roll
 
-import ()
+import (
+	"context"
+)
 
 // Roller is an interface for interpreting die rolls from a channel.
 type Roller struct {
@@ -13,14 +15,15 @@ func NewRoller(dice <- chan int) Roller {
 }
 
 // Roll rolls a given number of dice. It returns the rolls and total hits.
-func (r *Roller) Roll(count int) (rolls []int, hits int) {
+// An error is returned if the context is cancelled; results are undefined in this case.
+func (r *Roller) Roll(ctx context.Context, count int) (rolls []int, hits int, err error) {
 	rolls = make([]int, count)
-	hits = r.Fill(rolls)
-	return rolls, hits
+	hits, err = r.Fill(ctx, rolls)
+	return rolls, hits, err
 }
 
 // Fill replaces the buffer with dice rolls, and reports the number of hits scored.
-func (r *Roller) Fill(rolls []int) (hits int) {
+func (r *Roller) Fill(ctx context.Context, rolls []int) (hits int, err error) {
 	for i := 0; i < len(rolls); i++ {
 		roll := <- r.dice
 		rolls[i] = roll
@@ -28,7 +31,7 @@ func (r *Roller) Fill(rolls []int) (hits int) {
 			hits++
 		}
 	}
-	return hits
+	return hits, ctx.Err()
 }
 
 // ExplodingSixes rolls a number of dice with the rule of Exploding Sixes.
@@ -36,7 +39,8 @@ func (r *Roller) Fill(rolls []int) (hits int) {
 // Exploding Sixes applies to rolls which use Edge to Push the Limit: either
 // for the whole pool (when used before rolling) or just the Edge stat (used
 // after rolling).
-func (r *Roller) ExplodingSixes(pool int) (results [][]int, totalHits int) {
+// An error is returned if the context is cancelled; results are undefined in this case.
+func (r *Roller) ExplodingSixes(ctx context.Context, pool int) (results [][]int, totalHits int, err error) {
 	for pool > 0 {
 		roundSixes := 0
 		rollRound := make([]int, pool)
@@ -53,12 +57,13 @@ func (r *Roller) ExplodingSixes(pool int) (results [][]int, totalHits int) {
 		pool = roundSixes
 		results = append(results, rollRound)
 	}
-	return results, totalHits
+	return results, totalHits, ctx.Err()
 }
 
 // RerollMisses rolls a number of dice equal to the dice from the original roll
 // which were not hits. This corresponds to the "Second Chance" Edge action.
-func (r *Roller) RerollMisses(original []int) (result []int, totalHits int) {
+// An error is returned if the context is cancelled; results are undefined in this case.
+func (r *Roller) RerollMisses(ctx context.Context, original []int) (result []int, totalHits int, err error) {
 	pool := 0
 	for _, die := range original {
 		if die < 5 {
@@ -67,8 +72,8 @@ func (r *Roller) RerollMisses(original []int) (result []int, totalHits int) {
 	}
 	hits := len(original) - pool
 	result = make([]int, pool)
-	hits += r.Fill(result)
-	return result, hits
+	newHits, err := r.Fill(ctx, result)
+	return result, hits + newHits, err
 }
 
 // SumDice is Array[int].Sum

@@ -50,6 +50,7 @@ func (g *Generator) Run(ctx context.Context) error {
 				case g.channel <- int((randByte % rollMax) + 1):
 					continue
 				case <- ctx.Done():
+					close(g.channel)
 					return ctx.Err()
 				default:
 					log.Printf("Got the default case of the select!!")
