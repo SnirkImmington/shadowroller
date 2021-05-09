@@ -23,6 +23,12 @@ server:
 clean:
 	cd web && npm run clean
 
+server-tests:
+	cd server && go test ./...
+
+watch-server-tests:
+	cd server && reflex -sr .*.go -d none go test ./...
+
 # If you haven't set up docker to run in userspace, these will require sudo
 web-docker:
 	docker-compose web
