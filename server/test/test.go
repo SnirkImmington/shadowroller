@@ -1,15 +1,15 @@
 package test
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 // Assert calls t.ErrorF if cond is false.
 func Assert(t *testing.T, cond bool, msg string, expected interface{}, got interface{}) {
 	t.Helper()
 	if !cond {
-		t.Errorf(msg + ": expected %v, got %v", expected, got)
+		t.Errorf(msg+": expected %v, got %v", expected, got)
 	}
 }
 

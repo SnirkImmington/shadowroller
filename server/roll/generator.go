@@ -1,13 +1,12 @@
-
 package roll
 
 import (
-	"fmt"
-	"sr/config"
 	"context"
-	"time"
-	"math"
+	"fmt"
 	"log"
+	"math"
+	"sr/config"
+	"time"
 )
 
 // Generator is an object which sends rolls from its RollSource through its channel.
@@ -18,7 +17,7 @@ import (
 // go roller.Run()
 // roller := roll.NewRoller(rollsChan)
 type Generator struct {
-	source RandBytes
+	source  RandBytes
 	channel chan int
 }
 
@@ -49,7 +48,7 @@ func (g *Generator) Run(ctx context.Context) error {
 				select {
 				case g.channel <- int((randByte % rollMax) + 1):
 					continue
-				case <- ctx.Done():
+				case <-ctx.Done():
 					close(g.channel)
 					return ctx.Err()
 				default:

@@ -12,7 +12,7 @@ type RandBytes interface {
 }
 
 // cryptoRandSource implements RandBytes by calling crypto/rand.Read()
-type cryptoRandSource struct {}
+type cryptoRandSource struct{}
 
 // Read calls crypto/rand.Read(b).
 func (c *cryptoRandSource) Read(b []byte) (n int, err error) {

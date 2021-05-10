@@ -13,7 +13,7 @@ type Roller struct {
 }
 
 // NewRoller constructs a new Roller from the given channel.
-func NewRoller(dice <- chan int) Roller {
+func NewRoller(dice <-chan int) Roller {
 	return Roller{dice: dice}
 }
 
@@ -28,7 +28,7 @@ func (r *Roller) Roll(ctx context.Context, count int) (rolls []int, hits int, er
 // Fill replaces the buffer with dice rolls, and reports the number of hits scored.
 func (r *Roller) Fill(ctx context.Context, rolls []int) (hits int, err error) {
 	for i := 0; i < len(rolls); i++ {
-		roll, ok := <- r.dice
+		roll, ok := <-r.dice
 		if !ok {
 			return 0, ErrChannelClosed
 		}
@@ -51,7 +51,7 @@ func (r *Roller) ExplodingSixes(ctx context.Context, pool int) (results [][]int,
 		roundSixes := 0
 		rollRound := make([]int, pool)
 		for i := 0; i < pool; i++ {
-			roll, ok := <- r.dice
+			roll, ok := <-r.dice
 			if !ok {
 				return results, 0, ErrChannelClosed
 			}
