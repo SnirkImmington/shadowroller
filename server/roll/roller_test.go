@@ -115,7 +115,7 @@ func TestExplodingSixes(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("it reports hits from all rounds", func(t *testing.T) {
-		dice := []int{1, 2, 3, 4, 5, 6, 6, /**/ 1, 6, /**/ 5}
+		dice := []int{1, 2, 3, 4, 5, 6, 6 /**/, 1, 6 /**/, 5}
 		roller := mockRoller(dice)
 		results, hits, err := roller.ExplodingSixes(ctx, 7)
 		test.AssertSuccess(t, err, "no context error")
@@ -131,7 +131,7 @@ func TestExplodingSixes(t *testing.T) {
 		test.AssertIntIntsEqual(t, [][]int{}, rounds)
 	})
 	t.Run("it rerolls sixes for multiple rounds", func(t *testing.T) {
-		dice := []int{1, 2, 4, 5, 6, /**/ 6, /**/ 6, /**/ 6, /**/ 5}
+		dice := []int{1, 2, 4, 5, 6 /**/, 6 /**/, 6 /**/, 6 /**/, 5}
 		roller := mockRoller(dice)
 		results, hits, err := roller.ExplodingSixes(ctx, 5)
 		test.AssertSuccess(t, err, "no context error")
@@ -170,6 +170,6 @@ func TestSumDice(t *testing.T) {
 	})
 	t.Run("it sums dice", func(t *testing.T) {
 		dice := []int{1, 2, 3, 4, 5, 6}
-		test.AssertEqual(t, 1 + 2 + 3 + 4 + 5 + 6, SumDice(dice))
+		test.AssertEqual(t, 1+2+3+4+5+6, SumDice(dice))
 	})
 }
