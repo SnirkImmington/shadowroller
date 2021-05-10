@@ -8,20 +8,41 @@ import (
 	"sync"
 )
 
+// ShutdownReason is the reason a client should shut down
 type ShutdownReason int
 
-const ShutdownInterrupt ShutdownReason = 0
+const ShutdownInterrupt ShutdownReason = 0 // Server process is being killed
 
+// Client is a running task which the server should wait for before shutting down.
+//
+// Each client should have some way of _receiving_ the notification from the server
+// to shut down, via a `context.Context`. The Client represents _sending_ the
+// notification to the server to shut down.
+//
+// These systems are used:
+//
+// Process      | Notify of startup     | Receive shutdown                    |
+// -------------|-----------------------|-------------------------------------|
+// REST server  | Create client on init | Call to Shutdown(ctx)               |
+// REST handler | ^paired to server     | ^prop via request ctx               |
+// REST helper  | Own client ID         | ^prop via server's or caller's ctx  |
+// HTTP task    | Own client ID         | *Terminate on its own*              |
+// Queue reader | Own client ID         | Shutdown method with cancel context |
 type Client struct {
-	ID      string
-	Channel chan ShutdownReason
+	ID      string              // Unique ID for the client
+	Channel chan ShutdownReason // Channel to receive a shutdown message from
 }
 
 // WaitGroup is `Wait()`ed on in the main() thread.
 var WaitGroup = new(sync.WaitGroup)
 
+// clientChannel receives references to clients, which it uses to add or remove
+// tasks from the shutdown handler
 var clientChannel = make(chan *Client)
 
+// MakeClient produces a new `shutdownHandler.Client` with the given ID which will
+// cause the interrupt handler to wait for this task to run. `client.Close()` must
+// be called or the resource will leak.
 func MakeClient(id string) *Client {
 	client := &Client{
 		ID:      id,
@@ -31,6 +52,7 @@ func MakeClient(id string) *Client {
 	return client
 }
 
+// Close allows the server to shut down if no other clients are open.
 func (c *Client) Close() {
 	clientChannel <- c
 	close(c.Channel)
