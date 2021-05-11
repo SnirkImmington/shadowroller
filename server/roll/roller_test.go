@@ -164,9 +164,12 @@ func TestRerollMisses(t *testing.T) {
 }
 
 func TestSumDice(t *testing.T) {
+	t.Run("it handles the empty case", func(t *testing.T) {
+		dice := []int{}
+		test.AssertEqual(t, 0, SumDice(dice))
+	})
 	t.Run("it sums dice", func(t *testing.T) {
 		dice := []int{1, 2, 3, 4, 5, 6}
-		result := SumDice(dice)
-		test.AssertEqual(t, 21, result)
+		test.AssertEqual(t, 1 + 2 + 3 + 4 + 5 + 6, SumDice(dice))
 	})
 }
