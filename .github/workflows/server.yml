@@ -1,4 +1,4 @@
-name: Build Server
+name: Server
 
 on:
   pull_request:
@@ -6,8 +6,25 @@ on:
       - 'server/**'
 
 jobs:
+  fmt-server:
+    name: gofmt
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.16.2'
+    - name: List misformatted files
+      run: gofmt -l .
+    - name: Error if there are misformatted files
+      run: test -z $(go fmt -l .)
   build-server:
-    name: Build Server
+    name: Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,4 +39,4 @@ jobs:
     - name: Run go build
       run: go build -v -o out/sr-server ./main
     - name: Test
-      run: go test -v -cover
+      run: go test -v ./...
