@@ -17,8 +17,14 @@ web: server
 	./out/sr-server -task ppr ./web/build/index.html ./web/build-presite/index.html
 	./build/compress-all.sh web/build-presite
 
+watch-web:
+	cd web && npm run start
+
 server:
 	cd server && go build -v -o ../out/sr-server ./main
+
+watch-server:
+	cd server && reflex -sr .*.go -d none go run main/main.go
 
 clean:
 	cd web && npm run clean
@@ -28,6 +34,9 @@ server-tests:
 
 watch-server-tests:
 	cd server && reflex -sr .*.go -d none go test ./...
+
+web-tests:
+	cd web && npm run test
 
 # If you haven't set up docker to run in userspace, these will require sudo
 web-docker:
