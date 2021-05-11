@@ -13,6 +13,11 @@ func ValidID(id string) bool {
 	return err == nil
 }
 
+// ValidRerollType determines if the requested reroll type is valid.
+func ValidRerollType(ty string) bool {
+	return ty == EventTypeReroll
+}
+
 // GetByID retrieves a single event from Redis via its ID.
 func GetByID(gameID string, eventID int64, conn redis.Conn) (string, error) {
 	events, err := redis.Strings(conn.Do(

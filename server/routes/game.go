@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"sr"
 	"sr/config"
 	"sr/event"
 	"sr/game"
 	"sr/id"
 	"sr/update"
+	"sr/roll"
 )
 
 var gameRouter = restRouter.PathPrefix("/game").Subrouter()
@@ -163,42 +163,44 @@ func handleRoll(response Response, request *Request) {
 	sess, conn, err := requestSession(request)
 	httpUnauthorizedIf(response, request, err)
 
-	var roll rollRequest
-	err = readBodyJSON(request, &roll)
+	var rollRequest rollRequest
+	err = readBodyJSON(request, &rollRequest)
 	httpInternalErrorIf(response, request, err)
 
-	if roll.Count < 1 {
+	if rollRequest.Count < 1 {
 		httpBadRequest(response, request, "Invalid roll count")
 	}
-	if roll.Count > config.MaxSingleRoll {
+	if rollRequest.Count > config.MaxSingleRoll {
 		httpBadRequest(response, request, "Roll count too high")
 	}
-	if !event.IsShare(roll.Share) {
+	if !event.IsShare(rollRequest.Share) {
 		httpBadRequest(response, request, "share: invalid")
 	}
-	share := event.Share(roll.Share)
+	share := event.Share(rollRequest.Share)
 
 	player, err := sess.GetPlayer(conn)
 	httpInternalErrorIf(response, request, err)
 
 	var evt event.Event
-	if roll.Edge {
-		rolls := sr.ExplodingSixes(roll.Count)
-		logf(request, "%v: edge roll %v: %v",
-			sess.PlayerInfo(), share.String(), rolls,
+	if rollRequest.Edge {
+		rolls, hits, err := roll.Rolls.ExplodingSixes(request.Context(), rollRequest.Count)
+		httpInternalErrorIf(response, request, err)
+		logf(request, "%v: edge roll %v: %v (%v hits)",
+			sess.PlayerInfo(), share.String(), rolls, hits,
 		)
 		rollEvent := event.ForEdgeRoll(
-			player, share, roll.Title, rolls, roll.Glitchy,
+			player, share, rollRequest.Title, rolls, rollRequest.Glitchy,
 		)
 		evt = &rollEvent
 	} else {
-		dice := make([]int, roll.Count)
-		hits := sr.FillRolls(dice)
+		dice := make([]int, rollRequest.Count)
+		hits, err := roll.Rolls.Fill(request.Context(), dice)
+		httpInternalErrorIf(response, request, err)
 		logf(request, "%v rolls %v %v (%v hits)",
 			sess.PlayerID, dice, share.String(), hits,
 		)
 		rollEvent := event.ForRoll(
-			player, share, roll.Title, dice, roll.Glitchy,
+			player, share, rollRequest.Title, dice, rollRequest.Glitchy,
 		)
 		evt = &rollEvent
 	}
@@ -226,7 +228,7 @@ func handleReroll(response Response, request *Request) {
 	err = readBodyJSON(request, &reroll)
 	httpInternalErrorIf(response, request, err)
 
-	if !sr.ValidRerollType(reroll.Type) {
+	if !event.ValidRerollType(reroll.Type) {
 		logf(request, "Got invalid roll type %v", reroll)
 		httpBadRequest(response, request, "Invalid reroll type")
 	}
@@ -251,11 +253,13 @@ func handleReroll(response Response, request *Request) {
 		previousRoll.Title, previousRoll.Dice,
 	)
 
-	newRound := sr.RerollFailures(previousRoll.Dice)
+	newRound, totalHits, err := roll.Rolls.RerollMisses(request.Context(), previousRoll.Dice)
+	httpInternalErrorIf(response, request, err)
 	if len(newRound) == 0 {
 		// Cannot reroll failures on all hits
 		httpBadRequest(response, request, "Invalid previous roll")
 	}
+	logf(request, "Rerolled %v, %v hits total", newRound, totalHits)
 
 	player, err := sess.GetPlayer(conn)
 	httpInternalErrorIf(response, request, err)

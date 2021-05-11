@@ -2,11 +2,11 @@ package routes
 
 import (
 	"math"
-	"sr"
 	"sr/event"
 	"sr/game"
 	"sr/id"
 	"sr/update"
+	"sr/roll"
 )
 
 type initiativeRollRequest struct {
@@ -26,39 +26,39 @@ func handleRollInitiative(response Response, request *Request) {
 	sess, conn, err := requestSession(request)
 	httpUnauthorizedIf(response, request, err)
 
-	var roll initiativeRollRequest
-	err = readBodyJSON(request, &roll)
+	var initRequest initiativeRollRequest
+	err = readBodyJSON(request, &initRequest)
 	httpInternalErrorIf(response, request, err)
-	if roll.Dice < 1 {
+	if initRequest.Dice < 1 {
 		httpBadRequest(response, request, "Invalid dice count")
 	}
-	if roll.Base < -2 {
+	if initRequest.Base < -2 {
 		httpBadRequest(response, request, "Invalid initiative base")
 	}
-	if roll.Dice > 5 {
+	if initRequest.Dice > 5 {
 		httpBadRequest(response, request, "Cannot roll more than 5 dice")
 	}
-	if roll.Blitzed {
-		roll.Dice = 5
+	if initRequest.Blitzed {
+		initRequest.Dice = 5
 	}
-	if !event.IsShare(roll.Share) {
+	if !event.IsShare(initRequest.Share) {
 		httpBadRequest(response, request, "share: invalid")
 	}
-	share := event.Share(roll.Share)
+	share := event.Share(initRequest.Share)
 
 	logf(request, "%v to roll %v + %vd6 %v (blitz = %v, seize = %v) %v",
-		sess.PlayerID, roll.Base, roll.Dice, share.String(), roll.Blitzed, roll.Seized, roll.Title,
+		sess.PlayerID, initRequest.Base, initRequest.Dice, share.String(), initRequest.Blitzed, initRequest.Seized, initRequest.Title,
 	)
 
 	player, err := sess.GetPlayer(conn)
 	httpInternalErrorIf(response, request, err)
 
-	dice := make([]int, roll.Dice)
-	sr.FillRolls(dice)
-	logf(request, "Rolled %v + %v = %v", roll.Base, dice, roll.Base+sr.SumRolls(dice))
+	dice := make([]int, initRequest.Dice)
+	roll.Rolls.Fill(request.Context(), dice)
+	logf(request, "Rolled %v + %v = %v", initRequest.Base, dice, initRequest.Base+roll.SumDice(dice))
 
 	event := event.ForInitiativeRoll(
-		player, share, roll.Title, roll.Base, dice, roll.Seized, roll.Blitzed,
+		player, share, initRequest.Title, initRequest.Base, dice, initRequest.Seized, initRequest.Blitzed,
 	)
 	err = game.PostEvent(sess.GameID, &event, conn)
 	httpInternalErrorIf(response, request, err)
