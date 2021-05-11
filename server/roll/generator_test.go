@@ -5,7 +5,6 @@ import (
 	mathRand "math/rand"
 	"sr/test"
 	"testing"
-	"time"
 )
 
 func TestConstructor(t *testing.T) {
@@ -87,35 +86,52 @@ func TestGeneratorRNG(t *testing.T) {
 		}
 		cancel()
 	})
+}
+
+// BenchmarkDiceRolls benchmarks the time to _read_ dice from the channel, and
+// checks that the average is within the desired bounds of the expected average.
+//
+// This is mostly a test of the system's CryptoRandSource (/dev/random). Running
+// on a high-end desktop, we can read 1000 rolls through a channel in 0.5ms.
+// In any realistic setting, rolling dice isn't going to be a bottleneck - we
+// can roll faster than we can push through the network (probably even localhost).
+func BenchmarkDiceRolls(b *testing.B) {
+	bufferSize := 10
+	rollsPerRound := 1000
+	p := 0.01 // Percentage different from expected roll average
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	// PRNG with non-fixed seed; non deterministic test
+	src := CryptoRandSource() // Use hardware RNG
+	rolls := make(chan int, bufferSize)
+	gen := NewGenerator(src, bufferSize, rolls)
+	go func() {
+		err := gen.Run(ctx)
+		b.Logf("Generator closed: %v", err)
+	}()
 
 	//
-	// Non-deterministic test: If the behavior of the PRNG with a given timestamp seed is not
-	// an evenly distributed stream over the range of inputs, this test will fail.
+	// Non-deterministic pass/fail: depends on behavior of hardware RNG.
 	//
-	t.Run("NON-DETERMINISTIC (PRNG seed): output of dice roller is fair", func(t *testing.T) {
-		bufferSize := 400
-		rollsGenerated := 4000
-		ctx, cancel := context.WithCancel(ctx)
-		// PRNG with non-fixed seed; non deterministic test
-		src := mathRand.New(mathRand.NewSource(time.Now().UnixNano()))
-		rolls := make(chan int, bufferSize)
-		gen := NewGenerator(src, bufferSize, rolls)
-		go func() {
-			err := gen.Run(ctx) // This goroutine leaks if error handling doesn't work properly
-			t.Logf("Generator closed: %v", err)
-		}()
+	b.Run("output of dice roller is fair", func(b *testing.B) {
 		sum := 0
-		for i := 0; i < rollsGenerated; i++ { // Should have hit every combination of byte
-			roll, ok := <-rolls
-			test.Assert(t, ok, "generator does not close channel", true, ok)
-			sum += roll
+		totalRolled := 0
+		for r := 0; r < b.N; r++ {
+			for i := 0; i < rollsPerRound; i++ {
+				roll := <-rolls
+				sum += roll
+			}
+			totalRolled += rollsPerRound
 		}
-		cancel()
-		// Expected average: 3.5 * 1000
+		b.StopTimer()
 		expectedAverage := 3.5
-		average := float64(sum) / float64(rollsGenerated)
-		errorBar := 0.05 * expectedAverage
-		test.Assert(t, average < expectedAverage+errorBar, "average too high", expectedAverage, average)
-		test.Assert(t, average > expectedAverage-errorBar, "average too low", expectedAverage, average)
+		average := float64(sum) / float64(totalRolled)
+		errorBar := p * expectedAverage
+
+		if average > expectedAverage + errorBar {
+			b.Errorf("average too high: expected %v, got %v in %v rolls", expectedAverage, average, totalRolled)
+		} else if average < expectedAverage - errorBar {
+			b.Errorf("average too low: expected %v, got %v in %v rolls", expectedAverage, average, totalRolled)
+		}
 	})
 }

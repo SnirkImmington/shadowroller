@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	//	"sr/shutdownHandler"
 )
 
 // Generator is an object which sends rolls from its RollSource through its channel.
@@ -32,6 +33,8 @@ const inputByteMax = math.MaxUint8 - ((math.MaxUint8 % rollMax) + 1)
 // from its source. Run will terminate when ctx is canceled or when the source
 // returns an error.
 func (g *Generator) Run(ctx context.Context) error {
+	//client := shutdownHandler.MakeClient("rolls")
+	//defer client.Close()
 	defer close(g.channel)
 	select {
 	case <-ctx.Done():
