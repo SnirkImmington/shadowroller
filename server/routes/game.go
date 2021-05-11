@@ -8,8 +8,8 @@ import (
 	"sr/event"
 	"sr/game"
 	"sr/id"
-	"sr/update"
 	"sr/roll"
+	"sr/update"
 )
 
 var gameRouter = restRouter.PathPrefix("/game").Subrouter()

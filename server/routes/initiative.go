@@ -5,8 +5,8 @@ import (
 	"sr/event"
 	"sr/game"
 	"sr/id"
-	"sr/update"
 	"sr/roll"
+	"sr/update"
 )
 
 type initiativeRollRequest struct {

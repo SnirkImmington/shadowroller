@@ -128,9 +128,9 @@ func BenchmarkDiceRolls(b *testing.B) {
 		average := float64(sum) / float64(totalRolled)
 		errorBar := p * expectedAverage
 
-		if average > expectedAverage + errorBar {
+		if average > expectedAverage+errorBar {
 			b.Errorf("average too high: expected %v, got %v in %v rolls", expectedAverage, average, totalRolled)
-		} else if average < expectedAverage - errorBar {
+		} else if average < expectedAverage-errorBar {
 			b.Errorf("average too low: expected %v, got %v in %v rolls", expectedAverage, average, totalRolled)
 		}
 	})

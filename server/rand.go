@@ -28,7 +28,6 @@ func SeedRand() {
 	rand.Seed(seed)
 }
 
-
 func ConvertRolls(in []interface{}) []int {
 	out := make([]int, len(in))
 	for i, val := range in {
