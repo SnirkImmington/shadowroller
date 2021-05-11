@@ -84,6 +84,7 @@ func handleShutdown() {
 						log.Printf("Received %v after sigint", client.ID)
 					}
 					client.Channel <- ShutdownInterrupt
+					close(client.Channel)
 				}
 				if config.ShutdownHandlersDebug {
 					log.Printf("(%v) Adding %v", len(clients)+1, client.ID)
@@ -107,11 +108,13 @@ func handleShutdown() {
 					log.Printf("- Sent shutdown to %v", client.ID)
 				}
 				client.Channel <- ShutdownInterrupt
+				close(client.Channel)
 			}
 		}
 	}
 }
 
+// Init starts the shutdown handler in a separate goroutine.
 func Init() {
 	go handleShutdown()
 }
