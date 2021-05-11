@@ -24,10 +24,7 @@ const PREFIX_PARSERS: Record<string, PrefixParser> = {
     '-': (parser: Parser, _current: Token) => {
         let peeked = parser.peek();
         if (peeked != null && peeked.type === "number") {
-            peeked = parser.token();
-            if (peeked.type !== "number") {
-                return null; // Should not happen because we peeked
-            }
+            parser.token(); // Move to the next token, use peeked
             return { type: "number", value: peeked.value === 0 ? 0 : -peeked.value };
         }
         const inner = parser.expression(BindingPower.Max);
@@ -37,10 +34,7 @@ const PREFIX_PARSERS: Record<string, PrefixParser> = {
     '+': (parser: Parser, _current: Token) => {
         let peeked = parser.peek();
         if (peeked != null && peeked.type === "number") {
-            peeked = parser.token();
-            if (peeked.type !== "number") {
-                return null; // Should not happen because we peeked
-            }
+            parser.token();
             return { type: "number", value: peeked.value };
         }
         const inner = parser.expression(BindingPower.Max);

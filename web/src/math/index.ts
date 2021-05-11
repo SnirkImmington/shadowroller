@@ -40,11 +40,20 @@ export type Expression =
 
 /** The precedence of an expression or operator in pemdas */
 export enum BindingPower {
+    /** Minimum binding power */
     Min = 0,
-    Negate = 1,
-    AddSub = 2,
-    MulDiv = 3,
-    Parens = 4,
+    /** Addition and subtraction */
+    AddSub,
+    /** Multiplication and division */
+    MulDiv,
+    /** A negate expression */
+    Negate,
+    /** Parentheses */
+    Parens,
+    /** A literal value */
+    Literal,
+    /** Maximum binding power */
+    Max
 }
 
 export const CALCULATOR_CHAR = "🖩";
@@ -52,7 +61,7 @@ export const CALCULATOR_CHAR = "🖩";
 /** The binding power of a given symbol (optionally in prefix/unary op position) */
 export function powerOf(symbol: string | number, prefix: boolean): BindingPower {
     if (typeof symbol === "number") {
-        return BindingPower.Number;
+        return BindingPower.Literal;
     }
     switch (symbol) {
         case '+':
