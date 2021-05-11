@@ -1,7 +1,10 @@
 * Shadowroller Server "Architecture"
 
-Shadowroller is split into three packages:
-- ~sr~ is the base package which implements game functionality.
+Shadowroller is split into three types of packages:
+- ~sr~ is the base package which imports other pakcages and runs the servers.
+- ~sr/roll~ contains logic for rolling dice and interpreting the results.
+- ~sr/id~ contains identifier types
+- ~sr/redis~ contains logic for using Redis.
 - ~sr/config~ is used by other packages for configuration.
 - ~sr/routes~ contains a REST API used by the frontend.
 - ~main~ creates the HTTP server(s).
@@ -55,3 +58,31 @@ It's definitely due for a split-up!
 - ~game~: get info about games, perform actions (i.e. rolls) - will get split up
 - ~task~: one-off tasks are registered as routes here, usually disabled
 - ~meta~: frontend redirect, 404 handler, healthcheck, etc.
+
+
+
+* Shadowroller Architecture
+
+** Package list
+**Packages for project structure**:
+- ~sr~ contains the entrypoint and orchestration logic
+- ~sr/config~ contains configuration variables
+- ~sr/redis~ contains logic for configuring redis (via the config)
+- ~sr/shutdownHandler~ contains a shutdown handler to manage internal tasks
+- ~sr/setup~ fills databases with default data
+
+**Packages for server logic**:
+- ~sr/server~ contains logic for constructing ~http.Server~s
+- ~sr/auth~ contains logic for looking up session data
+- ~sr/session~ contains logic for cached per-request session data
+- ~sr/routes~ contains the web API
+- ~sr/task~ contains administrative and debugging tasks
+
+**Packages for game logic**:
+- ~sr/id~ contains identifiers and generators used for most objects
+- ~sr/game~ contains game-specific data
+- ~sr/player~ contains player-specific data
+- ~sr/roll~ contains utilities for generating rolls and interpreting their results
+- ~sr/update~ provides ~Update~s, or packets sent to players when data changes
+
+** Systems overview
