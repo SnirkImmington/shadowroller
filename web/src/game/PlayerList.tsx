@@ -1,13 +1,12 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
+import * as icons from 'style/icon';
 
 import * as Game from 'game';
 import * as Player from 'player';
 
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as OnlineIcon } from 'assets/icon-online.svg';
-// flow-ignore-all-next-line Uh it's there
 import { ReactComponent as OfflineIcon } from 'assets/icon-offline.svg';
 
 const StyledList = styled(UI.FlexRow).attrs(
@@ -25,10 +24,11 @@ const StyledList = styled(UI.FlexRow).attrs(
 `;
 
 type PlayerNameProps = {
-    player: Player.Info
+    player: Player.Info,
+    isGM: boolean,
 }
 
-export function PlayerName({ player }: PlayerNameProps) {
+export function PlayerName({ player, isGM }: PlayerNameProps) {
     const color = Player.colorOf(player);
     return (
         <UI.FlexRow>
@@ -39,6 +39,7 @@ export function PlayerName({ player }: PlayerNameProps) {
             <UI.PlayerColored color={color}>
                 {player.name}
             </UI.PlayerColored>
+            {isGM && <UI.FAIcon icon={icons.faChessQueen} className="icon-inline icon-gm" transform="grow-1" />}
         </UI.FlexRow>
     );
 }
@@ -51,7 +52,7 @@ export default function PlayerList() {
     const items: React.ReactNode[] = [];
     game.players.forEach((player, id) => {
         items.push(
-            <PlayerName key={id} player={player} />
+            <PlayerName key={id} player={player} isGM={game.gms.includes(id)} />
         );
     });
 

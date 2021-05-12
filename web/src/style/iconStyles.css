@@ -1,3 +1,10 @@
 svg.icon-inline {
     margin-right: 0.5em;
 }
+
+svg.icon-gm {
+    margin-left: 0.5em;
+    margin-right: 0;
+    color: #e0dd8f;
+    filter: brightness(70%);
+}
