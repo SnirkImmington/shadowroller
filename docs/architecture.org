@@ -1,40 +1,27 @@
 * Shadowroller Server "Architecture"
 
-Shadowroller is split into three types of packages:
-- ~sr~ is the base package which imports other pakcages and runs the servers.
-- ~sr/roll~ contains logic for rolling dice and interpreting the results.
-- ~sr/id~ contains identifier types
-- ~sr/redis~ contains logic for using Redis.
-- ~sr/config~ is used by other packages for configuration.
-- ~sr/routes~ contains a REST API used by the frontend.
-- ~main~ creates the HTTP server(s).
+* Server Architecture
 
-Given those descriptions, there are some import paths:
-- ~config -> sr, routes~: config is used by all packages, may not import them.
-- ~sr -> routes~: routes may import sr, not the other way around.
-- ~sr, config -> main~: main uses exports from the rest of the program.
+** Package list
+**Packages for project structure**:
+- ~sr/main~ contains the entrypoint and orchestration logic
+- ~sr/config~ contains configuration variables
+- ~sr/redis~ contains logic for configuring redis (via the config)
+- ~sr/shutdownHandler~ contains a shutdown handler to manage internal tasks
+- ~sr/setup~ fills databases with default data
 
-There are basic guidelines to keeping things well-architectured:
-- ~rotues~ should not perform redis commands directly
-- ~sr~ should not perform HTTP/request management
-- ~config~ should do nothing besides get and verify config data
-- ~main~ should call some functions from ~sr~ with minimal business logic
+**Packages for server logic**:
+- ~sr/auth~ contains logic for looking up session data
+- ~sr/session~ contains logic for cached per-request session data
+- ~sr/routes~ contains packages for constructing HTTP servers and the web API
+- ~sr/task~ contains administrative and debugging tasks
 
-** ~sr~ package: business logic
-
-Although Shadowroller is very small and doesn't do much, I'm trying to maintain
-a reasonable amount of separation between this core package and ~routes~.
-
-- ~session~: create sessions in Redis, check authorization per-request.
-- ~game~: manage the players in a game
-- ~event~: create events, subscribe to events
-- ~events~: definition of event types and serialization
-- ~roll~: roll dice according to Shadowrun rules
-- ~update~: updates are streamed server->client when game state changes
-
-- ~tid~: a timestamp ID with some noise, not currently used but will be in the future
-- ~timestamp~: event IDs are currently milisecond timestamps
-- ~id~: GUIDs using base64 encoded strings, used for players
+**Packages for game logic**:
+- ~sr/id~ contains identifiers and generators used for most objects
+- ~sr/game~ contains game-specific data
+- ~sr/player~ contains player-specific data
+- ~sr/roll~ contains utilities for generating rolls and interpreting their results
+- ~sr/update~ provides ~Update~s, packets sent to players when data changes
 
 ** ~routes~ package: a REST API
 
@@ -59,30 +46,35 @@ It's definitely due for a split-up!
 - ~task~: one-off tasks are registered as routes here, usually disabled
 - ~meta~: frontend redirect, 404 handler, healthcheck, etc.
 
+* Services Architecture
 
+I'd like to rewrite Shadowroller to a (micro)services architecture. Why?
+- Better scaling: I'd rather invest in more raspberry pis or cheaper AWS
+  instances than fewer more powerful options.
+- Hardware-specific scaling: As long as I'm running the hardware, I would like
+  the option to run services that talk to i.e. postgres on the same device.
+- Cloud-friendly: scales better to switch to multiple free-tier Heroku databases
+  and instances, scales better to a kubernetes cluster (I haven't looked into
+  pricing on those for different providers).
+- More languages: individual services could be written in different languages that
+  I want more experience in.
+- More systems: we could mix different storage backends for different services as
+  desired.
+- Decoupling: I think it'd be a lot easier to write tests if most of the platform
+  was based around a task queue. I know that's not an excuse; the code right now is
+  perfectly testable as well.
 
-* Shadowroller Architecture
+But really, I just want more fun, high-quality code. A lot of the concepts I've
+been applying for the basic server connection (and want to improve in the future)
+will carry over.
 
-** Package list
-**Packages for project structure**:
-- ~sr~ contains the entrypoint and orchestration logic
-- ~sr/config~ contains configuration variables
-- ~sr/redis~ contains logic for configuring redis (via the config)
-- ~sr/shutdownHandler~ contains a shutdown handler to manage internal tasks
-- ~sr/setup~ fills databases with default data
-
-**Packages for server logic**:
-- ~sr/server~ contains logic for constructing ~http.Server~s
-- ~sr/auth~ contains logic for looking up session data
-- ~sr/session~ contains logic for cached per-request session data
-- ~sr/routes~ contains the web API
-- ~sr/task~ contains administrative and debugging tasks
-
-**Packages for game logic**:
-- ~sr/id~ contains identifiers and generators used for most objects
-- ~sr/game~ contains game-specific data
-- ~sr/player~ contains player-specific data
-- ~sr/roll~ contains utilities for generating rolls and interpreting their results
-- ~sr/update~ provides ~Update~s, or packets sent to players when data changes
-
-** Systems overview
+Here are the services that'd be written:
+- (core): common code among services.
+- ws: websocket API - upgrade existing REST API
+- rest: if we save the existing REST API.
+- auth: authentication for the other APIs, sessions
+- player: players database
+- game: game database, game creation and deletion
+- event: roll history
+- initiative: initiative management
+- task: long-running tasks, REST API for them
