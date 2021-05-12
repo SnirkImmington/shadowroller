@@ -48,7 +48,7 @@ export function handleLogin({
 }: LoginArgs): BackendRequest<any> {
     // Prepare the players and game state
     const players = new Map<string, Player.Info>();
-    for (let [k, v] of Object.entries(response.game.players)) {
+    for (const [k, v] of Object.entries(response.game.players)) {
         players.set(k, v);
     }
     playerDispatch({
