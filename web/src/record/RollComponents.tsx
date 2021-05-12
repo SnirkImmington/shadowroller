@@ -137,13 +137,13 @@ function GameActionsRow({ event, result }: Props) {
     }
 
     function onReveal() {
-        routes.game.editShare({ id: event.id, share: Share.InGame })
+        routes.game.editShare({ id: event.id, share: Share.Mode.InGame })
             .onConnection(setConnection);
     }
 
     return (
         <UI.FlexRow spaced>
-            {event.source !== "local" && event.source.share !== Share.InGame &&
+            {event.source !== "local" && event.source.share !== Share.Mode.InGame &&
                 <UI.LinkButton disabled={connection === "connecting"}
                                onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />

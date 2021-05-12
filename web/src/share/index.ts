@@ -1,17 +1,22 @@
 import * as icons from 'style/icon';
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-/** Share.InGame allows all players to see the event */
-export const InGame = 0;
-/** Share.Private limits the event to the roller */
-export const Private = 1;
+/** Mode is the visibility of some events in a game. */
+export enum Mode {
+    /** All players may see the event */
+    InGame = 0,
+    /** Only the originator of the event may see it */
+    Private,
+    /** The game masters and originator of the event may see it */
+    GMs
+}
 
-export type Mode = typeof InGame | typeof Private;
-
+/** icon produces an icon for the given share mode */
 export function icon(share: Mode): IconDefinition {
     switch (share) {
-        case InGame: return icons.faUsers;
-        case Private: return icons.faUserSecret;
+        case Mode.InGame: return icons.faUsers;
+        case Mode.Private: return icons.faUserSecret;
+        case Mode.GMs: return icons.faUserFriends;
         default:
             if (process.env.NODE_ENV !== "production") {
                 const share_: never = share;

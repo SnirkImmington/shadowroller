@@ -57,7 +57,7 @@ export default function RollInitiativePrompt() {
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [loading, setLoading] = React.useState(false);
-    const [share, setShare] = React.useState<Share.Mode>(Share.InGame);
+    const [share, setShare] = React.useState<Share.Mode>(Share.Mode.InGame);
 
     const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
@@ -199,7 +199,7 @@ export default function RollInitiativePrompt() {
                         <RollButton id="roll-initiative-submit" type="submit"
                                     bg={RollBackground.inGame}
                                     disabled={Boolean(rollDisabled)} onClick={rollClicked}>
-                            {gameExists && share !== Share.InGame &&
+                            {gameExists && share !== Share.Mode.InGame &&
                                 <UI.FAIcon icon={Share.icon(share)}
                                            transform="grow-4" />}
                             Initiative

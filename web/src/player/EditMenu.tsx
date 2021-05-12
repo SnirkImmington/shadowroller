@@ -112,7 +112,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     let displayName = name || player.name;
     const exampleEvent: Event.Roll = {
         ty: "roll", id: new Date().valueOf(),
-        source: { id: player.id, name: displayName, share: Share.InGame },
+        source: { id: player.id, name: displayName, share: Share.Mode.InGame },
         title: exampleTitle, dice, glitchy: 0
     }
 
