@@ -8,6 +8,8 @@ export type Game = {
     gameID: string,
     /** Info we know about players in the game. */
     players: Map<string, PlayerInfo>
+    /** Who the GMs are in the game. */
+    gms: string[]
 };
 
 /** Currently connected game (null if not connected) */
@@ -16,7 +18,7 @@ export const defaultState: State = null;
 
 /** Updates to game state */
 export type Action =
-| { ty: "join", gameID: string, players: Map<string, PlayerInfo> }
+| { ty: "join", gameID: string, players: Map<string, PlayerInfo>, gms: string[] }
 | { ty: "leave" }
 | { ty: "playerUpdate", id: string, update: Partial<PlayerInfo> }
 | { ty: "setPlayers", players: Map<string, PlayerInfo> }
@@ -27,6 +29,7 @@ function gameReduce(state: State, action: Action): State {
         case "join":
             return {
                 gameID: action.gameID,
+                gms: action.gms,
                 players: action.players
             };
         case "leave":

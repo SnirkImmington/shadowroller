@@ -58,6 +58,7 @@ export function handleLogin({
     gameDispatch({
         ty: "join",
         gameID: response.game.id,
+        gms: response.game.gms,
         players,
     });
     saveSession(response.session, persist);
