@@ -55,7 +55,7 @@ export default function PublicityOptions({ prefix, state, gmsDisabled, onChange 
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-to-gm`} name={`${prefix}-location`}
                           type="radio" light disabled={gmsDisabled} value="gms"
-                          checked={state === Share.Mode.GMs } onChange={function() {}}>
+                          checked={state === Share.Mode.GMs} onChange={handleChange}>
                 to GM
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-private`} name={`${prefix}-location`}
