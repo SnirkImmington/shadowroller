@@ -1,6 +1,6 @@
 import { get, post } from 'server';
 import type { BackendRequest } from 'server/request';
-import type { Event, DiceEvent, Initiative } from 'history/event';
+import type { Event, DiceEvent, Initiative } from 'event';
 import type { Mode as ShareMode } from 'share';
 
 export type ModifyRollRequest = {

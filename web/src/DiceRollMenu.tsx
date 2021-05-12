@@ -3,7 +3,7 @@ import styled from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'NumericInput';
 
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
 import * as Share from 'share';
@@ -261,9 +261,7 @@ export default function RollDicePrompt() {
                                       setText={setDiceText}
                                       value={diceCount}
                                       onSelect={setDiceCount} />
-                        <label htmlFor="roll-select-dice">
-                            dice
-                        </label>
+                        <span>dice</span>
                         &nbsp;
                     </UI.FlexRow>
                     <UI.FlexRow formRow>

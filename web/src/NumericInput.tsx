@@ -32,10 +32,10 @@ type ValueState =
 | ["expr", number, boolean]
 ;
 
-type InputProps = { small?: boolean, disabled?: boolean };
+type InputProps = { small?: boolean, disabled?: boolean, id: string };
 
 const StyledInput = styled(UI.Input).attrs<InputProps>(
-    (props) => ({ "type": "tel", "disabled": props.disabled })
+    (props) => ({ "type": "tel", disabled: props.disabled, id: props.id })
 )<InputProps>`
     margin-left: 0;
     margin-right: 0;
@@ -169,10 +169,10 @@ export default function NumericInput(props: Props) {
     }*/
 
     let components: React.ReactNode[] = [
-        <StyledInput aria-label="Calculator" inputMode="numeric"
+        <StyledInput  inputMode="numeric"
                      value={text} onChange={onTextInput} key="input"
                      placeholder={props.placeholder} small={props.small}
-                     disabled={props.disabled}
+                     disabled={props.disabled} id={props.id}
                />,
         <CalcBox key="calc">
             <span className="fa-layers">

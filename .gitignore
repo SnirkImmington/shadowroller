@@ -28,3 +28,4 @@ web/*.production
 
 # NPM logs
 web/npm-debug.log*
+web/tsconfig.tsbuildinfo

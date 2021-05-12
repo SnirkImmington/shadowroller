@@ -1,11 +1,17 @@
 package id
 
 import (
-	rand "crypto/rand"
+	cryptoRand "crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"strings"
 )
+
+// IDBytes is the number of bytes in a regular ID.
+const IDBytes = 9
+
+// SessionIDBytes is the number of bytes in a session ID.
+const SessionIDBytes = 12
 
 // UID is the base type of random IDs used in Shadowroller.
 type UID string
@@ -22,17 +28,17 @@ type GameID string
 
 // GenUID creates a new random UID.
 func GenUID() UID {
-	return UID(encodeBytes(9))
+	return UID(encodeBytes(IDBytes))
 }
 
 // GenSessionID generates a session UID, longer than the default.
 func GenSessionID() UID {
-	return UID(encodeBytes(12))
+	return UID(encodeBytes(SessionIDBytes))
 }
 
 func encodeBytes(size uint) string {
 	bytes := make([]byte, size)
-	rand.Read(bytes)
+	cryptoRand.Read(bytes)
 	return base64.URLEncoding.EncodeToString(bytes)
 }
 

@@ -1,4 +1,4 @@
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Share from 'share';
 
 export function normalizeEvent(event: any) {

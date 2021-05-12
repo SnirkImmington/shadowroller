@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as UI from 'style';
 import * as humanTime from 'HumanTime';
 import * as Game from 'game';
-import * as Event from 'history/event';
+import * as Event from 'event';
 
 type PlayerJoinProps = {
     event: Event.PlayerJoin,

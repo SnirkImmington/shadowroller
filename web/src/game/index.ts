@@ -2,14 +2,19 @@ import * as React from 'react';
 
 import type { Info as PlayerInfo } from 'player';
 
+/** Game is the state of a currently-connected online game. */
 export type Game = {
+    /** Unique ID for the game */
     gameID: string,
+    /** Info we know about players in the game. */
     players: Map<string, PlayerInfo>
 };
 
+/** Currently connected game (null if not connected) */
 export type State = Game | null;
 export const defaultState: State = null;
 
+/** Updates to game state */
 export type Action =
 | { ty: "join", gameID: string, players: Map<string, PlayerInfo> }
 | { ty: "leave" }
@@ -46,7 +51,7 @@ function gameReduce(state: State, action: Action): State {
                 players: action.players,
             };
         default:
-            if (process.env.NODE_ENV !== 'production') {
+            if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
                 const action_: never = action;
                 console.error("GameReduce: invalid action", action_);
             }
@@ -56,7 +61,7 @@ function gameReduce(state: State, action: Action): State {
 
 export type Reducer = (state: State, action: Action) => State;
 let reduce: Reducer;
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
     reduce = function(state: State, action: Action): State {
         const result = gameReduce(state, action);
         console.log("Game", action.ty, state, action, result);

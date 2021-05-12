@@ -11,6 +11,7 @@ import (
 	"sr"
 	"sr/config"
 	redisUtil "sr/redis"
+	"sr/roll"
 	"sr/routes"
 	"sr/setup"
 	"sr/shutdownHandler"
@@ -102,7 +103,7 @@ func main() {
 	log.Print("Starting up...")
 	redisUtil.SetupWithConfig()
 	sr.SeedRand()
-	sr.GenerateRolls()
+	roll.Init()
 	setup.CheckGamesAndPlayers()
 	routes.RegisterTasksViaConfig()
 

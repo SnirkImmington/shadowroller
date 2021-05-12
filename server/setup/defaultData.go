@@ -14,7 +14,7 @@ import (
 func addHardcodedGames(conn redis.Conn) error {
 	gameKeys, err := redis.Strings(conn.Do("keys", "game:*"))
 	if err != nil {
-		return fmt.Errorf("Error reading games from redis: %w", err)
+		return fmt.Errorf("reading games from redis: %w", err)
 	}
 	for i, gameKey := range gameKeys {
 		gameKeys[i] = gameKey[5:]
@@ -24,7 +24,7 @@ func addHardcodedGames(conn redis.Conn) error {
 		log.Printf("Creating games %v", config.HardcodedGameNames)
 		for i, game := range config.HardcodedGameNames {
 			if _, err := conn.Do("hmset", "game:"+game, "event_id", 0); err != nil {
-				return fmt.Errorf("Unable to add game #%v, %v: %w", i+1, game, err)
+				return fmt.Errorf("unable to add game #%v, %v: %w", i+1, game, err)
 			}
 		}
 	}
@@ -34,15 +34,15 @@ func addHardcodedGames(conn redis.Conn) error {
 func addHardcodedPlayers(conn redis.Conn) error {
 	playerKeys, err := redis.Strings(conn.Do("keys", "player:*"))
 	if err != nil {
-		return fmt.Errorf("getting player keys from redis: %w", err)
+		return fmt.Errorf("reading player keys from redis: %w", err)
 	}
 	playerMapping, err := redis.StringMap(conn.Do("hgetall", "player_ids"))
 	if err != nil {
-		return fmt.Errorf("getting player ID mapping from redis: %w", err)
+		return fmt.Errorf("reading player ID mapping from redis: %w", err)
 	}
 	players := make([]string, len(playerKeys))
 	if err != nil {
-		return fmt.Errorf("Reading players from redis: %w", err)
+		return fmt.Errorf("reading players from redis: %w", err)
 	}
 	for i, playerKey := range playerKeys {
 		playerID := playerKey[7:]
@@ -53,7 +53,7 @@ func addHardcodedPlayers(conn redis.Conn) error {
 			}
 		}
 		if players[i] == "" {
-			log.Printf("Need mapping for %v -> %v", playerID)
+			log.Printf("Need player_ids mapping for %v", playerID)
 		}
 	}
 	log.Printf("Players (%v): %v", len(players), players)
@@ -69,7 +69,7 @@ func addHardcodedPlayers(conn redis.Conn) error {
 			for _, gameID := range games {
 				err := game.AddPlayer(gameID, &plr, conn)
 				if err != nil {
-					return fmt.Errorf("adding %v to %v: %w", username, gameID)
+					return fmt.Errorf("adding %v to %v: %w", username, gameID, err)
 				}
 			}
 		}

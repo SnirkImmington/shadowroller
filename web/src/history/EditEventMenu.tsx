@@ -4,7 +4,7 @@ import NumericInput from 'NumericInput';
 import EventRecord from 'history/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Player from 'player';
 import * as routes from 'routes';
 import theme from 'style/theme';

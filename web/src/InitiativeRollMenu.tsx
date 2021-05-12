@@ -6,7 +6,7 @@ import * as icons from 'style/icon';
 import NumericInput from 'NumericInput';
 
 import * as Game from 'game';
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Share from 'share';
 import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';

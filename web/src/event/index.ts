@@ -142,7 +142,7 @@ export function canModify(event: Event, playerID: string|null): boolean {
     return event.source === "local" || (playerID != null && event.source.id === playerID);
 }
 
-export function titleOf(event: Event) {
+export function titleOf(event: Event): string {
     switch (event.ty) {
         case "roll":
             return event.title || `roll ${event.dice.length} ${event.dice.length === 1 ? "die" : "dice"}`;

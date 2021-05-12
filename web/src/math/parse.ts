@@ -1,12 +1,12 @@
-import { Expression, BindingPower, MinPower } from '.';
+import { Expression, BindingPower, UnaryOp, BinOp, binOpOf } from '.';
 import { powerOf, Tokenizer } from 'math';
 import type { Token } from 'math/tokenize';
 
-// eslint-disable-next-line no-use-before-define
+/** A parser which parses prefix expression */
 type PrefixParser = (parser: Parser, current: Token) => Expression|null ;
 
+/** Available parsers for prefix expression: '(', '-', '+' */
 const PREFIX_PARSERS: Record<string, PrefixParser> = {
-    // eslint-disable-next-line no-use-before-define
     '(': (parser: Parser, _current: Token) => {
         // Grab expression within parens.
         const inner = parser.expression();
@@ -21,25 +21,33 @@ const PREFIX_PARSERS: Record<string, PrefixParser> = {
         }
         return inner;
     },
-    // eslint-disable-next-line no-use-before-define
     '-': (parser: Parser, _current: Token) => {
-        const inner = parser.expression();
+        let peeked = parser.peek();
+        if (peeked != null && peeked.type === "number") {
+            parser.token(); // Move to the next token, use peeked
+            return { type: "number", value: peeked.value === 0 ? 0 : -peeked.value };
+        }
+        const inner = parser.expression(BindingPower.Max);
         if (inner == null) { return null; }
-        return { type: "unaryOp", op: "-", expr: inner };
+        return { type: "unaryOp", op: UnaryOp.Negate, expr: inner };
     },
-    // eslint-disable-next-line no-use-before-define
     '+': (parser: Parser, _current: Token) => {
-        const inner = parser.expression();
+        let peeked = parser.peek();
+        if (peeked != null && peeked.type === "number") {
+            parser.token();
+            return { type: "number", value: peeked.value };
+        }
+        const inner = parser.expression(BindingPower.Max);
         if (inner == null) { return null; }
-        return { type: "unaryOp", op: "+", expr: inner };
+        return { type: "unaryOp", op: UnaryOp.Positive, expr: inner };
     }
 };
 
+/** Whether the given character is used for an infix expression */
 function isInfixChar(char: string): boolean {
     switch (char) {
         case '+': case '-':
         case '*': case '/':
-        case '^':
         case '(': // We can parse `(` infix as multiplication.
             return true;
         default:
@@ -47,7 +55,7 @@ function isInfixChar(char: string): boolean {
     }
 }
 
-// eslint-disable-next-line no-use-before-define
+/** Parse an infix expression after having parsed the LHS. */
 function parseInfix(parser: Parser, left: Expression, symbol: string): Expression|null {
     switch (symbol) {
         // Treat an infix left paren as a multiplication expression.
@@ -58,19 +66,13 @@ function parseInfix(parser: Parser, left: Expression, symbol: string): Expressio
             if (close == null || close.type !== "symbol" || close.value !== ')') {
                 return null;
             }
-            return { type: "binOp", op: "*", left, right: inner };
+            return { type: "binOp", op: BinOp.Times, left, right: inner };
         }
         case '+': case '-': case '*': case '/': {
             const power = powerOf(symbol, false);
             const right = parser.expression(power);
             if (right == null) { return null; }
-            return { type: "binOp", op: symbol, left, right: right };
-        }
-        case '^': {
-            const power = powerOf(symbol, false);
-            const right = parser.expression(power);
-            if (right == null) { return null; }
-            return { type: "binOp", op: '^', left, right: right };
+            return { type: "binOp", op: binOpOf(symbol), left, right: right };
         }
         default:
             return null;
@@ -106,14 +108,15 @@ export class Parser {
         }
     }
 
-    expression = (power: BindingPower = 0): Expression|null => {
+    expression = (power?: BindingPower): Expression|null => {
+        power = power ?? BindingPower.Min;
         let current = this.token();
         // If we're asking for an expression when we're done, we have a problem.
         if (current == null || current.type === 'done') {
             return null;
         }
         let left: Expression;
-        // If we got a number, return a number.
+        // If we got a number, return a number; don't need to parse.
         if (current.type === 'number') {
             left =  { type: 'number', value: current.value };
         }
@@ -128,7 +131,7 @@ export class Parser {
             if (parsedLeft == null) { return null; }
             left = parsedLeft;
         }
-        while (power <= this.currentPower(false)) {
+        while (power < this.nextTokenPower()) {
             // We might have an infix char after this prefix expr.
             const infixToken = this.peek();
             // If we've reached the end, then it was just that expression we parsed.
@@ -148,14 +151,13 @@ export class Parser {
         return left;
     }
 
-    currentPower = (prefix: boolean): BindingPower => {
+    nextTokenPower = (): BindingPower => {
         const nextToken = this.peek();
-        if (nextToken == null ||
-            nextToken.type !== 'symbol') {
-            return MinPower;
+        if (nextToken == null || nextToken.type === "done") {
+            return BindingPower.Min;
         }
         else {
-            return powerOf(nextToken.value, prefix);
+            return powerOf(nextToken.value, false);
         }
     }
 

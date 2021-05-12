@@ -297,7 +297,7 @@ func readOrigin(name string, defaultValue string) *url.URL {
 	log.Print("config: read env origin SR_", name)
 	val, err := url.Parse(envVal)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to parse SR_", name, ": ", envVal))
+		panic(fmt.Sprintf("Unable to parse SR_%v: %v", name, envVal))
 	}
 	return val
 }
@@ -315,7 +315,7 @@ func readKeyFile(name string, defaultValue string) []byte {
 		// Allow for a trailing newline in the file
 		contents = strings.TrimSpace(string(fileContent))
 	}
-	if contents == "" {
+	if contents == "" && name != "KEYFILE_HEALTHCHECK" {
 		log.Print("config: empty key ", name, " used!")
 		return []byte(contents)
 	}

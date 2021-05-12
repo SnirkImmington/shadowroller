@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
 import { ConnectionCtx } from 'connection';

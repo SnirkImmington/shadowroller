@@ -9,7 +9,7 @@ import (
 
 // PrintAvailableTasks prints the list of CLI tasks
 func PrintAvailableTasks() {
-	tasks := []string{"migrate"}
+	tasks := []string{"migrate", "ppr"}
 	log.Printf("Available tasks:\n\t%v", tasks)
 }
 

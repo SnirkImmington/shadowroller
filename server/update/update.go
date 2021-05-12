@@ -22,7 +22,7 @@ var updateTyParse = regexp.MustCompile(`$\["([^"]+)`)
 // ParseUpdateTy parses the type of a JSON-encoded update
 func ParseUpdateTy(update string) string {
 	match := updateTyParse.FindStringSubmatch(update)
-	if len(match) != 2 {
+	if len(match) != 3 {
 		return "??"
 	}
 	return match[1]

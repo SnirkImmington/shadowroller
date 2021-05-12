@@ -5,7 +5,7 @@ import theme from 'style/theme';
 import * as srutil from 'srutil';
 
 import * as Game from 'game';
-import * as Event from 'history/event';
+import * as Event from 'event';
 import * as Player from 'player';
 import * as server from 'server';
 import * as stream from 'sseStream';

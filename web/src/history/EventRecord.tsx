@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import * as Event from './event';
+import * as Event from 'event';
 import * as Record from 'record';
 import { areEqual } from 'react-window';
 
