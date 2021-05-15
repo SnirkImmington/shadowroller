@@ -5,35 +5,23 @@ import (
 	"fmt"
 	"regexp"
 	"sr/config"
-	"sr/event"
 	"sr/game"
 	"sr/id"
 	"sr/player"
 	"sr/shutdownHandler"
+	"sr/update"
 	"time"
 
 	"github.com/janberktold/sse"
 )
 
 func pingStream(stream *sse.Conn) error {
-	pingID := fmt.Sprintf("%v", id.NewEventID())
-	return stream.WriteEventWithID(pingID, "ping", []byte{})
+	return stream.WriteEvent("ping", []byte{})
 }
 
-func writeMessageToStream(message *game.Message, stream *sse.Conn) (string, error) {
-	var streamChannel string
-	var updateLog string
-	var messageID string
-	if message.Type == game.MessageTypeUpdate {
-		streamChannel = "update"
-		messageID = fmt.Sprintf("%v", id.NewEventID())
-		updateLog = fmt.Sprintf("update %v", message.Body)
-	} else { // event
-		streamChannel = "event"
-		messageID = event.ParseID(message.Body)
-		updateLog = fmt.Sprintf("event %v %v", event.ParseTy(message.Body), messageID)
-	}
-	return updateLog, stream.WriteEventWithID(messageID, streamChannel, []byte(message.Body))
+func writeUpdateToStream(channel string, updateText string, stream *sse.Conn) error {
+	messageID := id.NewEventID()
+	return stream.WriteEventWithID(fmt.Sprintf("%v", messageID), channel, []byte(updateText))
 }
 
 var removeDecimal = regexp.MustCompile(`\.\d+`)
@@ -45,6 +33,9 @@ func handleSubscription(response Response, request *Request) {
 	sess, conn, err := requestParamSession(request)
 	httpUnauthorizedIf(response, request, err)
 	logf(request, "Player %v to connect to %v", sess.PlayerID, sess.GameID)
+
+	isGM, err := game.HasGM(sess.GameID, sess.PlayerID, conn)
+	httpInternalErrorIf(response, request, err)
 
 	// Get shutdown handler first so it defers after everything else
 	client := shutdownHandler.MakeClient(fmt.Sprintf("request %02x subscription", requestID(request.Context())))
@@ -60,11 +51,11 @@ func handleSubscription(response Response, request *Request) {
 		}
 	}()
 
-	// Subscribe to redis
+	// Subscribe to redis forwarder
 	ctx, cancel := context.WithCancel(request.Context())
-	messages := make(chan game.Message)
+	updates := make(chan string)
 	errors := make(chan error, 1)
-	err = game.Subscribe(ctx, sess.GameID, sess.PlayerID, messages, errors)
+	err = game.Subscribe(ctx, sess.GameID, sess.PlayerID, isGM, updates, errors)
 	httpInternalErrorIf(response, request, err)
 	logf(request, "Subscription task for %v established", sess.GameID)
 	defer cancel()
@@ -126,15 +117,19 @@ func handleSubscription(response Response, request *Request) {
 			lastPing = now
 		}
 		select { // Receive message/error and wait out interval
-		case message := <-messages:
-			updateLog, err := writeMessageToStream(&message, stream)
+		case updateText := <-updates:
+			updateType := update.ParseUpdateTy(updateText)
+			err := writeUpdateToStream(updateType, updateText, stream)
 			if err != nil {
-				logf(request, "Error writing %v to stream", message.Body)
+				logf(request, "Error writing %v to stream: %v", updateText, err)
 				return
 			}
-			logf(request, "Sent %v to %v", updateLog, sess.PlayerID)
+			logf(request, "Sent %v update to %v", updateType, sess.PlayerID)
 		case err := <-errors:
 			logf(request, "<= Error from subscription task: %v", err)
+			return
+		case err := <-ctx.Done():
+			logf(request, "<= Context was cancelled: %v", err)
 			return
 		case <-client.Channel:
 			logf(request, "Shutdown received; closing")

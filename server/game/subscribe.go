@@ -4,26 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
-	"github.com/gomodule/redigo/redis"
 	"sr/id"
 	redisUtil "sr/redis"
+	"sr/update"
+
+	"github.com/gomodule/redigo/redis"
 )
 
-// MessageType is the type of a message sent through a subscription
-type MessageType int
-
-// MessageTypeEvent is sent for a new event
-const MessageTypeEvent MessageType = MessageType(1)
-
-// MessageTypeUpdate is sent for an update
-const MessageTypeUpdate MessageType = MessageType(2)
-
-// Message is either an event or update
-type Message struct {
-	Type MessageType
-	Body string
+type subArgs struct {
+	playerID id.UID
+	isGM bool
 }
 
 // This task becomes a memory leak as we cannot signal for it to close effectively.
@@ -34,13 +25,13 @@ type Message struct {
 // Because this leak is not indefinite, and can only grow trivally large given current traffic,
 // and because I'd like to replace the library with one that can handle pipelining anyway,
 // I'm going to ignore it for now and switch libraries by next major release.
-func subscribeTask(ctx context.Context, cleanup func(), messages chan Message, errs chan error, sub redis.PubSubConn) {
+func subscribeTask(ctx context.Context, cleanup func(), playerID id.UID, isGM bool, updates chan string, errs chan error, sub redis.PubSubConn) {
 	defer cleanup()
 	for {
 		// Check if we have received done yet
 		select {
 		case <-ctx.Done():
-			errs <- fmt.Errorf("received done from context: err = %w", ctx.Err())
+			errs <- fmt.Errorf("received done from context: %w", ctx.Err())
 			return
 		default:
 		}
@@ -51,14 +42,12 @@ func subscribeTask(ctx context.Context, cleanup func(), messages chan Message, e
 			errs <- fmt.Errorf("from redis Receive(): %w", msg)
 			return
 		case redis.Message:
-			var message Message
-			messageText := string(msg.Data)
-			if strings.HasPrefix(msg.Channel, "history") {
-				message = Message{Type: MessageTypeEvent, Body: messageText}
-			} else {
-				message = Message{Type: MessageTypeUpdate, Body: messageText}
+			data := string(msg.Data)
+			excludeID, excludeGMs, inner, found := update.ParseExclude(data)
+			if found && ((excludeID == playerID) || (isGM && excludeGMs)) {
+				continue
 			}
-			messages <- message
+			updates <- inner
 		case redis.Subscription:
 			// okay; ignore
 		default:
@@ -70,11 +59,11 @@ func subscribeTask(ctx context.Context, cleanup func(), messages chan Message, e
 // Subscribe runs a task in a separate goroutine that will send new `Message`s to the `messages` channel
 // and errors to the error channel. Both channels will be closed upon completion.
 // ctx is used to cancel the remote task and must also have been initialized with a redis connection.
-func Subscribe(ctx context.Context, gameID string, playerID id.UID, messages chan Message, errors chan error) error {
+func Subscribe(ctx context.Context, gameID string, playerID id.UID, isGM bool, updates chan string, errors chan error) error {
 	conn, err := redisUtil.ConnectWithContext(ctx)
 	if err != nil {
 		close(errors)
-		close(messages)
+		close(updates)
 		return fmt.Errorf("dialing redis with context: %w", err)
 	}
 	sub := redis.PubSubConn{Conn: conn}
@@ -86,16 +75,20 @@ func Subscribe(ctx context.Context, gameID string, playerID id.UID, messages cha
 		}
 		redisUtil.Close(conn)
 		close(errors)
-		close(messages)
+		close(updates)
 	}
 
-	if err := sub.Subscribe(
-		"history:"+gameID, "history:"+string(playerID)+":"+gameID,
-		"update:"+gameID, "update:"+string(playerID)+":"+gameID,
-	); err != nil {
+	channels := []string{
+		GameChannel(gameID), PlayerChannel(gameID, playerID),
+	}
+	if isGM {
+		channels = append(channels, GMsChannel(gameID))
+	}
+
+	if err := sub.Subscribe(channels); err != nil {
 		cleanup()
 		return fmt.Errorf("subscribing to events and history: %w", err)
 	}
-	go subscribeTask(ctx, cleanup, messages, errors, sub)
+	go subscribeTask(ctx, cleanup, playerID, isGM, updates, errors, sub)
 	return nil
 }
