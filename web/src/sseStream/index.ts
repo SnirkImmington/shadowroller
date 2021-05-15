@@ -5,11 +5,12 @@ import * as Game from 'game';
 import * as Player from 'player';
 import * as server from 'server';
 
-// Delays for reconnecting the EventSource (in ms)
+/** Delays for reconnecting the EventSource (in ms) */
 export const RETRY_DELAYS = [
     2, 2, 4, 4, 8, 8, 16, 16
 ].map(s => s * 1000);
 
+/** Max amount of time between retries */
 export const RETRY_MAX = 32 * 1000;
 
 
@@ -20,27 +21,12 @@ export function logMessage(event: MessageEvent) {
     // Otherwise, it's a ping
 }
 
-export function handleEvent(e: MessageEvent, eventDispatch: Event.Dispatch) {
-    let eventData;
-    try {
-        // flow-ignore-all-next-line it's json parse
-        eventData = JSON.parse(e.data);
-    }
-    catch (err) {
-        console.error("Unparseable Event received from server:", err, e);
-        return;
-    }
-    const event = server.parseEvent(eventData);
-    if (!event) {
-        console.error("Unable to parseEvent():", eventData, e);
-        return;
-    }
-    eventDispatch({ ty: "newEvent", event });
-}
-
 export function handleEventUpdate(id: number, diff: any, edit: number, dispatch: Event.Dispatch) {
     if (diff === "del") {
         dispatch({ ty: "deleteEvent", id });
+    }
+    else if (edit === id) { // new event
+        dispatch({ ty: "newEvent", event: { id, ...diff }});
     }
     else if (diff["reroll"]) {
         dispatch({ ty: "reroll", id, edit, round: diff["reroll"] });

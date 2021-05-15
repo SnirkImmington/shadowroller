@@ -44,8 +44,6 @@ export default function Provider({ children }: React.PropsWithChildren<{}>) {
             `${server.BACKEND_URL}game/subscription?session=${session}&retries=${retries}`
         );
         source.onmessage = stream.logMessage;
-        source.addEventListener("event", (e: Event) =>
-            stream.handleEvent(e as MessageEvent, eventDispatch));
         source.addEventListener("update", (e: Event) =>
             stream.handleUpdate(e as MessageEvent, playerID, eventDispatch, gameDispatch, playerDispatch));
         source.onopen = function () {
