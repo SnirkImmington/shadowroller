@@ -19,7 +19,7 @@ type newEvent struct {
 }
 
 func (update *newEvent) Type() string {
-	return UpdateTypeEvent
+	return TypeEventNew
 }
 
 func (update *newEvent) EventID() int64 {
@@ -32,7 +32,7 @@ func (update *newEvent) Time() int64 {
 
 func (update *newEvent) MarshalJSON() ([]byte, error) {
 	fields := []interface{}{
-		UpdateTypeEvent, update.evt.GetID(), update.evt, update.evt.GetID(),
+		TypeEventNew, update.evt.GetID(), update.evt, update.evt.GetID(),
 	}
 	return json.Marshal(fields)
 }
@@ -51,7 +51,7 @@ type eventDiff struct {
 
 // Type gets the type of the update
 func (update *eventDiff) Type() string {
-	return UpdateTypeEvent
+	return TypeEventMod
 }
 
 // EventID gets the ID of the update's event
@@ -67,7 +67,7 @@ func (update *eventDiff) Time() int64 {
 // MarshalJSON converts the update to JSON.
 func (update *eventDiff) MarshalJSON() ([]byte, error) {
 	fields := []interface{}{
-		UpdateTypeEvent, update.id, update.diff, update.time,
+		TypeEventMod, update.id, update.diff, update.time,
 	}
 	return json.Marshal(fields)
 }
@@ -103,11 +103,19 @@ func ForEventRename(event event.Event, newTitle string) Event {
 	return &update
 }
 
+type reroll struct {
+	eventDiff
+}
+
+func (r *reroll) Type() string {
+	return TypeRollSecondChance
+}
+
 // ForSecondChance constructs an update for a second chance roll.
 func ForSecondChance(event event.Event, round []int) Event {
 	update := makeEventDiff(event)
 	update.diff["reroll"] = round
-	return &update
+	return &reroll{update}
 }
 
 // ForSeizeInitiative constructs an update for a seize the initiative
@@ -124,7 +132,7 @@ type eventDelete struct {
 }
 
 func (update *eventDelete) Type() string {
-	return UpdateTypeEvent
+	return TypeEventDel
 }
 
 func (update *eventDelete) EventID() int64 {
@@ -136,7 +144,7 @@ func (update *eventDelete) Time() int64 {
 }
 
 func (update *eventDelete) MarshalJSON() ([]byte, error) {
-	fields := []interface{}{UpdateTypeEvent, update.id, "del"}
+	fields := []interface{}{TypeEventDel, update.id}
 	return json.Marshal(fields)
 }
 

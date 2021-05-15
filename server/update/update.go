@@ -5,11 +5,18 @@ import (
 	"regexp"
 )
 
-// UpdateTypeEvent is the "type" field that's set for event updates
-const UpdateTypeEvent = "evt"
+const (
+	TypeEventNew = "+evt" // A new event is created
+	TypeEventMod = "~evt" // An event property changes
+	TypeEventDel = "-evt" // An event is deleted
 
-// UpdateTypePlayer is the "type" field that's set for player updates
-const UpdateTypePlayer = "plr"
+	TypeRollSecondChance = "^roll" // A roll is rerolled
+	TypeInitSeized = "!init" // Initiative is seized
+
+	TypePlayerAdd = "+plr" // A player is added to the game
+	TypePlayerMod = "~plr" // A player property changes
+	TypePlayerDel = "-plr" // A player leaves the game
+)
 
 // Update is the basic interface for update structs
 type Update interface {
@@ -17,12 +24,12 @@ type Update interface {
 	Type() string // Type of update (see update.UpdateType*)
 }
 
-var updateTyParse = regexp.MustCompile(`$\["([^"]+)`)
+var typeParse = regexp.MustCompile(`$\["([^"]+)`)
 
-// ParseUpdateTy parses the type of a JSON-encoded update
-func ParseUpdateTy(update string) string {
-	match := updateTyParse.FindStringSubmatch(update)
-	if len(match) != 3 {
+// ParseType parses the type of a JSON-encoded update
+func ParseType(update string) string {
+	match := typeParse.FindStringSubmatch(update)
+	if len(match) < 4 {
 		return "??"
 	}
 	return match[1]
