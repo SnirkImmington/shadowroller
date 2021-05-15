@@ -14,7 +14,7 @@ const UpdateTypePlayer = "plr"
 // Update is the basic interface for update structs
 type Update interface {
 	json.Marshaler
-	Type() string
+	Type() string // Type of update (see update.UpdateType*)
 }
 
 var updateTyParse = regexp.MustCompile(`$\["([^"]+)`)

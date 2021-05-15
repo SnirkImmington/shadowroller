@@ -7,37 +7,37 @@ import (
 	"sr/player"
 )
 
-// Player is an update for players changing
+// Player is an update for properties of a player changing.
 type Player interface {
 	Update
 
-	PlayerID() id.UID
-	MakeRedisCommand() (string, redis.Args)
-	IsEmpty() bool
+	PlayerID() id.UID                       // ID of the player being updated
+	MakeRedisCommand() (string, redis.Args) // For updating redis...
+	IsEmpty() bool                          // If a diff update was created empty
 }
 
-type PlayerOnline struct {
+type playerOnline struct {
 	id     id.UID
 	online bool
 }
 
-func (update *PlayerOnline) MakeRedisCommand() (string, redis.Args) {
-	panic("MakeRedisCommand called on update.PlayerOnline")
+func (update *playerOnline) MakeRedisCommand() (string, redis.Args) {
+	panic("MakeRedisCommand called on update.playerOnline")
 }
 
-func (update *PlayerOnline) Type() string {
+func (update *playerOnline) Type() string {
 	return UpdateTypePlayer
 }
 
-func (update *PlayerOnline) PlayerID() id.UID {
+func (update *playerOnline) PlayerID() id.UID {
 	return update.id
 }
 
-func (update *PlayerOnline) IsEmpty() bool {
+func (update *playerOnline) IsEmpty() bool {
 	return false
 }
 
-func (update *PlayerOnline) MarshalJSON() ([]byte, error) {
+func (update *playerOnline) MarshalJSON() ([]byte, error) {
 	diff := make(map[string]bool, 1)
 	diff["online"] = update.online
 	return json.Marshal([]interface{}{
@@ -46,7 +46,7 @@ func (update *PlayerOnline) MarshalJSON() ([]byte, error) {
 }
 
 func ForPlayerOnline(playerID id.UID, online bool) Player {
-	return &PlayerOnline{id: playerID, online: online}
+	return &playerOnline{id: playerID, online: online}
 }
 
 type playerDiff struct {

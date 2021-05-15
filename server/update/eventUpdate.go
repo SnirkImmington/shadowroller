@@ -13,6 +13,35 @@ type Event interface {
 	Time() int64
 }
 
+// newEvent is an update sent for new events being created
+type newEvent struct {
+	evt event.Event
+}
+
+func (update *newEvent) Type() string {
+	return UpdateTypeEvent
+}
+
+func (update *newEvent) EventID() int64 {
+	return update.evt.GetID()
+}
+
+func (update *newEvent) Time() int64 {
+	return update.evt.GetID() // New as of event creation time
+}
+
+func (update *newEvent) MarshalJSON() ([]byte, error) {
+	fields := []interface{}{
+		UpdateTypeEvent, update.evt.GetID(), update.evt, update.evt.GetID(),
+	}
+	return json.Marshal(fields)
+}
+
+// ForNewEvent constructs an update for a new event
+func ForNewEvent(evt event.Event) Event {
+	return &newEvent{evt}
+}
+
 // eventDiff updates various fields on an event.
 type eventDiff struct {
 	id   int64
@@ -58,6 +87,13 @@ func ForEventDiff(event event.Event, diff map[string]interface{}) Event {
 		time: event.GetEdit(),
 		diff: diff,
 	}
+}
+
+// ForEventShare constructs an update for changing an event share.
+func ForEventShare(event event.Event, newShare event.Share) Event {
+	update := makeEventDiff(event)
+	update.diff["share"] = newShare // TODO make sure we don't need to stringify
+	return &update
 }
 
 // ForEventRename constructs an update for renaming an event
