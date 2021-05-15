@@ -20,9 +20,27 @@ func Exists(gameID string, conn redis.Conn) (bool, error) {
 	return redis.Bool(conn.Do("exists", "game:"+gameID))
 }
 
+func HasGM(gameID string, playerID id.UID, conn redis.Conn) (bool, error) {
+	return redis.Bool(conn.Do("sismember", "gm:"+gameID))
+}
+
 // GetGMs returns the list of GMs from a game.
 func GetGMs(gameID string, conn redis.Conn) ([]string, error) {
-	return redis.Strings(conn.Do("smembers", "gms:"+gameID))
+	return redis.Strings(conn.Do("smembers", "gm:"+gameID))
+}
+
+// IsGM is string array contains
+func IsGM(gms []string, playerID id.UID) bool {
+	for _, gmID := range gms {
+		if gmID == string(playerID) {
+			return true
+		}
+	}
+	return false
+}
+
+func IsGMOf(game *Info, playerID id.UID) bool {
+	return IsGM(game.GMs, playerID)
 }
 
 // GetPlayersIn retrieves the list of players in a game.
@@ -110,7 +128,7 @@ func GetPlayersIn(gameID string, conn redis.Conn) ([]player.Player, error) {
 type Info struct {
 	ID      string                 `json:"id"`
 	Players map[string]player.Info `json:"players"`
-	GMs []string `json:"gms"`
+	GMs     []string               `json:"gms"`
 }
 
 // GetInfo retrieves `Info` for the given ID
