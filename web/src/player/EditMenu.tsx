@@ -9,6 +9,7 @@ import * as server from 'server';
 import * as Player from 'player';
 import * as Stream from 'sseStream';
 import * as Share from 'share';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
@@ -47,7 +48,7 @@ export default function EditPlayerPanel({ hide }: Props) {
 
     const [response, setResponse] = React.useState<ResponseStatus>("ready");
     const [exampleTitle] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
-    const [dice] = React.useState(() => srutil.roll(11));
+    const [dice] = React.useState(() => roll.dice(11));
 
     if (!player || !game) {
         return null;

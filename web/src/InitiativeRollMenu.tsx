@@ -12,6 +12,7 @@ import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import * as routes from 'routes';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 
 const RollBackground = {
@@ -105,7 +106,7 @@ export default function RollInitiativePrompt() {
         }
 
         if (!gameExists) {
-            const initiativeDice = srutil.roll(blitzed ? 5 : dice);
+            const initiativeDice = roll.dice(blitzed ? 5 : dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
                 base: base ?? 0, dice: initiativeDice, title, seized, blitzed,

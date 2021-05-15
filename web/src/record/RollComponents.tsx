@@ -8,8 +8,8 @@ import type { Connection } from 'connection';
 import * as Event from 'event';
 import * as Share from 'share';
 import * as rollStats from 'rollStats';
+import * as roll from 'roll';
 import * as routes from 'routes';
-import * as srutil from 'srutil';
 
 export const SignDisplayFormat = new Intl.NumberFormat(undefined, { signDisplay: "always" });
 
@@ -99,7 +99,7 @@ function LocalActionsRow({ event, result }: Props) {
         dispatch({
             ty: "reroll", id: event.id,
             edit: Date.now().valueOf(),
-            round: srutil.rerollFailures(event.dice)
+            round: roll.secondChance(event.dice)
         });
     };
 

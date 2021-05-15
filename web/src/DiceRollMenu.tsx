@@ -11,6 +11,7 @@ import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import * as routes from 'routes';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
 import * as icons from 'style/icon';
@@ -189,14 +190,14 @@ export default function RollDicePrompt() {
         if (!gameExists) {
             let localRoll: Event.Event;
             if (edge) {
-                const rounds = srutil.rollExploding(diceCount);
+                const rounds = roll.explodingSixes(diceCount);
                 localRoll = {
                     ty: "edgeRoll", source: "local", id: Event.newID(),
                     title, rounds, glitchy,
                 };
             }
             else {
-                const dice = srutil.roll(diceCount);
+                const dice = roll.dice(diceCount);
                 localRoll = {
                     ty: "roll", source: "local", id: Event.newID(),
                     title, dice, glitchy,
