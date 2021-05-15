@@ -267,6 +267,7 @@ func handleReroll(response Response, request *Request) {
 	rerolled := event.ForReroll(
 		player, &previousRoll, [][]int{newRound, previousRoll.Dice},
 	)
+	// Roll update logic was torn out when sharing rules were introduced :/
 	//update := update.ForSecondChance(&rerolled, newRound)
 	err = game.DeleteEvent(sess.GameID, &previousRoll, conn)
 	httpInternalErrorIf(response, request, err)
@@ -340,6 +341,8 @@ func handleEvents(response Response, request *Request) {
 		sess.GameID, newest, oldest, config.MaxEventRange, conn,
 	)
 	httpInternalErrorIf(response, request, err)
+	isGM, err := game.HasGM(sess.GameID, sess.PlayerID, conn)
+	httpInternalErrorIf(response, request, err)
 
 	var eventRange eventRangeResponse
 	var message string
@@ -359,7 +362,7 @@ func handleEvents(response Response, request *Request) {
 				err := fmt.Errorf("error parsing event %v: %w", i, err)
 				httpInternalErrorIf(response, request, err)
 			}
-			if !game.PlayerCanSeeEvent(plr, evt) {
+			if !game.PlayerCanSeeEvent(plr, isGM, evt) {
 				continue
 			}
 			parsed = append(parsed, evt)
