@@ -9,17 +9,29 @@ import * as stream from '.';
 import { SetConnectionCtx } from 'connection';
 import type { BackendRequest } from 'server/request';
 
-function clearRetryID(id: NodeJS.Timeout|null): NodeJS.Timeout|null {
-    clearTimeout(id!);
-    return null;
+/** The EventSource for the server subscription */
+let source: EventSource | null = null;
+let retryID: NodeJS.Timeout | null = null;
+
+/** cancel the retry if it is running. */
+function clearRetryID(): void {
+    if (retryID) {
+        clearTimeout(retryID);
+    }
+    retryID = null;
 }
 
-function clearSource(source: EventSource|null): EventSource|null {
+/** close the eventsource if it is listening. */
+function clearSource(): void {
     if (source) {
+        if (process.env.NODE_ENV === "development") {
+            console.log("Closed exising stream", source);
+        }
         source.close();
     }
-    return null;
+    source = null;
 }
+
 
 export default function Provider({ children }: React.PropsWithChildren<{}>) {
     const eventDispatch = React.useContext(Event.DispatchCtx);
@@ -27,28 +39,23 @@ export default function Provider({ children }: React.PropsWithChildren<{}>) {
     const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx)
 
-    // The actual values from these are not used: we don't handle the eventstream
-    // directly and we only use the retryID via the updater form of setRetryID.
-    const [, setSource] = React.useState<EventSource|null>(null);
-    const [, setRetryID] = React.useState<NodeJS.Timeout|null>(null);
-
     function connect({ session, gameID, playerID, retries }: stream.ConnectArgs) {
         retries = retries || 0;
         setConnection("connecting");
-        setSource(clearSource);
-        setRetryID(clearRetryID);
+        clearSource();
+        clearRetryID();
 
         let connectionSucessful = false;
 
-        const source = new EventSource(
+        source = new EventSource(
             `${server.BACKEND_URL}game/subscription?session=${session}&retries=${retries}`
         );
-        source.onmessage = stream.logMessage;
-        source.addEventListener("update", (e: Event) =>
-            stream.handleUpdate(e as MessageEvent, playerID, eventDispatch, gameDispatch, playerDispatch));
+        if (process.env.NODE_ENV === "development") {
+            console.log("Opened event stream", source);
+        }
         source.onopen = function () {
             setConnection("connected");
-            setRetryID(id => { clearTimeout(id!); return null; });
+
             connectionSucessful = true;
 
             if (process.env.NODE_ENV !== "production") {
@@ -58,15 +65,21 @@ export default function Provider({ children }: React.PropsWithChildren<{}>) {
                 document.title = `${gameID} - Shadowroller`;
             }
         }
+
+        stream.registerListeners({
+            source, gameID, playerID,
+            gameDispatch, playerDispatch, eventDispatch
+        });
+
         source.onerror = function() {
-            source.close();
-            setSource(null);
+            clearSource();
             setConnection("retrying");
             if (connectionSucessful) {
                 retries = 0;
             }
 
             if (retries > stream.RETRY_DELAYS.length) {
+                setConnection("disconnected");
             }
 
             const timeoutDelay = retries > stream.RETRY_DELAYS.length ?
@@ -74,22 +87,22 @@ export default function Provider({ children }: React.PropsWithChildren<{}>) {
             const timeout = setTimeout(function() {
                 connect({ session, gameID, playerID, retries: retries + 1 });
             }, timeoutDelay);
-            setRetryID(timeout);
+            retryID = timeout;
         }
-        setSource(source);
     }
     const connectMemo = React.useCallback(connect,
-        [connect, gameDispatch, eventDispatch, playerDispatch, setConnection, setSource, setRetryID]);
+        [connect, gameDispatch, eventDispatch, playerDispatch, setConnection]
+    );
 
     const logout = React.useCallback(function logout(): BackendRequest<void> {
         setConnection("offline");
-        setSource(clearSource);
-        setRetryID(clearRetryID);
+        clearSource();
+        clearRetryID();
         gameDispatch({ ty: "leave" });
         eventDispatch({ ty: "clearEvents" });
         playerDispatch({ ty: "leave" });
         return routes.auth.logout();
-    }, [gameDispatch, eventDispatch, playerDispatch, setConnection, setSource]);
+    }, [gameDispatch, eventDispatch, playerDispatch]);
 
     // Prevent a new array being passed to the context provider
     const value: [stream.ConnectFn, stream.LogoutFn] = React.useMemo(() =>
