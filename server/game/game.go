@@ -21,7 +21,7 @@ func Exists(gameID string, conn redis.Conn) (bool, error) {
 }
 
 func HasGM(gameID string, playerID id.UID, conn redis.Conn) (bool, error) {
-	return redis.Bool(conn.Do("sismember", "gm:"+gameID))
+	return redis.Bool(conn.Do("sismember", "gm:"+gameID, string(playerID)))
 }
 
 // GetGMs returns the list of GMs from a game.
