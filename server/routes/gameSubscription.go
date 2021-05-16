@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+
 	"sr/config"
 	"sr/game"
 	"sr/id"
@@ -19,9 +20,9 @@ func pingStream(stream *sse.Conn) error {
 	return stream.WriteEvent("ping", []byte{})
 }
 
-func writeUpdateToStream(channel string, updateText string, stream *sse.Conn) error {
+func writeUpdateToStream(updateText string, stream *sse.Conn) error {
 	messageID := id.NewEventID()
-	return stream.WriteEventWithID(fmt.Sprintf("%v", messageID), channel, []byte(updateText))
+	return stream.WriteEventWithID(fmt.Sprintf("%v", messageID), "upd", []byte(updateText))
 }
 
 var removeDecimal = regexp.MustCompile(`\.\d+`)
@@ -44,10 +45,19 @@ func handleSubscription(response Response, request *Request) {
 	// Upgrade to SSE stream
 	stream, err := sseUpgrader.Upgrade(response, request)
 	httpBadRequestIf(response, request, err)
-	logf(request, "Upgraded to SSE")
+	err = pingStream(stream)
+	httpBadRequestIf(response, request, err)
+	if config.StreamDebug {
+		logf(request, "Upgrade to SSE successful")
+	}
 	defer func() {
 		if stream.IsOpen() {
 			stream.Close()
+			if config.StreamDebug {
+				logf(request, "defer: closed SSE stream")
+			}
+		} else if config.StreamDebug {
+			logf(request, "defer: SSE stream already closed")
 		}
 	}()
 
@@ -57,17 +67,21 @@ func handleSubscription(response Response, request *Request) {
 	errors := make(chan error, 1)
 	err = game.Subscribe(ctx, sess.GameID, sess.PlayerID, isGM, updates, errors)
 	httpInternalErrorIf(response, request, err)
-	logf(request, "Subscription task for %v established", sess.GameID)
+	if config.StreamDebug {
+		logf(request, "Subscription task for %v started", sess.GameID)
+	}
 	defer cancel()
 
 	// Unexpire/delay expire of session
 	_, err = sess.Unexpire(conn)
 	httpInternalErrorIf(response, request, err)
-	logf(request, "Session timer for %v %v reset", sess.Type(), sess.ID)
+	if config.StreamDebug {
+		logf(request, "Session timer for %v %v reset", sess.Type(), sess.ID)
+	}
 	defer func() {
 		if _, err := sess.Expire(conn); err != nil {
 			logf(request, "^^ Error resetting session: %v", err)
-		} else {
+		} else if config.StreamDebug {
 			logf(request, "^^ Reset session %v for %v", sess.ID, sess.PlayerID)
 		}
 	}()
@@ -83,7 +97,7 @@ func handleSubscription(response Response, request *Request) {
 			sess.GameID, sess.PlayerID, player.DecreaseConnections, conn,
 		); err != nil {
 			logf(request, "^^ Error decrementing player connections: %v", err)
-		} else {
+		} else if config.StreamDebug {
 			logf(request, "^^ Update online %v for %v", sess.ID, sess.PlayerID)
 		}
 	}()
@@ -113,18 +127,21 @@ func handleSubscription(response Response, request *Request) {
 			if err = pingStream(stream); err != nil {
 				logf(request, "Unable to write to stream: %v", err)
 				return
+			} else if config.StreamDebug {
+				logf(request, "Pinged stream")
 			}
 			lastPing = now
 		}
 		select { // Receive message/error and wait out interval
 		case updateText := <-updates:
-			updateType := update.ParseUpdateTy(updateText)
-			err := writeUpdateToStream(updateType, updateText, stream)
+			updateType := update.ParseType(updateText)
+			err := writeUpdateToStream(updateText, stream)
 			if err != nil {
 				logf(request, "Error writing %v to stream: %v", updateText, err)
 				return
+			} else if config.StreamDebug {
+				logf(request, "Sent update %v to %v", updateType, sess.PlayerID)
 			}
-			logf(request, "Sent %v update to %v", updateType, sess.PlayerID)
 		case err := <-errors:
 			logf(request, "<= Error from subscription task: %v", err)
 			return
