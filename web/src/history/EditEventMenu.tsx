@@ -73,7 +73,7 @@ export default function EditEventMenu({ event }: Props) {
         }
         else {
             dispatch({
-                ty: "modifyRoll",
+                ty: "modifyEvent",
                 id: event.id,
                 edit: new Date().valueOf(),
                 diff

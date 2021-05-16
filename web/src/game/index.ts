@@ -20,7 +20,9 @@ export const defaultState: State = null;
 export type Action =
 | { ty: "join", gameID: string, players: Map<string, PlayerInfo>, gms: string[] }
 | { ty: "leave" }
-| { ty: "playerUpdate", id: string, update: Partial<PlayerInfo> }
+| { ty: "newPlayer", player: PlayerInfo }
+| {ty: "deletePlayer", id: string }
+| { ty: "updatePlayer", id: string, diff: Partial<PlayerInfo> }
 | { ty: "setPlayers", players: Map<string, PlayerInfo> }
 ;
 
@@ -34,18 +36,31 @@ function gameReduce(state: State, action: Action): State {
             };
         case "leave":
             return null;
-        case "playerUpdate":
+        case "newPlayer":
+            if (!state) { return state; }
+            const addedPlayers = new Map(state.players);
+            addedPlayers.set(action.player.id, action.player);
+            return { ...state, players: addedPlayers };
+        case "deletePlayer":
+            if (!state) { return state; }
+            const deletedPlayers = new Map(state.players);
+            if (!state.players.get(action.id)) {
+                return state;
+            }
+            deletedPlayers.delete(action.id);
+            return { ...state, players: deletedPlayers };
+        case "updatePlayer":
             if (!state) { return state; }
             const existing = state.players.get(action.id);
             const updatedPlayers = new Map(state.players);
             if (!existing) {
-                // assertion: We'd better not get a partial player info if we're getting a new one
-                updatedPlayers.set(action.id, action.update as PlayerInfo);
+                if (process.env.NODE_ENV === "development") {
+                    console.error("gameReduce: no player found for", action, "in", state);
+                }
+                return state;
             }
-            else {
-                const updatedPlayer = { ...existing, ...action.update };
-                updatedPlayers.set(action.id, updatedPlayer);
-            }
+            const updatedPlayer = { ...existing, ...action.diff };
+            updatedPlayers.set(action.id, updatedPlayer);
             return { ...state, players: updatedPlayers };
         case "setPlayers":
             if (!state) { return state; }

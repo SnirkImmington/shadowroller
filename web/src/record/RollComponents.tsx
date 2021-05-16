@@ -99,7 +99,7 @@ function LocalActionsRow({ event, result }: Props) {
         dispatch({
             ty: "reroll", id: event.id,
             edit: Date.now().valueOf(),
-            round: roll.secondChance(event.dice)
+            reroll: roll.secondChance(event.dice)
         });
     };
 
