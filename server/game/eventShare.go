@@ -3,7 +3,9 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
+	"sr/config"
 	"sr/event"
 	"sr/id"
 	"sr/player"
@@ -78,16 +80,29 @@ type Packet struct {
 
 func publishPacket(packet *Packet, conn redis.Conn) error {
 	ud := packet.Update
+	var updateBytes []byte
+	var err error
 	if len(packet.Filter) > 0 {
-		ud = update.WithFilters(packet.Filter, ud)
+		var updateStr string
+		filtered := update.WithFilters(packet.Filter, ud)
+		ud = filtered
+		updateStr, err = filtered.Serialize()
+		updateBytes = []byte(updateStr)
+	} else {
+		updateBytes, err = json.Marshal(ud)
 	}
-	updateBytes, err := json.Marshal(ud)
 	if err != nil {
 		return fmt.Errorf("unable to marshal update %#v to json: %w", ud, err)
 	}
 	err = conn.Send("PUBLISH", packet.Channel, updateBytes)
 	if err != nil {
 		return fmt.Errorf("redis error sending PUBLISH: %w", err)
+	}
+	if config.UpdatesDebug {
+		log.Printf(
+			"Update: publish %v to %v filter %v",
+			ud.Type(), packet.Channel, packet.Filter,
+		)
 	}
 	return nil
 }
@@ -120,69 +135,52 @@ func createOrDeletePackets(gameID string, evt event.Event, update update.Event) 
 func sharePacketsModifyingEvent(gameID string, evt event.Event, newShare event.Share) []Packet {
 	oldShare := evt.GetShare()
 	evt.SetShare(newShare)
-	packets := make([]Packet, 3)
 
 	playerID := evt.GetPlayerID()
 	modify := update.ForEventShare(evt, newShare)
 	create := update.ForNewEvent(evt)
 	delete := update.ForEventDelete(evt.GetID())
 
-	if newShare == event.SharePrivate {
+	if /* oldShare in GMs, Game && */ newShare == event.SharePrivate {
 		// {game/gms} -> private:
 		// = {game/gms}-player delete; player modify
-
-		// 1. {game/gms}-player delete
-		packets = append(packets, Packet{
-			gameOrGMsChannel(gameID, oldShare), []string{string(playerID)}, delete,
-		})
-		// 2. player modify
-		packets = append(packets, Packet{
-			PlayerChannel(gameID, evt.GetPlayerID()), []string{}, modify,
-		})
-	} else if oldShare == event.SharePrivate {
+		return []Packet{
+			// 1. {game/gms}-player delete
+			{gameOrGMsChannel(gameID, oldShare), []string{string(playerID)}, delete},
+			// 2. player modify
+			{PlayerChannel(gameID, evt.GetPlayerID()), []string{}, modify},
+		}
+	} else if oldShare == event.SharePrivate /* && newShare in GMs, Game */ {
 		// private -> {game/gms}:
 		// = {game/gms}-player create; player modify
-
-		// 1. {game/gms}-player create
-		packets = append(packets, Packet{
-			gameOrGMsChannel(gameID, oldShare), []string{string(playerID)}, create,
-		})
-		// 2. player modify
-		packets = append(packets, Packet{
-			PlayerChannel(gameID, playerID), []string{}, modify,
-		})
+		return []Packet{
+			// 1. {game/gms}-player create
+			{gameOrGMsChannel(gameID, newShare), []string{string(playerID)}, create},
+			// 2. player modify
+			{PlayerChannel(gameID, playerID), []string{}, modify},
+		}
 	} else if oldShare == event.ShareGMs && newShare == event.ShareInGame {
 		// gms -> game:
-		// = gms-player modify; player modify; game-player create
-
-		// 1. gms-player modify
-		packets = append(packets, Packet{
-			GMsChannel(gameID), []string{string(playerID)}, modify,
-		})
-		// 2. player modify
-		packets = append(packets, Packet{
-			PlayerChannel(gameID, playerID), []string{}, modify,
-		})
-		// 3. game-player create
-		packets = append(packets, Packet{
-			GameChannel(gameID), []string{string(playerID)}, create,
-		})
-	} else {
+		// = gms-player modify; player modify; game-player-gms create
+		return []Packet{
+			// 1. gms-player modify
+			{GMsChannel(gameID), []string{string(playerID)}, modify},
+			// 2. player modify
+			{PlayerChannel(gameID, playerID), []string{}, modify},
+			// 3. game-player-gms create
+			{GameChannel(gameID), []string{string(playerID), "gms"}, create},
+		}
+	} else if oldShare == event.ShareInGame && newShare == event.ShareGMs {
 		// game -> gms:
 		// = game-gms-player delete; gms-player modify; player modify
-
-		// 1. game-gms-player delete
-		packets = append(packets, Packet{
-			GameChannel(gameID), []string{"gms", string(playerID)}, delete,
-		})
-		// 2. gms-player modify
-		packets = append(packets, Packet{
-			GMsChannel(gameID), []string{string(playerID)}, modify,
-		})
-		// 3. player modify
-		packets = append(packets, Packet{
-			PlayerChannel(gameID, playerID), []string{}, modify,
-		})
+		return []Packet{
+			// 1. game-gms-player delete
+			{GameChannel(gameID), []string{"gms", string(playerID)}, delete},
+			// 2. gms-player modify
+			{GMsChannel(gameID), []string{string(playerID)}, modify},
+			// 3. player modify
+			{PlayerChannel(gameID, playerID), []string{}, modify},
+		}
 	}
-	return packets
+	panic(fmt.Sprintf("unexpected new share %v for event %v", newShare, evt))
 }

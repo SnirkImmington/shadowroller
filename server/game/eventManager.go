@@ -106,17 +106,9 @@ func UpdateEventShare(gameID string, evt event.Event, newShare event.Share, conn
 		return fmt.Errorf("redis error sending event delete: %w", err)
 	}
 	for _, packet := range packets {
-		ud := packet.Update
-		if len(packet.Filter) > 0 {
-			ud = update.WithFilters(packet.Filter, ud)
-		}
-		updateBytes, err := json.Marshal(ud)
+		err = publishPacket(&packet, conn)
 		if err != nil {
-			return fmt.Errorf("unable to marshal update %#v to json: %w", ud, err)
-		}
-		err = conn.Send("PUBLISH", packet.Channel, updateBytes)
-		if err != nil {
-			return fmt.Errorf("redis error sending PUBLISH: %w", err)
+			return fmt.Errorf("sending packet %#v: %w", packet, err)
 		}
 	}
 
