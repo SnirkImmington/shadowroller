@@ -54,6 +54,7 @@ export default function EditPlayerPanel({ hide }: Props) {
         return null;
     }
 
+    const isGM = game.gms.includes(player.id);
     const switchDisabled = !showGames || !switchGame || switchGame === game.gameID || response === "loading";
     const changed = name !== player.name || hue !== player.hue || onlineMode !== player.onlineMode;
     const connected = connection === "connected" && response !== "loading";
@@ -80,7 +81,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                 console.error("Error sending player update", err);
             })
             .onResponse(resp => {
-                playerDispatch({ ty: "update", values: resp });
+                playerDispatch({ ty: "update", diff: resp });
             });
     }
 
@@ -125,6 +126,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
                     Logged in: {player.name} / {game.gameID}
+                    {isGM && <UI.FAIcon icon={icons.faChessQueen} className="icon-inline icon-gm" />}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
                     <span style={{ flexGrow: 1 }} />
