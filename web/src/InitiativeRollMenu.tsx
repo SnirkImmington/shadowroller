@@ -197,12 +197,11 @@ export default function RollInitiativePrompt() {
                                           state={share} onChange={setShare} />}
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
+                        {gameExists && share !== Share.Mode.InGame &&
+                            <UI.FAIcon icon={Share.icon(share)} className="icon-roll" transform="grow-4" />}
                         <RollButton id="roll-initiative-submit" type="submit"
                                     bg={RollBackground.inGame}
                                     disabled={Boolean(rollDisabled)} onClick={rollClicked}>
-                            {gameExists && share !== Share.Mode.InGame &&
-                                <UI.FAIcon icon={Share.icon(share)}
-                                           transform="grow-4" />}
                             Initiative
                         </RollButton>
                     </UI.FlexRow>

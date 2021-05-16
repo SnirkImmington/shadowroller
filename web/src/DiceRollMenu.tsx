@@ -320,11 +320,11 @@ export default function RollDicePrompt() {
                     <UI.FlexRow spaced>
                         {!connected &&
                             <StatusText connection={connection} />}
+                        {gameExists && share !== Share.Mode.InGame &&
+                            <UI.FAIcon icon={Share.icon(share)}
+                                transform="grow-4" className="icon-roll" />}
                         <RollButton id="roll-button-submit" type="submit"
                                     disabled={Boolean(rollDisabled)} bg={rollBackgound}>
-                            {gameExists && share !== Share.Mode.InGame &&
-                                <UI.FAIcon icon={Share.icon(share)}
-                                       transform="grow-4" />}
                             Roll dice
                         </RollButton>
                     </UI.FlexRow>

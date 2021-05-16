@@ -8,3 +8,7 @@ svg.icon-gm {
     color: #e0dd8f;
     filter: brightness(70%);
 }
+
+svg.icon-roll {
+    color: #601010;
+}
