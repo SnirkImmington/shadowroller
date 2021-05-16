@@ -5,17 +5,13 @@ import (
 	"fmt"
 	"log"
 
+	"sr/config"
 	"sr/id"
 	redisUtil "sr/redis"
 	"sr/update"
 
 	"github.com/gomodule/redigo/redis"
 )
-
-type subArgs struct {
-	playerID id.UID
-	isGM bool
-}
 
 // This task becomes a memory leak as we cannot signal for it to close effectively.
 // The goroutine will remain open after a client disconnects, until the next event
@@ -28,7 +24,8 @@ type subArgs struct {
 func subscribeTask(ctx context.Context, cleanup func(), playerID id.UID, isGM bool, updates chan string, errs chan error, sub redis.PubSubConn) {
 	defer cleanup()
 	for {
-		// Check if we have received done yet
+		msg := sub.Receive()
+		// Check if we have received done yet; no point forwarding if we have
 		select {
 		case <-ctx.Done():
 			errs <- fmt.Errorf("received done from context: %w", ctx.Err())
@@ -36,16 +33,43 @@ func subscribeTask(ctx context.Context, cleanup func(), playerID id.UID, isGM bo
 		default:
 		}
 		// Receive an event or update from the game
-		switch msg := sub.Receive().(type) {
+		switch msg.(type) {
 		case error:
 			log.Printf("Received error %#v", msg)
 			errs <- fmt.Errorf("from redis Receive(): %w", msg)
 			return
 		case redis.Message:
-			data := string(msg.Data)
+			data := string(msg.(redis.Message).Data)
+			channel := msg.(redis.Message).Channel
+
 			excludeID, excludeGMs, inner, found := update.ParseExclude(data)
-			if found && ((excludeID == playerID) || (isGM && excludeGMs)) {
-				continue
+			if config.UpdatesDebug {
+				if found {
+					log.Printf("Exclude update on %v: !id=%v, !gms=%v",
+						channel, excludeID, excludeGMs,
+					)
+				} else {
+					log.Printf("Regular update from %v", channel)
+				}
+			}
+			if found {
+				if excludeID == playerID {
+					if config.UpdatesDebug {
+						log.Printf("-> skipping because player ID matched")
+					}
+					continue
+				}
+				if isGM && excludeGMs {
+					if config.UpdatesDebug {
+						log.Printf("-> skipping because GMs are excluded")
+					}
+					continue
+				}
+				if config.UpdatesDebug {
+					log.Printf("-> No exclusion for %v", playerID)
+				}
+			} else if config.UpdatesDebug {
+				log.Printf("-> No filter specified")
 			}
 			updates <- inner
 		case redis.Subscription:
@@ -78,14 +102,14 @@ func Subscribe(ctx context.Context, gameID string, playerID id.UID, isGM bool, u
 		close(updates)
 	}
 
-	channels := []string{
+	channels := []interface{}{
 		GameChannel(gameID), PlayerChannel(gameID, playerID),
 	}
 	if isGM {
 		channels = append(channels, GMsChannel(gameID))
 	}
 
-	if err := sub.Subscribe(channels); err != nil {
+	if err := sub.Subscribe(channels...); err != nil {
 		cleanup()
 		return fmt.Errorf("subscribing to events and history: %w", err)
 	}
