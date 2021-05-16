@@ -31,9 +31,7 @@ func (update *newEvent) Time() int64 {
 }
 
 func (update *newEvent) MarshalJSON() ([]byte, error) {
-	fields := []interface{}{
-		TypeEventNew, update.evt.GetID(), update.evt, update.evt.GetID(),
-	}
+	fields := []interface{}{TypeEventNew, update.evt}
 	return json.Marshal(fields)
 }
 
@@ -128,7 +126,7 @@ func ForSeizeInitiative(event event.Event) Event {
 
 // eventDelete is a specific update type for deleting events
 type eventDelete struct {
-	id int64
+	eventID int64
 }
 
 func (update *eventDelete) Type() string {
@@ -136,7 +134,7 @@ func (update *eventDelete) Type() string {
 }
 
 func (update *eventDelete) EventID() int64 {
-	return update.id
+	return update.eventID
 }
 
 func (update *eventDelete) Time() int64 {
@@ -144,7 +142,7 @@ func (update *eventDelete) Time() int64 {
 }
 
 func (update *eventDelete) MarshalJSON() ([]byte, error) {
-	fields := []interface{}{TypeEventDel, update.id}
+	fields := []interface{}{TypeEventDel, update.eventID}
 	return json.Marshal(fields)
 }
 

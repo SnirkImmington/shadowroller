@@ -71,9 +71,7 @@ func (update *playerDiff) IsEmpty() bool {
 }
 
 func (update *playerDiff) MarshalJSON() ([]byte, error) {
-	fields := []interface{}{
-		TypePlayerMod, update.id, update.diff,
-	}
+	fields := []interface{}{TypePlayerMod, update.id, update.diff}
 	return json.Marshal(fields)
 }
 

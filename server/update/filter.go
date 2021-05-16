@@ -3,8 +3,9 @@ package update
 import (
 	"encoding/json"
 	"fmt"
-	"sr/id"
 	"strings"
+
+	"sr/id"
 )
 
 // Excluded is a filter to exclude players from an event
@@ -16,10 +17,10 @@ const FilterGMs = "gms"
 // FilteredUpdate is an update that should not be sent to a specific
 // player for duplication reasons.
 type FilteredUpdate interface {
-	json.Marshaler
 	Update
-	Inner() Update  // Update which should be sent to the player
-	Filter() Filter // ID of player to exclude
+	Inner() Update              // Update which should be sent to the player
+	Filter() Filter             // ID of player to exclude
+	Serialize() (string, error) // Write filtered into -{filter,...} {update}
 }
 
 type withFilter struct {
@@ -62,16 +63,16 @@ func WithExcludeGMs(update Update) FilteredUpdate {
 }
 
 // MarshalJSON formats the withFilter as "-filter,... {inner}"
-func (f *withFilter) MarshalJSON() ([]byte, error) {
+func (f *withFilter) Serialize() (string, error) {
 	filter := strings.Join(f.filter, ",")
 	inner, err := json.Marshal(f.Update)
 	if err != nil {
-		return nil, fmt.Errorf("exclude %v: marshal inner: %w", filter, err)
+		return "", fmt.Errorf("exclude %v: marshal inner: %w", filter, err)
 	}
-	return []byte(fmt.Sprintf("-%v %v", filter, inner)), nil
+	return fmt.Sprintf("-%s %s", filter, inner), nil
 }
 
-// CheckExclude attempts to find an exclude ID for the given update text.
+// ParseExclude attempts to find an exclude ID for the given update text.
 // If the exclude is found, it is trimmed from the front of the event.
 func ParseExclude(input string) (excludeID id.UID, excludeGMs bool, inner string, found bool) {
 	// "-{filters:filter,...} {inner:[\"ty\", ...]}"
