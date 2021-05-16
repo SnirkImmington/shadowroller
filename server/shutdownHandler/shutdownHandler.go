@@ -30,6 +30,7 @@ const ShutdownInterrupt ShutdownReason = 0 // Server process is being killed
 // Queue reader | Own client ID         | Shutdown method with cancel context |
 type Client struct {
 	ID      string              // Unique ID for the client
+	once    sync.Once           // Call the close once
 	Channel chan ShutdownReason // Channel to receive a shutdown message from
 }
 
@@ -54,8 +55,15 @@ func MakeClient(id string) *Client {
 
 // Close allows the server to shut down if no other clients are open.
 func (c *Client) Close() {
-	clientChannel <- c
-	close(c.Channel)
+	if config.ShutdownHandlersDebug {
+		log.Printf("Client %v Close()", c.ID)
+	}
+	c.once.Do(func() {
+		if config.ShutdownHandlersDebug {
+			log.Printf("Client %v closing", c.ID)
+		}
+		clientChannel <- c
+	})
 }
 
 func handleShutdown() {
