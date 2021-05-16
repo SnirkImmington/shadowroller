@@ -127,4 +127,5 @@ func main() {
 	}
 	// Wait for all handlers to finish and return cleanly
 	shutdownHandler.WaitGroup.Wait()
+	log.Print("Shadowroller out.")
 }
