@@ -21,7 +21,7 @@ export type Action =
 | { ty: "join", gameID: string, players: Map<string, PlayerInfo>, gms: string[] }
 | { ty: "leave" }
 | { ty: "newPlayer", player: PlayerInfo }
-| {ty: "deletePlayer", id: string }
+| { ty: "deletePlayer", id: string }
 | { ty: "updatePlayer", id: string, diff: Partial<PlayerInfo> }
 | { ty: "setPlayers", players: Map<string, PlayerInfo> }
 ;
