@@ -126,12 +126,6 @@ const RollGlitchyLabel = styled.label`
     }
 `;
 
-const FullWidthSpacing = styled.span`
-    @media all and (min-width: 768px) {
-        flex-grow: 1;
-    }
-`;
-
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);

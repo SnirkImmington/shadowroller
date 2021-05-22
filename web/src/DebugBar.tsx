@@ -56,7 +56,8 @@ export default function DebugBar() {
     const connection = React.useContext(ConnectionCtx);
 
     const gameText = game ? game.gameID : "offline";
-    const players = game ? Array.from(game.players.values()).map(p => p.name) : [];
+    const players = React.useMemo(() =>
+        game ? Array.from(game.players.values()).map(p => p.name) : [], [game]);
     const gamePlayers = game?.players;
 
     const playersClicked = React.useCallback(() => {

@@ -102,7 +102,7 @@ export default function Provider({ children }: React.PropsWithChildren<{}>) {
         eventDispatch({ ty: "clearEvents" });
         playerDispatch({ ty: "leave" });
         return routes.auth.logout();
-    }, [gameDispatch, eventDispatch, playerDispatch]);
+    }, [gameDispatch, eventDispatch, playerDispatch, setConnection]);
 
     // Prevent a new array being passed to the context provider
     const value: [stream.ConnectFn, stream.LogoutFn] = React.useMemo(() =>

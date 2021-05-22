@@ -125,7 +125,7 @@ export default function RollInitiativePrompt() {
                 }
             });
         }
-    }, [rollDisabled, gameExists, base, dice, title, seized, blitzed, dispatch]);
+    }, [rollDisabled, gameExists, base, dice, title, share, seized, blitzed, dispatch]);
 
     if (!shown) {
         return (
