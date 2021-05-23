@@ -6,9 +6,22 @@ export enum Mode {
     /** All players may see the event */
     InGame = 0,
     /** Only the originator of the event may see it */
-    Private,
+    Private = 1,
     /** The game masters and originator of the event may see it */
-    GMs
+    GMs = 2,
+}
+
+export function parseMode(share: number): Mode {
+    switch (share) {
+        case 0: return Mode.InGame;
+        case 1: return Mode.Private;
+        case 2: return Mode.GMs;
+        default:
+            if (process.env.NODE_ENV === "development") {
+                console.error("Asked to parse invalid mode", share);
+            }
+            return Mode.InGame;
+    }
 }
 
 /** icon produces an icon for the given share mode */

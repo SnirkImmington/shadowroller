@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
+import * as Share from 'share';
 import * as server from 'server';
 
 /** Delays for reconnecting the EventSource (in ms) */
@@ -75,8 +76,17 @@ export function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: E
             eventDispatch({ ty: "deleteEvent", id: delEventID });
             return;
         case "~evt":
-            const [modEventID, eventDiff, eventEdit] = updateData as [number, Partial<Event.Event>, number];
-            eventDispatch({ ty: "modifyEvent", id: modEventID, edit: eventEdit, diff: eventDiff });
+            const [modEventID, eventDiff, eventEdit] = updateData as [number, Partial<Event.Event & { "share": number}>, number];
+            if (eventDiff.share != null) {
+                const eventShare = Share.parseMode(eventDiff.share);
+                eventDispatch({
+                    ty: "modifyShare", id: modEventID, edit: eventEdit, share: eventShare,
+                });
+                delete eventDiff.share;
+            }
+            if (Object.keys(eventDiff).length > 0) {
+                eventDispatch({ ty: "modifyEvent", id: modEventID, edit: eventEdit, diff: eventDiff });
+            }
             return;
         case "^roll":
             const [rerollEventID, { reroll }, rerollEdit] = updateData as [number, {reroll: number[]}, number];

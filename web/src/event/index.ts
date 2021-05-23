@@ -78,6 +78,7 @@ export type Action =
 | { ty: "clearEdit" }
 
 | { ty: "modifyEvent", id: number, edit: number, diff: Partial<Event> }
+| { ty: "modifyShare", id: number, edit: number, share: Share.Mode }
 | { ty: "deleteEvent", id: number }
 
 | { ty: "seizeInitiative", id: number, edit: number }
@@ -254,6 +255,13 @@ function eventReduce(state: State, action: Action): State {
                     : e
             ) as Event[];
             return { ...state, events: newEventsWithModified };
+        case "modifyShare":
+            const newEventsWithShare = state.events.map(e =>
+                e.id === action.id && e.source !== "local" ?
+                { ...e, source: { ...e.source, share: action.share } }
+                : e
+            );
+            return { ...state, events: newEventsWithShare };
         case "seizeInitiative":
             const newEventsWithInitiative: Event[] = state.events.map(e =>
                 e.id === action.id && e.ty === "initiativeRoll" ?
