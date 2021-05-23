@@ -103,7 +103,6 @@ export default function EditPlayerPanel({ hide }: Props) {
                     setConnection, connect,
                     gameDispatch, playerDispatch, eventDispatch
                 });
-                toggleShowGames();
             });
     }
 
