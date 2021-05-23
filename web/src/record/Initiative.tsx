@@ -83,14 +83,15 @@ function InitiativeRecord({ event, playerID, color, noActions }: Props, ref: Rea
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </UI.PlayerColored>
-            &nbsp;rolls
+            &nbsp;
+            {event.blitzed ? <b>blitzes</b> : event.seized ? <b>seizes the initiative with</b> : "rolls"}
         </>
     ) : (
         "Rolled"
     );
-    const title = (
+    const title = !event.seized ? (
         <>for { event.title ? <b>{event.title}</b> : "initiative"}</>
-    );
+    ) : (event.title ? (<>for <b>{event.title}</b></>) : "");
     const dieList = (
         <>
             &nbsp;{event.base ?? "0"} +&nbsp;<dice.List small rolls={event.dice} />
