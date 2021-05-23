@@ -249,6 +249,9 @@ func handleReroll(response Response, request *Request) {
 		logf(request, "Expecting to parse previous roll")
 		httpBadRequest(response, request, "Invalid previous roll")
 	}
+	if previousRoll.PlayerID != sess.PlayerID {
+		httpBadRequest(response, request, "That is not your roll")
+	}
 	logf(request, "Got previous roll `%v` %v",
 		previousRoll.Title, previousRoll.Dice,
 	)
@@ -267,8 +270,7 @@ func handleReroll(response Response, request *Request) {
 	rerolled := event.ForReroll(
 		player, &previousRoll, [][]int{newRound, previousRoll.Dice},
 	)
-	// Roll update logic was torn out when sharing rules were introduced :/
-	//update := update.ForSecondChance(&rerolled, newRound)
+	// Rerolls are getting their own IDs. We should instead just swap dice with rounds.
 	err = game.DeleteEvent(sess.GameID, &previousRoll, conn)
 	httpInternalErrorIf(response, request, err)
 	err = game.PostEvent(sess.GameID, &rerolled, conn)
