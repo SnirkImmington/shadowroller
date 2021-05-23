@@ -36,6 +36,7 @@ func (f *withFilter) Inner() Update {
 	return f.Update
 }
 
+// WithFilterPlayer constructs a FilteredUpdate with the given filters.
 func WithFilters(filters []string, update Update) FilteredUpdate {
 	return &withFilter{update, filters}
 }

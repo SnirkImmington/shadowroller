@@ -53,12 +53,12 @@ func TestUpdateChannel(t *testing.T) {
 	gID := "g"
 	pID := id.UID("p")
 	t.Run("it produces the in-game channel", func(t *testing.T) {
-		test.AssertEqual(t, UpdateChannel(gID, pID, event.SharePrivate), "update:g")
+		test.AssertEqual(t, UpdateChannel(gID, pID, event.ShareInGame), "update:g")
 	})
 	t.Run("it produces the private channel", func(t *testing.T) {
 		test.AssertEqual(t, UpdateChannel(gID, pID, event.SharePrivate), "update:g:p")
 	})
 	t.Run("it produces the in-game channel", func(t *testing.T) {
-		test.AssertEqual(t, UpdateChannel(gID, pID, event.SharePrivate), "update:g:gms")
+		test.AssertEqual(t, UpdateChannel(gID, pID, event.ShareGMs), "update:g:gms")
 	})
 }

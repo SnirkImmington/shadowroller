@@ -13,6 +13,7 @@ type Props = {
 
 const StyledRow = styled(UI.ColumnToRow)`
     & > * {
+        width: auto;
         margin-bottom: 0.25em;
         @media all and (min-width: 768px) {
             margin-bottom: 0;

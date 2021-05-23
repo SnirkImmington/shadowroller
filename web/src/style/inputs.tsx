@@ -138,9 +138,11 @@ export const RadioLink = React.memo<React.PropsWithChildren<RadioLinkProps>>(fun
         <RadioLabel htmlFor={props.id} disabled={props.disabled}>
             <HiddenInput {...props} children={undefined} />
             <RadioSelector light={!props.light} disabled={props.disabled}>
-                {props.type === "checkbox" ?
-                    (props.checked ? '[X]' : '[ ]')
-                    : (props.checked ? '(X)' : '( )')}
+                <span aria-hidden="true">
+                    {props.type === "checkbox" ?
+                        (props.checked ? '[X]' : '[ ]')
+                        : (props.checked ? '(X)' : '( )')}
+                </span>
             </RadioSelector>
             {props.children}
         </RadioLabel>

@@ -37,10 +37,10 @@ const setDiceCount = (value: string) => fireEvent.change(getDiceCount(), { targe
 const getRollTitle = () => screen.getByRole("textbox", { name: "to" });
 const setRollTitle = (value: string) => fireEvent.change(getRollTitle(), { target: { value }});
 
-const getLimitPush = () => screen.getByRole("checkbox", { name: "[ ] Push the limit" });
+const getLimitPush = () => screen.getByRole("checkbox", { name: "Push the limit" });
 const toggleLimitPush = () => fireEvent.click(getLimitPush());
 
-const getGlitchy = () => screen.getByRole("checkbox", { name: "[ ] Glitchy" });
+const getGlitchy = () => screen.getByRole("checkbox", { name: "Glitchy" });
 const toggleGlitchy = () => fireEvent.click(getGlitchy());
 
 const getGlitchiness = () => screen.getByRole("textbox", { name: /Reduce number of 1s/ });
