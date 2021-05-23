@@ -56,7 +56,7 @@ function GameActionsRow({ event }: ActionProps) {
 
     return (
         <UI.FlexRow spaced>
-            {event.source !== "local" && event.source.share !== Share.Mode.InGame &&
+            {event.source !== "local" && event.source.share === Share.Mode.GMs &&
                 <UI.LinkButton disabled={connection === "connecting"} onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}

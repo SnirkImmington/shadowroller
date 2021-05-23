@@ -141,24 +141,13 @@ function GameActionsRow({ event, result }: Props) {
             .onConnection(setConnection);
     }
 
-    function onShowGM() {
-        routes.game.editShare({ id: event.id, share: Share.Mode.GMs })
-            .onConnection(setConnection);
-    }
-
     return (
         <UI.FlexRow spaced>
-            {event.source !== "local" && event.source.share !== Share.Mode.InGame &&
+            {event.source !== "local" && event.source.share === Share.Mode.GMs &&
                 <UI.LinkButton disabled={connection === "connecting"}
                                onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
-                </UI.LinkButton>
-            }
-            {event.source !== "local" && event.source.share === Share.Mode.Private &&
-                <UI.LinkButton disabled={connection === "connecting"} onClick={onShowGM}>
-                    <UI.FAIcon className="icon-inline" icon={icons.faUserFriends} transform="grow-4" />
-                    {' show GM'}
                 </UI.LinkButton>
             }
             {canSecondChance(result) &&
