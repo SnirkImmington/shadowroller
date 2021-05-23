@@ -55,7 +55,8 @@ export default function EditPlayerPanel({ hide }: Props) {
     }
 
     const isGM = game.gms.includes(player.id);
-    const switchDisabled = !showGames || !switchGame || switchGame === game.gameID || response === "loading";
+    const switchChanged = showGames && switchGame !== "" && switchGame !== game.gameID;
+    const switchDisabled = !showGames || !switchChanged || response === "loading";
     const changed = name !== player.name || hue !== player.hue || onlineMode !== player.onlineMode;
     const connected = connection === "connected" && response !== "loading";
 
@@ -96,6 +97,7 @@ export default function EditPlayerPanel({ hide }: Props) {
         routes.auth.login({ username: player.username, gameID: switchGame, persist })
             .onResponseStatus(setSwitchResponse)
             .onResponse(response => {
+                eventDispatch({ ty: "clearEvents" });
                 server.handleLogin({
                     persist, response,
                     setConnection, connect,
@@ -125,7 +127,7 @@ export default function EditPlayerPanel({ hide }: Props) {
             <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
-                    Logged in: {player.name} / {game.gameID}
+                    {player.name} in {game.gameID}
                     {isGM && <UI.FAIcon icon={icons.faChessQueen} className="icon-inline icon-gm" />}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
@@ -198,7 +200,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                     <UI.FlexRow spaced>
                         <StatusText connection={connection}/>
                         <span style={{flexGrow: 1}} />
-                        <UI.LinkButton type="submit" disabled={!changed || !connected}>
+                        <UI.LinkButton type="submit" disabled={!changed || !connected || switchChanged}>
                             update
                         </UI.LinkButton>
                         <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
