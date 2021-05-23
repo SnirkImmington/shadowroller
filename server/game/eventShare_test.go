@@ -3,28 +3,28 @@ package game
 import (
 	"testing"
 
-	"sr/id"
 	"sr/event"
+	"sr/id"
 	"sr/player"
 	"sr/test"
 )
 
 func TestPlayerCanSeeEvent(t *testing.T) {
 	plr := &player.Player{
-		ID: id.UID("plr"),
-		Name: "plebby",
-		Hue: 12,
-		Username: "pleb14",
+		ID:          id.UID("plr"),
+		Name:        "plebby",
+		Hue:         12,
+		Username:    "pleb14",
 		Connections: 1,
-		OnlineMode: player.OnlineModeAuto,
+		OnlineMode:  player.OnlineModeAuto,
 	}
 	plr2 := &player.Player{
-		ID: id.UID("plr2"),
-		Name: "plebby the second",
-		Hue: 13,
-		Username: "pleb15",
+		ID:          id.UID("plr2"),
+		Name:        "plebby the second",
+		Hue:         13,
+		Username:    "pleb15",
 		Connections: 1,
-		OnlineMode: player.OnlineModeAuto,
+		OnlineMode:  player.OnlineModeAuto,
 	}
 
 	evt := event.ForPlayerJoin(plr)
