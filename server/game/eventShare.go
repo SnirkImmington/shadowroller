@@ -45,15 +45,15 @@ func GMsChannel(gameID string) string {
 }
 
 // UpdateChannel produces the channel an update should be posted in, and whether it may overlap.
-func UpdateChannel(gameID string, playerID id.UID, share event.Share) (channel string, overlap bool) {
+func UpdateChannel(gameID string, playerID id.UID, share event.Share) string {
 	if share == event.ShareInGame {
-		return GameChannel(gameID), false
+		return GameChannel(gameID)
 	}
 	if share == event.SharePrivate {
-		return PlayerChannel(gameID, playerID), false
+		return PlayerChannel(gameID, playerID)
 	}
 	if share == event.ShareGMs {
-		return GMsChannel(gameID), true
+		return GMsChannel(gameID)
 	}
 	panic(fmt.Sprintf("unexpected share %v for player %v in %v",
 		share, playerID, gameID,

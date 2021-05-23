@@ -125,7 +125,7 @@ func UpdateEventShare(gameID string, evt event.Event, newShare event.Share, conn
 
 // UpdateEvent replaces an event in the database and notifies players of the change.
 func UpdateEvent(gameID string, newEvent event.Event, update update.Event, conn redis.Conn) error {
-	channel, _ := UpdateChannel(gameID, newEvent.GetPlayerID(), newEvent.GetShare())
+	channel := UpdateChannel(gameID, newEvent.GetPlayerID(), newEvent.GetShare())
 	eventID := newEvent.GetID()
 	eventBytes, err := json.Marshal(newEvent)
 	if err != nil {
