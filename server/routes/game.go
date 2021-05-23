@@ -249,6 +249,9 @@ func handleReroll(response Response, request *Request) {
 		logf(request, "Expecting to parse previous roll")
 		httpBadRequest(response, request, "Invalid previous roll")
 	}
+	if previousRoll.PlayerID != sess.PlayerID {
+		httpBadRequest(response, request, "That is not your roll")
+	}
 	logf(request, "Got previous roll `%v` %v",
 		previousRoll.Title, previousRoll.Dice,
 	)
@@ -267,7 +270,7 @@ func handleReroll(response Response, request *Request) {
 	rerolled := event.ForReroll(
 		player, &previousRoll, [][]int{newRound, previousRoll.Dice},
 	)
-	//update := update.ForSecondChance(&rerolled, newRound)
+	// Rerolls are getting their own IDs. We should instead just swap dice with rounds.
 	err = game.DeleteEvent(sess.GameID, &previousRoll, conn)
 	httpInternalErrorIf(response, request, err)
 	err = game.PostEvent(sess.GameID, &rerolled, conn)
@@ -340,6 +343,8 @@ func handleEvents(response Response, request *Request) {
 		sess.GameID, newest, oldest, config.MaxEventRange, conn,
 	)
 	httpInternalErrorIf(response, request, err)
+	isGM, err := game.HasGM(sess.GameID, sess.PlayerID, conn)
+	httpInternalErrorIf(response, request, err)
 
 	var eventRange eventRangeResponse
 	var message string
@@ -359,7 +364,7 @@ func handleEvents(response Response, request *Request) {
 				err := fmt.Errorf("error parsing event %v: %w", i, err)
 				httpInternalErrorIf(response, request, err)
 			}
-			if !game.PlayerCanSeeEvent(plr, evt) {
+			if !game.PlayerCanSeeEvent(plr, isGM, evt) {
 				continue
 			}
 			parsed = append(parsed, evt)

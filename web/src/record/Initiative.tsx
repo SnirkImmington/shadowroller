@@ -50,13 +50,13 @@ function GameActionsRow({ event }: ActionProps) {
     }
 
     function onReveal() {
-        routes.game.editShare({ id: event.id, share: Share.InGame })
+        routes.game.editShare({ id: event.id, share: Share.Mode.InGame })
             .onConnection(setConnection);
     }
 
     return (
         <UI.FlexRow spaced>
-            {event.source !== "local" && event.source.share !== Share.InGame &&
+            {event.source !== "local" && event.source.share !== Share.Mode.InGame &&
                 <UI.LinkButton disabled={connection === "connecting"} onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
@@ -79,7 +79,7 @@ function InitiativeRecord({ event, playerID, color, noActions }: Props, ref: Rea
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
             <UI.PlayerColored color={color}>
-                {(event.source.share !== Share.InGame) &&
+                {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </UI.PlayerColored>

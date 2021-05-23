@@ -28,7 +28,7 @@ export const defaultState: State = null;
 export type Action =
 | { ty: "join", self: Player }
 | { ty: "leave" }
-| { ty: "update", values: Partial<Player> }
+| { ty: "update", diff: Partial<Player> }
 ;
 
 function userReduce(state: State, action: Action): State {
@@ -39,7 +39,7 @@ function userReduce(state: State, action: Action): State {
             return null;
         case "update":
             if (!state) { return state; }
-            return { ...state, ...action.values };
+            return { ...state, ...action.diff };
         default:
             if (process.env.NODE_ENV !== 'production') {
                 const action_: never = action;

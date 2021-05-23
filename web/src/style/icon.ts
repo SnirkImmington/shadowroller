@@ -7,13 +7,12 @@ export {
     faPlus, faMinus, faTimes, faDivide,
     // user join icons
     faIdBadge, faIdCard, faPortrait, faLock, faKey,
-    // Icons for in game/GC/local rolls
-    faUser, faUsers, faUserFriends, faUserSecret,
+    // Icons for in game/GM/local rolls
+    faUser, faUsers, faUserFriends, faUserSecret, faChessQueen,
     // Menu icons
     faList, faPen, faUserEdit,
     // Roll icons
     faBolt, faRedo, faClipboardList, faGrimace, faSortAmountUp,
     // dice
     faDice,
-    // faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo,
 } from "@fortawesome/free-solid-svg-icons";

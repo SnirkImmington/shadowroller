@@ -60,11 +60,38 @@ describe("reduce()", function() {
         expect(result).toBeNull();
     });
 
+    it("handles a player create", function() {
+        const action: Game.Action = {
+            ty: "newPlayer",
+            player: {
+                id: "newPlayerID",
+                name: "New player",
+                hue: 22,
+                online: true
+            }
+        };
+        const state = mockState();
+        const result = Game.reduce(state, action);
+        const newPlayer = result.players.get("newPlayerID");
+        expect(newPlayer).toEqual(action.player);
+    });
+
+    it("handles a player delete", function() {
+        const action: Game.Action = {
+            ty: "deletePlayer",
+            id: "player1ID",
+        };
+        const state = mockState();
+        const result = Game.reduce(state, action);
+        const newPlayer = result.players.get("player1ID");
+        expect(newPlayer).toBeFalsy();
+    });
+
     it("handles a player update", function() {
         const action: Game.Action = {
-            ty: "playerUpdate",
+            ty: "updatePlayer",
             id: "player1ID",
-            update: {
+            diff: {
                 name: "not player 1 name",
                 hue: 3
             }
@@ -79,20 +106,25 @@ describe("reduce()", function() {
         expect(player1.online).toBe(false);
     });
 
-    it("creates new player for a player update", function() {
+    it("handles a set players", function() {
+        const newPlayers = new Map<string, Game.PlayerInfo>();
+        newPlayers.set("player4ID", {
+            id: "player4ID",
+            name: "player 4",
+            hue: 2,
+            online: false,
+        });
         const action: Game.Action = {
-            ty: "playerUpdate",
-            id: "newPlayerID",
-            update: {
-                name: "New player",
-                hue: 22,
-                online: true
-            }
+            ty: "setPlayers",
+            players: newPlayers
         };
         const state = mockState();
         const result = Game.reduce(state, action);
-        const newPlayer = result.players.get("newPlayerID");
-        expect(newPlayer).toEqual(action.update);
+        expect(result).not.toBeNull();
+        const player1 = result.players.get("player1ID");
+        expect(player1).toBeFalsy();
+        const player4 = result.players.get("player4ID");
+        expect(player4.name).toBe("player 4");
     });
 
     it("ignores an invalid action", function() {

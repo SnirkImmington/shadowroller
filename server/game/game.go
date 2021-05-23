@@ -20,6 +20,29 @@ func Exists(gameID string, conn redis.Conn) (bool, error) {
 	return redis.Bool(conn.Do("exists", "game:"+gameID))
 }
 
+func HasGM(gameID string, playerID id.UID, conn redis.Conn) (bool, error) {
+	return redis.Bool(conn.Do("sismember", "gm:"+gameID, string(playerID)))
+}
+
+// GetGMs returns the list of GMs from a game.
+func GetGMs(gameID string, conn redis.Conn) ([]string, error) {
+	return redis.Strings(conn.Do("smembers", "gm:"+gameID))
+}
+
+// IsGM is string array contains
+func IsGM(gms []string, playerID id.UID) bool {
+	for _, gmID := range gms {
+		if gmID == string(playerID) {
+			return true
+		}
+	}
+	return false
+}
+
+func IsGMOf(game *Info, playerID id.UID) bool {
+	return IsGM(game.GMs, playerID)
+}
+
 // GetPlayersIn retrieves the list of players in a game.
 // Returns ErrNotFound if the game is not found OR if it has no players.
 func GetPlayersIn(gameID string, conn redis.Conn) ([]player.Player, error) {
@@ -105,6 +128,7 @@ func GetPlayersIn(gameID string, conn redis.Conn) ([]player.Player, error) {
 type Info struct {
 	ID      string                 `json:"id"`
 	Players map[string]player.Info `json:"players"`
+	GMs     []string               `json:"gms"`
 }
 
 // GetInfo retrieves `Info` for the given ID
@@ -113,9 +137,13 @@ func GetInfo(gameID string, conn redis.Conn) (*Info, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting players in game %v: %w", gameID, err)
 	}
+	gms, err := GetGMs(gameID, conn)
+	if err != nil {
+		return nil, fmt.Errorf("error getting GMs in game %v: %w", gameID, err)
+	}
 	info := make(map[string]player.Info, len(players))
 	for _, player := range players {
 		info[string(player.ID)] = player.Info()
 	}
-	return &Info{ID: gameID, Players: info}, nil
+	return &Info{ID: gameID, Players: info, GMs: gms}, nil
 }

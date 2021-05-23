@@ -96,8 +96,7 @@ function Shadowroller() {
             setConnection("disconnected");
         }
         // We want this to only run on startup.
-        /// eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <ThemeProvider theme={theme}>

@@ -8,8 +8,8 @@ import type { Connection } from 'connection';
 import * as Event from 'event';
 import * as Share from 'share';
 import * as rollStats from 'rollStats';
+import * as roll from 'roll';
 import * as routes from 'routes';
-import * as srutil from 'srutil';
 
 export const SignDisplayFormat = new Intl.NumberFormat(undefined, { signDisplay: "always" });
 
@@ -99,7 +99,7 @@ function LocalActionsRow({ event, result }: Props) {
         dispatch({
             ty: "reroll", id: event.id,
             edit: Date.now().valueOf(),
-            round: srutil.rerollFailures(event.dice)
+            reroll: roll.secondChance(event.dice)
         });
     };
 
@@ -137,17 +137,28 @@ function GameActionsRow({ event, result }: Props) {
     }
 
     function onReveal() {
-        routes.game.editShare({ id: event.id, share: Share.InGame })
+        routes.game.editShare({ id: event.id, share: Share.Mode.InGame })
+            .onConnection(setConnection);
+    }
+
+    function onShowGM() {
+        routes.game.editShare({ id: event.id, share: Share.Mode.GMs })
             .onConnection(setConnection);
     }
 
     return (
         <UI.FlexRow spaced>
-            {event.source !== "local" && event.source.share !== Share.InGame &&
+            {event.source !== "local" && event.source.share !== Share.Mode.InGame &&
                 <UI.LinkButton disabled={connection === "connecting"}
                                onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
+                </UI.LinkButton>
+            }
+            {event.source !== "local" && event.source.share === Share.Mode.Private &&
+                <UI.LinkButton disabled={connection === "connecting"} onClick={onShowGM}>
+                    <UI.FAIcon className="icon-inline" icon={icons.faUserFriends} transform="grow-4" />
+                    {' show GM'}
                 </UI.LinkButton>
             }
             {canSecondChance(result) &&

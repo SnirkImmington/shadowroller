@@ -21,7 +21,7 @@ function RollRecordInner({ event, playerID, color, noActions }: Props, ref: Reac
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
             <UI.PlayerColored color={color}>
-                {(event.source.share !== Share.InGame) &&
+                {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </UI.PlayerColored>

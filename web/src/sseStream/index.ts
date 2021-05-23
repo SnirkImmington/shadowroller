@@ -3,59 +3,37 @@ import * as React from 'react';
 import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
+import * as Share from 'share';
 import * as server from 'server';
 
-// Delays for reconnecting the EventSource (in ms)
+/** Delays for reconnecting the EventSource (in ms) */
 export const RETRY_DELAYS = [
     2, 2, 4, 4, 8, 8, 16, 16
 ].map(s => s * 1000);
 
+/** Max amount of time between retries */
 export const RETRY_MAX = 32 * 1000;
 
+type RegisterListenersArgs = {
+    source: EventSource,
+    gameID: string,
+    playerID: string,
 
-export function logMessage(event: MessageEvent) {
+    eventDispatch: Event.Dispatch,
+    gameDispatch: Game.Dispatch,
+    playerDispatch: Player.Dispatch,
+}
+export function registerListeners({ source, gameID, playerID, eventDispatch, gameDispatch, playerDispatch }: RegisterListenersArgs) {
+    source.addEventListener("upd", e => handleUpdate(e as MessageEvent, playerID, eventDispatch, gameDispatch, playerDispatch));
+    source.onmessage = logMessage;
+}
+
+
+function logMessage(event: MessageEvent) {
     if (process.env.NODE_ENV !== "production" && event.data !== "") {
         console.log("Unexpected message", event);
     }
     // Otherwise, it's a ping
-}
-
-export function handleEvent(e: MessageEvent, eventDispatch: Event.Dispatch) {
-    let eventData;
-    try {
-        // flow-ignore-all-next-line it's json parse
-        eventData = JSON.parse(e.data);
-    }
-    catch (err) {
-        console.error("Unparseable Event received from server:", err, e);
-        return;
-    }
-    const event = server.parseEvent(eventData);
-    if (!event) {
-        console.error("Unable to parseEvent():", eventData, e);
-        return;
-    }
-    eventDispatch({ ty: "newEvent", event });
-}
-
-export function handleEventUpdate(id: number, diff: any, edit: number, dispatch: Event.Dispatch) {
-    if (diff === "del") {
-        dispatch({ ty: "deleteEvent", id });
-    }
-    else if (diff["reroll"]) {
-        dispatch({ ty: "reroll", id, edit, round: diff["reroll"] });
-    }
-    else {
-        dispatch({ ty: "modifyRoll", id, edit, diff });
-    }
-}
-
-export function handlePlayerUpdate(diff: Partial<Player.Player>, _edit: number, dispatch: Player.Dispatch) {
-    dispatch({ ty: "update", values: diff });
-}
-
-export function handleGameUpdate(_ty: string, id: string, diff: any, _edit: number, dispatch: Game.Dispatch) {
-    dispatch({ ty: "playerUpdate", id, update: diff });
 }
 
 export function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: Event.Dispatch, gameDispatch: Game.Dispatch, playerDispatch: Player.Dispatch) {
@@ -69,25 +47,66 @@ export function handleUpdate(e: MessageEvent, playerID: string, eventDispatch: E
         return;
     }
 
-    if (typeof updateData !== "object" || updateData.length < 3) {
+    if (typeof updateData !== "object" || updateData.length < 2) {
         console.error("Invalid update type from server:", updateData);
         return;
     }
 
-    const [ty, id, diff, at] = updateData;
+    const ty = updateData[0];
+    updateData = updateData.slice(1);
+
+    if (process.env.NODE_ENV === "development") {
+        console.log("SSE: update", ty, ...updateData);
+    }
 
     switch (ty) {
-        case "evt":
-            handleEventUpdate(id, diff, at, eventDispatch);
-            return;
-        case "plr":
-            if (id === playerID) {
-                handlePlayerUpdate(diff, at, playerDispatch);
+        case "+evt":
+            const [newEvent] = updateData as [Event.Event];
+            const parsedNewEvent = server.parseEvent(newEvent);
+            if (!parsedNewEvent) {
+                if (process.env.NODE_ENV === "development") {
+                    console.error("Unable to parse new event", updateData);
+                }
+                return;
             }
-            handleGameUpdate(ty, id, diff, at, gameDispatch);
+            eventDispatch({ ty: "newEvent", event: parsedNewEvent });
             return;
-        default:
-            console.error("Unexpected event type", ty, "in", updateData);
+        case "-evt":
+            const [delEventID] = updateData as [number];
+            eventDispatch({ ty: "deleteEvent", id: delEventID });
+            return;
+        case "~evt":
+            const [modEventID, eventDiff, eventEdit] = updateData as [number, Partial<Event.Event & { "share": number}>, number];
+            if (eventDiff.share != null) {
+                const eventShare = Share.parseMode(eventDiff.share);
+                eventDispatch({
+                    ty: "modifyShare", id: modEventID, edit: eventEdit, share: eventShare,
+                });
+                delete eventDiff.share;
+            }
+            if (Object.keys(eventDiff).length > 0) {
+                eventDispatch({ ty: "modifyEvent", id: modEventID, edit: eventEdit, diff: eventDiff });
+            }
+            return;
+        case "^roll":
+            const [rerollEventID, { reroll }, rerollEdit] = updateData as [number, {reroll: number[]}, number];
+            eventDispatch({ ty: "reroll", id: rerollEventID, edit: rerollEdit, reroll });
+            return;
+
+        case "+plr":
+            const [newPlayer] = updateData as [Player.Info];
+            gameDispatch({ ty: "newPlayer", player: newPlayer });
+            return;
+        case "-plr":
+            const [delPlayerID] = updateData as [string];
+            gameDispatch({ ty: "deletePlayer", id: delPlayerID });
+            return;
+        case "~plr":
+            const [modPlayerID, playerDiff] = updateData as [string, Partial<Player.Info>];
+            if (modPlayerID === playerID) {
+                playerDispatch({ ty: "update", diff: playerDiff });
+            }
+            gameDispatch({ ty: "updatePlayer", id: modPlayerID, diff: playerDiff });
             return;
     }
 }

@@ -7,4 +7,5 @@ export * as player from './player';
 export type GameInfo = {
     id: string,
     players: Record<string, PlayerInfo>,
+    gms: string[],
 };

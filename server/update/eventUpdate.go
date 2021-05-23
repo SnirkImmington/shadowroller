@@ -13,6 +13,33 @@ type Event interface {
 	Time() int64
 }
 
+// newEvent is an update sent for new events being created
+type newEvent struct {
+	evt event.Event
+}
+
+func (update *newEvent) Type() string {
+	return TypeEventNew
+}
+
+func (update *newEvent) EventID() int64 {
+	return update.evt.GetID()
+}
+
+func (update *newEvent) Time() int64 {
+	return update.evt.GetID() // New as of event creation time
+}
+
+func (update *newEvent) MarshalJSON() ([]byte, error) {
+	fields := []interface{}{TypeEventNew, update.evt}
+	return json.Marshal(fields)
+}
+
+// ForNewEvent constructs an update for a new event
+func ForNewEvent(evt event.Event) Event {
+	return &newEvent{evt}
+}
+
 // eventDiff updates various fields on an event.
 type eventDiff struct {
 	id   int64
@@ -22,7 +49,7 @@ type eventDiff struct {
 
 // Type gets the type of the update
 func (update *eventDiff) Type() string {
-	return UpdateTypeEvent
+	return TypeEventMod
 }
 
 // EventID gets the ID of the update's event
@@ -38,7 +65,7 @@ func (update *eventDiff) Time() int64 {
 // MarshalJSON converts the update to JSON.
 func (update *eventDiff) MarshalJSON() ([]byte, error) {
 	fields := []interface{}{
-		UpdateTypeEvent, update.id, update.diff, update.time,
+		TypeEventMod, update.id, update.diff, update.time,
 	}
 	return json.Marshal(fields)
 }
@@ -60,6 +87,13 @@ func ForEventDiff(event event.Event, diff map[string]interface{}) Event {
 	}
 }
 
+// ForEventShare constructs an update for changing an event share.
+func ForEventShare(event event.Event, newShare event.Share) Event {
+	update := makeEventDiff(event)
+	update.diff["share"] = newShare // TODO make sure we don't need to stringify
+	return &update
+}
+
 // ForEventRename constructs an update for renaming an event
 func ForEventRename(event event.Event, newTitle string) Event {
 	update := makeEventDiff(event)
@@ -67,11 +101,19 @@ func ForEventRename(event event.Event, newTitle string) Event {
 	return &update
 }
 
+type reroll struct {
+	eventDiff
+}
+
+func (r *reroll) Type() string {
+	return TypeRollSecondChance
+}
+
 // ForSecondChance constructs an update for a second chance roll.
 func ForSecondChance(event event.Event, round []int) Event {
 	update := makeEventDiff(event)
 	update.diff["reroll"] = round
-	return &update
+	return &reroll{update}
 }
 
 // ForSeizeInitiative constructs an update for a seize the initiative
@@ -84,15 +126,15 @@ func ForSeizeInitiative(event event.Event) Event {
 
 // eventDelete is a specific update type for deleting events
 type eventDelete struct {
-	id int64
+	eventID int64
 }
 
 func (update *eventDelete) Type() string {
-	return UpdateTypeEvent
+	return TypeEventDel
 }
 
 func (update *eventDelete) EventID() int64 {
-	return update.id
+	return update.eventID
 }
 
 func (update *eventDelete) Time() int64 {
@@ -100,7 +142,7 @@ func (update *eventDelete) Time() int64 {
 }
 
 func (update *eventDelete) MarshalJSON() ([]byte, error) {
-	fields := []interface{}{UpdateTypeEvent, update.id, "del"}
+	fields := []interface{}{TypeEventDel, update.eventID}
 	return json.Marshal(fields)
 }
 

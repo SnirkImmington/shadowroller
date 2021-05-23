@@ -4,7 +4,7 @@ import * as UI from 'style';
 import theme from 'style/theme';
 import 'index.css';
 
-import * as srutil from 'srutil';
+import { die as rollDie } from 'roll';
 
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
 import { ReactComponent as DieTwo } from 'assets/die-2.svg';
@@ -48,7 +48,7 @@ export const Die = React.memo<DieProps>(function Die(props: DieProps) {
 });
 
 export function AnimatedDie(props: AnimatedProps) {
-    const [die, setDie] = React.useState<number>(srutil.rollDie);
+    const [die, setDie] = React.useState<number>(rollDie);
 
     React.useEffect(() => {
         const reducedMotion = window.matchMedia('(prefers-reduced-motion)').media;
@@ -56,7 +56,7 @@ export function AnimatedDie(props: AnimatedProps) {
             return;
         }
         const interval = setInterval(function() {
-            setDie(srutil.rollDie());
+            setDie(rollDie());
         }, 25 * 1000);
         return () => clearInterval(interval);
     }, []);

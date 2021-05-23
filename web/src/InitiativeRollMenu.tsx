@@ -12,6 +12,7 @@ import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import * as routes from 'routes';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 
 const RollBackground = {
@@ -57,7 +58,7 @@ export default function RollInitiativePrompt() {
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [loading, setLoading] = React.useState(false);
-    const [share, setShare] = React.useState<Share.Mode>(Share.InGame);
+    const [share, setShare] = React.useState<Share.Mode>(Share.Mode.InGame);
 
     const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
@@ -105,7 +106,7 @@ export default function RollInitiativePrompt() {
         }
 
         if (!gameExists) {
-            const initiativeDice = srutil.roll(blitzed ? 5 : dice);
+            const initiativeDice = roll.dice(blitzed ? 5 : dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
                 base: base ?? 0, dice: initiativeDice, title, seized, blitzed,
@@ -124,7 +125,7 @@ export default function RollInitiativePrompt() {
                 }
             });
         }
-    }, [rollDisabled, gameExists, base, dice, title, seized, blitzed, dispatch]);
+    }, [rollDisabled, gameExists, base, dice, title, share, seized, blitzed, dispatch]);
 
     if (!shown) {
         return (
@@ -196,12 +197,11 @@ export default function RollInitiativePrompt() {
                                           state={share} onChange={setShare} />}
                     <UI.FlexRow spaced>
                         {!connected && <StatusText connection={connection} />}
+                        {gameExists && share !== Share.Mode.InGame &&
+                            <UI.FAIcon icon={Share.icon(share)} className="icon-roll" transform="grow-4" />}
                         <RollButton id="roll-initiative-submit" type="submit"
                                     bg={RollBackground.inGame}
                                     disabled={Boolean(rollDisabled)} onClick={rollClicked}>
-                            {gameExists && share !== Share.InGame &&
-                                <UI.FAIcon icon={Share.icon(share)}
-                                           transform="grow-4" />}
                             Initiative
                         </RollButton>
                     </UI.FlexRow>

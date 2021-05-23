@@ -4,6 +4,7 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	mathRand "math/rand"
 	"strings"
 )
 
@@ -31,14 +32,28 @@ func GenUID() UID {
 	return UID(encodeBytes(IDBytes))
 }
 
+func GenUIDWith(r *mathRand.Rand) UID {
+	return UID(encodeBytesWith(r, IDBytes))
+}
+
 // GenSessionID generates a session UID, longer than the default.
 func GenSessionID() UID {
 	return UID(encodeBytes(SessionIDBytes))
 }
 
+func GenSessionIDWith(r *mathRand.Rand) UID {
+	return UID(encodeBytesWith(r, SessionIDBytes))
+}
+
 func encodeBytes(size uint) string {
 	bytes := make([]byte, size)
 	cryptoRand.Read(bytes)
+	return base64.URLEncoding.EncodeToString(bytes)
+}
+
+func encodeBytesWith(r *mathRand.Rand, size uint) string {
+	bytes := make([]byte, size)
+	r.Read(bytes)
 	return base64.URLEncoding.EncodeToString(bytes)
 }
 

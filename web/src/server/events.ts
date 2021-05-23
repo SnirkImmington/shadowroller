@@ -6,7 +6,7 @@ export function normalizeEvent(event: any) {
         event.source = {
             id: event.pID,
             name: event.pName,
-            share: event.share ?? Share.InGame
+            share: event.share ?? Share.Mode.InGame
         };
         delete event.pID;
         delete event.pName;
@@ -28,7 +28,7 @@ export function parseEvent(event: any): Event.Event | null {
                 source: {
                     id: event.pID,
                     name: event.pName,
-                    share: event.share ?? Share.InGame
+                    share: event.share ?? Share.Mode.InGame
                 },
                 title: event.title ?? '',
                 dice: event.dice,
@@ -41,7 +41,7 @@ export function parseEvent(event: any): Event.Event | null {
                 source: {
                     id: event.pID,
                     name: event.pName,
-                    share: event.share ?? Share.InGame
+                    share: event.share ?? Share.Mode.InGame
                 },
                 title: event.title ?? '',
                 rounds: event.rounds,
@@ -53,7 +53,7 @@ export function parseEvent(event: any): Event.Event | null {
                 source: {
                     id: event.pID,
                     name: event.pName,
-                    share: event.share ?? Share.InGame
+                    share: event.share ?? Share.Mode.InGame
                 },
                 rollID: event.rollID,
                 title: event.title ?? "",
@@ -66,7 +66,7 @@ export function parseEvent(event: any): Event.Event | null {
                 source: {
                     id: event.pID,
                     name: event.pName,
-                    share: event.share ?? Share.InGame,
+                    share: event.share ?? Share.Mode.InGame,
                 },
                 title: event.title ?? "",
                 base: event.base, dice: event.dice,
@@ -76,7 +76,7 @@ export function parseEvent(event: any): Event.Event | null {
         case "playerJoin":
             return {
                 ty: "playerJoin", id: event.id,
-                source: { id: event.pID, name: event.pName, share: Share.InGame },
+                source: { id: event.pID, name: event.pName, share: Share.Mode.InGame },
             };
         default:
             if (process.env.NODE_ENV !== 'production') {

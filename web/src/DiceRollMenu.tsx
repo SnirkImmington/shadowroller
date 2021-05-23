@@ -11,6 +11,7 @@ import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import * as routes from 'routes';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 import theme from 'style/theme';
 import * as icons from 'style/icon';
@@ -125,12 +126,6 @@ const RollGlitchyLabel = styled.label`
     }
 `;
 
-const FullWidthSpacing = styled.span`
-    @media all and (min-width: 768px) {
-        flex-grow: 1;
-    }
-`;
-
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
@@ -141,7 +136,7 @@ export default function RollDicePrompt() {
     const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
     const [titleFlavor, newTitleFlavor] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
-    const [share, setShare] = React.useState<Share.Mode>(Share.InGame);
+    const [share, setShare] = React.useState<Share.Mode>(Share.Mode.InGame);
 
     const [diceText, setDiceText] = React.useState("");
     const [diceCount, setDiceCount] = React.useState<number|null>(null);
@@ -189,14 +184,14 @@ export default function RollDicePrompt() {
         if (!gameExists) {
             let localRoll: Event.Event;
             if (edge) {
-                const rounds = srutil.rollExploding(diceCount);
+                const rounds = roll.explodingSixes(diceCount);
                 localRoll = {
                     ty: "edgeRoll", source: "local", id: Event.newID(),
                     title, rounds, glitchy,
                 };
             }
             else {
-                const dice = srutil.roll(diceCount);
+                const dice = roll.dice(diceCount);
                 localRoll = {
                     ty: "roll", source: "local", id: Event.newID(),
                     title, dice, glitchy,
@@ -319,11 +314,11 @@ export default function RollDicePrompt() {
                     <UI.FlexRow spaced>
                         {!connected &&
                             <StatusText connection={connection} />}
+                        {gameExists && share !== Share.Mode.InGame &&
+                            <UI.FAIcon icon={Share.icon(share)}
+                                transform="grow-4" className="icon-roll" />}
                         <RollButton id="roll-button-submit" type="submit"
                                     disabled={Boolean(rollDisabled)} bg={rollBackgound}>
-                            {gameExists && share !== Share.InGame &&
-                                <UI.FAIcon icon={Share.icon(share)}
-                                       transform="grow-4" />}
                             Roll dice
                         </RollButton>
                     </UI.FlexRow>

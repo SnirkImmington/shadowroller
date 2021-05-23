@@ -3,6 +3,7 @@ package routes
 import (
 	"sr/event"
 	"sr/game"
+	"sr/id"
 )
 
 var _ = gameRouter.HandleFunc("/edit-share", handleShareEvent).Methods("POST")
@@ -48,6 +49,9 @@ func handleShareEvent(response Response, request *Request) {
 		httpSuccess(response, request, "No change")
 		return
 	}
+
+	updateTime := id.NewEventID()
+	evt.SetEdit(updateTime)
 
 	err = game.UpdateEventShare(sess.GameID, evt, share, conn)
 	httpInternalErrorIf(response, request, err)

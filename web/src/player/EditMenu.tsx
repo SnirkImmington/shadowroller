@@ -9,6 +9,7 @@ import * as server from 'server';
 import * as Player from 'player';
 import * as Stream from 'sseStream';
 import * as Share from 'share';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 import { ConnectionCtx, SetConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
@@ -47,13 +48,15 @@ export default function EditPlayerPanel({ hide }: Props) {
 
     const [response, setResponse] = React.useState<ResponseStatus>("ready");
     const [exampleTitle] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
-    const [dice] = React.useState(() => srutil.roll(11));
+    const [dice] = React.useState(() => roll.dice(11));
 
     if (!player || !game) {
         return null;
     }
 
-    const switchDisabled = !showGames || !switchGame || switchGame === game.gameID || response === "loading";
+    const isGM = game.gms.includes(player.id);
+    const switchChanged = showGames && switchGame !== "" && switchGame !== game.gameID;
+    const switchDisabled = !showGames || !switchChanged || response === "loading";
     const changed = name !== player.name || hue !== player.hue || onlineMode !== player.onlineMode;
     const connected = connection === "connected" && response !== "loading";
 
@@ -79,7 +82,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                 console.error("Error sending player update", err);
             })
             .onResponse(resp => {
-                playerDispatch({ ty: "update", values: resp });
+                playerDispatch({ ty: "update", diff: resp });
             });
     }
 
@@ -94,12 +97,12 @@ export default function EditPlayerPanel({ hide }: Props) {
         routes.auth.login({ username: player.username, gameID: switchGame, persist })
             .onResponseStatus(setSwitchResponse)
             .onResponse(response => {
+                eventDispatch({ ty: "clearEvents" });
                 server.handleLogin({
                     persist, response,
                     setConnection, connect,
                     gameDispatch, playerDispatch, eventDispatch
                 });
-                toggleShowGames();
             });
     }
 
@@ -112,7 +115,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     let displayName = name || player.name;
     const exampleEvent: Event.Roll = {
         ty: "roll", id: new Date().valueOf(),
-        source: { id: player.id, name: displayName, share: Share.InGame },
+        source: { id: player.id, name: displayName, share: Share.Mode.InGame },
         title: exampleTitle, dice, glitchy: 0
     }
 
@@ -123,7 +126,8 @@ export default function EditPlayerPanel({ hide }: Props) {
             <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
-                    Logged in: {player.name} / {game.gameID}
+                    {player.name} in {game.gameID}
+                    {isGM && <UI.FAIcon icon={icons.faChessQueen} className="icon-inline icon-gm" />}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
                     <span style={{ flexGrow: 1 }} />
@@ -195,7 +199,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                     <UI.FlexRow spaced>
                         <StatusText connection={connection}/>
                         <span style={{flexGrow: 1}} />
-                        <UI.LinkButton type="submit" disabled={!changed || !connected}>
+                        <UI.LinkButton type="submit" disabled={!changed || !connected || switchChanged}>
                             update
                         </UI.LinkButton>
                         <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>

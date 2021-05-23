@@ -3,7 +3,7 @@ export const GRAY  = "#2e2e32";
 export const GREEN = "#259550";
 export const GREENB = "#10fe5c"; // #01f34f
 
-export default {
+const theme = {
     colors: {
         primary: "#85142C", // hsl(347, 74%, 30%)
         primaryLight: "#c14b4e",
@@ -48,4 +48,5 @@ export default {
     fonts: {
         monospace: '"Source Code Pro", Menlo, Calibri, monospace',
     }
-}
+};
+export default theme;
