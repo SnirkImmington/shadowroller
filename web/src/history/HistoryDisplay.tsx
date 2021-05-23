@@ -63,7 +63,7 @@ export default function EventHistory() {
         <UI.Card unpadded padRight grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary} style={{ marginRight: '0.5rem'}}>
-                    <UI.FAIcon icon={icons.faList} />
+                    <UI.FAIcon icon={ game ? icons.faUsers : icons.faList} />
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>
