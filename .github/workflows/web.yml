@@ -24,6 +24,6 @@ jobs:
     - name: Test
       run: npm test
     - name: Confirm Build
-      run: npm build
+      run: npm run build
     - name: Type Coverage
       run: npm run coverage
