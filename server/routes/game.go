@@ -139,7 +139,7 @@ func handleDeleteEvent(response Response, request *Request) {
 	}
 
 	logf(request,
-		"%v deleting %#v", sess.PlayerInfo(), evt,
+		"%v deleting event %v", sess.PlayerInfo(), delete.ID,
 	)
 	err = game.DeleteEvent(sess.GameID, evt, conn)
 	httpInternalErrorIf(response, request, err)
