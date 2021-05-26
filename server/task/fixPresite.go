@@ -29,7 +29,11 @@ func handleRewritePresiteIndexTask(buildIndexPath string, presiteIndexPath strin
 
 	matches := matchScriptSrc.FindAll(baseFileBytes, -1)
 	if len(matches) < 3 {
-		return fmt.Errorf("Expected to get at least 3 script tags, got %v", matches)
+		matchesStrs := make([]string, len(matches))
+		for _, match := range matches {
+			matchesStrs = append(matchesStrs, string(match))
+		}
+		return fmt.Errorf("Expected to get at least 3 script tags, got %v", matchesStrs)
 	}
 	var result strings.Builder
 	for _, match := range matches {

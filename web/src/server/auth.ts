@@ -51,6 +51,7 @@ export function handleLogin({
     for (const [k, v] of Object.entries(response.game.players)) {
         players.set(k, v);
     }
+    const gms = response.game.gms ?? [];
     playerDispatch({
         ty: "join",
         self: response.player
@@ -58,7 +59,7 @@ export function handleLogin({
     gameDispatch({
         ty: "join",
         gameID: response.game.id,
-        gms: response.game.gms,
+        gms,
         players,
     });
     saveSession(response.session, persist);

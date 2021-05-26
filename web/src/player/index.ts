@@ -41,7 +41,7 @@ function userReduce(state: State, action: Action): State {
             if (!state) { return state; }
             return { ...state, ...action.diff };
         default:
-            if (process.env.NODE_ENV !== 'production') {
+            if (process.env.NODE_ENV === 'development') {
                 const action_: never = action;
                 console.error("userReduce: invalid action", action_);
             }
@@ -53,7 +53,7 @@ export type Dispatch = (action: Action) => void;
 export type Reducer = (state: State, action: Action) => State;
 
 let reduce: Reducer;
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development') {
     reduce = function(state: State, action: Action): State {
         const result = userReduce(state, action);
         console.log("Reduce Player", action.ty, state, action, result);
