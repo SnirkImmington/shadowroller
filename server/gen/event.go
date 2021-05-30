@@ -2,11 +2,14 @@ package gen
 
 import (
 	mathRand "math/rand"
+	"reflect"
 
 	"sr/event"
 	"sr/roll"
 )
 
+// Glitchy generates a random glitchiness modifier for an event.
+// It's weighted towards zero glitchiness.
 func Glitchy(rand *mathRand.Rand) int {
 	if rand.Intn(5) == 0 {
 		if rand.Intn(4) == 0 {
@@ -19,10 +22,12 @@ func Glitchy(rand *mathRand.Rand) int {
 	}
 }
 
+// Share generates a random Share for an event.
 func Share(rand *mathRand.Rand) event.Share {
 	return event.Share(rand.Intn(3))
 }
 
+// RollEvent generates a random roll event.
 func RollEvent(rand *mathRand.Rand) event.Roll {
 	plr := Player(rand)
 	pool := 1 + rand.Intn(20)
@@ -36,6 +41,7 @@ func RollEvent(rand *mathRand.Rand) event.Roll {
 	)
 }
 
+// PushLimitEvent generates a random push limit event.
 func PushLimitEvent(rand *mathRand.Rand) event.EdgeRoll {
 	plr := Player(rand)
 	pool := 4 + rand.Intn(20)
@@ -49,6 +55,7 @@ func PushLimitEvent(rand *mathRand.Rand) event.EdgeRoll {
 	)
 }
 
+// RerollEvent generates a random RerollFailures event.
 func RerollEvent(rand *mathRand.Rand) event.Reroll {
 	plr := Player(rand)
 	prev := RollEvent(rand)
@@ -60,6 +67,7 @@ func RerollEvent(rand *mathRand.Rand) event.Reroll {
 	)
 }
 
+// InitiativeRollEvent generates a random InitiativeRoll event
 func InitiativeRollEvent(rand *mathRand.Rand) event.InitiativeRoll {
 	plr := Player(rand)
 	seized := rand.Intn(4) == 0
@@ -80,12 +88,13 @@ func InitiativeRollEvent(rand *mathRand.Rand) event.InitiativeRoll {
 	)
 }
 
+// PlayerJoinEvent generates a random PlayerJoin event
 func PlayerJoinEvent(rand *mathRand.Rand) event.Event {
 	plr := Player(rand)
 	return event.ForPlayerJoin(plr)
 }
 
-// Generate implements quick.Generator for Event.
+// Event generates a random Event
 func Event(rand *mathRand.Rand) event.Event {
 	ty := rand.Intn(5)
 	switch ty {
@@ -106,4 +115,11 @@ func Event(rand *mathRand.Rand) event.Event {
 	default:
 		panic("Invalid choice when generating an event!")
 	}
+}
+
+// EventGen implements Generate for Events.
+type EventGen struct{}
+
+func (*EventGen) Generate(rand *mathRand.Rand) reflect.Value {
+	return reflect.ValueOf(Event(rand))
 }

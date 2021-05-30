@@ -16,10 +16,14 @@ func randomHue(rand *mathRand.Rand) int {
 	return rand.Intn(257)
 }
 
+func PlayerID(rand *mathRand.Rand) id.UID {
+	return id.GenUIDWith(rand)
+}
+
 // Generate implements quick.Generator for Player
 func Player(rand *mathRand.Rand) *player.Player {
 	return &player.Player{
-		ID:          id.GenUIDWith(rand),
+		ID:          PlayerID(rand),
 		Name:        String(rand),
 		Hue:         randomHue(rand),
 		Username:    String(rand),
@@ -30,9 +34,9 @@ func Player(rand *mathRand.Rand) *player.Player {
 
 func PlayerInfo(rand *mathRand.Rand) *player.Info {
 	return &player.Info{
-		ID:     id.GenUIDWith(rand),
+		ID:     PlayerID(rand),
 		Name:   String(rand),
 		Hue:    randomHue(rand),
-		Online: rand.Intn(2) == 0,
+		Online: Bool(rand),
 	}
 }
