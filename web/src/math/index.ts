@@ -1,29 +1,3 @@
-/** Binary operator = `+`, `-`, `*`, etc. */
-export enum BinOp {
-    Plus = "+",
-    Minus = "-",
-    Times = "*",
-    Divide = "/",
-}
-
-export function binOpOf(symbol: string): BinOp {
-    switch (symbol) {
-        case "+": return BinOp.Plus;
-        case "-": return BinOp.Minus;
-        case "*": return BinOp.Times;
-        case "/": return BinOp.Divide;
-        default:
-            throw new Error("Attempted to get an invalid binOp")
-    }
-}
-
-/** Unary operator = negative and (no-op) positive */
-export enum UnaryOp {
-    /** -(expression) */
-    Negate = "-",
-    /** Technically a no-op */
-    Positive = "+",
-}
 
 /** Whether to round up or down. */
 export enum Round {
@@ -31,12 +5,6 @@ export enum Round {
     Down = "down",
 }
 
-/** An AST for expressions written in a NumericInput */
-export type Expression =
-| { type: "number", value: number }
-| { type: "binOp", op: BinOp, left: Expression, right: Expression }
-| { type: "unaryOp", op: UnaryOp, expr: Expression }
-;
 
 /** The precedence of an expression or operator in pemdas */
 export enum BindingPower {

@@ -1,8 +1,5 @@
-export type Token =
-| { type: "done" }
-| { type: "symbol", value: string }
-| { type: "number", value: number }
-;
+import * as Token from 'math/token';
+
 
 /** Tokenizer is built around a string and next() produces the next token in the string. */
 export class Tokenizer {
@@ -14,7 +11,7 @@ export class Tokenizer {
         this.position = 0;
     }
 
-    next = (): Token | null => {
+    next = (): Token.Token | null => {
         if (this.position >= this.text.length) {
             return { type: "done" };
         }
