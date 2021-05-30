@@ -12,7 +12,7 @@ You can run a local version of the server yourself if you'd like - it's easy if
 you're comfortable with the command line and port forwarding. Please read the
 **Local development** and **Production environment** sections first!
 
-## Local development
+## Running Shadowroller
 
 ### Editor setup
 
@@ -45,7 +45,16 @@ If you install or upgrade dependencies (i.e. `package.json`,
 `package-lock.json`, `go.mod`, or `go.sum` change), you'll need to rebuild the
 container(s) via `docker-compose build web` or `docker-compose build server`.
 
-### Locally
+### Running natively
+
+I have not testing running Shadowroller on Windows and will not make large
+changes to the project to support it outside of the Linux subsystem.
+
+That being said, the only OS-specific code is the cleanup handler (which runs
+code on process termination). At the time of writing, the only downside to that
+not running is users' offline statuses. I assume the Linux subsystem on Windows
+can handle this basic requirement. Alternatively, Docker on Windows will spin up
+a Linux VM.
 
 Take a look at the `Makefile`, it's got a collection of basic scripts you can run.
 

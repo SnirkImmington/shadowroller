@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sr/config"
 	"sync"
+	"syscall"
 )
 
 // ShutdownReason is the reason a client should shut down
@@ -68,7 +69,14 @@ func (c *Client) Close() {
 
 func handleShutdown() {
 	sigint := make(chan os.Signal, 2)
-	signal.Notify(sigint, os.Interrupt)
+	signal.Notify(sigint,
+		os.Interrupt, // Compatibility
+		// In running tests on Linux, I've found that reflex will send a signal `os.Interrupt`
+		// will handle, but ^C-ing in Bash will not cause the signal to be handled.
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+		syscall.SIGTERM,
+	)
 	clients := make(map[*Client]bool)
 	sigintReceived := false
 	// WaitGroup starts at 1 beacuse we're waiting for an interrupt.
