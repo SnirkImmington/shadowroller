@@ -7,6 +7,7 @@
 # run-pg: runs postgres using local configuration and save dir
 
 PWD = $(shell pwd)
+COMMIT_SHA = $(shell git rev-parse --short HEAD)
 
 .PHONY: web server
 
@@ -21,10 +22,10 @@ watch-web:
 	cd web && npm run start
 
 server:
-	cd server && go build -v -o ../out/sr-server ./main
+	cd server && go build -ldflags "-X sr/build.Commit=${COMMIT_SHA}" -v -o ../out/sr-server ./main
 
 watch-server:
-	cd server && reflex -sr .*.go -d none go run main/main.go
+	cd server && reflex -sr .*.go -d none -- go run -ldflags "-X sr/build.Commit=${COMMIT_SHA}" main/main.go
 
 clean:
 	cd web && npm run clean

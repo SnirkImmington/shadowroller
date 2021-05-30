@@ -8,7 +8,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
+
 	"sr"
+	"sr/build"
 	"sr/config"
 	redisUtil "sr/redis"
 	"sr/roll"
@@ -16,7 +19,6 @@ import (
 	"sr/setup"
 	"sr/shutdownHandler"
 	"sr/task"
-	"time"
 )
 
 // SHADOWROLLER ascii art from  http://www.patorjk.com/software/taag/ "Small Slant"
@@ -108,6 +110,12 @@ func main() {
 	routes.RegisterTasksViaConfig()
 
 	log.Print("Shadowroller:", SHADOWROLLER, "\n")
+	if build.Commit == "" {
+		log.Print("Commit SHA not compiled!\n")
+	} else {
+		log.Printf("Commit %v\n", build.Commit)
+	}
+
 	err := routes.DisplaySiteRoutes()
 	if err != nil {
 		panic(fmt.Sprintf("Unable to walk routes: %v", err))

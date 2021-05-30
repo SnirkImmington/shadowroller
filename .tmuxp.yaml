@@ -7,11 +7,9 @@ windows:
   - shell_command:
     - redis-server redis/redis.conf
   - shell_command:
-    - cd server
-    - reflex -sr '.*.go' -d none go run main/main.go
+    - make watch-server
   - shell_command:
-    - cd web
-    - npm run start
+    - make watch-web
   - shell_command:
     - git status
     - cd server

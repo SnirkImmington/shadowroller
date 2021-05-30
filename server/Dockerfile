@@ -13,6 +13,6 @@ COPY . .
 RUN go get -v github.com/cespare/reflex
 RUN go install -v github.com/cespare/reflex
 
-RUN go build -v
+RUN go build -ldflags "-X sr/build.Commit=${$(git rev-parse --short HEAD)}" -v
 
 ENTRYPOINT ["go", "run", "main/main.go"]
