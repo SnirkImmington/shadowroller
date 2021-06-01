@@ -28,6 +28,7 @@
         "@types/react-window": "^1.8.2",
         "@types/react-window-infinite-loader": "^1.0.3",
         "@types/styled-components": "^5.1.7",
+        "@types/styled-system": "^5.1.11",
         "fast-check": "^2.14.0",
         "gh-pages": "^2.2.0",
         "presite": "^2.1.2",
