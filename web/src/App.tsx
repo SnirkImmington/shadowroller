@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled, { ThemeProvider } from 'styled-components/macro';
 import * as UI from 'style';
-import theme from 'style/theme';
+import * as theme from 'theme';
 import * as srutil from 'srutil';
 
 import * as Game from 'game';
@@ -27,6 +27,8 @@ import 'assets-external/source-code-pro.css';
 const AppLeft = styled(UI.FlexColumn)`
     /* Phones: vertical margin included in cards. */
 
+    ${({theme}) =>
+        `color: ${theme.colors.text}; background-color: ${theme.colors.background};`}
     padding: 0.5rem;
 
     & > *:not(last-child) {
@@ -53,6 +55,8 @@ const AppRight = styled(UI.FlexColumn)`
     /* height: 100%; Always go as high as possible. */
     flex-grow: 1;
 
+    ${({theme}) =>
+        `color: ${theme.colors.text}; background-color: ${theme.colors.background};`}
     padding-left: 2px;
 
     @media all and (min-width: 768px) {
@@ -99,8 +103,7 @@ function Shadowroller() {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <ThemeProvider theme={theme}>
-
+        <>
             <SRHeader onClick={toggleMenuShown} />
             <UI.ColumnToRow grow>
                 <AppLeft>
@@ -119,7 +122,7 @@ function Shadowroller() {
             {process.env.NODE_ENV !== "production" &&
                 <DebugBar />
             }
-        </ThemeProvider>
+        </>
     );
 }
 
@@ -128,8 +131,16 @@ export default function App(_props: {}) {
     const [player, playerDispatch] = React.useReducer(Player.reduce, Player.defaultState);
     const [eventList, eventDispatch] = React.useReducer(Event.reduce, Event.defaultState);
     const [connection, setConnection] = React.useState<RetryConnection>("offline");
+    const [themeMode, setThemeMode] = React.useState<theme.Mode>(theme.defaultMode);
+    const appliedTheme = {
+        ...theme.default,
+        colors: themeMode === "light" ? theme.default.light : theme.default.dark
+    };
 
     return (
+        <ThemeProvider theme={appliedTheme}>
+        <theme.Ctx.Provider value={themeMode}>
+        <theme.DispatchCtx.Provider value={setThemeMode}>
         <ConnectionCtx.Provider value={connection}>
         <SetConnectionCtx.Provider value={setConnection}>
         <Game.Ctx.Provider value={game}>
@@ -151,5 +162,8 @@ export default function App(_props: {}) {
         </Game.Ctx.Provider>
         </SetConnectionCtx.Provider>
         </ConnectionCtx.Provider>
+        </theme.DispatchCtx.Provider>
+        </theme.Ctx.Provider>
+        </ThemeProvider>
     );
 }
