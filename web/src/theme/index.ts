@@ -123,7 +123,7 @@ const dark: Colors = {
     mode: "dark",
     text: "hsl(180, 90%, 97%)", // almost "#f0ffff",
     textSecondary: "hsl(180, 100%, 95%)",
-    background: "hsl(225, 29%, 11%)", // "#141824",
+    background: "hsl(235, 11%, 8%)", // "#141824",
     title: "#e0dd8f",
 
     foregroundSaturation: 90,
@@ -132,7 +132,7 @@ const dark: Colors = {
     backgroundLightness: 11,
 
     primary: "hsl(349, 74%, 55%)", // #85142C = hsl(347, 74%, 30%)
-    secondary: "#c14b4e", // started "#783422",
+    secondary: "#c64f52", // started "#783422",
     light: "#c1172c", // "#c14b4e",
     neutral: "hsl(44, 5%, 53%)",
     highlight: "#e0dd8f", // = rgb(224, 211, 143)
