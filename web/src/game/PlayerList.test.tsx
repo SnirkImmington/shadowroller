@@ -46,7 +46,11 @@ export function renderPlayerList(options?: RenderOptions) {
 
 /** render a single <PlayerName /> element */
 export function renderPlayerName(playerName: string, isGM: boolean) {
-    return render(<PlayerName player={{ name: playerName }} isGM={isGM} />);
+    return render(
+        <ThemeProvider theme={theme.default}>
+            <PlayerName player={{ name: playerName, hue: 0 }} isGM={isGM} />
+        </ThemeProvider>
+    );
 }
 
 // get icon, get gm icon
@@ -59,7 +63,7 @@ describe("<PlayerName />", function() {
 
     fcUtils.property(
         "renders all player names provided",
-        fcUtils.playerNames(), function(names) {
+        fcUtils.playerNames(), function(names: string[]) {
             const gameWithNames = gameWithPlayerNames(names);
             renderPlayerList({ game: gameWithNames });
             for (const name of names) {
