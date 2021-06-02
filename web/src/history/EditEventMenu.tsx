@@ -26,7 +26,6 @@ export default function EditEventMenu({ event }: Props) {
     const [deletePrompt, setDeletePrompt] = React.useState(false);
 
     const canUpdate = title !== event.title || glitchy !== event.glitchy;
-    const eventColor = player ? Player.colorOf(player) : "lightslategray";
 
     function cancelEdit() {
         dispatch({ ty: "clearEdit" });

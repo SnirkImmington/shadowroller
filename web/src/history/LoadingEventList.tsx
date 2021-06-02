@@ -2,11 +2,9 @@ import * as React from 'react';
 
 import * as Event from 'event';
 import * as Game from 'game';
-import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 import * as server from 'server';
 import * as routes from 'routes';
-import * as colors from 'colorUtil';
 
 // @ts-ignore For some reason, they did modules the wrong way for this libaray
 import InfiniteLoader from "react-window-infinite-loader";
