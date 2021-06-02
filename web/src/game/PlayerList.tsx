@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as icons from 'style/icon';
 
@@ -23,23 +23,32 @@ const StyledList = styled(UI.FlexRow).attrs(
     }
 `;
 
+const GMIcon = styled(UI.FAIcon).attrs({
+    icon: icons.faChessQueen,
+    className: "icon-online icon-gm",
+    transform: "grow-1",
+})(({theme}) => ({
+    color: theme.colors.highlight,
+    marginLeft: "0.5rem",
+}));
+
 type PlayerNameProps = {
     player: Player.Info,
     isGM: boolean,
 }
 
 export function PlayerName({ player, isGM }: PlayerNameProps) {
-    const color = Player.colorOf(player);
+    const theme = React.useContext(ThemeContext);
     return (
         <UI.FlexRow>
             {player.online ?
-                    <OnlineIcon className="sr-icon-svg" />
-                    : <OfflineIcon className="sr-icon-svg" />
+                    <OnlineIcon color={theme.colors.indicatorOnline} className="sr-icon-svg" />
+                    : <OfflineIcon color={theme.colors.neutral} className="sr-icon-svg" />
             }
-            <UI.PlayerColored color={color}>
+            <UI.PlayerColored hue={player.hue}>
                 {player.name}
             </UI.PlayerColored>
-            {isGM && <UI.FAIcon icon={icons.faChessQueen} className="icon-inline icon-gm" transform="grow-1" />}
+            {isGM && <GMIcon />}
         </UI.FlexRow>
     );
 }

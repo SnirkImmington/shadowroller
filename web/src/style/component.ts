@@ -1,5 +1,7 @@
 import styled, { keyframes } from 'styled-components/macro';
 
+import * as colorUtil from 'colorUtil';
+
 const diceFrames = keyframes`
     0%   { content: '\\2680'; }
     25%  { content: '\\2681'; }
@@ -13,7 +15,7 @@ export const DiceSpinner = styled.span`
     font-size: 1.5em;
     font-weight: 800;
     padding: 0.25em;
-    color: #666;
+    color: ${({theme}) => theme.colors.dieNeutral};
 
     &::after {
         content: '';
@@ -37,11 +39,10 @@ export type FlavorProps = {
     light?: boolean,
 }
 export const Flavor = styled.i<FlavorProps>`
-    color: ${props => props.warn ? props.theme.colors.warning : props.light ? "#fffd" : "#333"};
+    color: ${props => props.warn ? props.theme.colors.highlight : props.theme.colors.textSecondary};
 `;
 
-export const PlayerColored = styled.b<{ color: string, light?: boolean }>`
+export const PlayerColored = styled.b<{ hue: number|null|undefined }>`
     white-space: nowrap;
-    color: ${props => props.color};
-    ${props => props.light ? "padding: 1px; background: white;" : ""}
+    color: ${({theme, hue}) => colorUtil.playerColor(hue, theme)};
 `;

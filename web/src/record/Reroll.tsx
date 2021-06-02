@@ -12,16 +12,16 @@ import * as rollStats from 'rollStats';
 type Props = {
     event: Event.RerollFailures,
     playerID: string|null,
-    color: string,
+    hue: number|null|undefined,
     noActions?: boolean
 }
-function RerollRecord({ event, playerID, color, noActions }: Props, ref: React.Ref<any>) {
+function RerollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<any>) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
-            <UI.PlayerColored color={color}>
+            <UI.PlayerColored hue={hue}>
                 {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
@@ -47,11 +47,11 @@ function RerollRecord({ event, playerID, color, noActions }: Props, ref: React.R
                     {event.glitchy !== 0 &&
                         ` (glitchy ${Roll.SignDisplayFormat.format(event.glitchy)})`}
                 </Roll.Title>
-                <Roll.Results color={color} result={result} />
+                <Roll.Results hue={hue} result={result} />
             </UI.FlexRow>
             <Roll.Scrollable>
                 <dice.List rolls={event.rounds[1]} />
-                <Roll.Rounds icon={icons.faRedo} color={color}
+                <Roll.Rounds icon={icons.faRedo} hue={hue}
                              rounds={[event.rounds[0]]} />
             </Roll.Scrollable>
             <UI.FlexRow floatRight={canModify}>

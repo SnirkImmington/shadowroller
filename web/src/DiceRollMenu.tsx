@@ -1,7 +1,8 @@
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import NumericInput from 'NumericInput';
+import * as colorUtil from 'colorUtil';
 
 import * as Event from 'event';
 import * as Game from 'game';
@@ -13,7 +14,6 @@ import ShareOptions from 'share/Options';
 import * as routes from 'routes';
 import * as roll from 'roll';
 import * as srutil from 'srutil';
-import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 export const ROLL_TITLE_FLAVOR: string[] = [
@@ -21,13 +21,13 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "negotiate for more pay",
 
     "avoid the oncoming shrapnel",
-    "duck out of the way of the troll",
+    "duck out of the way",
 
-    "recover from last night's party",
+    "recover from last night",
     "geek the mage",
     "not freak out",
     "sneak past the guards",
-    "convince the cops I'm just passing through",
+    "fib to the cops",
     "hack the vending machine",
     "hack into the mainframe",
     "palm the data chip",
@@ -43,7 +43,7 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "swipe the statue",
     "avoid looking at the explosion",
 
-    "gamble on the virtual horse racing",
+    "gamble on the horse racing",
     "backflip out of the plane",
     "pilot my drone under the door",
     "repair the juggernaut",
@@ -55,7 +55,6 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "shoot through the water tank",
     "connoiseur: alcohol",
     "not die to the spirit",
-    "animate objects",
     "hack the cupcake",
     "catch the hacker",
     "look at the vampire",
@@ -70,8 +69,8 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "fireball the door",
     "pretend to be a chef",
     "smuggle in handcuffs",
-    "remember the cocktail list",
     "practice blood magic",
+    "bike the guantlet",
 
     "slice with zappy sword",
     "throw the deck",
@@ -89,7 +88,7 @@ const RollBackground = {
     regular: `linear-gradient(180deg, #394341 0, #232928)`
 };
 
-const RollButton = styled.button<{ bg: string}>`
+const RollButton = styled.button<{ bg: string }>`
     font-size: 1.07em;
     font-weight: 600;
     text-align: center;
@@ -104,15 +103,16 @@ const RollButton = styled.button<{ bg: string}>`
         margin-right: 0.5rem;
     }
 
-    &:hover {
+    &:enabled:hover {
         text-decoration: none;
+        filter: brightness(90%);
     }
 
-    &:active {
-        filter: brightness(85%);
+    &:enabled:active {
+        filter: brightness(80%);
     }
 
-    &[disabled] {
+    &:disabled {
         cursor: not-allowed;
         color: #ccc;
         filter: saturate(40%) brightness(85%);
@@ -132,6 +132,7 @@ export default function RollDicePrompt() {
     const player = React.useContext(Player.Ctx);
     const gameExists = Boolean(game);
     const dispatch = React.useContext(Event.DispatchCtx);
+    const theme = React.useContext(ThemeContext);
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
@@ -150,9 +151,7 @@ export default function RollDicePrompt() {
         || rollLoading || (gameExists && !connected)
     );
 
-    const rollBackgound = connected && gameExists ?
-        (edge ? RollBackground.edgy : RollBackground.inGame)
-        : RollBackground.regular;
+    const rollBackgound = edge ? RollBackground.edgy : RollBackground.inGame;
 
     function rollTitleChanged(event: React.ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value || '');
@@ -268,12 +267,12 @@ export default function RollDicePrompt() {
                                   onChange={rollTitleChanged}
                                   value={title} />
                     </UI.FlexRow>
-                    <UI.FlexRow formRow>
+                    <UI.FlexRow formRow formSpaced>
                         <UI.RadioLink id="roll-enable-edge"
                                       type="checkbox" light
                                       checked={edge}
                                       onChange={onEdgeClicked}>
-                            <UI.TextWithIcon color={Player.colorOf(player)}>
+                            <UI.TextWithIcon color={colorUtil.playerColor(player?.hue, theme)}>
                                 <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faBolt} />
                                 Push the limit
                             </UI.TextWithIcon>
@@ -287,7 +286,10 @@ export default function RollDicePrompt() {
                                           type="checkbox" light
                                           checked={glitchy !== 0}
                                           onChange={onGlitchyChanged}>
-                                Glitchy
+                                <UI.TextWithIcon color={colorUtil.playerColor(player?.hue, theme)}>
+                                    <UI.FAIcon transform="grow-1" className="icon-inline" icon={icons.faSkullCrossbones} />
+                                    Glitchy
+                                </UI.TextWithIcon>
                             </UI.RadioLink>
                             {glitchy !== 0 &&
                                 <NumericInput small id="roll-glitchiness"
@@ -298,11 +300,9 @@ export default function RollDicePrompt() {
                         </UI.FlexRow>
                         {glitchy !== 0 &&
                             <RollGlitchyLabel htmlFor="roll-glitchiness">
-                                <i>
                                     {glitchy > 0 ? "Reduce " : "Increase "}
                                     number of 1s needed to glitch
                                     by {Math.abs(glitchy)}.
-                                </i>
                             </RollGlitchyLabel>
                         }
                     </UI.ColumnToRow>
@@ -315,10 +315,10 @@ export default function RollDicePrompt() {
                         {!connected &&
                             <StatusText connection={connection} />}
                         {gameExists && share !== Share.Mode.InGame &&
-                            <UI.FAIcon icon={Share.icon(share)}
+                            <UI.FAIcon color={theme.colors.highlight} icon={Share.icon(share)}
                                 transform="grow-4" className="icon-roll" />}
                         <RollButton id="roll-button-submit" type="submit"
-                                    disabled={Boolean(rollDisabled)} bg={rollBackgound}>
+                                    disabled={rollDisabled} bg={rollBackgound}>
                             Roll dice
                         </RollButton>
                     </UI.FlexRow>

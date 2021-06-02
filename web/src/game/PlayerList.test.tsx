@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ThemeProvider } from 'styled-components/macro';
-import theme from 'style/theme';
 import { render, fireEvent, screen } from '@testing-library/react';
+import * as theme from 'theme';
 
 import * as Event from 'event';
 import * as eventTests from 'event/event.test';
@@ -36,7 +36,7 @@ function gameWithPlayerNames(names: string[]): Game.Game {
 export function renderPlayerList(options?: RenderOptions) {
     const { game } = options ?? {};
     return render(
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme.default}>
             <Game.Ctx.Provider value={game}>
                 <PlayerList />
             </Game.Ctx.Provider>
@@ -46,7 +46,11 @@ export function renderPlayerList(options?: RenderOptions) {
 
 /** render a single <PlayerName /> element */
 export function renderPlayerName(playerName: string, isGM: boolean) {
-    return render(<PlayerName player={{ name: playerName }} isGM={isGM} />);
+    return render(
+        <ThemeProvider theme={theme.default}>
+            <PlayerName player={{ name: playerName, hue: 0 }} isGM={isGM} />
+        </ThemeProvider>
+    );
 }
 
 // get icon, get gm icon
@@ -59,7 +63,7 @@ describe("<PlayerName />", function() {
 
     fcUtils.property(
         "renders all player names provided",
-        fcUtils.playerNames(), function(names) {
+        fcUtils.playerNames(), function(names: string[]) {
             const gameWithNames = gameWithPlayerNames(names);
             renderPlayerList({ game: gameWithNames });
             for (const name of names) {

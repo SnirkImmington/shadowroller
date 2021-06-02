@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as dice from 'Dice';
 import * as icons from 'style/icon';
@@ -10,6 +10,7 @@ import * as Share from 'share';
 import * as rollStats from 'rollStats';
 import * as roll from 'roll';
 import * as routes from 'routes';
+import * as colors from 'colorUtil';
 
 export const SignDisplayFormat = new Intl.NumberFormat(undefined, { signDisplay: "always" });
 
@@ -34,8 +35,8 @@ export const Scrollable = styled(UI.FlexColumn).attrs(
     }
 `;
 
-export const StyledResults = styled.b<{ color: string }>`
-    color: ${props => props.color};
+export const StyledResults = styled.b<{ hue: number|null|undefined }>`
+    color: ${({hue, theme}) => colors.playerColor(hue, theme)};
 
     align-self: flex-start;
     line-height: 1.2;
@@ -46,13 +47,13 @@ export const StyledResults = styled.b<{ color: string }>`
 `;
 
 type RollMessageProps = {
-    color: string,
+    hue: number|null|undefined,
     result: rollStats.HitsResults,
 };
-export function Results({ color, result }: RollMessageProps) {
+export function Results({ hue, result }: RollMessageProps) {
     const message = rollStats.resultMessage(result);
     return (
-        <StyledResults color={color}>
+        <StyledResults hue={hue}>
             {message}
         </StyledResults>
     )
@@ -61,10 +62,12 @@ export function Results({ color, result }: RollMessageProps) {
 type RoundsProps = {
     rounds: number[][],
     icon: any,
-    color: string,
+    hue: number|null|undefined,
     transform?: string,
 };
-export function Rounds({ rounds, icon, transform, color }: RoundsProps) {
+export function Rounds({ rounds, icon, transform, hue }: RoundsProps) {
+    const theme = React.useContext(ThemeContext);
+    const color = colors.playerColor(hue, theme);
     if (rounds.length === 0) {
         return (
             <UI.FlexRow>
@@ -110,12 +113,12 @@ function LocalActionsRow({ event, result }: Props) {
     return (
         <UI.FlexRow spaced>
             {canSecondChance(result) &&
-                <UI.LinkButton onClick={onSecondChance}>
+                <UI.LinkButton minor onClick={onSecondChance}>
                     <UI.FAIcon icon={icons.faRedo} />
                     second chance
                 </UI.LinkButton>
             }
-            <UI.LinkButton onClick={onEdit}>
+            <UI.LinkButton minor onClick={onEdit}>
                 edit
             </UI.LinkButton>
         </UI.FlexRow>
@@ -144,20 +147,20 @@ function GameActionsRow({ event, result }: Props) {
     return (
         <UI.FlexRow spaced>
             {event.source !== "local" && event.source.share === Share.Mode.GMs &&
-                <UI.LinkButton disabled={connection === "connecting"}
+                <UI.LinkButton minor disabled={connection === "connecting"}
                                onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
                 </UI.LinkButton>
             }
             {canSecondChance(result) &&
-                <UI.LinkButton disabled={connection === "connecting"}
+                <UI.LinkButton minor disabled={connection === "connecting"}
                                onClick={onSecondChance}>
                     <UI.FAIcon icon={icons.faRedo} />
                     second chance
                 </UI.LinkButton>
             }
-            <UI.LinkButton onClick={onEdit}>
+            <UI.LinkButton minor onClick={onEdit}>
                 edit
             </UI.LinkButton>
         </UI.FlexRow>

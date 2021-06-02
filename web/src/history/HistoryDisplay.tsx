@@ -1,8 +1,7 @@
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as icons from 'style/icon';
-import theme from 'style/theme';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -33,6 +32,7 @@ export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
     const player = React.useContext(Player.Ctx);
     const events = React.useContext(Event.Ctx);
+    const theme = React.useContext(ThemeContext);
 
     const [rollFlavor] = srutil.useFlavor(DO_SOME_ROLLS_FLAVOR);
     const [emptyGameFlavor] = srutil.useFlavor(GAME_EMPTY_FLAVOR);

@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import * as Event from 'event';
 import * as Game from 'game';
-import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 import * as server from 'server';
 import * as routes from 'routes';
@@ -85,19 +84,19 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height: number) => setIndexHeight(height, index);
         if (!loadedAt(index)) {
-            return <EventRecord event={null} color={""} setHeight={setHeight} playerID={playerID} style={style} />;
+            return <EventRecord event={null} hue={null} setHeight={setHeight} playerID={playerID} style={style} />;
         }
         else {
             const event = data[index];
             const editing = state.editing != null && state.editing.id === event.id;
-            let color = "lightslategray";
+            let hue = null;
             if (gamePlayers && event.source !== "local") {
                 const player = gamePlayers.get(event.source.id);
                 if (player) {
-                    color = Player.colorOf(player);
+                    hue = player.hue;
                 }
             }
-            return <EventRecord event={event} color={color} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
+            return <EventRecord event={event} hue={hue} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
     }, [loadedAt, playerID, state.editing, gamePlayers]);
 

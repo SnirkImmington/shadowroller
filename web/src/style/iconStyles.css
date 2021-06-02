@@ -5,10 +5,8 @@ svg.icon-inline {
 svg.icon-gm {
     margin-left: 0.5em;
     margin-right: 0;
-    color: #e0dd8f;
-    filter: brightness(70%);
 }
 
 svg.icon-roll {
-    color: #601010;
+    /* color: #601010; */
 }

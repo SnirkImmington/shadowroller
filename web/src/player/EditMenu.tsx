@@ -1,6 +1,6 @@
 import * as React from 'react';
+import { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
@@ -33,6 +33,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     const [connect, logout] = React.useContext(Stream.Ctx);
     const connection = React.useContext(ConnectionCtx);
     const setConnection = React.useContext(SetConnectionCtx);
+    const theme = React.useContext(ThemeContext);
 
     const [showGames, toggleShowGames] = srutil.useToggle(false);
     const [switchGame, setSwitchGame] = React.useState("");
@@ -119,15 +120,13 @@ export default function EditPlayerPanel({ hide }: Props) {
         title: exampleTitle, dice, glitchy: 0
     }
 
-    const hueColor = Player.colorOf({ ...player, hue });
-
     return (
         <UI.Card color={theme.colors.primary}>
             <UI.ColumnToRow maxWidth>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
                     {player.name} in {game.gameID}
-                    {isGM && <UI.FAIcon icon={icons.faChessQueen} className="icon-inline icon-gm" />}
+                    {isGM && <UI.FAIcon color={theme.colors.highlight} icon={icons.faChessQueen} className="icon-inline icon-gm" />}
                 </UI.CardTitleText>
                 <UI.FlexRow maxWidth spaced>
                     <span style={{ flexGrow: 1 }} />
@@ -155,8 +154,8 @@ export default function EditPlayerPanel({ hide }: Props) {
                         }
                     </UI.ColumnToRow>}
                     <UI.FlexRow formRow justifyContent="space-around">
-                        <EventRecord editing style={{}} noActions
-                            playerID={player.id} color={hueColor} event={exampleEvent} />
+                        <EventRecord noActions
+                            playerID={player.id} hue={hue} event={exampleEvent} />
                     </UI.FlexRow>
                     <UI.ColumnToRow>
                         <UI.FlexRow formRow>

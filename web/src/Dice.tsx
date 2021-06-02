@@ -1,7 +1,7 @@
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import theme from 'style/theme';
+import type { Theme } from 'theme';
 import 'index.css';
 
 import { die as rollDie } from 'roll';
@@ -13,10 +13,10 @@ import { ReactComponent as DieFour } from 'assets/die-4.svg';
 import { ReactComponent as DieFive } from 'assets/die-5.svg';
 import { ReactComponent as DieSix } from 'assets/die-6.svg';
 
-export function colorForRoll(roll: number): string {
+export function colorForRoll(roll: number, theme: Theme): string {
     return roll === 1 ? theme.colors.dieOne
-        : roll === 5 || roll === 6 ? theme.colors.dieHit
-        : theme.colors.dieNone;
+        : roll === 5 || roll === 6 ? theme.colors.dieSuccess
+        : theme.colors.dieNeutral;
 }
 
 const DiceMap = [DieOne, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
@@ -33,12 +33,13 @@ interface DieProps extends AnimatedProps {
 
 export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     const newProps = Object.assign({}, props);
+    const theme = React.useContext(ThemeContext);
     let { color, roll, small } = newProps;
     if (!color && !small) {
-        newProps.color = colorForRoll(roll);
+        newProps.color = colorForRoll(roll, theme);
     }
     else if (!color && small) {
-        newProps.color = theme.colors.dieNone;
+        newProps.color = theme.colors.dieNeutral;
     }
     delete newProps.small;
 

@@ -43,7 +43,7 @@ const StyledInput = styled(UI.Input).attrs<InputProps>(
     border: 0;
     outline: 0;
 
-    width: ${props => props.small ? '3em' : '5em'};
+    width: ${props => props.small ? '2.5em' : '4em'};
 
     &:focus {
         border: 0;
@@ -54,7 +54,7 @@ const StyledInput = styled(UI.Input).attrs<InputProps>(
 // Component covers making sure each part matches the height and border style.
 const Component = styled.div`
     padding: 5px;
-    background: #eee;
+    background: ${({theme}) => theme.colors.background};
     margin: 0;
 
     border: 0;
@@ -74,20 +74,23 @@ const Parent = styled(UI.FlexRow)`
     }
 
     &:focus-within {
-        outline: 2px solid ${props => props.theme.colors.secondary};
+        outline: 2px solid ${props => props.theme.colors.outline};
     }
 `;
 
 const CalcBox = styled(Component)`
     background: ${props => props.color ?? props.theme.colors.primary};
-    color: white;
+    color: ${({ theme }) => theme.light.background};
     width: calc(1.8em);
     padding: 0px;
     order: -1;
 `;
-const ErrorBox = styled(Component)`
-    background: ${props => props.theme.colors.warning};
-`;
+const ErrorBox = styled(Component)(
+    props => ({
+        color: props.theme.colors.background,
+        backgroundColor: props.theme.colors.highlight,
+    })
+);
 /*
 const RoundingBox = styled(Component)`
     color: white; / ?? /
@@ -176,10 +179,10 @@ export default function NumericInput(props: Props) {
                />,
         <CalcBox key="calc">
             <span className="fa-layers">
-                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 up-2 left-2" />
-                <UI.FAIcon icon={icons.faMinus}  transform="shrink-4 up-2 right-11" />
-                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 down-9 left-2" />
-                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 down-9 right-11" />
+                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4" />
+                <UI.FAIcon icon={icons.faMinus}  transform="shrink-4 right-12" />
+                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 down-10" />
+                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 down-10 right-12" />
             </span>
         </CalcBox>
     ];
