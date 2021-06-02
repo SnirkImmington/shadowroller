@@ -9,11 +9,10 @@ type ButtonProps = {
 };
 
 const StyledJoinButton = styled.button<ButtonProps>`
-    background: ${({theme}) => theme.colors.header};
     border: 3px solid white;
 
-    color: ${({expanded, theme}) => expanded ? theme.colors.header : 'white'};
-    background: ${({expanded, theme}) => expanded ? 'white' : theme.colors.header};
+    color: ${({expanded, theme}) => expanded ? theme.colors.background : theme.colors.text};
+    background: ${({expanded, theme}) => expanded ? theme.colors.text : theme.colors.background};
     border: 3px solid;
 
     font-size: 1rem;
@@ -22,20 +21,13 @@ const StyledJoinButton = styled.button<ButtonProps>`
     text-align: center;
     cursor: pointer;
 
-    margin-left: auto;
-
-    margin-right: 0.5rem;
-    @media all and (min-width: 768px) {
-        margin-right: 3.5rem;
-    }
-
-    &:hover {
-        background: #333;
+    &:enabled:hover {
+        filter: brightness(85%);
         text-decoration: none;
     }
 
-    &:active {
-        background: #444;
+    &:enabled:active {
+        filter: brightness(70%);
     }
 `;
 
