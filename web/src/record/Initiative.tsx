@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as icons from 'style/icon';
 import * as dice from 'Dice';
@@ -9,11 +10,12 @@ import type { Connection } from 'connection';
 import * as Event from 'event';
 import * as Share from 'share';
 import * as routes from 'routes';
+import * as colorUtil from 'colorUtil';
 
 type Props = {
     event: Event.Initiative,
     playerID: string|null,
-    color: string,
+    hue: number|null|undefined,
     noActions?: boolean,
 };
 
@@ -32,7 +34,10 @@ function LocalActionsRow({ event }: ActionProps) {
     return (
         <UI.FlexRow spaced>
             {canSeize &&
-               <UI.LinkButton onClick={onSeize}>seize the initiative</UI.LinkButton>
+                <UI.LinkButton minor onClick={onSeize}>
+                    <UI.FAIcon icon={icons.faSortAmountUp} />
+                    seize the initiative
+                </UI.LinkButton>
             }
         </UI.FlexRow>
     );
@@ -57,13 +62,13 @@ function GameActionsRow({ event }: ActionProps) {
     return (
         <UI.FlexRow spaced>
             {event.source !== "local" && event.source.share === Share.Mode.GMs &&
-                <UI.LinkButton disabled={connection === "connecting"} onClick={onReveal}>
+                <UI.LinkButton minor disabled={connection === "connecting"} onClick={onReveal}>
                     <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
                 </UI.LinkButton>
             }
             {canSeize &&
-                <UI.LinkButton disabled={connection === "connecting"} onClick={onSeize}>
+                <UI.LinkButton minor disabled={connection === "connecting"} onClick={onSeize}>
                     <UI.FAIcon icon={icons.faSortAmountUp} />
                     seize the initiative
                 </UI.LinkButton>
@@ -72,21 +77,31 @@ function GameActionsRow({ event }: ActionProps) {
     );
 }
 
-function InitiativeRecord({ event, playerID, color, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
+function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
+    const theme = React.useContext(ThemeContext);
+
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
     const canModify = !noActions && Event.canModify(event, playerID);
+    const color = colorUtil.playerColor(hue, theme);
+
+    let action: React.ReactNode;
+    if (event.source === "local") {
+        action = event.blitzed ? <b>Blitzed</b> : (event.seized ? <b>Seized</b> : "Rolled");
+    } else {
+        action = event.blitzed ? <b>blitzes</b> : (event.seized ? <b>seizes</b> : "rolls");
+    }
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
-            <UI.PlayerColored color={color}>
+            <UI.PlayerColored hue={hue}>
                 {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </UI.PlayerColored>
-            &nbsp;rolls
+            &nbsp;{action}
         </>
     ) : (
-        "Rolled"
+        action
     );
     const title = (
         <>for { event.title ? <b>{event.title}</b> : "initiative"}</>
@@ -106,11 +121,14 @@ function InitiativeRecord({ event, playerID, color, noActions }: Props, ref: Rea
                     {event.blitzed &&
                         <UI.FAIcon icon={icons.faBolt} color={color} fixedWidth />
                     }
+                    {event.seized &&
+                        <UI.FAIcon icon={icons.faSortAmountUp} color={color} fixedWidth />
+                    }
                 <Roll.Title>
                     {title}
                 </Roll.Title>
                 </UI.FlexRow>
-                <Roll.StyledResults color={color}>
+                <Roll.StyledResults hue={hue}>
                     {result}&nbsp;
                     {event.seized ?
                        <UI.FAIcon icon={icons.faSortAmountUp} />

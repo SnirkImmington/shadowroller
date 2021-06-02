@@ -19,14 +19,14 @@ export type FlexRowProps = {
 }
 export const FlexRow = styled.div<FlexRowProps>`
     display: flex;
-    align-items: ${props => props.alignItems ? props.alignItems : "center"};
-    ${props => props.maxWidth && 'width: 100%;'}
-    ${props => props.flexWrap && 'flex-wrap: wrap;'}
-    ${props => props.formRow && 'margin-bottom: .5rem;'}
-    ${props => props.flexGrow && `flex-grow: 1;`}
-    ${props => props.justifyContent && `justify-content: ${props.justifyContent};`}
+    align-items: ${({alignItems}) => alignItems ?? 'center'};
+    ${({maxWidth}) => maxWidth && 'width: 100%;'}
+    ${({flexWrap}) => flexWrap && 'flex-wrap: wrap;'}
+    ${({formRow}) => formRow && 'margin-bottom: .5rem;'}
+    ${({flexGrow}) => flexGrow && 'flex-grow: 1;'}
+    justify-content: ${({justifyContent}) => justifyContent ?? 'inherit'};
 
-    ${({ floatRight }) => floatRight &&
+    ${({floatRight}) => floatRight &&
         '& > *:last-child { margin-left: auto; }'
     }
 
@@ -34,7 +34,7 @@ export const FlexRow = styled.div<FlexRowProps>`
         '& > * { margin-right: .5rem; } & > *:last-child { margin-right: inherit; }'
     }
 
-    ${({ formSpaced }) => formSpaced &&
+    ${({formSpaced}) => formSpaced &&
         '& > * { margin-right: 1.25rem; } & > *:last-child { margin-right: inherit; }'
     }
 `;
@@ -50,13 +50,13 @@ export type FlexColumnProps = {
 export const FlexColumn = styled.div<FlexColumnProps>`
     display: flex;
     flex-direction: column;
-    ${({ grow }) => grow && 'flex-grow: 1;'}
-    ${props => props.alignItems && `align-items: ${props.alignItems};`}
-    ${props => props.maxWidth && 'width: 100%;'}
-    ${props => props.flexWrap && 'flex-wrap: wrap;'}
-    ${props => props.bottomGap && 'margin-bottom: 1.5rem;'}
+    ${({grow}) => grow && 'flex-grow: 1;'}
+    align-items: ${({alignItems}) => alignItems ?? 'inherit'};
+    ${({maxWidth}) => maxWidth && 'width: 100%;'}
+    ${({flexWrap}) => flexWrap && 'flex-wrap: wrap;'}
+    ${({bottomGap}) => bottomGap && 'margin-bottom: 1.5rem;'}
 
-    ${({ spaced }) => spaced &&
+    ${({spaced}) => spaced &&
         '& > * { margin-bottom: .5rem; } & > *:last-child { margin-bottom: inherit; }'
     }
 `;
@@ -71,9 +71,9 @@ export type ColumnToRowProps = {
     rowSpaced?: boolean,
 }
 export const ColumnToRow = styled(FlexColumn)<ColumnToRowProps>`
-    ${props => props?.grow && 'height: 100%;'}
+    ${({grow}) => grow && 'height: 100%;'}
     ${props => props.formRow && 'margin-bottom: .5rem;'}
-    @media all and (min-width: 768px) {
+    ${({theme}) => theme.queries.leftWide} {
         flex-direction: row;
         ${({ maxWidth }) => maxWidth && 'width: 100%;'}
         ${props => props.rowCenter && 'align-items: center;'}
@@ -87,9 +87,9 @@ export const ColumnToRow = styled(FlexColumn)<ColumnToRowProps>`
     }
 `;
 
-export const TextWithIcon = styled.span<{ color?: string }>`
+export const TextWithIcon = styled.div<{ color?: string }>`
     & > svg:first-child {
-        color: ${({color, theme}) => color || theme.colors.dieNone};
+        color: ${({color, theme}) => color || theme.colors.dieOne};
         margin-right: 0.25em;
     }
 `;
@@ -97,7 +97,7 @@ export const TextWithIcon = styled.span<{ color?: string }>`
 export const CardTitleText  = styled.b<{ color: string}>`
     font-family: "Source Code Pro", monospace;
     white-space: nowrap;
-    color: ${props => props.color};
+    color: ${({theme}) => theme.colors.primary};
     font-size: 1.3rem;
     margin-left: 0.4em;
     line-height: 1.3em;
@@ -113,7 +113,7 @@ type CardTitleProps = {
 const CardTitle = styled(FlexRow)<CardTitleProps>`
     margin: 0 0 .75rem 0;
     ${({ padRight }) => padRight && 'margin-right: 0.5rem;'}
-    border-bottom: 2px solid ${({ color }) => color};
+    border-bottom: 2px solid ${({theme}) => theme.colors.primary};
 `;
 
 const CardBodyPadding = styled(FlexColumn)`

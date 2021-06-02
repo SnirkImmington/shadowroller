@@ -4,4 +4,3 @@ export * from './inputs';
 export * from './component';
 export * from './layout';
 export * from './text'
-export * from './theme';

@@ -1,7 +1,6 @@
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import theme from 'style/theme';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
@@ -78,6 +77,7 @@ export default function JoinMenu({ hide }: Props) {
     const setConnection = React.useContext(SetConnectionCtx);
     const [connect] = React.useContext(Stream.Ctx);
     const playerDispatch = React.useContext(Player.DispatchCtx);
+    const theme = React.useContext(ThemeContext);
 
     const [gameID, setGameID] = React.useState('');
     const [username, setUsername] = React.useState('');
@@ -154,7 +154,7 @@ export default function JoinMenu({ hide }: Props) {
                     <UI.ColumnToRow maxWidth rowSpaced>
                         <UI.FlexRow formRow>
                             <UI.FAIcon icon={icons.faKey}
-                                       color={theme.colors.primary}
+                                       color={theme.colors.secondary}
                                        fixedWidth transform="grow-5" />
                             <UI.Input monospace id="join-game-id"
                                       placeholder="Game ID"
@@ -165,7 +165,7 @@ export default function JoinMenu({ hide }: Props) {
                         </UI.FlexRow>
                         <UI.FlexRow formRow>
                             <UI.FAIcon icon={icons.faIdCard}
-                                       color={theme.colors.primary}
+                                       color={theme.colors.secondary}
                                        fixedWidth transform="grow-5" />
                             <UI.Input id="join-username"
                                       placeholder="Username"

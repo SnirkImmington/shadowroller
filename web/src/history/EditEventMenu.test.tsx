@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ThemeProvider } from 'styled-components/macro';
-import theme from 'style/theme';
+import * as theme from 'theme';
 import { render, fireEvent, screen } from '@testing-library/react';
 
 import * as Event from 'event';
@@ -22,7 +22,7 @@ export function renderEditEventMenu(options: RenderProps) {
         throw Error("renderEditEventMenu: event required");
     }
     return render(
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme.default}>
             <Event.DispatchCtx.Provider value={dispatch}>
                 <Player.Ctx.Provider value={player}>
                     <EditEventMenu event={event} />

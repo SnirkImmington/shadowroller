@@ -7,12 +7,12 @@ import * as Event from 'event';
 type PlayerJoinProps = {
     event: Event.PlayerJoin,
     playerID: string|null,
-    color: string,
+    hue: number|null|undefined,
 };
-export const PlayerJoin = React.memo(React.forwardRef<HTMLDivElement, PlayerJoinProps>(function PlayerJoin({ event, color }: PlayerJoinProps, ref) {
+export const PlayerJoin = React.memo(React.forwardRef<HTMLDivElement, PlayerJoinProps>(function PlayerJoin({ event, hue }: PlayerJoinProps, ref) {
     const game = React.useContext(Game.Ctx);
 
-    const name = <UI.PlayerColored color={color}>{event.source.name}</UI.PlayerColored>;
+    const name = <UI.PlayerColored hue={hue}>{event.source.name}</UI.PlayerColored>;
     return (
         <UI.FlexColumn ref={ref}>
             <UI.FlexRow>

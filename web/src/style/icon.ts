@@ -10,9 +10,9 @@ export {
     // Icons for in game/GM/local rolls
     faUser, faUsers, faUserFriends, faUserSecret, faChessQueen,
     // Menu icons
-    faList, faPen, faUserEdit,
+    faList, faPen, faUserEdit, faSun,
     // Roll icons
-    faBolt, faRedo, faClipboardList, faGrimace, faSortAmountUp,
+    faBolt, faRedo, faClipboardList, faSkullCrossbones, faSortAmountUp,
     // dice
     faDice,
 } from "@fortawesome/free-solid-svg-icons";

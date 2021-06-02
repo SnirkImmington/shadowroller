@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ThemeProvider } from 'styled-components/macro';
-import theme from 'style/theme';
 import { render, fireEvent, screen } from '@testing-library/react';
+import * as theme from 'theme';
 
 import * as Event from 'event';
 import * as eventTests from 'event/event.test';
@@ -36,7 +36,7 @@ function gameWithPlayerNames(names: string[]): Game.Game {
 export function renderPlayerList(options?: RenderOptions) {
     const { game } = options ?? {};
     return render(
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme.default}>
             <Game.Ctx.Provider value={game}>
                 <PlayerList />
             </Game.Ctx.Provider>

@@ -7,14 +7,14 @@ import { areEqual } from 'react-window';
 type RecordProps = {
     event: Event.Event|null,
     playerID: string|null,
-    color: string,
+    hue: number|null|undefined,
     setHeight?: (height: number) => void,
     noActions?: boolean,
     editing?: boolean,
     style?: any
 };
 const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const { event, playerID, color, setHeight, noActions, editing, style } = props;
+    const { event, playerID, hue, setHeight, noActions, editing, style } = props;
 
     const ref = React.useRef<HTMLDivElement|null>(null);
     React.useEffect(() => {
@@ -24,7 +24,7 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }, [ref, setHeight]);
     if (!event) {
         return (
-            <Record.StyledRecord color="white" style={style}>
+            <Record.StyledRecord hue={hue} style={style}>
                 <Record.Loading ref={ref}/>
             </Record.StyledRecord>
         );
@@ -56,9 +56,9 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
             return null;
     }
     return (
-        <Record.StyledRecord color={color} editing={editing} style={style}>
+        <Record.StyledRecord hue={hue} editing={editing} style={style}>
             {/* We do make sure we have the right event, given the switch above. */}
-            <Inner ref={ref} playerID={playerID} color={color} event={event as never} noActions={noActions} />
+            <Inner ref={ref} playerID={playerID} hue={hue} event={event as never} noActions={noActions} />
         </Record.StyledRecord>
     );
 }, areEqual);

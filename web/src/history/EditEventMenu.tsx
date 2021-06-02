@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as UI from 'style';
+import { ThemeContext } from 'styled-components/macro';
 import NumericInput from 'NumericInput';
 import EventRecord from 'history/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
@@ -7,7 +8,6 @@ import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 import * as Event from 'event';
 import * as Player from 'player';
 import * as routes from 'routes';
-import theme from 'style/theme';
 import * as icons from 'style/icon';
 import * as srutil from 'srutil';
 
@@ -17,6 +17,7 @@ type Props = {
 export default function EditEventMenu({ event }: Props) {
     const player = React.useContext(Player.Ctx);
     const dispatch = React.useContext(Event.DispatchCtx);
+    const theme = React.useContext(ThemeContext);
 
     const [title, setTitle] = React.useState(event.title);
     // const [dice, setDice] = React.useState(event.dice);
@@ -94,9 +95,9 @@ export default function EditEventMenu({ event }: Props) {
             <form id="edit-roll-form" onSubmit={onSubmit}>
                 <UI.FlexColumn>
                     <UI.FlexRow maxWidth formRow>
-                        <EventRecord editing noActions setHeight={()=>{}}
+                        <EventRecord noActions setHeight={()=>{}}
                                      style={{ width: '100%'}} playerID={player ? player.id : null}
-                                     color={eventColor}
+                                     hue={player?.hue}
                                      event={{ ...event, title, glitchy }} />
                     </UI.FlexRow>
                     <UI.ColumnToRow>

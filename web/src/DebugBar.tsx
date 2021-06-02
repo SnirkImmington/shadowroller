@@ -12,7 +12,7 @@ const StyledBar = styled(UI.FlexColumn).attrs(
 )`
     padding: 4px 8px;
     color: white;
-    background-color: ${({theme}) => theme.colors.primary}b0;
+    background-color: ${({theme}) => theme.colors.neutral};
     font-size: 14px;
     line-height: 1.25em;
     white-space: pre;
