@@ -1,12 +1,12 @@
 import * as React from 'react';
 import * as UI from 'style';
-import * as dice from 'Dice';
-import * as humanTime from 'HumanTime';
+import * as dice from 'component/Dice';
+import * as humanTime from 'component/HumanTime';
 import * as Roll from './RollComponents';
 
 import * as Event from 'event';
 import * as Share from 'share';
-import * as rollStats from 'rollStats';
+import * as rollStats from 'roll/stats';
 
 type Props = {
     event: Event.Roll,

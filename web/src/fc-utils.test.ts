@@ -1,8 +1,8 @@
 import * as fc from 'fast-check';
 
 /** Run an fc.assert test using the given generator, validator, and other params. */
-export function property<T>(title: string, arbitrary: fc.Arbitrary<T>, handler: (T) => boolean|void, params?: fc.Parameters<T>): void {
-    it(`${title} via fc`, function() {
+export function property<T>(title: string, arbitrary: fc.Arbitrary<T>, handler: (v: T) => boolean|void, params?: fc.Parameters<T>): void {
+    it(`fast-check it ${title}`, function() {
         fc.assert(fc.property(arbitrary, handler), params);
     });
 }
@@ -22,11 +22,11 @@ export function playerNames(): fc.Arbitrary<string[]> {
 
 describe("playerNames()", function() {
     property("doesn't produce an empty string", playerNames(),
-        names => names.every(n => n !== ""), fewerRuns()
+        (names: string[]) => names.every(n => n !== ""), fewerRuns()
     );
     property(
         "doesn't produce an untrimmed string",
-        playerNames(), names => names.every(n => n === n.trim()),
+        playerNames(), (names: string[]) => names.every(n => n === n.trim()),
         fewerRuns()
     );
 });

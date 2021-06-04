@@ -7,8 +7,8 @@ import * as icons from 'style/icon';
 import type { Connection } from 'connection';
 import * as Event from 'event';
 import * as Share from 'share';
-import * as rollStats from 'rollStats';
-import * as roll from 'roll';
+import * as rollStats from './rollStats';
+import * as roll from '.';
 import * as routes from 'routes';
 import * as colors from 'colorUtil';
 

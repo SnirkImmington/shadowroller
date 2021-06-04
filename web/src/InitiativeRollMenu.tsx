@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as icons from 'style/icon';
-import NumericInput from 'NumericInput';
+import NumericInput from 'component/NumericInput';
 import * as colorUtil from 'colorUtil';
 
 import * as Game from 'game';
@@ -13,7 +13,7 @@ import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import * as routes from 'routes';
-import * as roll from 'roll';
+import * as roll from '.';
 import * as srutil from 'srutil';
 
 const RollBackground = {
