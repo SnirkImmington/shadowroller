@@ -1,5 +1,5 @@
 import * as React from 'react';
-import styled, { ThemeProvider } from 'styled-components/macro';
+import styled, { ThemeProvider, ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as theme from 'theme';
 import * as srutil from 'srutil';
@@ -22,6 +22,7 @@ import RollInitiativeMenu from 'InitiativeRollMenu';
 import EventHistory from 'history/HistoryDisplay';
 import DebugBar from 'DebugBar';
 
+import colors from 'theme/pallette.module.css';
 import 'assets-external/source-code-pro.css';
 
 const AppLeft = styled(UI.FlexColumn)`
@@ -55,8 +56,8 @@ const AppRight = styled(UI.FlexColumn)`
     /* height: 100%; Always go as high as possible. */
     flex-grow: 1;
 
-    ${({theme}) =>
-        `color: ${theme.colors.text}; background-color: ${theme.colors.background};`}
+    color: var(--color-text);
+    background-color: var(--color-background);
     padding-left: 2px;
 
     @media all and (min-width: 768px) {
@@ -72,6 +73,7 @@ function Shadowroller() {
     const playerDispatch = React.useContext(Player.DispatchCtx);
     const setConnection = React.useContext(SetConnectionCtx);
     const [connect] = React.useContext(stream.Ctx);
+    const theme = React.useContext(ThemeContext);
 
     const [menuShown, toggleMenuShown] = srutil.useToggle(false);
 
@@ -103,7 +105,7 @@ function Shadowroller() {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <>
+        <div style={{height: "100%"}} className={theme.colors.mode === "dark" ? colors.dark : colors.light}>
             <SRHeader onClick={toggleMenuShown} />
             <UI.ColumnToRow grow>
                 <AppLeft>
@@ -122,7 +124,7 @@ function Shadowroller() {
             {process.env.NODE_ENV !== "production" &&
                 <DebugBar />
             }
-        </>
+        </div>
     );
 }
 
