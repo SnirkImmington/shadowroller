@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as UI from 'style';
 import { ThemeContext } from 'styled-components/macro';
-import NumericInput from 'NumericInput';
+import NumericInput from 'component/NumericInput';
 import EventRecord from 'history/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 

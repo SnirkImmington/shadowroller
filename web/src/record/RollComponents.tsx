@@ -1,14 +1,14 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import * as dice from 'Dice';
+import * as dice from 'component/Dice';
 import * as icons from 'style/icon';
 
 import type { Connection } from 'connection';
 import * as Event from 'event';
 import * as Share from 'share';
-import * as rollStats from 'rollStats';
 import * as roll from 'roll';
+import * as rollStats from 'roll/stats';
 import * as routes from 'routes';
 import * as colors from 'colorUtil';
 

@@ -1,0 +1,42 @@
+/* Defaults to dark mode.*/
+.dark {
+    --color-mode: "dark";
+    --color-text: hsl(180, 90%, 97%);
+    --color-text-secondary: hsl(180, 100%, 95%);
+    --color-background: hsl(235, 11%, 8%);
+    --color-title: #85142c;
+
+    --color-primary: hsl(349, 74%, 55%);
+    --color-secondary: #c64f52;
+    --color-tertiary: #7b6a70;
+    --color-light: #c1172c;
+    --color-neutral: hsl(44, 5%, 53%);
+    --color-highlight: #e0dd8f;
+    --color-outline: #9d9b64;
+
+    --color-die-success: #14b826;
+    --color-die-neutral: #9aa;
+    --color-die-one: #c14b4e;
+
+    --color-indicator-online: #33a736;
+}
+
+.light {
+    --color-mode: "light";
+    --color-text: #231f20;
+    --color-text-secondary: hsl(60, 85%, 6%);
+    --color-background: hsl(0, 0%, 97%);
+    --color-title: #85142c;
+
+    --color-primary: #85142c;
+    --color-secondary: #783422;
+    --color-light: #c1172c;
+    --color-neutral: #4e4e62;
+    --color-highlight: #9d9b64;
+
+    --color-die-success: #4d800e;
+    --color-die-neutral: #4e4e62;
+    --color-die-one: #85142c;
+
+    --color-indicator-online: #33a736;
+}

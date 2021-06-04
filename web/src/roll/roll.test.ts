@@ -1,4 +1,4 @@
-import * as roll from './roll';
+import * as roll from '.';
 
 describe("die()", function() {
     it("rolls within 1-6", function() {

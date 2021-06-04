@@ -92,6 +92,19 @@ export function lispy(expr: Expression): string {
     }
 }
 
+export function texty(expr: Expression): string {
+    switch (expr.type) {
+        case "number":
+            return expr.value.toString();
+        case "unaryOp":
+            return `${expr.op}${texty(expr.expr)}`;
+        case "binOp":
+            return `(${texty(expr.left)} ${expr.op} ${texty(expr.right)})`;
+        default:
+            throw Error(`Invalid expression ${expr}`);
+    }
+}
+
 /** Evaluates the given expression. */
 export function evaluate(expr: Expression): number {
     switch (expr.type) {

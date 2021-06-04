@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as icons from 'style/icon';
-import NumericInput from 'NumericInput';
+import NumericInput from 'component/NumericInput';
 import * as colorUtil from 'colorUtil';
 
 import * as Game from 'game';
@@ -67,14 +67,14 @@ export default function RollInitiativePrompt() {
     const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [dice, setDice] = React.useState<number>(1);
+    const [dice, setDice] = React.useState<number|null>(1);
     const [diceText, setDiceText] = React.useState("");
     const [blitzed, setBlitzed] = React.useState(false);
     const [seized, setSeized] = React.useState(false)
 
     const connected = connection === "connected";
     const rollDisabled = (
-        dice < 1 || dice > 5
+        dice == null || dice < 1 || dice > 5
         || base == null || base < -2 || base > 69
         || loading || (gameExists && !connected)
     );
@@ -82,12 +82,6 @@ export default function RollInitiativePrompt() {
     const titleChanged = React.useCallback((e) => {
         setTitle(e.target.value);
     }, [setTitle]);
-    const baseChanged = React.useCallback((value: number | null) => {
-        setBase((prev) => value ?? prev);
-    }, [setBase]);
-    const diceChanged = React.useCallback((value: number | null) => {
-        setDice((prev) => value ?? prev);
-    }, [setDice]);
     const blitzedChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.checked;
         if (value) {
@@ -110,7 +104,7 @@ export default function RollInitiativePrompt() {
         }
 
         if (!gameExists) {
-            const initiativeDice = roll.dice(blitzed ? 5 : dice);
+            const initiativeDice = roll.dice(blitzed ? 5 : dice!);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
                 base: base ?? 0, dice: initiativeDice, title, seized, blitzed,
@@ -121,7 +115,7 @@ export default function RollInitiativePrompt() {
         else {
             setLoading(true);
             routes.game.rollInitiative({
-                base: base ?? 0, dice: blitzed ? 5 : dice, title, share, seized, blitzed,
+                base: base ?? 0, dice: blitzed ? 5 : dice!, title, share, seized, blitzed,
             }).onDone((res, full) => {
                 setLoading(false);
                 if (!res && process.env.NODE_ENV !== "production") {
@@ -165,13 +159,13 @@ export default function RollInitiativePrompt() {
                         <NumericInput small id="roll-initiative-base"
                                       min={-2} max={69}
                                       text={baseText} setText={setBaseText}
-                                      onSelect={baseChanged} />
+                                      onSelect={setBase} />
                         +
                         <NumericInput small id="roll-initiative-dice"
                                       min={1} max={5} placeholder="1"
                                       text={blitzed ? "5" : diceText} setText={setDiceText}
                                       disabled={blitzed}
-                                      onSelect={diceChanged} />
+                                      onSelect={setDice} />
                         <label htmlFor="roll-initiative-dice">
                             d6
                         </label>

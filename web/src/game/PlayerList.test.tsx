@@ -16,7 +16,7 @@ import * as fc from 'fast-check';
 import * as fcUtils from 'fc-utils.test';
 
 export type RenderOptions = {
-    game?: Game.State,
+    game: Game.State,
 }
 
 /** Produce a Game state with the given player names as players. */
@@ -34,7 +34,7 @@ function gameWithPlayerNames(names: string[]): Game.Game {
 
 /** render a player list of the players in the given game */
 export function renderPlayerList(options?: RenderOptions) {
-    const { game } = options ?? {};
+    const { game } = options ?? { game: null };
     return render(
         <ThemeProvider theme={theme.default}>
             <Game.Ctx.Provider value={game}>
@@ -48,7 +48,7 @@ export function renderPlayerList(options?: RenderOptions) {
 export function renderPlayerName(playerName: string, isGM: boolean) {
     return render(
         <ThemeProvider theme={theme.default}>
-            <PlayerName player={{ name: playerName, hue: 0 }} isGM={isGM} />
+            <PlayerName player={{ name: playerName, id: '', hue: 0 }} isGM={isGM} />
         </ThemeProvider>
     );
 }

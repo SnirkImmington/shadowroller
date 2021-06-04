@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ThemeProvider } from 'styled-components/macro';
 import * as theme from 'theme';
 import { render, fireEvent, screen } from '@testing-library/react';
@@ -17,15 +16,16 @@ export type RenderProps = {
     dispatch?: Event.Dispatch,
 }
 export function renderEditEventMenu(options: RenderProps) {
-    const { event, player, dispatch } = options ?? {};
-    if (!event) {
+    const player = options.player ?? null;
+    const dispatch = options.dispatch ?? function() {};
+    if (!options.event) {
         throw Error("renderEditEventMenu: event required");
     }
     return render(
         <ThemeProvider theme={theme.default}>
             <Event.DispatchCtx.Provider value={dispatch}>
                 <Player.Ctx.Provider value={player}>
-                    <EditEventMenu event={event} />
+                    <EditEventMenu event={options.event} />
                 </Player.Ctx.Provider>
             </Event.DispatchCtx.Provider>
         </ThemeProvider>
@@ -35,8 +35,8 @@ export function renderEditEventMenu(options: RenderProps) {
 const getClose = () => screen.getByRole("button", { name: "close" });
 const clickClose = () => fireEvent.click(getClose());
 
-const getSubmit = () => screen.getByText("update", { selector: "button" });
-const clickSubmit = () => fireEvent.click(getSubmit());
+//const getSubmit = () => screen.getByText("update", { selector: "button" });
+//const clickSubmit = () => fireEvent.click(getSubmit());
 
 const mockEvent: Event.Roll = {
     ty: "roll", id: 221,
@@ -49,12 +49,12 @@ const mockEvent: Event.Roll = {
 // Close
 //
 describe('close button', function() {
-    it("dispatches a cancel edit", async () => {
+    it("dispatches a cancel edit", () => {
         const [dispatch, actions] = eventTests.mockDispatch();
         const player = playerTests.mockState();
         const event = mockEvent;
-        renderEditEventMenu({ event, dispatch });
-        await clickClose();
+        renderEditEventMenu({ event, player, dispatch });
+        clickClose();
 
         expect(actions).toHaveLength(1);
         expect(actions[0].ty).toBe("clearEdit");

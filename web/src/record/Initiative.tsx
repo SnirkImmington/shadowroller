@@ -2,8 +2,8 @@ import * as React from 'react';
 import { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as icons from 'style/icon';
-import * as dice from 'Dice';
-import * as humanTime from 'HumanTime';
+import * as dice from 'component/Dice';
+import * as humanTime from 'component/HumanTime';
 import * as Roll from './RollComponents';
 
 import type { Connection } from 'connection';
