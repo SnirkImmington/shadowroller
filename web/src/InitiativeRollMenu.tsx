@@ -13,7 +13,7 @@ import { ConnectionCtx } from 'connection';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import * as routes from 'routes';
-import * as roll from '.';
+import * as roll from 'roll';
 import * as srutil from 'srutil';
 
 const RollBackground = {

@@ -16,7 +16,7 @@ import StatusText from 'connection/StatusText';
 import type { ResponseStatus } from 'connection';
 import * as routes from 'routes';
 
-import ColorPicker from 'ColorPicker';
+import ColorPicker from 'component/ColorPicker';
 import EventRecord from 'history/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 

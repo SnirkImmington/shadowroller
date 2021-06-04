@@ -1,4 +1,5 @@
 import * as Game from '.';
+import * as Player from 'player';
 
 /** mockDispatch produces a mocked Dispatch function and the actions that were dispatched. */
 export function mockDispatch(): [Game.Dispatch, Game.Action[]] {
@@ -8,7 +9,7 @@ export function mockDispatch(): [Game.Dispatch, Game.Action[]] {
 
 /** mockState produces a game "someGame" with two players. */
 export function mockState(): Game.Game {
-    let players = new Map<string, Game.PlayerInfo>();
+    let players = new Map<string, Player.Info>();
     players.set("player1ID", {
         id: "player1ID",
         name: "player1Name",
@@ -107,7 +108,7 @@ describe("reduce()", function() {
     });
 
     it("handles a set players", function() {
-        const newPlayers = new Map<string, Game.PlayerInfo>();
+        const newPlayers = new Map<string, Player.Info>();
         newPlayers.set("player4ID", {
             id: "player4ID",
             name: "player 4",

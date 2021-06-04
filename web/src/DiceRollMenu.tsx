@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import NumericInput from 'NumericInput';
+import NumericInput from 'component/NumericInput';
 import * as colorUtil from 'colorUtil';
 
 import * as Event from 'event';

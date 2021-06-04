@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as UI from 'style';
-import * as humanTime from 'HumanTime';
+import * as humanTime from 'component/HumanTime';
 import * as Game from 'game';
 import * as Event from 'event';
 

@@ -5,7 +5,7 @@ import * as UI from 'style';
 import { ReactComponent as LogoDark } from 'assets/logo/logo-dark-mode.svg';
 import { ReactComponent as LogoLight } from 'assets/logo/logo-light-mode.svg';
 import JoinButton from "./JoinButton";
-import ThemeToggle from 'ThemeToggle';
+import ThemeToggle from 'component/ThemeToggle';
 
 const StyledHeader = styled.header`
     ${({theme}) =>

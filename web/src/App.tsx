@@ -20,7 +20,7 @@ import GameJoinMenu from 'game/JoinMenu';
 import RollDiceMenu from 'DiceRollMenu';
 import RollInitiativeMenu from 'InitiativeRollMenu';
 import EventHistory from 'history/HistoryDisplay';
-import DebugBar from 'DebugBar';
+import DebugBar from 'component/DebugBar';
 
 import colors from 'theme/pallette.module.css';
 import 'assets-external/source-code-pro.css';
