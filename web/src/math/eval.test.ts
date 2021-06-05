@@ -1,6 +1,6 @@
 import { Parser, evaluate } from '.';
 import * as fcUtils from 'fc-utils.test';
-import * as exprGen from './expression.gen.test';
+import * as exprGen from './expression.gen';
 
 function evalText(text: string): number {
     const parser = new Parser(text);

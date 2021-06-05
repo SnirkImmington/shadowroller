@@ -10,11 +10,11 @@ import * as gameTests from 'game/game.test';
 import DiceRollMenu from './DiceRollMenu';
 
 export type RenderOptions = {
-    game?: Game.State,
-    dispatch?: Event.Dispatch,
+    game: Game.State,
+    dispatch: Event.Dispatch,
 }
 export function renderRollMenu(options?: RenderOptions) {
-    const { game, dispatch } = options ?? {};
+    const { game, dispatch } = options ?? { game: null, dispatch: () => {} };
     return render(
         <ThemeProvider theme={theme.default}>
             <Event.DispatchCtx.Provider value={dispatch}>
@@ -52,10 +52,10 @@ const submitRoll = () => fireEvent.click(getRollSubmit());
 
 function validateCounts(values:[input: string, expected: boolean][]) {
     for (const [input, expected] of values) {
-        it(`${expected ? "enables" : "disables"} roll button for ${input} dice`, async () => {
+        it(`${expected ? "enables" : "disables"} roll button for ${input} dice`, () => {
             renderRollMenu();
 
-            await setDiceCount(input);
+            setDiceCount(input);
 
             const expectSubmit = expect(getRollSubmit());
             if (expected) {
@@ -72,17 +72,17 @@ function validateCounts(values:[input: string, expected: boolean][]) {
 // Hide
 //
 describe('hide button', function() {
-    it("hides when toggled", async () => {
+    it("hides when toggled", () => {
         renderRollMenu();
-        await clickHide();
+        clickHide();
 
         expect(screen.queryByRole("textbox")).toBeNull();
     });
 
-    it("unhides when toggled again", async () => {
+    it("unhides when toggled again", () => {
         renderRollMenu();
-        await clickHide();
-        await clickShow();
+        clickHide();
+        clickShow();
 
         expect(getRollTitle()).not.toBeNull();
         expect(getRollSubmit()).not.toBeNull();
@@ -113,35 +113,35 @@ describe("roll button enabled", function() {
 // Roll title
 //
 describe("roll title", function() {
-    it("keeps the title in local roll", async () => {
+    it("keeps the title in local roll", () => {
         const [dispatch, actions] = eventTests.mockDispatch();
         const game: Game.State = null;
-        renderRollMenu({ dispatch, actions, game });
+        renderRollMenu({ dispatch, game });
 
         const rollTitle = "This is the roll. And this is the title of the roll.";
 
-        await setDiceCount("1");
-        await setRollTitle(rollTitle);
+        setDiceCount("1");
+        setRollTitle(rollTitle);
         expect(getRollSubmit()).toBeEnabled();
 
-        await submitRoll();
+        submitRoll();
         expect(actions).toHaveLength(1);
-        const event: Event.Action = actions[0];
-        expect(event.ty).toBe("newEvent");
-        expect(event.event.title).toBe(rollTitle);
+        const action: any = actions[0];
+        expect(action.ty).toBe("newEvent");
+        expect(action.event.title).toBe(rollTitle);
     });
 
-    it("allows for roll with no title", async () => {
+    it("allows for roll with no title", () => {
         const [dispatch, actions] = eventTests.mockDispatch();
         const game: Game.State = null;
-        renderRollMenu({ dispatch, actions, game });
+        renderRollMenu({ dispatch, game });
 
-        await setDiceCount("1");
-        await submitRoll();
+        setDiceCount("1");
+        submitRoll();
         expect(actions).toHaveLength(1);
-        const event: Event.Action = actions[0];
-        expect(event.ty).toBe("newEvent");
-        expect(event.event.title).toBe("");
+        const action: any = actions[0];
+        expect(action.ty).toBe("newEvent");
+        expect(action.event.title).toBe("");
     });
 });
 
@@ -149,20 +149,20 @@ describe("roll title", function() {
 // Push Limit
 //
 describe("push the limit", function() {
-    it("rolls with limit push", async () => {
+    it("rolls with limit push", () => {
         const [dispatch, actions] = eventTests.mockDispatch();
         const game: Game.State = null;
-        renderRollMenu({ dispatch, actions, game });
+        renderRollMenu({ dispatch, game });
 
-        await setDiceCount("1");
-        await toggleLimitPush();
+        setDiceCount("1");
+        toggleLimitPush();
         expect(getRollSubmit()).toBeEnabled();
 
-        await submitRoll();
+        submitRoll();
         expect(actions).toHaveLength(1);
-        const event: Event.Action = actions[0];
-        expect(event.ty).toBe("newEvent");
-        expect(event.event.ty).toBe("edgeRoll");
+        const action: any = actions[0];
+        expect(action.ty).toBe("newEvent");
+        expect(action.event.ty).toBe("edgeRoll");
     });
 });
 
@@ -176,36 +176,36 @@ describe("glitchy", function() {
         expect(queryGlitchiness()).toBe(null);
     });
 
-    it("rolls with glitchy starting at 1", async () => {
+    it("rolls with glitchy starting at 1", () => {
         const [dispatch, actions] = eventTests.mockDispatch();
         const game: Game.State = null;
-        renderRollMenu({ dispatch, actions, game });
+        renderRollMenu({ dispatch, game });
 
-        await setDiceCount("1");
-        await toggleGlitchy();
+        setDiceCount("1");
+        toggleGlitchy();
         expect(getRollSubmit()).toBeEnabled();
 
-        await submitRoll();
+        submitRoll();
         expect(actions).toHaveLength(1);
-        const event: Event.Action = actions[0];
-        expect(event.ty).toBe("newEvent");
-        expect(event.event.glitchy).toBe(1);
+        const action: any = actions[0];
+        expect(action.ty).toBe("newEvent");
+        expect(action.event.glitchy).toBe(1);
     });
 
-    it("rolls with set amount of glitchy", async () => {
+    it("rolls with set amount of glitchy", () => {
         const [dispatch, actions] = eventTests.mockDispatch();
         const game: Game.State = null;
-        renderRollMenu({ dispatch, actions, game });
+        renderRollMenu({ dispatch, game });
 
-        await setDiceCount("1");
-        await toggleGlitchy();
-        await setGlitchiness("1");
+        setDiceCount("1");
+        toggleGlitchy();
+        setGlitchiness("1");
         expect(getRollSubmit()).toBeEnabled();
 
-        await submitRoll();
+        submitRoll();
         expect(actions).toHaveLength(1);
-        const event: Event.Action = actions[0];
-        expect(event.ty).toBe("newEvent");
-        expect(event.event.glitchy).toBe(1);
+        const action: any = actions[0];
+        expect(action.ty).toBe("newEvent");
+        expect(action.event.glitchy).toBe(1);
     });
 });

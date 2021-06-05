@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 
 import ColorPicker from './ColorPicker';
@@ -21,7 +20,7 @@ describe("input", function() {
 
         render(<ColorPicker value={hue} onSelect={onSelect} />);
 
-        setInput(13);
+        setInput("13");
 
         expect(onSelect).toHaveBeenCalledWith(13);
     });

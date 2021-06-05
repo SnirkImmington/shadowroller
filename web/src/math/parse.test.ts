@@ -1,4 +1,6 @@
-import { Parser, Expression, BinOp, lispy } from '.';
+import { Parser, Expression, BinOp, lispy, texty } from '.';
+import { property } from 'fc-utils.test';
+import * as exprGen from './expression.gen';
 
 function parseText(text: string): Expression {
     const parser = new Parser(text);
@@ -63,7 +65,7 @@ describe('infix parsing', function() {
         },
         "678 * 1234", {
             type: "binOp", op: BinOp.Times,
-            left: { type: "number", value: 12}, right: { type: "number", value: 1 }
+            left: { type: "number", value: 678 }, right: { type: "number", value: 1234 }
         },
     ]);
     itMatches('infix +- with prefix exprs', [
@@ -88,4 +90,22 @@ describe('infix parsing', function() {
             right: { type: "number", value: 1 }
         },
     ]);
+
+    property(
+        'can parse any input text',
+        exprGen.text(),
+        text => {
+            const p = new Parser(text);
+            p.expression();
+        }
+    );
+
+    property('will parse expressions',
+        exprGen.expression(10),
+        expr => {
+            const text = texty(expr);
+            const found = new Parser(text).expression();
+            expect(found).toEqual(expr);
+        }
+    );
 });
