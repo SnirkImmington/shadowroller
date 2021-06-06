@@ -14,12 +14,14 @@ type RecordProps = {
 // Spacing between event records
 const GUTTER_SIZE = 4;
 
+const PADDING = 0;
+
 export const StyledRecord = React.memo(styled.div.attrs<RecordProps>(
     props => {
         const style = {
             ...(props.style ?? {}),
             top: (props.style?.top + GUTTER_SIZE) || 0,
-            height: (props.style?.height - GUTTER_SIZE) || 'auto',
+            height: (props.style?.height + PADDING - GUTTER_SIZE) || 'auto',
         };
         if (props.editing) {
             style.backgroundColor = `hsl(${props.hue}, ${props.theme.colors.backgroundSaturation * 1.65}%, ${props.theme.colors.backgroundLightness * 0.75}%)`;

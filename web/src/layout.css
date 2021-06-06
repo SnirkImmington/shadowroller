@@ -13,12 +13,12 @@ html {
 --left-wide: "76rem";
 
 
---layout-mode "column";
---left-mode "column";
+--layout-mode: "column";
+--left-mode: "column";
 
 /** Mobile: column condensed, full below */
 @media all and (min-width: 30rem) {
-    --layout-mode "mobile";
+    --layout-mode: "mobile";
     --left-mode: "condensed";
     --left-max: 30rem;
     --right-max: 32rem;
@@ -26,18 +26,18 @@ html {
 
 /** Condensed: left condensed, right condensed, right grows */
 @media all and (min-width: 62rem) {
-    --layout-mode "condensed";
+    --layout-mode: "condensed";
     --left-mode: "condensed";
 }
 
 /** Wide: left wide, right condensed, right grows, left grows */
 @media all and (min-width: 76rem) {
-    --layout-mode "wide";
-    --left-mode "wide";
+    --layout-mode: "wide";
+    --left-mode: "wide";
 }
 
 /** Max: left max width, right max width, right grows, padding */
 @media all and (min-width: 98rem) {
-    --layout-mode "max";
-    --left-mode "wide";
+    --layout-mode: "max";
+    --left-mode: "wide";
 }

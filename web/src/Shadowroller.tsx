@@ -3,6 +3,7 @@ import styled, { ThemeProvider, ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as theme from 'theme';
 import * as srutil from 'srutil';
+import * as layout from 'layout';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -20,9 +21,6 @@ import RollDiceMenu from 'DiceRollMenu';
 import RollInitiativeMenu from 'InitiativeRollMenu';
 import EventHistory from 'history/HistoryDisplay';
 import DebugBar from 'component/DebugBar';
-
-import colors from 'theme/pallette.module.css';
-import styles from './Shadowroller.module.css';
 
 const AppLeft = styled(UI.FlexColumn)`
     /* Phones: vertical margin included in cards. */
@@ -55,8 +53,8 @@ const AppRight = styled(UI.FlexColumn)`
     /* height: 100%; Always go as high as possible. */
     flex-grow: 1;
 
-    color: var(--color-text);
-    background-color: var(--color-background);
+    ${({theme}) =>
+        `color: ${theme.colors.text}; background-color: ${theme.colors.background};`}
     padding-left: 2px;
 
     @media all and (min-width: 768px) {
@@ -103,9 +101,61 @@ export default function Shadowroller() {
         // We want this to only run on startup.
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    React.useEffect(() => {
+        const mobile = window.matchMedia(`screen and ((min-width: ${layout.Breakpoint.Mobile}rem and max-width: ${layout.Breakpoint.FullMenuStack - 0.1}rem), (min-width: ${layout.Breakpoint}rem)`);
+        const narrow = window.matchMedia(`scren and (min-width: ${layout.Breakpoint.NarrowRow}rem)`);
+        const fullRow = window.matchMedia(`screen and (min-width: ${layout.Breakpoint.FullMenuStack})`);
+        /*
+            left = none|mobile|full|wide
+            right =
+        */
+    }, []); // only on startup
+
     return (
-        <div style={{height: "100%"}} className={theme.colors.mode === "dark" ? colors.dark : colors.light}>
+        <div style={{height: "100%", display: "flex", flexDirection: "column"}}>
             <SRHeader onClick={toggleMenuShown} />
+            <div style={{color: "white", backgroundColor: "darkslategray", fontFamily: "'Source Code Pro'"}}>
+            {/*<div style={{ backgroundColor: "purple", width: "20rem", height: "1rem"}}>iPhone 5, presumably</div>*/}
+            {/*<div style={{ backgroundColor: "purple", width: "23.5rem", height: "1rem"}}>iPhone 6, presumably</div>*/}
+            {/*<div style={{ backgroundColor: "purple", width: "25.7rem", height: "1rem"}}>Pixel 2, presumably</div>*/}
+            <div style={{ backgroundColor: "hsl(110, 60%, 10%)", width: "30rem", height: "1rem"}}>
+            -------------------- MOB NARR * 8 --30-----------|
+            </div>
+            {/*<div style={{ backgroundColor: "purple", width: "30.5rem", height: "1rem"}}>phone</div>*/}
+            <div style={{ backgroundColor: "hsl(200, 80%, 10%)", width: "42rem", height: "1rem"}}>
+            -------------------- MOB FULL ~ 12 -42-------------------------------|
+            </div>
+            <div style={{ backgroundColor: "hsl(300, 80%, 10%)", width: "56rem", height: "1rem"}}>
+            -------------------- MOB WIDE ~ 16 -56------------------------------------------------------|
+            </div>
+            <div style={{ backgroundColor: "hsl(110, 60%, 10%)", width: "62rem", height: "1rem"}}>
+            ------ ROW NARR @ 8 ----------------62-----------|----------------- Rolls -----------------------------
+            </div>
+            {/*<div style={{ backgroundColor: "hsl(110, 60%, 10%)", width: "66rem", height: "1rem"}}>
+            ------ ROW NARR * 12 ---------------66-----------|----------------- Rolls ------------------------------------
+            </div>*/}
+            {/*<div style={{ backgroundColor: "blue", width: "66rem", height: "1rem"}}>sideways phone</div>*/}
+            {/*<div style={{ backgroundColor: "hsl(0, 80%, 10%)", width: "78rem", height: "1rem"}}>  ROW NARR *16</div>*/}
+            {/*<div style={{ backgroundColor: "hsl(210, 50%, 10%)", width: "70rem", height: "1rem"}}>laptop</div>*/}
+            <div style={{ backgroundColor: "hsl(200, 80%, 10%)", width: "74rem", height: "1rem"}}>
+            ------ ROW FULL @ 8 ----------------74-------------------------------|----------------- Rolls -----------------------------
+            </div>
+            {/*<div style={{ backgroundColor: "hsl(200, 80%, 10%)", width: "78rem", height: "1rem"}}>
+            ------ ROW FULL * 12 ---------------78-------------------------------|----------------- Rolls ------------------------------------
+            </div>*/}
+            {/*<div style={{ backgroundColor: "hsl(200, 80%, 10%)", width: "82rem", height: "1rem"}}>
+            ------ ROW FULL * 16 ---------------82-------------------------------|----------------- Rolls ------------------------------------------
+            </div>*/}
+            <div style={{ backgroundColor: "hsl(300, 80%, 10%)", width: "88rem", height: "1rem"}}>
+            ------ ROW WIDE @ 8 ----------------88-------------------------------------------------------|----------------- Rolls ----------------------------
+            </div>
+            {/*<div style={{ backgroundColor: "hsl(300, 80%, 10%)", width: "92rem", height: "1rem"}}>
+            ------ ROW WIDE * 12 ---------------92-------------------------------------------------------|----------------- Rolls -----------------------------------
+            </div>*/}
+            {/*<div style={{ backgroundColor: "hsl(300, 80%, 10%)", width: "104rem", height: "1rem"}}>
+            ------ ROW WIDE * 16 --------------104-------------------------------------------------------|----------------- Rolls -------------------------------------------------------
+            </div>*/}
+            </div>
             <UI.ColumnToRow grow>
                 <AppLeft>
                     {menuShown &&

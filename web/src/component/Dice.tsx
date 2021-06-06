@@ -67,7 +67,7 @@ export function AnimatedDie(props: AnimatedProps) {
 
 const StyledList = styled(UI.FlexRow)`
     /* Mobile: dice are 1/12 screen width. */
-    font-size: 7vw;
+    font-size: min(0.5rem, max(7vw, 2.5rem));
 
     @media all and (min-width: 768px) {
         font-size: 2.5rem;
