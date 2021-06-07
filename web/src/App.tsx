@@ -60,7 +60,6 @@ const AppRight = styled(UI.FlexColumn)`
     padding-left: 2px;
 
     @media all and (min-width: 768px) {
-        width: 30rem;
         padding: 1rem 0 0 0;
     }
 `;
