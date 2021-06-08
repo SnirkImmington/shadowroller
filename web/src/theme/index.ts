@@ -1,47 +1,6 @@
+import * as layout from "layout";
+
 export * from "./state";
-
-const space: any = [0, "0.25rem", "0.5rem", "1rem", "2rem"];
-space.tiny = space[1];
-space.small = space[2];
-space.medium = space[3];
-space.large = space[4];
-
-export type SpaceScale = typeof space;
-
-const breakpoints: any = [0, "30rem", `${30 + 32}rem`, `${42 + 32}rem`, `${56 + 42}rem`];
-breakpoints.mobile = breakpoints[1];
-breakpoints.leftCondensed = breakpoints[1];
-breakpoints.condensed = breakpoints[2];
-breakpoints.wide = breakpoints[3];
-breakpoints.leftWide = breakpoints[3];
-
-export type BreakpointsScale = typeof breakpoints;
-
-const fontSizes: any = ["1rem", "1.25rem", "1.5rem", "2rem", "2.5rem", "4rem"];
-fontSizes.reg = fontSizes[0];
-fontSizes.em = fontSizes[1];
-fontSizes.title = fontSizes[2];
-fontSizes.header = fontSizes[3];
-fontSizes.dice = fontSizes[4];
-
-export type FontScale = typeof fontSizes;
-
-const fonts = {
-    monospace: '"Source code Pro", Menlo, Calibri, monospace',
-};
-
-export type Fonts = typeof fonts;
-
-const queries = {
-    mobile: `@media screen and (min-width: ${breakpoints.mobile})`,
-    condensed: `@media screen and (min-width: ${breakpoints.condensed})`,
-    wide: `@media screen and (min-width: ${breakpoints.wide})`,
-
-    leftCondensed: `@media screen and (min-width: ${breakpoints.leftCondensed})`,
-    leftWide: `@media screen and (min-width: ${breakpoints.leftWide})`,
-}
-
-export type MediaQueries = typeof queries;
 
 export type Colors = {
     mode: "light"|"dark",
@@ -146,22 +105,12 @@ const dark: Colors = {
 }
 
 export type Theme = {
-    space: SpaceScale,
-    breakpoints: BreakpointsScale,
-    fontSizes: FontScale,
-    fonts: Fonts,
-    queries: MediaQueries,
     colors: Colors,
     light: Colors,
     dark: Colors
 }
 
 const theme: Theme = {
-    space,
-    breakpoints,
-    fontSizes,
-    fonts,
-    queries,
     colors: dark,
     light,
     dark,

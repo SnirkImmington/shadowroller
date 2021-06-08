@@ -22,40 +22,54 @@ export const FULL_MENU_MIN = 42;
 /** This is the maximum width our menus should stretch to. After that (and rolls
     are wide) we should start padding out the UI. */
 export const WIDE_MENU_MIN = 56;
-
+/** This is the maximum width we need the wide menus to be. */
 export const WIDE_MENU_MAX = 64;
 
-export const breakpoints = {
-};
 export enum Breakpoint {
     /**
         Site is displayed with menus and history stacked.
         This is the minimum width to get two form elements to stack.
         Below this, many components need to render as columns and < 8 dice are shown.
     */
-    Mobile = NARROW_MENU_MIN, // 30
+    NarrowMenuStack = NARROW_MENU_MIN, // 30
+    /**
+        Site is displayed with full width menus and history stacked.
+    */
+    FullMenuStack = FULL_MENU_MIN, // 42
     /**
         Site is displayed with wide menus and history stacked.
     */
-    FullMenuStack = FULL_MENU_MIN, // 42
     WideMenuStack = WIDE_MENU_MIN, // 56
     /**
         Site is displayed with narrow menu next to 8-12 dice history.
-        The rolls will grow past 8 dice, but wide menu kicks in
+        The rolls will grow past 8 dice, but wide menu kicks in after 16.
     */
     NarrowRow = NARROW_MENU_MIN + ROLLS_SMALL, // 62
-    // NarrowMaxRolls = NARROW_MENU_MIN + ROLLS_WIDE, // 88
-    WideSmallRolls = WIDE_MENU_MIN + ROLLS_SMALL, // 74
     /**
+        Site is displayed with full menu next to 8-12 dice history.
+        The rolls will grow past 8 dice, but wide menu kicks in at 16.
     */
-    Wide = WIDE_MENU_MIN + ROLLS_GOOD, // 80
-    Max = WIDE_MENU_MAX + ROLLS_WIDE, // 112
+    FullRow = FULL_MENU_MIN + ROLLS_SMALL, // 74, which happens to be 768px
+    /**
+        Site is displayed with wide menu next to 8-12 dice history.
+    */
+    WideRow = WIDE_MENU_MIN + ROLLS_SMALL, // 88
+    /**
+        After this point, menu and rolls grow equaly
+    */
+    Max = WIDE_MENU_MIN + ROLLS_WIDE, // 88
 }
 
-export const queries = {
-    mobile: `@media screen and (min-width: ${Breakpoint.Mobile})`,
-    narrow: `@media screen and (min-width: ${Breakpoint.NarrowRow})`,
-    wide: `@media screen and (min-width: ${Breakpoint.Wide})`,
+export const menuQueries = {
+    mobile:
+        `((min-width: ${Breakpoint.NarrowMenuStack}rem) and (max-width: ${Breakpoint.FullMenuStack}rem)), ` +
+        `((min-width: ${Breakpoint.NarrowRow}rem) and (max-width: ${Breakpoint.FullRow - 0.01}rem))`,
+    full:
+        `((min-width: ${Breakpoint.FullMenuStack}rem) and (max-width: ${Breakpoint.WideMenuStack}rem)),` +
+        `((min-width: ${Breakpoint.FullRow}rem) and (max-width: ${Breakpoint.WideRow - 0.01}rem))`,
+    wide:
+        `((min-width: ${Breakpoint.WideMenuStack}rem) and (max-width: ${Breakpoint.NarrowRow - 0.01}rem)),` +
+        `(min-width: ${Breakpoint.WideRow}rem)`,
 }
 
 export enum FontSize {

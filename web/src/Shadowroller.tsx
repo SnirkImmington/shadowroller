@@ -101,15 +101,6 @@ export default function Shadowroller() {
         // We want this to only run on startup.
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    React.useEffect(() => {
-        const mobile = window.matchMedia(`screen and ((min-width: ${layout.Breakpoint.Mobile}rem and max-width: ${layout.Breakpoint.FullMenuStack - 0.1}rem), (min-width: ${layout.Breakpoint}rem)`);
-        const narrow = window.matchMedia(`scren and (min-width: ${layout.Breakpoint.NarrowRow}rem)`);
-        const fullRow = window.matchMedia(`screen and (min-width: ${layout.Breakpoint.FullMenuStack})`);
-        /*
-            left = none|mobile|full|wide
-            right =
-        */
-    }, []); // only on startup
 
     return (
         <div style={{height: "100%", display: "flex", flexDirection: "column"}}>
