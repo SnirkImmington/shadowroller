@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sr/config"
 	"sync"
+	"syscall"
 )
 
 // ShutdownReason is the reason a client should shut down
@@ -68,7 +69,7 @@ func (c *Client) Close() {
 
 func handleShutdown() {
 	sigint := make(chan os.Signal, 2)
-	signal.Notify(sigint, os.Interrupt)
+	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	clients := make(map[*Client]bool)
 	sigintReceived := false
 	// WaitGroup starts at 1 beacuse we're waiting for an interrupt.
