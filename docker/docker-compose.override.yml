@@ -1,0 +1,18 @@
+# Overrides for development mode, which is the default for `docker-compose up`.
+
+version: '3'
+
+services:
+  server:
+    build: ../server
+    volumes:
+      - ./server:/go/src/sr:ro
+      - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache
+  web:
+    build: ../web
+    container_name: web
+    volumes:
+      - ../web/src:/var/code/src:ro
+      - ./web/public:/var/code/public:ro
+      - ./web/build:/var/code/build
+      - ./web/build-presite:/var/code/build-presite

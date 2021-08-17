@@ -41,3 +41,8 @@ services:
     ports:
       - "3000:3000"
     entrypoint: npm run start
+
+networks:
+  redis:
+  backend:
+  frontend:

@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  # Systems
+  redis:
+    image: redis:alpine
+    container_name: redis
+    volumes:
+      - ../redis/config:/usr/local/etc/redis
+      - ../redis/data:/data
+    user: 1000:1000
+
+  # Services
+  server:
+    build: ../server
+    working_dir: /go/src/sr
+    container_name: server
+    environment:
+      - SR_REDIS_URL=redis://redis:6379

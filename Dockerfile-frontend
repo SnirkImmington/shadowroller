@@ -1,0 +1,26 @@
+# Frontend container dockerfile
+# a. build site into build folder
+# b. build frontend server program
+# c. copy build folder into the container
+
+# web-build: build the presite folder
+FROM node:current-alpine as web-build
+WORKDIR /var/code
+COPY package*.json ./
+COPY tsconfig* ./
+COPY .env* ./
+RUN npm ci
+ENV NODE_ENV=production # TODO not sure if needed here
+RUN npm run build-presite
+
+# frontend-build: build the frontend service
+FROM golang:1.16-alpine as frontend-build
+WORKDIR /go/src/sr
+COPY . .
+COPY --from=web-build /var/code/built /var/code/built
+RUN go build -v
+RUN go run server/task/fixPresite.go /var/code/built /var/code/built-presite
+
+FROM alpine:latest as main
+WORKDIR /go/src/sr
+COPY --from=frontend-build /var/code/built-presite /var/code/built-presite # presite

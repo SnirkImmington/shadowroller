@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  # Services
+  server:
+    container_name: server
+    build: ./server # TODO build prod vs dev
+    working_dir: /go/src/sr
+    volumes:
+      - ../server:/go/src/sr:ro
+      - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache # Share local cache with container
+    environment:
+      - SR_REDIS_URL=redis://redis:6379
+    networks:
+      - frontend
+      - backend
+      - redis
+    ports:
+      - "3001:3001"
+  # Development frontend
+  web:
+    container_name: web
+    build: ./web
+    volumes:
+      - ../../web/src:/var/code/src:ro
+      - ../../web/public:/var/code/public:ro
+      - ../../built/web-base:/var/code/built/web-base
+      - ../../built/web-snapped:/var/code/built/web-snapped
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend
+    entrypoint: npm run start
+networks:
