@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ThemeProvider } from 'styled-components/macro';
 import * as theme from 'theme';
 import { render, fireEvent, screen } from '@testing-library/react';
@@ -6,7 +5,8 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import * as Event from 'event';
 import * as eventTests from 'event/event.test';
 import * as Game from 'game';
-import * as gameTests from 'game/game.test';
+//import * as gameTests from 'game/game.test';
+
 import DiceRollMenu from './DiceRollMenu';
 
 export type RenderOptions = {
@@ -37,17 +37,17 @@ const setDiceCount = (value: string) => fireEvent.change(getDiceCount(), { targe
 const getRollTitle = () => screen.getByRole("textbox", { name: "to" });
 const setRollTitle = (value: string) => fireEvent.change(getRollTitle(), { target: { value }});
 
-const getLimitPush = () => screen.getByRole("checkbox", { name: "Push the limit" });
+const getLimitPush = () => screen.getByRole("checkbox", { name: "[ ] Push the limit" });
 const toggleLimitPush = () => fireEvent.click(getLimitPush());
 
-const getGlitchy = () => screen.getByRole("checkbox", { name: "Glitchy" });
+const getGlitchy = () => screen.getByRole("checkbox", { name: "[ ] Glitchy" });
 const toggleGlitchy = () => fireEvent.click(getGlitchy());
 
 const getGlitchiness = () => screen.getByRole("textbox", { name: /Reduce number of 1s/ });
 const queryGlitchiness = () => screen.queryByRole("texbox", { name: /Reduce number of 1s/ });
 const setGlitchiness = (value: string) => fireEvent.change(getGlitchiness(), { target: { value } });
 
-const getRollSubmit = () => screen.getByText("Roll dice", { selector: "button" });
+const getRollSubmit = () => screen.getByRole("button", { name: "Roll dice" });
 const submitRoll = () => fireEvent.click(getRollSubmit());
 
 function validateCounts(values:[input: string, expected: boolean][]) {

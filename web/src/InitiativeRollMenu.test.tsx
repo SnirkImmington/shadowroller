@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ThemeProvider } from 'styled-components/macro';
 import * as theme from 'theme';
 import { render, fireEvent, screen } from '@testing-library/react';
@@ -6,7 +5,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import * as Event from 'event';
 import * as eventTests from 'event/event.test';
 import * as Game from 'game';
-import * as gameTests from 'game/game.test';
+//import * as gameTests from 'game/game.test';
 
 import InitiativeRollMenu from './InitiativeRollMenu';
 
@@ -38,7 +37,7 @@ const setBase = (value: string) => fireEvent.change(getBase(), { target: { value
 const getDice = () => screen.getByRole("textbox", { name: "d6" });
 const setDice = (value: string) => fireEvent.change(getDice(), { target: { value } });
 
-const getTitle = () => screen.getByRole("textbox", { name: "" });
+const getTitle = () => screen.getByRole("textbox", { name: "for" });
 const setTitle = (value: string) => fireEvent.change(getTitle(), { target: { value }});
 
 const getBlitz = () => screen.getByRole("checkbox", { name: /Blitz/ });
