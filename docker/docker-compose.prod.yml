@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:3.1 # TODO
+    container_name: traefik
+    command:
+      # This assumes the host machine is accessible, and behind a firewall.
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Used behind a router port forward
+      - "--entrypoints.web.address=:4343"
+    volumes:
+      - ../config/traefik.conf:/etc/traefik/traefik.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8080:8070" # local traefik console
+  server:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.server.rule=Host(`api.shadowroller.net`)
+      - traefik.http.routers.server.entrypoints=web
+  otelcol:
+    image: otel/opentelemetry-connector:latest
+    container_name: otelcol
+    command: --config=/etc/otel/config.yml
+    volumes:
+      - ../config/otel.yml:/etc/otel/config.yml:ro

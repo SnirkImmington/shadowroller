@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres/alpine
+    
+  server:
+    environment:
+      - SR_SQL_URL=postgres://postgres
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+
+networks:
+  postgres:

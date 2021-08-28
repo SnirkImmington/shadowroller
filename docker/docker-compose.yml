@@ -7,8 +7,8 @@ services:
     image: redis:alpine
     container_name: redis
     volumes:
-      - ../redis:/usr/local/etc/redis # for redis.conf, which redis wants to be editable
-      - ../data/redis:/data # for dump.rdb
+      - ../config/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../data/redis:/data
     user: 1000:1000
     networks:
       - redis
@@ -26,7 +26,7 @@ services:
       - backend
     ports:
       - "3001:3001"
-  # No frontend/web defined here.
+  # No frontend/web defined here - dpends on environment
 
 networks:
   redis:
