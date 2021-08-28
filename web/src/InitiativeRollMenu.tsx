@@ -6,6 +6,8 @@ import * as icons from 'style/icon';
 import NumericInput from 'component/NumericInput';
 import { Toggle as ToggleProps } from 'component/props';
 import * as Space from 'component/Space';
+import Radiobox from 'component/Radiobox';
+import Checkbox from 'component/Checkbox';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -130,13 +132,13 @@ function BlitzToggle(props: ToggleProps) {
             setChecked(e.target.checked);
         }, [setChecked]);
     return (
-            <UI.RadioLink id="roll-initiative-blitz" type="checkbox" light
-                          checked={checked} onChange={onChange}>
+            <Checkbox id="roll-initiative-blitz"
+                      checked={checked} onChange={onChange}>
                 <UI.TextWithIcon color={color}>
                     <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faBolt} />
                     Blitz
                 </UI.TextWithIcon>
-            </UI.RadioLink>
+            </Checkbox>
     );
 }
 
@@ -147,13 +149,13 @@ function SeizeToggle(props: ToggleProps) {
             setChecked(e.target.checked);
         }, [setChecked]);
     return (
-        <UI.RadioLink id="roll-initiative-seize-the-initiative" type="checkbox" light
+        <Checkbox id="roll-initiative-seize-the-initiative"
                       checked={checked} onChange={onChange}>
             <UI.TextWithIcon color={color}>
                 <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faSortAmountUp} />
                 Seize the initiative
             </UI.TextWithIcon>
-        </UI.RadioLink>
+        </Checkbox>
     );
 }
 
@@ -175,7 +177,21 @@ export default function RollInitiativePrompt() {
     const [dice, setDice] = React.useState<number|null>(1);
     const [diceText, setDiceText] = React.useState("");
     const [blitzed, setBlitzed] = React.useState(false);
-    const [seized, setSeized] = React.useState(false)
+    const [seized, setSeized] = React.useState(false);
+
+    const exclusiveSetSeized = React.useCallback((value) => {
+        if (value) {
+            setBlitzed(false);
+        }
+        setSeized(value);
+    }, [setBlitzed, setSeized]);
+
+    const exclusiveSetBlitzed = React.useCallback((value) => {
+        if (value) {
+            setSeized(false);
+        }
+        setBlitzed(value);
+    }, [setSeized, setBlitzed]);
 
     const connected = connection === "connected";
     const rollDisabled = (
@@ -215,15 +231,15 @@ export default function RollInitiativePrompt() {
 
     if (!shown) {
         return (
-                <UI.FlexRow maxWidth floatRight>
-                    <UI.CardTitleText color={theme.colors.primary}>
-                        <UI.FAIcon icon={icons.faClipboardList} />
-                        Initiative
-                    </UI.CardTitleText>
-                    <Button.Minor onClick={toggleShown}>
-                        show
-                    </Button.Minor>
-                </UI.FlexRow>
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
+                    <UI.FAIcon icon={icons.faClipboardList} />
+                    Initiative
+                </UI.CardTitleText>
+                <Button.Minor onClick={toggleShown}>
+                    show
+                </Button.Minor>
+            </UI.FlexRow>
         );
     }
 
@@ -247,9 +263,9 @@ export default function RollInitiativePrompt() {
                     <MessageInput title={title} setTitle={setTitle} />
                     <Space.FlexGrow />
                     <UI.FlexRow formSpaced formRow flexWrap>
-                        <BlitzToggle checked={blitzed} setChecked={setBlitzed}
+                        <BlitzToggle checked={blitzed} setChecked={exclusiveSetBlitzed}
                                      color={color} />
-                        <SeizeToggle checked={seized} setChecked={setSeized}
+                        <SeizeToggle checked={seized} setChecked={exclusiveSetSeized}
                                      color={color} />
                     </UI.FlexRow>
                 </UI.FlexRow>
