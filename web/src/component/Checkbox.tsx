@@ -17,7 +17,7 @@ export type CheckboxProps = React.PropsWithChildren<{
 export default function Checkbox(props: CheckboxProps) {
     return (
         <Selector.Label htmlFor={props.id} disabled={props.disabled}>
-            <Selector.HiddenInput {...props} children={undefined} />
+            <Selector.HiddenInput {...props} type="checkbox" children={undefined} />
             <Selector.Brackets disabled={props.disabled}>
                 [
                     <Selector.Indicator>

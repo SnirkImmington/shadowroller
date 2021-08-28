@@ -18,7 +18,7 @@ export type RadioProps = React.PropsWithChildren<{
 export default function Radiobox(props: RadioProps) {
     return (
         <Selector.Label htmlFor={props.id} disabled={props.disabled}>
-            <Selector.HiddenInput {...props} children={undefined} />
+            <Selector.HiddenInput {...props} type="radio" children={undefined} />
             <Selector.Brackets disabled={props.disabled}>
                 (
                     <Selector.Indicator>

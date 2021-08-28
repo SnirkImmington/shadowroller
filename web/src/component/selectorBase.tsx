@@ -5,13 +5,13 @@ import * as styles from 'component/styling';
 import { Disableable } from 'component/props';
 
 /** An input which is hidden visually, for use with radio and check boxes. */
-export const HiddenInput = styled.input({
+export const HiddenInput = styled.input<Disableable>(props => ({
     position: "absolute",
     opacity: 0,
     height: 0,
     width: 0,
     cursor: "pointer",
-});
+}));
 
 /** Label is a label which has a thematic color scheme, and a flag to
     display as disabled. */
