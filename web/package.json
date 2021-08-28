@@ -51,14 +51,13 @@
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "react-scripts build",
-        "postbuild": "npx presite",
         "test": "react-scripts test",
+        "stylelint": "npx stylelint 'src/**/*.css'",
         "coverage": "typescript-coverage-report",
-        "predeploy": "npm run build",
-        "deploy": "gh-pages -f -d build-presite",
+
         "clean": "rm -rvf ./build ./build-presite",
-        "stylelint": "npx stylelint 'src/**/*.css'"
+        "build": "react-scripts build && npx presite",
+        "postbuild": "npx ts-node script/compress-all.ts ./build-presite"
     },
     "presite": {
         "routes": [
