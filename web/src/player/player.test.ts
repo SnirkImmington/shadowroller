@@ -37,6 +37,6 @@ describe("reduce()", function() {
         const initial = mockState();
         const action: Player.Action = { ty: "update", diff: { username: "player12" } };
         const result = Player.reduce(initial, action);
-        expect(result.username).toBe("player12");
+        expect(result!.username).toBe("player12");
     });
 });

@@ -1,4 +1,4 @@
-import * as rollStats from "./rollStats";
+import * as rollStats from "./stats";
 
 import * as Event from 'event';
 
@@ -73,7 +73,7 @@ describe("isGlitched()", function() {
             const [rounds, glitchy, expected] = inputs.slice(i, i + 3) as [number[][], number, boolean];
             it(`finds pushed [${rounds.map(r => "[" + r.join(", ") + "]")}] ${expected ? "" : "not "}glitchy`, () => {
                 const roll: Event.EdgeRoll = {
-                    ty: "edgeRoll", id: 0, source: "local", rollID: 0, title: "",
+                    ty: "edgeRoll", id: 0, source: "local", title: "",
                     rounds, glitchy
                 };
                 expect(rollStats.isGlitched(roll)).toBe(expected);

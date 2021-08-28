@@ -26,7 +26,7 @@ type AnimatedProps = {
     color?: string,
     unpadded?: boolean
 };
-interface DieProps extends AnimatedProps {
+type DieProps = AnimatedProps & {
     roll: number,
     style?: React.StyleHTMLAttributes<HTMLOrSVGElement> // TODO style prop
 };
@@ -48,7 +48,7 @@ export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     return <Dice className={!small ? "sr-die sr-die-padded" : "sr-die"} {...newProps} />;
 });
 
-export function AnimatedDie(props: AnimatedProps) {
+export function Animated(props: AnimatedProps) {
     const [die, setDie] = React.useState<number>(rollDie);
 
     React.useEffect(() => {
@@ -56,22 +56,27 @@ export function AnimatedDie(props: AnimatedProps) {
         if (reducedMotion === "prefers-reduced-motion") {
             return;
         }
-        const interval = setInterval(function() {
+        let interval: NodeJS.Timeout;
+        function roll() {
+            // Sometimes, it doesn't come out to a new roll
             setDie(rollDie());
-        }, 25 * 1000);
-        return () => clearInterval(interval);
-    }, []);
+            const delay = 1000 + (Math.random() * 1500);
+            interval = setTimeout(roll, delay);
+        }
+        roll();
+        return () => clearTimeout(interval);
+    }, [setDie]);
 
-    return <Die roll={die} {...props} />; // margin: 0
+    return <Die roll={die} {...props} />;
+}
+
+export function Spinner() {
+    return <Animated small />;
 }
 
 const StyledList = styled(UI.FlexRow)`
     /* Mobile: dice are 1/12 screen width. */
-    font-size: 7vw;
-
-    @media all and (min-width: 768px) {
-        font-size: 2.5rem;
-    }
+    font-size: clamp(1.5rem, 6.5vw, 2.5rem);
 `;
 
 const SmallStyledList = styled(UI.FlexRow)`

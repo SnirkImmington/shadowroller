@@ -1,4 +1,6 @@
 import { Parser, evaluate } from '.';
+import * as fcUtils from 'fc-utils.test';
+import * as exprGen from './expression.gen';
 
 function evalText(text: string): number {
     const parser = new Parser(text);
@@ -84,3 +86,11 @@ describeCases('Pemdas handling', [
     "2 * 1 + 3", 5,
     "1 * 3 + 1 * 3", 6,
 ]);
+
+describe('fast-check', function() {
+    fcUtils.property(
+        'does not evalutate to NaN',
+        exprGen.expression(),
+        e => !isNaN(evaluate(e))
+    );
+});

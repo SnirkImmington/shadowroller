@@ -4,30 +4,30 @@ import styled from 'styled-components/macro';
 import * as Player from 'player';
 import { RetryConnection, ConnectionCtx } from 'connection';
 
-type ButtonProps = {
-    expanded?: boolean
-};
-
-const StyledJoinButton = styled.button<ButtonProps>`
+const StyledJoinButton = styled.button`
     border: 3px solid white;
 
-    color: ${({expanded, theme}) => expanded ? theme.colors.background : theme.colors.text};
-    background: ${({expanded, theme}) => expanded ? theme.colors.text : theme.colors.background};
+    color: ${({ theme}) => theme.colors.highlight};
+    background: ${({ theme }) => theme.colors.background};
     border: 3px solid;
 
     font-size: 1rem;
     font-weight: 500;
     padding: 0.1em 0.5em;
     text-align: center;
+    text-decoration: none;
     cursor: pointer;
 
     &:enabled:hover {
-        filter: brightness(85%);
-        text-decoration: none;
+        filter: brightness(115%);
     }
 
     &:enabled:active {
-        filter: brightness(70%);
+        filter: brightness(95%);
+    }
+
+    &:focus {
+        filter: brightness(85%);
     }
 `;
 

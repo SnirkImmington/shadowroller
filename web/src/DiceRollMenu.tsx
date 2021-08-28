@@ -1,19 +1,23 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import NumericInput from 'NumericInput';
-import * as colorUtil from 'colorUtil';
+import * as Button from 'component/Button';
+import StatusText from 'connection/StatusText';
+import ShareOptions from 'share/Options';
+import NumericInput from 'component/NumericInput';
+import type { Colorable, Toggle as ToggleProps } from 'component/props';
+import * as Space from 'component/Space';
+import * as layout from 'layout';
 
 import * as Event from 'event';
 import * as Game from 'game';
 import * as Player from 'player';
 import * as Share from 'share';
 import { ConnectionCtx } from 'connection';
-import StatusText from 'connection/StatusText';
-import ShareOptions from 'share/Options';
 import * as routes from 'routes';
 import * as roll from 'roll';
 import * as srutil from 'srutil';
+import * as colorUtil from 'colorUtil';
 import * as icons from 'style/icon';
 
 export const ROLL_TITLE_FLAVOR: string[] = [
@@ -119,12 +123,123 @@ const RollButton = styled.button<{ bg: string }>`
     }
 `;
 
-const RollGlitchyLabel = styled.label`
-    padding: .5em;
-    @media all and (min-width: 768px) {
-        padding: 0;
-    }
-`;
+type InputProps = {
+    value: number | null,
+    onSelect: (value: number | null) => void,
+    text: string,
+    setText: srutil.Setter<string>,
+}
+
+function RollDiceInput(props: InputProps) {
+    const { value, onSelect, text, setText } = props;
+    return (
+        <UI.FlexRow formRow>
+            <label htmlFor="roll-select-dice">
+                Roll
+            </label>
+            <NumericInput id="roll-select-dice"
+                          min={1} max={99}
+                          value={value} onSelect={onSelect}
+                          text={text} setText={setText} />
+            <span>dice</span>
+            &nbsp;
+        </UI.FlexRow>
+    );
+}
+
+type TitleProps = {
+    title: string,
+    setTitle: srutil.Setter<string>,
+    flavor: string,
+}
+
+function RollTitleInput(props: TitleProps) {
+    const { title, setTitle, flavor } = props;
+    const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setTitle(e.target.value);
+    }, [setTitle]);
+
+    return (
+        <UI.FlexRow formRow>
+            <label htmlFor="roll-title">
+                to
+            </label>
+            <UI.Input id="roll-title" expand
+                      placeholder={flavor}
+                      onChange={onChange}
+                      value={title} />
+        </UI.FlexRow>
+    )
+}
+
+function PushLimitInput(props: ToggleProps) {
+    const { checked, setChecked, color } = props;
+    const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setChecked(e.target.checked);
+    }, [setChecked]);
+
+    return (
+        <UI.FlexRow formRow>
+        <UI.RadioLink id="roll-enable-edge"
+                      type="checkbox" light
+                      checked={checked}
+                      onChange={onChange}>
+            <UI.TextWithIcon color={color}>
+                <UI.FAIcon transform="grow-2" className="icon-inline"
+                           icon={icons.faBolt} />
+                Push the limit
+            </UI.TextWithIcon>
+        </UI.RadioLink>
+        </UI.FlexRow>
+    );
+}
+
+const GlitchyExplainLabel = styled.label({
+    padding: layout.Space.Small
+});
+
+type GlitchyToggleProps = Colorable & {
+    glitchy: number,
+    setGlitchy: srutil.Setter<number>,
+    onGlitchySelect: (value: number | null) => void,
+}
+
+function GlitchyInput(props: GlitchyToggleProps) {
+    const { color, glitchy, setGlitchy, onGlitchySelect } = props;
+    const onEnableChange = React.useCallback(
+        (_e: React.ChangeEvent<HTMLInputElement>) => {
+            setGlitchy(g => g === 0 ? 1 : 0);
+    }, [setGlitchy]);
+    return (
+        <UI.FlexRow inputRow maxWidth flexWrap>
+            <UI.RadioLink id="roll-use-glitchy"
+                          type="checkbox" light
+                          checked={glitchy !== 0}
+                          onChange={onEnableChange}>
+                <UI.TextWithIcon color={color}>
+                    <UI.FAIcon transform="grow-1" className="icon-inline"
+                               icon={icons.faSkullCrossbones} />
+                    Glitchy
+                </UI.TextWithIcon>
+            </UI.RadioLink>
+            {props.glitchy !== 0 &&
+                <NumericInput small id="roll-glitchiness"
+                              min={-99} max={99}
+                              placeholder={`${props.glitchy}`}
+                              onSelect={onGlitchySelect} />
+            }
+            {props.glitchy !== 0 &&
+                <GlitchyExplainLabel htmlFor="roll-glitchiness">
+                        {props.glitchy > 0 ? "Reduce " : "Increase "}
+                        number of 1s needed to glitch
+                        by {Math.abs(props.glitchy)}.
+                </GlitchyExplainLabel>
+            }
+        </UI.FlexRow>
+    );
+}
 
 export default function RollDicePrompt() {
     const connection = React.useContext(ConnectionCtx);
@@ -133,6 +248,7 @@ export default function RollDicePrompt() {
     const gameExists = Boolean(game);
     const dispatch = React.useContext(Event.DispatchCtx);
     const theme = React.useContext(ThemeContext);
+    const color = colorUtil.playerColor(player?.hue, theme);
 
     const [shown, toggleShown] = srutil.useToggle(true);
     const [rollLoading, setRollLoading] = React.useState(false);
@@ -152,22 +268,6 @@ export default function RollDicePrompt() {
     );
 
     const rollBackgound = edge ? RollBackground.edgy : RollBackground.inGame;
-
-    function rollTitleChanged(event: React.ChangeEvent<HTMLInputElement>) {
-        setTitle(event.target.value || '');
-    }
-
-    const onEdgeClicked = React.useCallback(
-        (event) => setEdge(event.target.checked),
-        [setEdge]
-    );
-
-    const onGlitchyChanged = React.useCallback(
-        (_e: React.ChangeEvent<HTMLInputElement>) => {
-            setGlitchy(g => g === 0 ? 1 : 0);
-        },
-        [setGlitchy]
-    );
 
     const setRollGlitchy = React.useCallback(
         (g: number|null) => { g != null && setGlitchy(g); },
@@ -223,9 +323,9 @@ export default function RollDicePrompt() {
                     <UI.FAIcon icon={icons.faDice} />
                     Roll Dice
                 </UI.CardTitleText>
-                <UI.LinkButton minor onClick={toggleShown}>
+                <Button.Minor onClick={toggleShown}>
                     show
-                </UI.LinkButton>
+                </Button.Minor>
             </UI.FlexRow>
         );
     }
@@ -239,79 +339,31 @@ export default function RollDicePrompt() {
                     <UI.FAIcon icon={icons.faDice} />
                     Roll Dice
                 </UI.CardTitleText>
-                <UI.LinkButton minor onClick={toggleShown}>
+                <Button.Minor onClick={toggleShown}>
                     hide
-                </UI.LinkButton>
+                </Button.Minor>
             </UI.FlexRow>
             <form id="dice-input" onSubmit={onSubmit}>
-                <UI.ColumnToRow formRow floatRight>
-                    <UI.FlexRow formRow>
-                        <label htmlFor="roll-select-dice">
-                            Roll
-                        </label>
-                        <NumericInput id="roll-select-dice"
-                                      min={1} max={99}
-                                      text={diceText}
-                                      setText={setDiceText}
-                                      value={diceCount}
-                                      onSelect={setDiceCount} />
-                        <span>dice</span>
-                        &nbsp;
-                    </UI.FlexRow>
-                    <UI.FlexRow formRow>
-                        <label htmlFor="roll-title">
-                            to
-                        </label>
-                        <UI.Input id="roll-title" expand
-                                  placeholder={titleFlavor}
-                                  onChange={rollTitleChanged}
-                                  value={title} />
-                    </UI.FlexRow>
-                    <UI.FlexRow formRow formSpaced>
-                        <UI.RadioLink id="roll-enable-edge"
-                                      type="checkbox" light
-                                      checked={edge}
-                                      onChange={onEdgeClicked}>
-                            <UI.TextWithIcon color={colorUtil.playerColor(player?.hue, theme)}>
-                                <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faBolt} />
-                                Push the limit
-                            </UI.TextWithIcon>
-                        </UI.RadioLink>
-                    </UI.FlexRow>
-                </UI.ColumnToRow>
-                <UI.FlexRow formRow maxWidth>
-                    <UI.ColumnToRow rowCenter>
-                        <UI.FlexRow>
-                            <UI.RadioLink id="roll-use-glitchy"
-                                          type="checkbox" light
-                                          checked={glitchy !== 0}
-                                          onChange={onGlitchyChanged}>
-                                <UI.TextWithIcon color={colorUtil.playerColor(player?.hue, theme)}>
-                                    <UI.FAIcon transform="grow-1" className="icon-inline" icon={icons.faSkullCrossbones} />
-                                    Glitchy
-                                </UI.TextWithIcon>
-                            </UI.RadioLink>
-                            {glitchy !== 0 &&
-                                <NumericInput small id="roll-glitchiness"
-                                              min={-99} max={99}
-                                              placeholder={`${glitchy}`}
-                                              onSelect={setRollGlitchy} />
-                            }
-                        </UI.FlexRow>
-                        {glitchy !== 0 &&
-                            <RollGlitchyLabel htmlFor="roll-glitchiness">
-                                    {glitchy > 0 ? "Reduce " : "Increase "}
-                                    number of 1s needed to glitch
-                                    by {Math.abs(glitchy)}.
-                            </RollGlitchyLabel>
-                        }
-                    </UI.ColumnToRow>
+                <UI.FlexRow formRow maxWidth flexWrap>
+                    <RollDiceInput value={diceCount} onSelect={setDiceCount}
+                                   text={diceText} setText={setDiceText} />
+                    <RollTitleInput title={title} setTitle={setTitle}
+                                    flavor={titleFlavor} />
+                    <Space.FlexGrow />
+                    <PushLimitInput checked={edge} setChecked={setEdge}
+                                    color={color} />
                 </UI.FlexRow>
-                <UI.FlexRow spaced floatRight>
+                <UI.FlexRow formRow maxWidth>
+                    <GlitchyInput glitchy={glitchy} setGlitchy={setGlitchy}
+                                  onGlitchySelect={setRollGlitchy} color={color} />
+                </UI.FlexRow>
+                <UI.FlexRow formRow maxWidth flexWrap>
                     {gameExists &&
                         <ShareOptions prefix="roll-dice"
                                       state={share} onChange={setShare} />}
-                    <UI.FlexRow spaced>
+                    <Space.FlexGrow />
+                    <UI.FlexRow flexGrow spaced>
+                        <Space.FlexGrow />
                         {!connected &&
                             <StatusText connection={connection} />}
                         {gameExists && share !== Share.Mode.InGame &&

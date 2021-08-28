@@ -5,6 +5,7 @@ import type { Setter } from 'srutil';
 import styled from 'styled-components/macro';
 
 import * as UI from 'style';
+import Input from 'component/Input';
 import * as icons from 'style/icon';
 
 type RoundingMode = "up" | "down";
@@ -34,7 +35,7 @@ type ValueState =
 
 type InputProps = { small?: boolean, disabled?: boolean, id: string };
 
-const StyledInput = styled(UI.Input).attrs<InputProps>(
+const StyledInput = styled(Input).attrs<InputProps>(
     (props) => ({ "type": "tel", disabled: props.disabled, id: props.id })
 )<InputProps>`
     margin-left: 0;
@@ -79,12 +80,17 @@ const Parent = styled(UI.FlexRow)`
 `;
 
 const CalcBox = styled(Component)`
-    background: ${props => props.color ?? props.theme.colors.primary};
-    color: ${({ theme }) => theme.light.background};
+    background: ${props => props.color ?? props.theme.colors.background};
+    color: ${({ theme }) => theme.colors.secondary};
     width: calc(1.8em);
     padding: 0px;
     order: -1;
 `;
+
+const ResultBox = styled(Component)(({ theme }) => ({
+    background: theme.colors.outline,
+}));
+
 const ErrorBox = styled(Component)(
     props => ({
         color: props.theme.colors.background,
@@ -179,10 +185,10 @@ export default function NumericInput(props: Props) {
                />,
         <CalcBox key="calc">
             <span className="fa-layers">
-                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4" />
+                <UI.FAIcon icon={icons.faPlus}   transform="shrink-4 left-1" />
                 <UI.FAIcon icon={icons.faMinus}  transform="shrink-4 right-12" />
-                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 down-10" />
-                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 down-10 right-12" />
+                <UI.FAIcon icon={icons.faTimes}  transform="shrink-4 left-1   down-10" />
+                <UI.FAIcon icon={icons.faDivide} transform="shrink-4 right-12 down-10" />
             </span>
         </CalcBox>
     ];
@@ -204,9 +210,9 @@ export default function NumericInput(props: Props) {
     else if (state === "empty" || state[0] === "literal") { }
     else if (state[0] === "expr") {
         components.push(
-            <Component key="value">
-                {state[1]}
-            </Component>
+            <ResultBox key="value">
+                <b>{state[1]}</b>
+            </ResultBox>
         );
     }
     else if (state[0] === "error") {

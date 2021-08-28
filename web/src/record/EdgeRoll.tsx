@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as UI from 'style';
-import * as dice from 'Dice';
-import * as humanTime from 'HumanTime';
+import * as Text from 'component/Text';
+import * as dice from 'component/Dice';
+import * as humanTime from 'component/HumanTime';
 import * as icons from 'style/icon';
 import * as Roll from './RollComponents';
 
 import * as Event from 'event';
 import * as Share from 'share';
-import * as rollStats from 'rollStats';
+import * as rollStats from 'roll/stats';
 
 type Props = {
     event: Event.EdgeRoll,
@@ -21,11 +22,11 @@ function EdgeRollRecord({ event, playerID, hue, noActions }: Props, ref: React.R
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
-        <UI.PlayerColored hue={hue}>
+        <Text.Player hue={hue}>
                 {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
-            </UI.PlayerColored>
+            </Text.Player>
             &nbsp;
             <b>pushes the limit</b>
         </>
@@ -59,7 +60,7 @@ function EdgeRollRecord({ event, playerID, hue, noActions }: Props, ref: React.R
             <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
                 {event.edit &&
-                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                    <Text.Small>&nbsp;(edited)</Text.Small>}
                 {canModify &&
                     <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>

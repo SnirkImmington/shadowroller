@@ -1,4 +1,5 @@
 import * as Game from '.';
+import * as Player from 'player';
 
 /** mockDispatch produces a mocked Dispatch function and the actions that were dispatched. */
 export function mockDispatch(): [Game.Dispatch, Game.Action[]] {
@@ -8,7 +9,7 @@ export function mockDispatch(): [Game.Dispatch, Game.Action[]] {
 
 /** mockState produces a game "someGame" with two players. */
 export function mockState(): Game.Game {
-    let players = new Map<string, Game.PlayerInfo>();
+    let players = new Map<string, Player.Info>();
     players.set("player1ID", {
         id: "player1ID",
         name: "player1Name",
@@ -23,6 +24,7 @@ export function mockState(): Game.Game {
     });
     return {
         gameID: "someGame",
+        gms: [],
         players
     };
 }
@@ -30,22 +32,22 @@ export function mockState(): Game.Game {
 describe("reduce()", function() {
     it("handles joining a new game", function() {
         const action: Game.Action = {
-            ty: "join", gameID: "foo", players: new Map()
+            ty: "join", gameID: "foo", players: new Map(), gms: [],
         };
         const state = null;
         const result = Game.reduce(state, action);
         expect(result).not.toBeNull();
-        expect(result.gameID).toBe("foo");
+        expect(result!.gameID).toBe("foo");
     });
 
     it("handles joining an existing game", function() {
         const action: Game.Action = {
-            ty: "join", gameID: "bar", players: new Map()
+            ty: "join", gameID: "bar", players: new Map(), gms: []
         };
         const state = mockState();
         const result = Game.reduce(state, action);
         expect(result).not.toBeNull();
-        expect(result.gameID).toBe("bar");
+        expect(result!.gameID).toBe("bar");
     });
 
     it("handles leaving an existing game", function() {
@@ -54,7 +56,8 @@ describe("reduce()", function() {
         };
         const state: Game.State = {
             gameID: "foo",
-            players: new Map()
+            players: new Map(),
+            gms: []
         };
         const result = Game.reduce(state, action);
         expect(result).toBeNull();
@@ -72,7 +75,7 @@ describe("reduce()", function() {
         };
         const state = mockState();
         const result = Game.reduce(state, action);
-        const newPlayer = result.players.get("newPlayerID");
+        const newPlayer = result!.players.get("newPlayerID");
         expect(newPlayer).toEqual(action.player);
     });
 
@@ -83,7 +86,7 @@ describe("reduce()", function() {
         };
         const state = mockState();
         const result = Game.reduce(state, action);
-        const newPlayer = result.players.get("player1ID");
+        const newPlayer = result!.players.get("player1ID");
         expect(newPlayer).toBeFalsy();
     });
 
@@ -99,15 +102,15 @@ describe("reduce()", function() {
         const state = mockState();
         const result = Game.reduce(state, action);
         expect(result).not.toBeNull();
-        const player1 = result.players.get("player1ID");
+        const player1 = result!.players.get("player1ID");
         expect(player1).not.toBeNull();
-        expect(player1.name).toBe("not player 1 name");
-        expect(player1.hue).toBe(3);
-        expect(player1.online).toBe(false);
+        expect(player1!.name).toBe("not player 1 name");
+        expect(player1!.hue).toBe(3);
+        expect(player1!.online).toBe(false);
     });
 
     it("handles a set players", function() {
-        const newPlayers = new Map<string, Game.PlayerInfo>();
+        const newPlayers = new Map<string, Player.Info>();
         newPlayers.set("player4ID", {
             id: "player4ID",
             name: "player 4",
@@ -121,16 +124,16 @@ describe("reduce()", function() {
         const state = mockState();
         const result = Game.reduce(state, action);
         expect(result).not.toBeNull();
-        const player1 = result.players.get("player1ID");
+        const player1 = result!.players.get("player1ID");
         expect(player1).toBeFalsy();
-        const player4 = result.players.get("player4ID");
-        expect(player4.name).toBe("player 4");
+        const player4 = result!.players.get("player4ID");
+        expect(player4!.name).toBe("player 4");
     });
 
     it("ignores an invalid action", function() {
         const action = "This definitely isn't an action.";
         const state = mockState();
-        const result = Game.reduce(state, action);
+        const result = Game.reduce(state, action as any as Game.Action);
         expect(result).toBe(state);
     })
 });

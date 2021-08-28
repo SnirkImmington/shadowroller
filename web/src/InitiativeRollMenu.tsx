@@ -1,9 +1,12 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Button from 'component/Button';
 import * as icons from 'style/icon';
-import NumericInput from 'NumericInput';
-import * as colorUtil from 'colorUtil';
+import NumericInput from 'component/NumericInput';
+import { Toggle as ToggleProps } from 'component/props';
+import * as Space from 'component/Space';
+import Checkbox from 'component/Checkbox';
 
 import * as Game from 'game';
 import * as Event from 'event';
@@ -15,6 +18,7 @@ import ShareOptions from 'share/Options';
 import * as routes from 'routes';
 import * as roll from 'roll';
 import * as srutil from 'srutil';
+import * as colorUtil from 'colorUtil';
 
 const RollBackground = {
     inGame: `linear-gradient(180deg, #783442 0, #601010)`,
@@ -52,6 +56,108 @@ const RollButton = styled.button<{bg: string}>`
         filter: saturate(40%) brightness(85%);
     }
 `;
+
+type DiceInputPrompts = {
+    onBaseSelect: (value: number | null) => void,
+    baseText: string,
+    setBaseText: srutil.Setter<string>,
+
+    blitzed: boolean,
+    onDiceSelect: (value: number | null) => void,
+    diceText: string,
+    setDiceText: srutil.Setter<string>,
+}
+
+function DiceInput(props: DiceInputPrompts) {
+    const {
+        onBaseSelect, baseText, setBaseText,
+        blitzed, onDiceSelect, diceText, setDiceText,
+    } = props;
+    return (
+        <UI.FlexRow formRow>
+            <label htmlFor="roll-initiative-base">
+                Roll
+            </label>
+            <NumericInput small id="roll-initiative-base"
+                          min={-2} max={69}
+                          text={baseText} setText={setBaseText}
+                          onSelect={onBaseSelect} />
+            +
+            <NumericInput small id="roll-initiative-dice"
+                          min={1} max={5} placeholder="1"
+                          text={blitzed ? "5" : diceText} setText={setDiceText}
+                          disabled={blitzed}
+                          onSelect={onDiceSelect} />
+            <label htmlFor="roll-initiative-dice">
+                d6
+            </label>
+            &nbsp;
+        </UI.FlexRow>
+    );
+}
+
+const StyledMessageInput = styled(UI.Input)({
+    maxWidth: "10.89em"
+});
+
+type MessageProps = {
+    title: string,
+    setTitle: srutil.Setter<string>,
+}
+
+function MessageInput(props: MessageProps) {
+    const { title, setTitle } = props;
+    const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTitle(e.target.value);
+    }, [setTitle]);
+    return (
+        <UI.FlexRow formRow>
+            <label htmlFor="roll-initiative-title">
+            for
+            </label>
+            <StyledMessageInput id="roll-initiative-title"
+                                placeholder="initiative"
+                                onChange={onChange}
+                                value={title} />
+        </UI.FlexRow>
+    );
+}
+
+function BlitzToggle(props: ToggleProps) {
+    const { checked, setChecked, color } = props;
+    const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setChecked(e.target.checked);
+        }, [setChecked]);
+    return (
+            <Checkbox id="roll-initiative-blitz"
+                      checked={checked} onChange={onChange}>
+                <UI.TextWithIcon color={color}>
+                    <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faBolt} />
+                    Blitz
+                </UI.TextWithIcon>
+            </Checkbox>
+    );
+}
+
+function SeizeToggle(props: ToggleProps) {
+    const { checked, setChecked, color } = props;
+    const onChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setChecked(e.target.checked);
+        }, [setChecked]);
+    return (
+        <Checkbox id="roll-initiative-seize-the-initiative"
+                      checked={checked} onChange={onChange}>
+            <UI.TextWithIcon color={color}>
+                <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faSortAmountUp} />
+                Seize the initiative
+            </UI.TextWithIcon>
+        </Checkbox>
+    );
+}
+
 export default function RollInitiativePrompt() {
     const connection = React.useContext(ConnectionCtx);
     const game = React.useContext(Game.Ctx);
@@ -67,50 +173,41 @@ export default function RollInitiativePrompt() {
     const [base, setBase] = React.useState<number|null>();
     const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [dice, setDice] = React.useState<number>(1);
+    const [dice, setDice] = React.useState<number|null>(1);
     const [diceText, setDiceText] = React.useState("");
     const [blitzed, setBlitzed] = React.useState(false);
-    const [seized, setSeized] = React.useState(false)
+    const [seized, setSeized] = React.useState(false);
 
-    const connected = connection === "connected";
-    const rollDisabled = (
-        dice < 1 || dice > 5
-        || base == null || base < -2 || base > 69
-        || loading || (gameExists && !connected)
-    );
-
-    const titleChanged = React.useCallback((e) => {
-        setTitle(e.target.value);
-    }, [setTitle]);
-    const baseChanged = React.useCallback((value: number | null) => {
-        setBase((prev) => value ?? prev);
-    }, [setBase]);
-    const diceChanged = React.useCallback((value: number | null) => {
-        setDice((prev) => value ?? prev);
-    }, [setDice]);
-    const blitzedChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.checked;
-        if (value) {
-            setSeized(false);
-        }
-        setBlitzed(value);
-    }, [setBlitzed, setSeized]);
-    const seizedChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.checked;
+    const exclusiveSetSeized = React.useCallback((value) => {
         if (value) {
             setBlitzed(false);
         }
         setSeized(value);
+    }, [setBlitzed, setSeized]);
+
+    const exclusiveSetBlitzed = React.useCallback((value) => {
+        if (value) {
+            setSeized(false);
+        }
+        setBlitzed(value);
     }, [setSeized, setBlitzed]);
 
-    const rollClicked = React.useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const connected = connection === "connected";
+    const rollDisabled = (
+        dice == null || dice < 1 || dice > 5
+        || base == null || base < -2 || base > 69
+        || loading || (gameExists && !connected)
+    );
+    const color = colorUtil.playerColor(player?.hue, theme);
+
+    const onSubmit = React.useCallback((e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (rollDisabled) {
             return;
         }
 
         if (!gameExists) {
-            const initiativeDice = roll.dice(blitzed ? 5 : dice);
+            const initiativeDice = roll.dice(blitzed ? 5 : dice!);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
                 base: base ?? 0, dice: initiativeDice, title, seized, blitzed,
@@ -121,7 +218,7 @@ export default function RollInitiativePrompt() {
         else {
             setLoading(true);
             routes.game.rollInitiative({
-                base: base ?? 0, dice: blitzed ? 5 : dice, title, share, seized, blitzed,
+                base: base ?? 0, dice: blitzed ? 5 : dice!, title, share, seized, blitzed,
             }).onDone((res, full) => {
                 setLoading(false);
                 if (!res && process.env.NODE_ENV !== "production") {
@@ -133,15 +230,15 @@ export default function RollInitiativePrompt() {
 
     if (!shown) {
         return (
-                <UI.FlexRow maxWidth floatRight>
-                    <UI.CardTitleText color={theme.colors.primary}>
-                        <UI.FAIcon icon={icons.faClipboardList} />
-                        Initiative
-                    </UI.CardTitleText>
-                    <UI.LinkButton minor onClick={toggleShown}>
-                        show
-                    </UI.LinkButton>
-                </UI.FlexRow>
+            <UI.FlexRow maxWidth floatRight>
+                <UI.CardTitleText color={theme.colors.primary}>
+                    <UI.FAIcon icon={icons.faClipboardList} />
+                    Initiative
+                </UI.CardTitleText>
+                <Button.Minor onClick={toggleShown}>
+                    show
+                </Button.Minor>
+            </UI.FlexRow>
         );
     }
 
@@ -152,66 +249,39 @@ export default function RollInitiativePrompt() {
                     <UI.FAIcon icon={icons.faClipboardList} />
                     Initiative
                 </UI.CardTitleText>
-                <UI.LinkButton minor onClick={toggleShown}>
+                <Button.Minor onClick={toggleShown}>
                     hide
-                </UI.LinkButton>
+                </Button.Minor>
             </UI.FlexRow>
-            <form id="roll-initiative">
-                <UI.ColumnToRow formRow>
-                    <UI.FlexRow formRow>
-                        <label htmlFor="roll-initiative-base">
-                            Roll
-                        </label>
-                        <NumericInput small id="roll-initiative-base"
-                                      min={-2} max={69}
-                                      text={baseText} setText={setBaseText}
-                                      onSelect={baseChanged} />
-                        +
-                        <NumericInput small id="roll-initiative-dice"
-                                      min={1} max={5} placeholder="1"
-                                      text={blitzed ? "5" : diceText} setText={setDiceText}
-                                      disabled={blitzed}
-                                      onSelect={diceChanged} />
-                        <label htmlFor="roll-initiative-dice">
-                            d6
-                        </label>
-                        &nbsp;
+            <form id="roll-initiative" onSubmit={onSubmit}>
+                <UI.FlexRow formRow flexWrap>
+                    <DiceInput baseText={baseText} setBaseText={setBaseText}
+                               onBaseSelect={setBase} blitzed={blitzed}
+                               diceText={diceText} setDiceText={setDiceText}
+                               onDiceSelect={setDice} />
+                    <MessageInput title={title} setTitle={setTitle} />
+                    <Space.FlexGrow />
+                    <UI.FlexRow formSpaced formRow flexWrap>
+                        <BlitzToggle checked={blitzed} setChecked={exclusiveSetBlitzed}
+                                     color={color} />
+                        <SeizeToggle checked={seized} setChecked={exclusiveSetSeized}
+                                     color={color} />
                     </UI.FlexRow>
-                    <UI.FlexRow maxWidth formRow>
-                        for
-                        <UI.Input id="roll-initiative-title"
-                                  placeholder="initiative"
-                                  onChange={titleChanged}
-                                  value={title} />
-                    </UI.FlexRow>
-                    <UI.FlexRow formRow formSpaced>
-                        <UI.RadioLink id="roll-initiative-blitz" type="checkbox" light
-                                      checked={blitzed} onChange={blitzedChanged}>
-                            <UI.TextWithIcon color={colorUtil.playerColor(player?.hue, theme)}>
-                                <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faBolt} />
-                                Blitz
-                            </UI.TextWithIcon>
-                        </UI.RadioLink>
-                        <UI.RadioLink id="roll-initiative-seize-the-initiative" type="checkbox" light
-                                      checked={seized} onChange={seizedChanged}>
-                            <UI.TextWithIcon color={colorUtil.playerColor(player?.hue, theme)}>
-                                <UI.FAIcon transform="grow-2" className="icon-inline" icon={icons.faSortAmountUp} />
-                                Seize the initiative
-                            </UI.TextWithIcon>
-                        </UI.RadioLink>
-                    </UI.FlexRow>
-                </UI.ColumnToRow>
-                <UI.FlexRow spaced floatRight>
+                </UI.FlexRow>
+                <UI.FlexRow maxWidth formRow flexWrap>
                     {gameExists &&
                         <ShareOptions prefix="roll-initiative"
                                           state={share} onChange={setShare} />}
-                    <UI.FlexRow spaced>
-                        {!connected && <StatusText connection={connection} />}
+                    <Space.FlexGrow />
+                    <UI.FlexRow flexGrow spaced>
+                        <Space.FlexGrow />
+                        {!connected &&
+                            <StatusText connection={connection} />}
                         {gameExists && share !== Share.Mode.InGame &&
                             <UI.FAIcon color={theme.colors.highlight} icon={Share.icon(share)} className="icon-roll" transform="grow-4" />}
                         <RollButton id="roll-initiative-submit" type="submit"
                                     bg={RollBackground.inGame}
-                                    disabled={Boolean(rollDisabled)} onClick={rollClicked}>
+                                    disabled={Boolean(rollDisabled)}>
                             Initiative
                         </RollButton>
                     </UI.FlexRow>

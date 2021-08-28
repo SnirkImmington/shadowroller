@@ -1,8 +1,8 @@
 import * as fc from 'fast-check';
 
 /** Run an fc.assert test using the given generator, validator, and other params. */
-export function property<T>(title: string, arbitrary: fc.Arbitrary<T>, handler: (T) => boolean|void, params?: fc.Parameters<T>): void {
-    it(`${title} via fc`, function() {
+export function property<T>(title: string, arbitrary: fc.Arbitrary<T>, handler: (v: T) => boolean|void, params?: fc.Parameters<[T]>): void {
+    it(`fast-check it ${title}`, function() {
         fc.assert(fc.property(arbitrary, handler), params);
     });
 }
@@ -17,16 +17,16 @@ export function fewerRuns<T>(): fc.Parameters<T> {
 /** Returns an array of up to 10 trimmed strings of length 1-6.
     Names do not include spaces so as to enable `getByText()`. */
 export function playerNames(): fc.Arbitrary<string[]> {
-    return fc.array(fc.string({ minLength: 1, maxLength: 6 }).filter(s => !s.includes(" ")), 10);
+    return fc.array(fc.string({ minLength: 1, maxLength: 6 }).filter(s => !s.includes(" ")), { maxLength: 10});
 }
 
 describe("playerNames()", function() {
     property("doesn't produce an empty string", playerNames(),
-        names => names.every(n => n !== ""), fewerRuns()
+        (names: string[]) => names.every(n => n !== ""), fewerRuns()
     );
     property(
         "doesn't produce an untrimmed string",
-        playerNames(), names => names.every(n => n === n.trim()),
+        playerNames(), (names: string[]) => names.every(n => n === n.trim()),
         fewerRuns()
     );
 });

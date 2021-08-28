@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Text from 'component/Text';
+import * as Button from 'component/Button';
 import * as icons from 'style/icon';
-import * as dice from 'Dice';
-import * as humanTime from 'HumanTime';
+import * as dice from 'component/Dice';
+import * as humanTime from 'component/HumanTime';
 import * as Roll from './RollComponents';
 
 import type { Connection } from 'connection';
@@ -34,10 +36,10 @@ function LocalActionsRow({ event }: ActionProps) {
     return (
         <UI.FlexRow spaced>
             {canSeize &&
-                <UI.LinkButton minor onClick={onSeize}>
-                    <UI.FAIcon icon={icons.faSortAmountUp} />
+                <Button.Minor onClick={onSeize}>
+                    <Button.Icon icon={icons.faSortAmountUp} />
                     seize the initiative
-                </UI.LinkButton>
+                </Button.Minor>
             }
         </UI.FlexRow>
     );
@@ -62,16 +64,16 @@ function GameActionsRow({ event }: ActionProps) {
     return (
         <UI.FlexRow spaced>
             {event.source !== "local" && event.source.share === Share.Mode.GMs &&
-                <UI.LinkButton minor disabled={connection === "connecting"} onClick={onReveal}>
-                    <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
+                <Button.Minor disabled={connection === "connecting"} onClick={onReveal}>
+                    <Button.Icon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
-                </UI.LinkButton>
+                </Button.Minor>
             }
             {canSeize &&
-                <UI.LinkButton minor disabled={connection === "connecting"} onClick={onSeize}>
-                    <UI.FAIcon icon={icons.faSortAmountUp} />
+                <Button.Minor disabled={connection === "connecting"} onClick={onSeize}>
+                    <Button.Icon icon={icons.faSortAmountUp} />
                     seize the initiative
-                </UI.LinkButton>
+                </Button.Minor>
             }
         </UI.FlexRow>
     );
@@ -93,11 +95,11 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
-            <UI.PlayerColored hue={hue}>
+            <Text.Player hue={hue}>
                 {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
-            </UI.PlayerColored>
+            </Text.Player>
             &nbsp;{action}
         </>
     ) : (
@@ -139,7 +141,7 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
             <UI.FlexRow formRow={canModify} floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
                 {event.edit &&
-                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                    <Text.Small>&nbsp;(edited)</Text.Small>}
                 {canModify && (
                     event.source === "local" ?
                         <LocalActionsRow event={event} />

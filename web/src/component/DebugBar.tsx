@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import * as UI from 'style';
+import * as Button from 'component/Button';
 
 import * as server from 'server';
 import * as Game from 'game';
@@ -26,7 +27,7 @@ const StyledBar = styled(UI.FlexColumn).attrs(
     }
 `;
 
-const Group = styled(UI.ColumnToRow).attrs(() => ({
+const Group = styled(UI.FlexRow).attrs(() => ({
     maxWidth: true, flexWrap: true,
 }))`
     @media all and (min-width: 768px) {
@@ -97,10 +98,10 @@ export default function DebugBar() {
                     {player ? `Logged in as ${player.name}` : "offline"}
                 </Item>
                 <Item align="end">
-                    <UI.LinkButton light onClick={playersClicked}>
+                    <Button.Main onClick={playersClicked}>
                         <b>Players:</b>
                         <tt>{JSON.stringify(players)}</tt>
-                    </UI.LinkButton>
+                    </Button.Main>
                 </Item>
             </Group>
         </StyledBar>

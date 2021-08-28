@@ -1,12 +1,30 @@
 @import-normalize;
 
 html {
+    --space-tiny: 0.25rem;
+    --space-small: 0.5rem;
+    --space-med: 1rem;
+    --space-large: 2rem;
+
+    --breakpoint-mobile: 30rem;
+    --breakpoint-leftcondensed: 62rem;
+    --breakpoint-wide: 72rem;
+    --breakpoint-max: 98rem;
+
+    --font-size-small: 0.75rem;
+    --font-size-reg: 1rem;
+    --font-size-em: 1.25rem;
+    --font-size-title: 1.5rem;
+
+    --font-sans-serif: sans-serif;
+    --font-monospace: "Source code Pro", Menlo, Calibri, monospace;
+
     font-size: 1rem;
+    border-radius: 0;
 }
-@media all and (min-width: 768px) {
-    html {
-        font-size: 1rem;
-    }
+
+h1, h2, h3, h4 {
+    margin: 0;
 }
 
 /* Prevent focus online on non-focusable elements. */
@@ -22,17 +40,13 @@ html {
     display: flex;
     flex-direction: column;
 
-    font-family: sans-serif; /* source-sans-pro */
+    font-family: var(--font-sans-serif); /* source-sans-pro */
     line-height: 1;
     overflow: hidden; /* No more flickering scrollbars. Hopefully doesn't hide any issues. */
 }
 
 tt {
-    font-family: "Source Code Pro", monospace;
-}
-
-input {
-    border-radius: 0;
+    font-family: var(--font-monospace);
 }
 
 body {
@@ -61,7 +75,6 @@ p {
 
 .scrollable::-webkit-scrollbar-thumb {
     background-color: var(--scroll-color);
-    border-radius: 0;
     border: 0 solid;
 }
 

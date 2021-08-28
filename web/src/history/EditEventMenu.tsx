@@ -1,7 +1,10 @@
 import * as React from 'react';
+import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
-import { ThemeContext } from 'styled-components/macro';
-import NumericInput from 'NumericInput';
+import * as Button from 'component/Button';
+import * as Space from 'component/Space';
+import * as layout from 'layout';
+import NumericInput from 'component/NumericInput';
 import EventRecord from 'history/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
@@ -10,6 +13,17 @@ import * as Player from 'player';
 import * as routes from 'routes';
 import * as icons from 'style/icon';
 import * as srutil from 'srutil';
+
+const MenuPadding = styled.div({
+    padding: `0 ${layout.Space.Small} 0.75rem ${layout.Space.Small}`,
+    [layout.Media.Columns]: {
+        padding: `0 ${layout.Space.Small} 0.75rem 0`,
+    }
+});
+
+const WrappingText = styled.span({
+    whiteSpace: "normal"
+});
 
 type Props = {
     event: Event.DiceEvent,
@@ -83,13 +97,16 @@ export default function EditEventMenu({ event }: Props) {
     }
 
     return (
-        <UI.Card padRight bottomGap color={theme.colors.primary}>
+        <MenuPadding>
+        <UI.Card color={theme.colors.primary}>
             <UI.FlexRow maxWidth floatRight>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faPen} />
-                    Edit {event.title ? `"${event.title}"` : Event.titleOf(event)}
+                    Edit <WrappingText>
+                        {event.title ? `"${event.title}"` : Event.titleOf(event)}
+                    </WrappingText>
                 </UI.CardTitleText>
-                <UI.LinkButton minor onClick={cancelEdit}>close</UI.LinkButton>
+                <Button.Minor onClick={cancelEdit}>close</Button.Minor>
             </UI.FlexRow>
             <form id="edit-roll-form" onSubmit={onSubmit}>
                 <UI.FlexColumn>
@@ -99,7 +116,7 @@ export default function EditEventMenu({ event }: Props) {
                                      hue={player?.hue}
                                      event={{ ...event, title, glitchy }} />
                     </UI.FlexRow>
-                    <UI.ColumnToRow>
+                    <UI.FlexRow flexWrap>
                         <UI.FlexRow formRow>
                             Roll to
                             <UI.Input id="edit-set-title"
@@ -119,13 +136,13 @@ export default function EditEventMenu({ event }: Props) {
                             Dice pool
                             <NumericInput id="edit-event-dice-pool" max={99} min={1}
                                           placeholder="9" onSelect={setNewPool} />
-                            <UI.LinkButton>-2</UI.LinkButton>
-                            <UI.LinkButton>-1</UI.LinkButton>
-                            <UI.LinkButton>+1</UI.LinkButton>
-                            <UI.LinkButton>+2</UI.LinkButton>
+                            <Button.Main>-2</Button.Main>
+                            <Button.Main>-1</Button.Main>
+                            <Button.Main>+1</Button.Main>
+                            <Button.Main>+2</Button.Main>
                         </UI.FlexRow>
                 */}
-                    </UI.ColumnToRow>
+                    </UI.FlexRow>
                 {/*
                     <UI.FlexRow formRow>
                         <i>
@@ -134,31 +151,32 @@ export default function EditEventMenu({ event }: Props) {
                     </UI.FlexRow>
                 */}
                     <UI.FlexRow spaced>
-                        <UI.LinkButton onClick={() => setDeletePrompt(p => !p)}>
+                        <Button.Main onClick={() => setDeletePrompt(p => !p)}>
                             delete
-                        </UI.LinkButton>
+                        </Button.Main>
                         {deletePrompt && (
                             <UI.FlexRow>
                                 <i>You sure?</i>&nbsp;
-                                <UI.LinkButton onClick={deleteEvent}>
+                                <Button.Main onClick={deleteEvent}>
                                     [ yes ]
-                                </UI.LinkButton>
+                                </Button.Main>
                                 &nbsp;/&nbsp;
-                                <UI.LinkButton onClick={() => setDeletePrompt(false)}>
+                                <Button.Main onClick={() => setDeletePrompt(false)}>
                                     no
-                                </UI.LinkButton>
+                                </Button.Main>
                             </UI.FlexRow>
                         )}
-                        <span style={{flexGrow: 1}} />
-                        <UI.LinkButton type="submit" disabled={!canUpdate}>
+                        <Space.FlexGrow />
+                        <Button.Main type="submit" disabled={!canUpdate}>
                             update
-                        </UI.LinkButton>
-                        <UI.LinkButton minor onClick={cancelEdit}>
+                        </Button.Main>
+                        <Button.Minor onClick={cancelEdit}>
                             cancel
-                        </UI.LinkButton>
+                        </Button.Minor>
                     </UI.FlexRow>
                 </UI.FlexColumn>
             </form>
         </UI.Card>
-    )
+        </MenuPadding>
+    );
 }

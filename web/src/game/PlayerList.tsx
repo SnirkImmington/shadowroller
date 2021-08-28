@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Text from 'component/Text';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
@@ -45,9 +46,9 @@ export function PlayerName({ player, isGM }: PlayerNameProps) {
                     <OnlineIcon color={theme.colors.indicatorOnline} className="sr-icon-svg" />
                     : <OfflineIcon color={theme.colors.neutral} className="sr-icon-svg" />
             }
-            <UI.PlayerColored hue={player.hue}>
+            <Text.Player hue={player.hue}>
                 {player.name}
-            </UI.PlayerColored>
+            </Text.Player>
             {isGM && <GMIcon />}
         </UI.FlexRow>
     );
