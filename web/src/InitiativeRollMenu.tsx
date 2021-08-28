@@ -6,7 +6,6 @@ import * as icons from 'style/icon';
 import NumericInput from 'component/NumericInput';
 import { Toggle as ToggleProps } from 'component/props';
 import * as Space from 'component/Space';
-import Radiobox from 'component/Radiobox';
 import Checkbox from 'component/Checkbox';
 
 import * as Game from 'game';
