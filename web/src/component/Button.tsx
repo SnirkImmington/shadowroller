@@ -1,76 +1,58 @@
-import * as React from 'react';
-import styled, { CSSObject } from 'styled-components/macro';
-//import * as styledSystem from 'styled-system';
-import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
+import styled from 'styled-components/macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-/** CSS properties to set cursor to pointer. */
-const hasPointer: CSSObject = {
-    userSelect: "none",
-    cursor: "pointer"
+import * as layout from 'layout';
+import * as styles from 'component/styling';
+
+/** Button.Icon is an icon which is spaced to work as the first element in a button. */
+export const Icon = styled(FontAwesomeIcon)({
+    marginRight: "0.15em",
+    height: "0.8em",
+    width: "0.8em",
+});
+
+export type Props = {
+    padBottom?: boolean,
 }
 
-const StyledButton = styled.button(props => ({
+/** Button.Main is a button which is styled like a link. */
+export const Main = styled.button<Props>(({ padBottom, theme }) => ({
     display: "inline",
 
     fontWeight: "bold",
-    fontSize: props.theme.fontSizes.reg,
+    color: theme.colors.light,
+    fontSize: layout.FontSize.Regular,
     lineHeight: 1,
-    ...hasPointer,
-    color: props.theme.colors.primary,
-    backgroundColor: "transparent",
+    whiteSpace: "pre",
+    ...styles.userPointer,
 
+    backgroundColor: "transparent",
     border: 0,
     outline: 0,
     padding: "2px",
-    borderBottom: `2px solid ${props.theme.colors.primary}`,
-    whiteSpace: "pre",
+    textDecoration: "underline 2px",
 
+    paddingBottom: padBottom ? "0.25rem" : "0",
+
+    ":enabled:hover": {
+        filter: "brightness(115%)",
+    },
     ":enabled:active": {
-        filter: "brightness(85%)"
+        filter: "brightness(80%)"
     },
     ":focus": {
         filter: "brightness(85%)"
     },
 
     ":disabled": {
-        cursor: "not-allowed !important",
-        borderBottom: "2px solid transparent",
-        color: props.theme.colors.neutral,
-    },
-    ":enabled:hover": {
-        filter: "brightness(125%)",
-    },
-
-    "& > svg:first-child": {
-        marginRight: props.theme.space.tiny,
-        height: "0.8em",
-        width: "0.8em"
+        cursor: "not-allowed",
+        textDecoration: "none",
+        color: theme.colors.neutral,
     },
 }));
 
-export const ButtonIcon = styled(FontAwesomeIcon)(props => ({
-    marginRight: props.theme.space.small,
-    height: "0.8em",
-    width: "0.8em",
+/** Button.Minor is a button which is rendered in a subdued way. */
+export const Minor = styled(Main)(({ theme }) => ({
+    textDecoration: "none",
+    color: theme.colors.secondary,
 }));
-
-export const MinorButton = styled(StyledButton)(props => ({
-    color: props.theme.colors.secondary
-}));
-
-export type ButtonProps = {
-    icon?: IconDefinition,
-    children?: React.ReactChildren,
-};
-export function Button(props: ButtonProps) {
-    if (props.icon) {
-        return (
-            <StyledButton>
-                <ButtonIcon icon={props.icon} />
-                {props.children}
-            </StyledButton>
-        );
-    }
-    return <StyledButton>{props.children}</StyledButton>
-}

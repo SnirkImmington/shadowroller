@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as UI from 'style';
+import * as Text from 'component/Text';
 import * as dice from 'component/Dice';
 import * as humanTime from 'component/HumanTime';
 import * as icons from 'style/icon';
@@ -21,11 +22,11 @@ function RerollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
-            <UI.PlayerColored hue={hue}>
+            <Text.Player hue={hue}>
                 {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
-            </UI.PlayerColored>
+            </Text.Player>
             &nbsp;
             <b>rerolls failures</b>
         </>
@@ -57,7 +58,7 @@ function RerollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref
             <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
                 {event.edit &&
-                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                    <Text.Small>&nbsp;(edited)</Text.Small>}
                 {canModify &&
                     <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>

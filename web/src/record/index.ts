@@ -12,7 +12,7 @@ type RecordProps = {
 };
 
 // Spacing between event records
-const GUTTER_SIZE = 4;
+const GUTTER_SIZE = 8;
 
 export const StyledRecord = React.memo(styled.div.attrs<RecordProps>(
     props => {
@@ -28,7 +28,7 @@ export const StyledRecord = React.memo(styled.div.attrs<RecordProps>(
         }
         return { style };
 })<RecordProps>`
-    padding: 2px 2px 4px 6px;
+    padding: 0px 4px ${GUTTER_SIZE}px 4px;
     border-left: 5px solid ${({hue, theme}) => colorUtil.playerColor(hue, theme)};
     line-height: 1;
 `);

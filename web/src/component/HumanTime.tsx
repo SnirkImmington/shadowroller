@@ -1,4 +1,4 @@
-import * as UI from 'style';
+import * as Text from 'component/Text';
 
 const MINUTE = 60;
 const HOUR = MINUTE * 60;
@@ -36,10 +36,10 @@ export function since(ts: Date, now: Date = new Date()): string {
 export function Since({ date }: { date: Date }) {
     const dateText = since(date);
     return (
-        <UI.SmallText>
+        <Text.Small>
             {dateText ?
                 <time dateTime={date.toISOString()}>{dateText}</time>
                 : "At some point"}
-        </UI.SmallText>
+        </Text.Small>
     );
 }

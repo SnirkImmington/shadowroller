@@ -1,48 +1,5 @@
 export * from "./state";
 
-const space: any = [0, "0.25rem", "0.5rem", "1rem", "2rem"];
-space.tiny = space[1];
-space.small = space[2];
-space.medium = space[3];
-space.large = space[4];
-
-export type SpaceScale = typeof space;
-
-const breakpoints: any = [0, "30rem", `${30 + 32}rem`, `${42 + 32}rem`, `${56 + 42}rem`];
-breakpoints.mobile = breakpoints[1];
-breakpoints.leftCondensed = breakpoints[1];
-breakpoints.condensed = breakpoints[2];
-breakpoints.wide = breakpoints[3];
-breakpoints.leftWide = breakpoints[3];
-
-export type BreakpointsScale = typeof breakpoints;
-
-const fontSizes: any = ["1rem", "1.25rem", "1.5rem", "2rem", "2.5rem", "4rem"];
-fontSizes.reg = fontSizes[0];
-fontSizes.em = fontSizes[1];
-fontSizes.title = fontSizes[2];
-fontSizes.header = fontSizes[3];
-fontSizes.dice = fontSizes[4];
-
-export type FontScale = typeof fontSizes;
-
-const fonts = {
-    monospace: '"Source code Pro", Menlo, Calibri, monospace',
-};
-
-export type Fonts = typeof fonts;
-
-const queries = {
-    mobile: `@media screen and (min-width: ${breakpoints.mobile})`,
-    condensed: `@media screen and (min-width: ${breakpoints.condensed})`,
-    wide: `@media screen and (min-width: ${breakpoints.wide})`,
-
-    leftCondensed: `@media screen and (min-width: ${breakpoints.leftCondensed})`,
-    leftWide: `@media screen and (min-width: ${breakpoints.leftWide})`,
-}
-
-export type MediaQueries = typeof queries;
-
 export type Colors = {
     mode: "light"|"dark",
     /** High contrast color to display text with. */
@@ -50,6 +7,7 @@ export type Colors = {
     textSecondary: string,
     /** Background color. */
     background: string,
+    backgroundSecondary: string,
     title: string,
 
     foregroundSaturation: number,
@@ -98,6 +56,7 @@ const light: Colors = {
     text: "#231f20", // "hsl(60, 75%, 3%)", // "#0e0e02",
     textSecondary: "hsl(60, 85%, 6%)",
     background: "hsl(0, 0%, 97%)", // "#ffffff", hsl(80, 80%, 56%)
+    backgroundSecondary: "hsl(180, 10, 90%)",
     title: "#85142c", // "#231f20",
 
     foregroundSaturation: 75,
@@ -109,7 +68,7 @@ const light: Colors = {
     secondary: "#783422", // hsl(13, 56%, 30%)
     light: "#c1172c", // "#c14b4e",
     neutral: "#4e4e62", // hsl(240, 11%, 35%)
-    highlight: "#9d9b64", // rgb(224, 221, 143), hsl(58, 57%, 72%)
+    highlight: "#9c9a63", // rgb(224, 221, 143), hsl(58, 57%, 72%)
     outline: "#9d9b64",
 
     dieSuccess: "#4d800e",
@@ -124,6 +83,7 @@ const dark: Colors = {
     text: "hsl(180, 90%, 97%)", // almost "#f0ffff",
     textSecondary: "hsl(180, 100%, 95%)",
     background: "hsl(235, 11%, 8%)", // "#141824",
+    backgroundSecondary: "hsl(200, 7%, 16%)",
     title: "#e0dd8f",
 
     foregroundSaturation: 90,
@@ -146,22 +106,12 @@ const dark: Colors = {
 }
 
 export type Theme = {
-    space: SpaceScale,
-    breakpoints: BreakpointsScale,
-    fontSizes: FontScale,
-    fonts: Fonts,
-    queries: MediaQueries,
     colors: Colors,
     light: Colors,
     dark: Colors
 }
 
 const theme: Theme = {
-    space,
-    breakpoints,
-    fontSizes,
-    fonts,
-    queries,
     colors: dark,
     light,
     dark,

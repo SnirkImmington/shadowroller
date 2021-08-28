@@ -1,6 +1,8 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Button from 'component/Button';
+import * as Text from 'component/Text';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
@@ -141,17 +143,17 @@ export default function JoinMenu({ hide }: Props) {
                     <UI.FAIcon icon={icons.faUsers} />
                     Join a game
                 </UI.CardTitleText>
-                <UI.LinkButton onClick={hide} minor>
+                <Button.Minor onClick={hide}>
                     hide
-                </UI.LinkButton>
+                </Button.Minor>
             </UI.FlexRow>
             <form id="join-game" onSubmit={onSubmit}>
                 <UI.FlexColumn>
-                    <UI.ColumnToRow formRow>
+                    <UI.FlexRow formRow flexWrap>
                         <i>Join a game if you've been given a Game ID.&nbsp;</i>
-                        <UI.Flavor warn={warn}>{flavor}</UI.Flavor>
-                    </UI.ColumnToRow>
-                    <UI.ColumnToRow maxWidth rowSpaced>
+                        <Text.Flavor warn={warn}>{flavor}</Text.Flavor>
+                    </UI.FlexRow>
+                    <UI.FlexRow flexWrap maxWidth spaced>
                         <UI.FlexRow formRow>
                             <UI.FAIcon icon={icons.faKey}
                                        color={theme.colors.secondary}
@@ -174,7 +176,7 @@ export default function JoinMenu({ hide }: Props) {
                                       value={username} onChange={onUsernameChange}
                                       disabled={loginConnection === "connecting"} />
                         </UI.FlexRow>
-                    </UI.ColumnToRow>
+                    </UI.FlexRow>
                     <UI.FlexRow formRow floatRight>
                         <CheckmarkOffset />
                         <UI.RadioLink type="checkbox" id="join-game-persist" light
@@ -184,12 +186,12 @@ export default function JoinMenu({ hide }: Props) {
                             {persistFlavor}
                         </UI.RadioLink>
                         <UI.FlexRow formRow spaced>
-                            <UI.LinkButton type="submit" disabled={!ready}>
+                            <Button.Main type="submit" disabled={!ready}>
                                 join game
-                            </UI.LinkButton>
-                            <UI.LinkButton minor onClick={hide}>
+                            </Button.Main>
+                            <Button.Minor onClick={hide}>
                                 cancel
-                            </UI.LinkButton>
+                            </Button.Minor>
                         </UI.FlexRow>
                     </UI.FlexRow>
                 </UI.FlexColumn>

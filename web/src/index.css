@@ -23,6 +23,10 @@ html {
     border-radius: 0;
 }
 
+h1, h2, h3, h4 {
+    margin: 0;
+}
+
 /* Prevent focus online on non-focusable elements. */
 /* Taken from bootstrap's reboot, which was taken from suitcss's base. */
 [tabindex="-1"]:focus {

@@ -11,6 +11,7 @@ export type FlexRowProps = {
     maxWidth?: boolean,
     flexWrap?: boolean,
     formRow?: boolean,
+    inputRow?: boolean,
     flexGrow?: boolean,
     justifyContent?: "flex-start"|"flex-end"|"center"|"space-between"|"space-around"|"space-evenly",
     floatRight?: boolean,
@@ -37,6 +38,10 @@ export const FlexRow = styled.div<FlexRowProps>`
     ${({formSpaced}) => formSpaced &&
         '& > * { margin-right: 1.25rem; } & > *:last-child { margin-right: inherit; }'
     }
+
+    ${({ inputRow }) => inputRow &&
+        'min-height: calc(1rem + 16px); align-items: center;'
+    }
 `;
 
 export type FlexColumnProps = {
@@ -61,32 +66,6 @@ export const FlexColumn = styled.div<FlexColumnProps>`
     }
 `;
 
-export type ColumnToRowProps = {
-    grow?: boolean,
-    formRow?: boolean,
-    rowCenter?: boolean,
-    maxWidth?: boolean,
-    floatRight?: boolean,
-    justifyContentRow?: "flex-start"|"flex-end"|"center"|"space-between"|"space-around"|"space-evenly",
-    rowSpaced?: boolean,
-}
-export const ColumnToRow = styled(FlexColumn)<ColumnToRowProps>`
-    ${({grow}) => grow && 'height: 100%;'}
-    ${props => props.formRow && 'margin-bottom: .5rem;'}
-    ${({theme}) => theme.queries.leftWide} {
-        flex-direction: row;
-        ${({ maxWidth }) => maxWidth && 'width: 100%;'}
-        ${props => props.rowCenter && 'align-items: center;'}
-        ${({ floatRight }) => floatRight &&
-            '& > *:last-child { margin-left: auto; }'
-        }
-        ${props => props.justifyContentRow && `justify-content: ${props.justifyContentRow};`}
-        ${({ rowSpaced }) => rowSpaced &&
-            '& > * { margin-right: .5rem; } & > *:last-child { margin-right: inherit; }'
-        }
-    }
-`;
-
 export const TextWithIcon = styled.div<{ color?: string }>`
     & > svg:first-child {
         color: ${({color, theme}) => color || theme.colors.dieOne};
@@ -96,11 +75,11 @@ export const TextWithIcon = styled.div<{ color?: string }>`
 
 export const CardTitleText  = styled.b<{ color: string}>`
     font-family: "Source Code Pro", monospace;
-    white-space: nowrap;
     color: ${({theme}) => theme.colors.primary};
     font-size: 1.3rem;
-    margin-left: 0.4em;
+    margin-left: 0.25em;
     line-height: 1.3em;
+    white-space: pre;
     & > svg:first-child {
         margin-right: 0.4em;
     }
@@ -108,35 +87,27 @@ export const CardTitleText  = styled.b<{ color: string}>`
 
 type CardTitleProps = {
     color: string,
-    padRight?: boolean
+    padded?: boolean
 };
 const CardTitle = styled(FlexRow)<CardTitleProps>`
-    margin: 0 0 .75rem 0;
-    ${({ padRight }) => padRight && 'margin-right: 0.5rem;'}
+    flex-wrap: "wrap";
+    margin-bottom: calc(.5rem + 2px);
+    ${({ padded }) => padded && 'margin: 0 0.5rem 0 0.5rem;'}
     border-bottom: 2px solid ${({theme}) => theme.colors.primary};
-`;
-
-const CardBodyPadding = styled(FlexColumn)`
-    padding: 0 .5rem;
-    width: 100%;
 `;
 
 interface CardProps {
     grow?: boolean,
-    padRight?: boolean,
+    padded?: boolean,
     bottomGap?: boolean,
-    unpadded?: boolean,
     color: string,
     children: React.ReactNode[] // Card wants specific children shape
 }
-export function Card({ color, unpadded, padRight, bottomGap, children, grow }: CardProps) {
-    const inner = unpadded ?
-        children.slice(1) :
-        (<CardBodyPadding>{children.slice(1)}</CardBodyPadding>);
+export function Card({ color, padded, bottomGap, children, grow }: CardProps) {
     return (
         <FlexColumn bottomGap={bottomGap} grow={grow}>
-            <CardTitle padRight={padRight} color={color}>{ children[0] }</CardTitle>
-            {inner}
+            <CardTitle padded={padded} color={color}>{ children[0] }</CardTitle>
+            {children.slice(1)}
         </FlexColumn>
     );
 }

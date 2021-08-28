@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Button from 'component/Button';
 import * as dice from 'component/Dice';
 import * as icons from 'style/icon';
 
@@ -113,14 +114,14 @@ function LocalActionsRow({ event, result }: Props) {
     return (
         <UI.FlexRow spaced>
             {canSecondChance(result) &&
-                <UI.LinkButton minor onClick={onSecondChance}>
-                    <UI.FAIcon icon={icons.faRedo} />
+                <Button.Minor onClick={onSecondChance}>
+                    <Button.Icon icon={icons.faRedo} />
                     second chance
-                </UI.LinkButton>
+                </Button.Minor>
             }
-            <UI.LinkButton minor onClick={onEdit}>
+            <Button.Minor onClick={onEdit}>
                 edit
-            </UI.LinkButton>
+            </Button.Minor>
         </UI.FlexRow>
     );
 }
@@ -147,22 +148,22 @@ function GameActionsRow({ event, result }: Props) {
     return (
         <UI.FlexRow spaced>
             {event.source !== "local" && event.source.share === Share.Mode.GMs &&
-                <UI.LinkButton minor disabled={connection === "connecting"}
+                <Button.Minor disabled={connection === "connecting"}
                                onClick={onReveal}>
-                    <UI.FAIcon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
+                    <Button.Icon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
                     {' reveal'}
-                </UI.LinkButton>
+                </Button.Minor>
             }
             {canSecondChance(result) &&
-                <UI.LinkButton minor disabled={connection === "connecting"}
+                <Button.Minor disabled={connection === "connecting"}
                                onClick={onSecondChance}>
-                    <UI.FAIcon icon={icons.faRedo} />
+                    <Button.Icon icon={icons.faRedo} />
                     second chance
-                </UI.LinkButton>
+                </Button.Minor>
             }
-            <UI.LinkButton minor onClick={onEdit}>
+            <Button.Minor onClick={onEdit}>
                 edit
-            </UI.LinkButton>
+            </Button.Minor>
         </UI.FlexRow>
     );
 };

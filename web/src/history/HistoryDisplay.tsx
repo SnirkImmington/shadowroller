@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styled, { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Text from 'component/Text';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
@@ -24,9 +25,11 @@ const GAME_EMPTY_FLAVOR = [
     "Be the first one to roll!",
 ];
 
-const HistoryFlavor = styled(UI.Flavor)`
+const HistoryFlavor = styled(Text.Flavor)`
     margin: 1em auto;
 `;
+
+const TitleSpace = styled.div({ height: "2px" });
 
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
@@ -60,16 +63,18 @@ export default function EventHistory() {
         {events.editing &&
             <EditEventMenu event={events.editing} />
         }
-        <UI.Card unpadded padRight grow color={theme.colors.primary}>
+        <UI.Card padded grow color={theme.colors.primary}>
             <UI.FlexRow maxWidth>
-                <UI.CardTitleText color={theme.colors.primary} style={{ marginRight: '0.5rem'}}>
+                <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={ game ? icons.faUsers : icons.faList} />
                     {title}
                     {events.historyFetch === "fetching" && "..."}
                 </UI.CardTitleText>
+                &nbsp;&nbsp;
                 {game && <PlayerList />}
             </UI.FlexRow>
             <UI.FlexColumn grow>
+                <TitleSpace />
                 {body}
             </UI.FlexColumn>
         </UI.Card>

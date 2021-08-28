@@ -1,5 +1,5 @@
 import { RetryConnection } from "connection";
-import * as UI from "style";
+import * as Dice from 'component/Dice';
 
 export default function StatusText({ connection }: { connection: RetryConnection }) {
     let text = "";
@@ -18,7 +18,7 @@ export default function StatusText({ connection }: { connection: RetryConnection
     if (text !== "") {
         return (
             <i>
-                <UI.DiceSpinner />
+                <Dice.Spinner />
                 {text}...
             </i>
         );

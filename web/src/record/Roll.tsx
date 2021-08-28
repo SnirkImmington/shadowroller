@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as UI from 'style';
+import * as Text from 'component/Text';
 import * as dice from 'component/Dice';
 import * as humanTime from 'component/HumanTime';
 import * as Roll from './RollComponents';
@@ -20,11 +21,11 @@ function RollRecordInner({ event, playerID, hue, noActions }: Props, ref: React.
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
-            <UI.PlayerColored hue={hue}>
+            <Text.Player hue={hue}>
                 {(event.source.share !== Share.Mode.InGame) &&
                     <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
-            </UI.PlayerColored>
+            </Text.Player>
             {` rolls`}
         </>
     ) : (
@@ -52,7 +53,7 @@ function RollRecordInner({ event, playerID, hue, noActions }: Props, ref: React.
             <UI.FlexRow floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
                 {event.edit &&
-                    <UI.SmallText>&nbsp;(edited)</UI.SmallText>}
+                    <Text.Small>&nbsp;(edited)</Text.Small>}
                 {canModify &&
                     <Roll.ActionsRow event={event} result={result} />}
             </UI.FlexRow>

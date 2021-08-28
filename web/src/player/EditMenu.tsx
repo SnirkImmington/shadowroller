@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
+import * as Button from 'component/Button';
+import * as Space from 'component/Space';
 import * as icons from 'style/icon';
 
 import * as Game from 'game';
@@ -122,42 +124,43 @@ export default function EditPlayerPanel({ hide }: Props) {
 
     return (
         <UI.Card color={theme.colors.primary}>
-            <UI.ColumnToRow maxWidth>
+            <UI.FlexRow maxWidth flexWrap>
                 <UI.CardTitleText color={theme.colors.primary}>
                     <UI.FAIcon icon={icons.faUserEdit} />
                     {player.name} in {game.gameID}
                     {isGM && <UI.FAIcon color={theme.colors.highlight} icon={icons.faChessQueen} className="icon-inline icon-gm" />}
                 </UI.CardTitleText>
-                <UI.FlexRow maxWidth spaced>
-                    <span style={{ flexGrow: 1 }} />
-                    <UI.LinkButton onClick={onLogout}>log out</UI.LinkButton>
-                    <UI.LinkButton onClick={toggleShowGames}>switch game</UI.LinkButton>
-                    <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
+                <Space.FlexGrow />
+                <UI.FlexRow flexGrow spaced>
+                    <Space.FlexGrow />
+                    <Button.Main onClick={onLogout}>log out</Button.Main>
+                    <Button.Main onClick={toggleShowGames}>switch game</Button.Main>
+                    <Button.Minor onClick={hide}>hide</Button.Minor>
                 </UI.FlexRow>
-            </UI.ColumnToRow>
+            </UI.FlexRow>
             <form id="player-settings" onSubmit={onSubmit}>
                 <UI.FlexColumn>
-                    {showGames && <UI.ColumnToRow maxWidth justifyContentRow="space-around">
+                    {showGames && <UI.FlexRow maxWidth justifyContent="space-around" flexWrap>
                         <UI.FlexRow formRow justifyContent="space-around">
                             Join
                             <UI.Input value={switchGame} placeholder={game.gameID}
                                       onChange={handleSwitchGame}
                                       disabled={!connected} />
-                            <UI.LinkButton disabled={switchDisabled} onClick={onSwitch}>
+                            <Button.Main disabled={switchDisabled} onClick={onSwitch}>
                                 switch
-                            </UI.LinkButton>
+                            </Button.Main>
                         </UI.FlexRow>
                         {switchResponse !== "ready" && switchResponse !== "success" &&
                             <UI.FlexRow maxWidth floatRight>
                                 {switchResponse}
                             </UI.FlexRow>
                         }
-                    </UI.ColumnToRow>}
+                    </UI.FlexRow>}
                     <UI.FlexRow formRow justifyContent="space-around">
                         <EventRecord noActions
                             playerID={player.id} hue={hue} event={exampleEvent} />
                     </UI.FlexRow>
-                    <UI.ColumnToRow>
+                    <UI.FlexRow flexWrap>
                         <UI.FlexRow formRow>
                             Name
                             <UI.Input value={name} placeholder={player.name}
@@ -171,7 +174,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                                          value={hue} onSelect={setHue}
                                          disabled={!connected} />
                         </UI.FlexRow>
-                    </UI.ColumnToRow>
+                    </UI.FlexRow>
                     <UI.FlexRow justifyContent="space-around">
                         Online indicator
                         <UI.FlexColumn>
@@ -198,13 +201,13 @@ export default function EditPlayerPanel({ hide }: Props) {
                     <UI.FlexRow spaced>
                         <StatusText connection={connection}/>
                         <span style={{flexGrow: 1}} />
-                        <UI.LinkButton type="submit" disabled={!changed || !connected || switchChanged}>
+                        <Button.Main disabled={!changed || !connected || switchChanged}>
                             update
-                        </UI.LinkButton>
-                        <UI.LinkButton minor onClick={hide}>close</UI.LinkButton>
+                        </Button.Main>
+                        <Button.Minor onClick={hide}>close</Button.Minor>
                     </UI.FlexRow>
                 </UI.FlexColumn>
             </form>
         </UI.Card>
-    )
+    );
 }
