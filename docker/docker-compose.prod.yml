@@ -17,13 +17,23 @@ services:
     ports:
       - "8080:8070" # local traefik console
   server:
+    restart: unless-stopped # Ignored for stack/swarm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:4443/healthcheck"]
+      start-period: 10s
     labels:
       - traefik.enable=true
       - traefik.http.routers.server.rule=Host(`api.shadowroller.net`)
       - traefik.http.routers.server.entrypoints=web
+    secrets:
+      - shadowroller.healthcheck_key
   otelcol:
     image: otel/opentelemetry-connector:latest
     container_name: otelcol
     command: --config=/etc/otel/config.yml
     volumes:
       - ../config/otel.yml:/etc/otel/config.yml:ro
+
+secrets:
+  shadowroller.healthcheck_key:
+    file: ../data/healthcheck.key

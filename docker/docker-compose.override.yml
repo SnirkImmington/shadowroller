@@ -3,16 +3,23 @@
 version: '3'
 
 services:
+  # Server: build using the development dockerfile
   server:
-    build: ../server
+    build:
+      context: ../server
+      dockerfile: Dockerfile-dev
     volumes:
       - ./server:/go/src/sr:ro
       - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache
+  # Web service for running the frontend from the Node development server.
   web:
-    build: ../web
     container_name: web
+    build:
+      context: ../web
+      dockerfile: Dockerfile-dev
     volumes:
       - ../web/src:/var/code/src:ro
       - ./web/public:/var/code/public:ro
+      - ./web/script:/var/code/script:ro
       - ./web/build:/var/code/build
       - ./web/build-presite:/var/code/build-presite

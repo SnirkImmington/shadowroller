@@ -1,0 +1,20 @@
+# Configuration for stack deploys/docker swarm. Not compatible with override.yml.
+version: 3
+
+services:
+  # Systems that need to run on a specified node
+  redis:
+    deploy:
+      placement:
+        constraints:
+          - "node.shadowroller.host-redis==true"
+  postgres:
+    deploy:
+      placement:
+        constraints:
+          - "node.shadowroller.host-redis==true"
+  # Services need to be pulled from a container registry
+  frontend:
+    image: ${CONTAINER_REPO_BASE}/frontend:latest
+  server:
+    image: ${CONTAINER_REPO_BASE}/server:latest
