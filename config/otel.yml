@@ -6,7 +6,8 @@ receivers:
       grpc:
 
 exporters:
-  logging:
+  logging: # Supposedly an exporter for everything?
+    loglevel: debug
 
 processors:
   batch:
