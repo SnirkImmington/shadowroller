@@ -3,9 +3,11 @@ package routes
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"sr/config"
@@ -17,6 +19,13 @@ import (
 const hashLength = 8
 
 var validStaticSubdirs = []string{"media", "js", "css"}
+
+var goModules = []string{"server", "common", "frontend"}
+
+// go:embed routes/go-get-response.template.html
+var goGetTemplateText string
+
+var goGetTemplate = template.Must(template.New("go-get-response").Parse(goGetTemplateText)) 
 
 var frontendRouter = makeFrontendRouter()
 
@@ -205,6 +214,17 @@ func handleFrontendBase(response Response, request *Request) {
 		requestDir = "/"
 		requestFile = "index.html"
 		requestPath = "/index.html"
+	}
+
+	queryVals, err := url.ParseQuery(request.URL.RawQuery)
+	if err != nil {
+		logf(request, "Invalid query params: %v", err)
+		httpBadRequest(response, request, "Invalid parameters")
+	}
+	// Accepts any form of `?go-get`
+	if _, found := queryVals["go-get"]; found {
+		logf(request, "Go get request")
+		response.Header().Set("Content-Type", "text/html; charset=UTF-8")
 	}
 
 	if requestDir == "/" && requestFile == "" {
