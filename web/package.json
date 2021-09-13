@@ -56,7 +56,7 @@
         "coverage": "typescript-coverage-report",
 
         "clean": "rm -rvf ./build ./build-presite",
-        "build": "react-scripts build && npx presite",
+        "build": "react-scripts build && npx presite && npx ts-node script/fix-presite.ts ./build/index.html ./build-presite/index.html",
         "postbuild": "npx ts-node script/compress-all.ts ./build-presite"
     },
     "presite": {

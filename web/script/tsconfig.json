@@ -1,4 +1,8 @@
 {
     "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "compilerOptions": {
+        "lib": ["es2020"],
+        "downlevelIteration": true,
+    }
 }
