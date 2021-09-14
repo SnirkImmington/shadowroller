@@ -34,16 +34,9 @@ func RunSelectedTask(task string, args []string) {
 			os.Exit(1)
 		}
 		break
-	case "ppr": // post prerender
-		if len(args) != 2 {
-			log.Print("Usage: ppr <src> <dest>")
-			os.Exit(1)
-		}
-		if err := handleRewritePresiteIndexTask(args[0], args[1]); err != nil {
-			log.Printf("Error with task: %v", err)
-			os.Exit(1)
-		}
-		break
+	default:
+		log.Printf("No task %v found", task)
+		os.Exit(1)
 	}
 	log.Printf("Task finished successfully.")
 	os.Exit(0)
