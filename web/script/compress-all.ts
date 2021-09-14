@@ -10,7 +10,6 @@ const pipelinePromise = util.promisify(stream.pipeline);
 const filter = [".woff2", ".gz", "robots.txt"];
 
 function readFiles(base: string, folder: string): Promise<string[]> {
-    console.log("Read", base, folder);
     return fs.readdir(path.join(base, folder), { withFileTypes: true })
     .then(subdirs => {
         const subtasks: Promise<string[]>[] = [];
@@ -45,7 +44,6 @@ type CompressionResults = {
 
 function streamCompressFile(inputPath: string): Promise<CompressionResults> {
     if (filter.find(filtered => inputPath.endsWith(filtered))) {
-        console.log("Filtering");
         return fs.stat(inputPath).then(info => ({
             name: inputPath, start: info.size, end: info.size, saved: 0, ratio: 0
         }));
