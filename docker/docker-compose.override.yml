@@ -12,6 +12,7 @@ services:
       - ./server:/go/src/sr:ro
       - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache
   # Web service for running the frontend from the Node development server.
+  # This does not restart when package.json or similar is changed.
   web:
     container_name: web
     build:
@@ -21,5 +22,4 @@ services:
       - ../web/src:/var/code/src:ro
       - ./web/public:/var/code/public:ro
       - ./web/script:/var/code/script:ro
-      - ./web/build:/var/code/build
-      - ./web/build-presite:/var/code/build-presite
+      # We don't build the frontend in development.
