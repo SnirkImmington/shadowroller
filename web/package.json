@@ -56,8 +56,12 @@
         "coverage": "typescript-coverage-report",
 
         "clean": "rm -rf ./build ./build-presite",
-        "build": "react-scripts build && npx presite && npx ts-node script/fix-presite.ts ./build/index.html ./build-presite/index.html",
-        "postbuild": "npx ts-node script/compress-all.ts ./build-presite"
+        "build": "react-scripts build",
+        "snapshot": "npx presite",
+        "postsnapshot": "npx ts-node script/fix-presite.ts ./build/index.html ./build-presite/index.html",
+        "compress": "npx ts-node script/compress-all.ts ./build-presite",
+
+        "build-full": "npm run build && npm run snapshot && npm run compress"
     },
     "presite": {
         "routes": [

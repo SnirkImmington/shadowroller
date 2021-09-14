@@ -13,7 +13,7 @@ PWD = $(shell pwd)
 all: web server
 
 web:
-	cd web && rm -rf ./build-presite && npm run build
+	cd web && npm run clean && npm run build-full
 
 watch-web:
 	cd web && npm run start
