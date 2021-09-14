@@ -2,6 +2,7 @@ import * as process from 'process';
 import * as fsBase from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as scriptUtil from './scriptUtil';
 
 //
 // About this script
@@ -20,18 +21,6 @@ const closingContent = `</body></html>`;
 // matchScriptSrc is indeed using a regular expression to parse HTML.
 const matchScriptSrc = /<script src="(\/static\/js\/[^j]*js)">/g;
 
-// bytesToMetric produces a human-readable representation of a number of bytes.
-function bytesToMetric(bytes: number): string {
-    const bytesInMib = Math.pow(1024, 2);
-    const bytesInKib = Math.pow(1024, 1);
-
-    if (bytes > bytesInMib) {
-        return `${(bytes / bytesInMib).toFixed(2)}MiB`;
-    } else if (bytes > bytesInKib) {
-        return `${(bytes / bytesInKib).toFixed(2)}KiB`;
-    }
-    return `${bytes} bytes`;
-}
 
 // Check for invalid invocation
 if (process.argv.length < 3) {
@@ -80,7 +69,7 @@ fs.open(presiteIndexPath, fsBase.constants.O_RDWR, 0o755)
         return Promise.all([handle, handle.stat()]);
     // Write result into file at offset
     }).then(([handle, stats]) => {
-        console.log("Found", path.basename(presiteIndexPath), ":", bytesToMetric(stats.size));
+        console.log("Found", path.basename(presiteIndexPath), ":", scriptUtil.bytesToMetric(stats.size));
         const offset = stats.size - closingContent.length;
 
         return Promise.all([handle, handle.write(scriptTagsText, offset)]);
