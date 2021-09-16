@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+	_ "embed"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -22,10 +23,10 @@ var validStaticSubdirs = []string{"media", "js", "css"}
 
 var goModules = []string{"server", "common", "frontend"}
 
-// go:embed routes/go-get-response.template.html
+//go:embed go-get-response.template.html
 var goGetTemplateText string
 
-var goGetTemplate = template.Must(template.New("go-get-response").Parse(goGetTemplateText)) 
+var goGetTemplate = template.Must(template.New("go-get-response").Parse(goGetTemplateText))
 
 var frontendRouter = makeFrontendRouter()
 
@@ -223,8 +224,19 @@ func handleFrontendBase(response Response, request *Request) {
 	}
 	// Accepts any form of `?go-get`
 	if _, found := queryVals["go-get"]; found {
-		logf(request, "Go get request")
-		response.Header().Set("Content-Type", "text/html; charset=UTF-8")
+		pkg := requestPath[1:]
+		if stringArrayContains(goModules, pkg) {
+			logf(request, "Request for known package %v", pkg)
+			response.Header().Set("Content-Type", "text/html; charset=UTF-8")
+			if err := goGetTemplate.Execute(response, pkg); err != nil {
+				logf(request, "Unable to execute template: %v", err)
+				httpInternalError(response, request, "Package not found")
+			}
+			httpSuccess(response, request, "package", pkg)
+			return
+		} else {
+			logf(request, "go-get query but package %v not found", pkg)
+		}
 	}
 
 	if requestDir == "/" && requestFile == "" {

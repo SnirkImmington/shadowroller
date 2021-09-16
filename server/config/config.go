@@ -152,7 +152,7 @@ var (
 	// These options are used when the frontend site is hosted via the main server.
 
 	// FrontendBasePath is the base path for the frontend.
-	FrontendBasePath = readString("FRONTEND_BASE_PATH", "")
+	FrontendBasePath = readString("FRONTEND_BASE_PATH", "../web/build")
 	// FrontendGzipped indicates a .gz copy of each file on the frontend is pregenerated
 	FrontendGzipped = readBool("FRONTEND_GZIPPED", true)
 	// UnhostedFrontendRedirect toggles whether the root URL of the main server should point
