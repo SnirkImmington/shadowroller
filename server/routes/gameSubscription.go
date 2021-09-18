@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"time"
 
 	"sr/config"
 	"sr/game"
@@ -11,8 +12,8 @@ import (
 	"sr/player"
 	"sr/session"
 	"sr/shutdownHandler"
+	"sr/taskCtx"
 	"sr/update"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/janberktold/sse"
@@ -65,19 +66,23 @@ var removeDecimal = regexp.MustCompile(`\.\d+`)
 var _ = gameRouter.HandleFunc("/subscription", Wrap(handleSubscription))
 
 func handleSubscription(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestParamSession(request, client)
+	sess, requestCtx, err := requestParamSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 	logf(request, "Player %v to connect to %v", sess.PlayerID, sess.GameID)
 
-	isGM, err := game.HasGM(ctx, client, sess.GameID, sess.PlayerID)
+	isGM, err := game.HasGM(requestCtx, client, sess.GameID, sess.PlayerID)
 	httpInternalErrorIf(response, request, err)
 
-	ctx, release := shutdownHandler.Register(ctx, fmt.Sprintf("request %02x subscription", requestID(ctx)))
+	taskName := fmt.Sprintf("request %v SSE", taskCtx.GetName(requestCtx))
+	shutdownCtx, release := shutdownHandler.Register(context.Background(), taskName)
 	defer release()
 
 	// Upgrade to SSE stream
 	stream, err := sseUpgrader.Upgrade(response, request)
 	httpBadRequestIf(response, request, err)
+	if config.StreamDebug {
+		logf(request, "Initial stream ping...")
+	}
 	err = pingStream(stream)
 	httpBadRequestIf(response, request, err)
 	if config.StreamDebug {
@@ -87,17 +92,17 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 		if stream.IsOpen() {
 			stream.Close()
 			if config.StreamDebug {
-				logf(request, "defer: closed SSE stream")
+				logf(request, "^^ closed SSE stream")
 			}
 		} else if config.StreamDebug {
-			logf(request, "defer: SSE stream already closed")
+			logf(request, "^^ SSE stream already closed")
 		}
 	}()
 
 	// Subscribe to redis forwarder
-	ctx, cancel := context.WithCancel(ctx)
+	cancelCtx, cancel := context.WithCancel(shutdownCtx)
 	defer cancel()
-	updates, errors, cleanup := game.Subscribe(ctx, client, sess.GameID, sess.PlayerID, isGM)
+	updates, errors, cleanup := game.Subscribe(requestCtx, client, sess.GameID, sess.PlayerID, isGM)
 	httpInternalErrorIf(response, request, err)
 	defer cleanup()
 	if config.StreamDebug {
@@ -105,12 +110,14 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 	}
 
 	// Unexpire/delay expire of session
-	_, err = session.Unexpire(ctx, client, sess)
+	_, err = session.Unexpire(requestCtx, client, sess)
 	httpInternalErrorIf(response, request, err)
 	if config.StreamDebug {
 		logf(request, "Session timer for %v %v reset", sess.Type(), sess.ID)
 	}
 	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
+		defer cancel()
 		if _, err := session.Expire(ctx, client, sess); err != nil {
 			logf(request, "^^ Error resetting session: %v", err)
 		} else if config.StreamDebug {
@@ -119,12 +126,14 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 	}()
 
 	// Update player online status
-	_, err = game.UpdatePlayerConnections(ctx, client,
+	_, err = game.UpdatePlayerConnections(requestCtx, client,
 		sess.GameID, sess.PlayerID, player.IncreaseConnections,
 	)
 	httpInternalErrorIf(response, request, err)
 	logf(request, "Incremented online status for %v", sess.PlayerID)
 	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
+		defer cancel()
 		if _, err := game.UpdatePlayerConnections(ctx, client,
 			sess.GameID, sess.PlayerID, player.DecreaseConnections,
 		); err != nil {
@@ -136,7 +145,7 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 
 	// Log total time for response
 	defer func() {
-		dur := removeDecimal.ReplaceAllString(displayRequestDuration(ctx), "")
+		dur := removeDecimal.ReplaceAllString(displayRequestDuration(requestCtx), "")
 		logf(request, ">> Subscription to %v for %v closed (%v)",
 			sess.GameID, sess.PlayerID, dur,
 		)
@@ -184,8 +193,11 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 		case err := <-errors:
 			logf(request, "<= Error from subscription task: %v", err)
 			return
-		case err := <-ctx.Done(): // cancelled by either the client or shutdown
-			logf(request, "<= Task cancelled: %v", err)
+		case err := <-cancelCtx.Done():
+			logf(request, "<= Request cancelled: %v", err)
+			return
+		case err := <-shutdownCtx.Done():
+			logf(request, "<= Cancellation due to shutdown: %v", err)
 			return
 		}
 	}

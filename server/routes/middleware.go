@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
+
 	"sr/config"
 	rdb "sr/redis"
 	shutdown "sr/shutdownHandler"
-	"time"
+	"sr/taskCtx"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -22,13 +24,7 @@ func tlsHeadersMiddleware(wrapped http.Handler) http.Handler {
 
 func shutdownMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		id := requestID(request.Context())
-		var name string
-		if config.IsProduction {
-			name = fmt.Sprintf("request %03x", id)
-		} else {
-			name = fmt.Sprintf("request %02x", id)
-		}
+		name := fmt.Sprintf("request %v", taskCtx.GetName(request.Context()))
 		ctx, cancel := shutdown.Register(request.Context(), name)
 		defer cancel()
 		wrapped.ServeHTTP(response, request.WithContext(ctx))
@@ -62,7 +58,7 @@ func restHeadersMiddleware(wrapped http.Handler) http.Handler {
 
 func requestContextMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		requestCtx := withConnectedNow(withRequestID(request.Context()))
+		requestCtx := withConnectedNow(taskCtx.WithID(request.Context()))
 		requestWithID := request.WithContext(requestCtx)
 
 		wrapped.ServeHTTP(response, requestWithID)

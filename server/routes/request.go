@@ -1,14 +1,16 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
-	"sr/config"
 	"strings"
 	"time"
+
+	"sr/config"
+	"sr/taskCtx"
 
 	"github.com/janberktold/sse"
 )
@@ -129,27 +131,15 @@ func logFrontendRequest(request *Request) {
 }
 
 func logf(request *Request, format string, values ...interface{}) {
-	rawLog(1, request, format, values...)
+	taskCtx.RawLog(request.Context(), 1, format, values...)
+}
+
+func logc(ctx context.Context, format string, values ...interface{}) {
+	taskCtx.RawLog(ctx, 1, format, values...)
 }
 
 func rawLog(stack int, request *Request, format string, values ...interface{}) {
-	id := requestID(request.Context())
-	var message string
-	if len(values) == 0 {
-		message = format
-	} else {
-		message = fmt.Sprintf(format, values...)
-	}
-	var logText string
-	if config.IsProduction {
-		logText = fmt.Sprintf("%03x %v", id, message)
-	} else {
-		logText = fmt.Sprintf("\033[38;5;%vm%02x\033[m %v\n", id, id, message)
-	}
-	err := log.Output(2+stack, logText)
-	if err != nil {
-		log.Print(id, " [Output Error] ", message)
-	}
+	taskCtx.RawLog(request.Context(), stack+1, format, values...)
 }
 
 func httpSuccess(response Response, request *Request, message ...interface{}) {
