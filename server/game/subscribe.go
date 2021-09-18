@@ -31,6 +31,8 @@ func Subscribe(ctx context.Context, client *redis.Client, gameID string, playerI
 	errors := make(chan error)
 	cleanup := func() {
 		log.Print("Cleaning up subscribe task")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
+		defer cancel()
 		if err := sub.Unsubscribe(ctx); err != nil {
 			errors <- fmt.Errorf("unsubscribing: %w", err)
 			log.Printf("Error unsubscribing %v from %v: %v", playerID, gameID, err)
