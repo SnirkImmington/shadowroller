@@ -1,21 +1,26 @@
 package task
 
 import (
+	"context"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"log"
+
 	"sr/event"
 	"sr/id"
+
+	"github.com/go-redis/redis/v8"
 )
 
 const bufferSize = 200
 
-func streamReadEvents(gameID string, callback func([]event.Event, int) error, conn redis.Conn) error {
+type streamReadCallback func(context.Context, redis.Cmdable, []event.Event, int) error
+
+func streamReadEvents(ctx context.Context, client redis.Cmdable, gameID string, callback streamReadCallback) error {
 	count := 1
 	newestID := fmt.Sprintf("%v", id.NewEventID())
 	for {
 		log.Printf("> %v read events older than %v", count, newestID)
-		events, err := event.GetOlderThan(gameID, newestID, bufferSize, conn)
+		events, err := event.GetOlderThan(ctx, client, gameID, newestID, bufferSize)
 		if err != nil {
 			return fmt.Errorf("getting %v events older than %v: %w",
 				bufferSize, newestID, err,
@@ -37,7 +42,7 @@ func streamReadEvents(gameID string, callback func([]event.Event, int) error, co
 			foundEvents[i] = evt
 		}
 
-		if err = callback(foundEvents, count); err != nil {
+		if err = callback(ctx, client, foundEvents, count); err != nil {
 			return fmt.Errorf("from callback on round %v: %w", count, err)
 		}
 		count++

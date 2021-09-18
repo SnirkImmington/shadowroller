@@ -4,18 +4,19 @@ import (
 	"sr/event"
 	"sr/game"
 	"sr/id"
+
+	"github.com/go-redis/redis/v8"
 )
 
-var _ = gameRouter.HandleFunc("/edit-share", handleShareEvent).Methods("POST")
+var _ = gameRouter.HandleFunc("/edit-share", Wrap(handleShareEvent)).Methods("POST")
 
 type shareEventRequest struct {
 	ID    int64 `json:"id"`
 	Share int   `json:"share"`
 }
 
-func handleShareEvent(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleShareEvent(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var shareRequest shareEventRequest
@@ -32,7 +33,7 @@ func handleShareEvent(response Response, request *Request) {
 		sess.PlayerID, shareRequest.ID, share.String(),
 	)
 
-	eventText, err := event.GetByID(sess.GameID, shareRequest.ID, conn)
+	eventText, err := event.GetByID(ctx, client, sess.GameID, shareRequest.ID)
 	httpBadRequestIf(response, request, err)
 	evt, err := event.Parse([]byte(eventText))
 	httpInternalErrorIf(response, request, err)
@@ -53,7 +54,7 @@ func handleShareEvent(response Response, request *Request) {
 	updateTime := id.NewEventID()
 	evt.SetEdit(updateTime)
 
-	err = game.UpdateEventShare(sess.GameID, evt, share, conn)
+	err = game.UpdateEventShare(ctx, client, sess.GameID, evt, share)
 	httpInternalErrorIf(response, request, err)
 
 	httpSuccess(response, request,

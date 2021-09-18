@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var (
@@ -22,19 +24,19 @@ var (
 	CORSDebug = readBool("CORS_DEBUG", false)
 
 	// RedisDebug toggles logging every Redis command.
-	RedisDebug = readBool("REDIS_DEBUG", false)
+	RedisDebug = readBool("REDIS_DEBUG", true)
 
 	// RedisConnectionsDebug toggles logging when redis connections are obtained and freed.
-	RedisConnectionsDebug = readBool("REDIS_CONNECTIONS", false)
+	RedisConnectionsDebug = readBool("REDIS_CONNECTIONS", true)
 
 	// ShutdownHandlersDebug toggles logging of shutdown handlers being registered and used.
-	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", false)
+	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", true)
 
 	// StreamDebug toggles extra logging for the SSE stream tasks
-	StreamDebug = readBool("STREAM_DEBUG", false)
+	StreamDebug = readBool("STREAM_DEBUG", true)
 
 	// UpdatesDebug toggles extra logging for updates being created and sent
-	UpdatesDebug = readBool("UDPATES_DEBUG", false)
+	UpdatesDebug = readBool("UDPATES_DEBUG", true)
 
 	// SlowResponsesDebug adds 5s to each response handler for debugging purposes.
 	// This value is ignored on production.
@@ -210,6 +212,9 @@ var (
 	// RedisRetries controls the number of times a retry is attempted for some retryable
 	// redis queries.
 	RedisRetries = readInt("REDIS_RETRIES", 5)
+	// RedisHealthcheckSecs controls the healthcheck interval for the redis client and
+	// pubsub connections.
+	RedisHealthcheckSecs = readInt("REDIS_HEALTHCHECK_SECS", 15)
 
 	// Backend options
 
@@ -344,6 +349,9 @@ func VerifyConfig() {
 		if len(HealthCheckSecretKey) != 0 && len(HealthCheckSecretKey) < 256 {
 			panic("HealthcheckSecretKey should be longer")
 		}
+	}
+	if _, err := redis.ParseURL(RedisURL); err != nil {
+		panic(fmt.Sprintf("Unable to parse redis URL: %v", err))
 	}
 	if RedirectListenHTTP == MainListenHTTPS && MainListenHTTPS != "" {
 		panic("Cannot publish HTTP redirect and HTTPS servers on the same port!")

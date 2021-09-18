@@ -2,19 +2,21 @@ package task
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"reflect"
+
 	"sr/event"
 	"sr/game"
 	"sr/id"
 	"sr/player"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
-func handleGameMigrationTask(gameID string, conn redis.Conn) error {
+func handleGameMigrationTask(ctx context.Context, client *redis.Client, gameID string) error {
 	migratedPlayers := make(map[id.UID]id.UID)
 	migratedPlayersByUsername := make(map[string]id.UID)
 	knownAliases := make(map[string]id.UID)
@@ -46,7 +48,7 @@ func handleGameMigrationTask(gameID string, conn redis.Conn) error {
 			log.Printf("Could not find player %v", playerName)
 		}
 	}
-	gamePlayers, err := game.GetPlayersIn(gameID, conn)
+	gamePlayers, err := game.GetPlayers(ctx, client, gameID)
 	gamePlayersByID := player.MapByID(gamePlayers)
 	if err != nil {
 		return fmt.Errorf("getting game info: %w", err)
@@ -58,7 +60,7 @@ func handleGameMigrationTask(gameID string, conn redis.Conn) error {
 	}
 
 	// Operate on events in batches
-	err = streamReadEvents(gameID, func(batch []event.Event, iter int) error {
+	err = streamReadEvents(ctx, client, gameID, func(ctx context.Context, client redis.Cmdable, batch []event.Event, iter int) error {
 		log.Printf("# Round %v, %v events", iter, len(batch))
 		for ix, evt := range batch {
 			// Get existing data from event
@@ -114,12 +116,12 @@ func handleGameMigrationTask(gameID string, conn redis.Conn) error {
 			playerIDValue.Set(reflect.ValueOf(migratedPlayerID))
 		}
 		log.Printf("# Writing to redis...")
-		err = event.BulkUpdate(gameID, batch, conn)
+		err = event.BulkUpdate(ctx, client, gameID, batch)
 		if err != nil {
 			return fmt.Errorf("bulk updating #%v: %w", iter, err)
 		}
 		return nil
-	}, conn)
+	})
 	if err != nil {
 		return fmt.Errorf("received error from streamRead: %w", err)
 	}

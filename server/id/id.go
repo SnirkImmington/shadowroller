@@ -21,6 +21,14 @@ func (uid UID) String() string {
 	return string(uid)
 }
 
+func (uid UID) MarshalText() ([]byte, error) {
+	return []byte(string(uid)), nil
+}
+
+func (uid UID) MarshalBinary() ([]byte, error) {
+	return []byte(string(uid)), nil
+}
+
 // PlayerID is the random ID of players.
 type PlayerID UID
 

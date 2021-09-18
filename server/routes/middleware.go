@@ -3,18 +3,35 @@ package routes
 import (
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"net/http"
 	"runtime/debug"
 	"sr/config"
-	redisUtil "sr/redis"
+	rdb "sr/redis"
+	shutdown "sr/shutdownHandler"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func tlsHeadersMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
 		response.Header().Set("Strict-Transport-Security", "max-age=31536000")
 		wrapped.ServeHTTP(response, request)
+	})
+}
+
+func shutdownMiddleware(wrapped http.Handler) http.Handler {
+	return http.HandlerFunc(func(response Response, request *Request) {
+		id := requestID(request.Context())
+		var name string
+		if config.IsProduction {
+			name = fmt.Sprintf("request %03x", id)
+		} else {
+			name = fmt.Sprintf("request %02x", id)
+		}
+		ctx, cancel := shutdown.Register(request.Context(), name)
+		defer cancel()
+		wrapped.ServeHTTP(response, request.WithContext(ctx))
 	})
 }
 
@@ -95,17 +112,14 @@ func recoveryMiddleware(wrapped http.Handler) http.Handler {
 
 func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 	return http.HandlerFunc(func(response Response, request *Request) {
-		conn := redisUtil.Connect()
-		defer closeRedis(request, conn)
-
 		// Taken from https://redis.io/commands/incr#pattern-rate-limiter-1
-
 		remoteAddr := requestRemoteIP(request)
 		ts := time.Now().Unix()
 		rateLimitKey := fmt.Sprintf("ratelimit:%v:%v", remoteAddr, ts-ts%10)
+		ctx := request.Context()
 
-		current, err := redis.Int(conn.Do("get", rateLimitKey))
-		if err == redis.ErrNil {
+		current, err := rdb.Client.Get(ctx, rateLimitKey).Int()
+		if err == redis.Nil {
 			current = 0
 		} else if err != nil {
 			logf(request, "Unable to get rate limit key: %v", err)
@@ -119,19 +133,16 @@ func rateLimitedMiddleware(wrapped http.Handler) http.Handler {
 			limited = true
 		}
 
-		err = conn.Send("MULTI")
-		httpInternalErrorIf(response, request, err)
-		err = conn.Send("INCR", rateLimitKey)
-		httpInternalErrorIf(response, request, err)
-		err = conn.Send("EXPIRE", rateLimitKey, "15")
-		httpInternalErrorIf(response, request, err)
-		_, err = conn.Do("EXEC")
+		_, err = rdb.Client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+			const expiration = 15 * time.Second
+			pipe.Incr(ctx, rateLimitKey)
+			pipe.Expire(ctx, rateLimitKey, expiration)
+			return nil
+		})
 		httpInternalErrorIf(response, request, err)
 
 		if !limited {
-			ctx := withRedisConn(request.Context(), conn)
-			newRequest := request.WithContext(ctx)
-			wrapped.ServeHTTP(response, newRequest)
+			wrapped.ServeHTTP(response, request)
 		}
 	})
 }

@@ -3,11 +3,11 @@ package routes
 import (
 	"context"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"log"
 	"math/rand"
-	"sr/config"
 	"time"
+
+	"sr/config"
 )
 
 type srContextKey int
@@ -35,18 +35,6 @@ func requestID(ctx context.Context) int {
 		return 0
 	}
 	return val.(int)
-}
-
-func withRedisConn(ctx context.Context, conn redis.Conn) context.Context {
-	return context.WithValue(ctx, requestRedisConnKey, conn)
-}
-
-func contextRedisConn(ctx context.Context) redis.Conn {
-	val := ctx.Value(requestRedisConnKey)
-	if val == nil {
-		return nil
-	}
-	return val.(redis.Conn)
 }
 
 func withConnectedNow(ctx context.Context) context.Context {

@@ -1,10 +1,12 @@
 package event
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"strconv"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // ValidID returns whether the non-empty-string id is valid.
@@ -19,13 +21,13 @@ func ValidRerollType(ty string) bool {
 }
 
 // GetByID retrieves a single event from Redis via its ID.
-func GetByID(gameID string, eventID int64, conn redis.Conn) (string, error) {
-	events, err := redis.Strings(conn.Do(
-		"ZREVRANGEBYSCORE",
-		"history:"+gameID,
-		eventID, eventID,
-		"LIMIT", "0", "1",
-	))
+func GetByID(ctx context.Context, client redis.Cmdable, gameID string, eventID int64) (string, error) {
+	eventIDStr := fmt.Sprintf("%v", eventID)
+	opts := &redis.ZRangeBy{
+		Max: eventIDStr, Min: eventIDStr,
+		Offset: 0, Count: 1,
+	}
+	events, err := client.ZRevRangeByScore(ctx, "history:"+gameID, opts).Result()
 	if err != nil {
 		return "", fmt.Errorf("redis error finding event by ID: %w", err)
 	}
@@ -36,23 +38,22 @@ func GetByID(gameID string, eventID int64, conn redis.Conn) (string, error) {
 }
 
 // GetLatest retrieves the latest count history events for the given game.
-func GetLatest(gameID string, count int, conn redis.Conn) ([]string, error) {
-	return GetOlderThan(gameID, "+inf", count, conn)
+func GetLatest(ctx context.Context, client redis.Cmdable, gameID string, count int) ([]string, error) {
+	return GetOlderThan(ctx, client, gameID, "+inf", count)
 }
 
 // GetOlderThan retrieves a range of history events older than the given event.
-func GetOlderThan(gameID string, newest string, count int, conn redis.Conn) ([]string, error) {
-	return GetBetween(gameID, newest, "-inf", count, conn)
+func GetOlderThan(ctx context.Context, client redis.Cmdable, gameID string, newest string, count int) ([]string, error) {
+	return GetBetween(ctx, client, gameID, newest, "-inf", count)
 }
 
 // GetBetween returns up to count events between the given newest and oldest IDs.
-func GetBetween(gameID string, newest string, oldest string, count int, conn redis.Conn) ([]string, error) {
-	events, err := redis.Strings(conn.Do(
-		"ZREVRANGEBYSCORE",
-		"history:"+gameID,
-		newest, "-inf",
-		"LIMIT", "0", count,
-	))
+func GetBetween(ctx context.Context, client redis.Cmdable, gameID string, newest string, oldest string, count int) ([]string, error) {
+	opts := &redis.ZRangeBy{
+		Max: newest, Min: "-inf",
+		Offset: 0, Count: int64(count),
+	}
+	events, err := client.ZRevRangeByScore(ctx, "history:"+gameID, opts).Result()
 	if err != nil {
 		return nil, fmt.Errorf("Redis error finding events older than %v: %w", newest, err)
 	}
@@ -61,10 +62,8 @@ func GetBetween(gameID string, newest string, oldest string, count int, conn red
 }
 
 // BulkUpdate updates all of the given events at once
-func BulkUpdate(gameID string, events []Event, conn redis.Conn) error {
-	if err := conn.Send("MULTI"); err != nil {
-		return fmt.Errorf("sending `MULTI`: %w", err)
-	}
+func BulkUpdate(ctx context.Context, client redis.Cmdable, gameID string, events []Event) error {
+	pipe := client.Pipeline()
 	for ix, evt := range events {
 		eventID := evt.GetID()
 		eventBytes, err := json.Marshal(evt)
@@ -74,23 +73,17 @@ func BulkUpdate(gameID string, events []Event, conn redis.Conn) error {
 			)
 		}
 
-		err = conn.Send("ZREMRANGEBYSCORE", "history:"+gameID, eventID, eventID)
-		if err != nil {
-			return fmt.Errorf("sending `ZREMRANGEBYSCORE` #%v: %w", ix, err)
-		}
-		err = conn.Send("ZADD", "history:"+gameID, "NX", eventID, eventBytes)
-		if err != nil {
-			return fmt.Errorf("sending `ZADD` #%v: %w", ix, err)
-		}
+		pipe.Do(ctx, "ZREMRANGEBYSCORE", "history:"+gameID, eventID, eventID)
+		pipe.ZAddNX(ctx, "history:"+gameID, &redis.Z{Score: float64(eventID), Member: eventBytes})
 	}
 	// [#deleted = 1, #added = 1, ... * len(events)]
-	results, err := redis.Ints(conn.Do("EXEC"))
+	results, err := pipe.Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("sending `EXEC` and getting Ints: %w", err)
 	}
 	if len(results) != len(events)*2 {
 		return fmt.Errorf("Unexpected # of results: expected %v got %v",
-			len(events)*2, len(results),
+			len(events)*2, results,
 		)
 	}
 	return nil

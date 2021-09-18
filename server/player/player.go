@@ -1,15 +1,17 @@
 package player
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"math/rand"
 	"sr/id"
+	redisUtil "sr/redis"
 	"strings"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 // ErrNotFound means a player was not found.
@@ -114,8 +116,8 @@ func Make(username string, name string) Player {
 }
 
 // MapByID maps an array of players to a map
-func MapByID(players []Player) map[id.UID]Player {
-	result := make(map[id.UID]Player, len(players))
+func MapByID(players []*Player) map[id.UID]*Player {
+	result := make(map[id.UID]*Player, len(players))
 	for _, plr := range players {
 		result[plr.ID] = plr
 	}
@@ -127,25 +129,27 @@ func MapByID(players []Player) map[id.UID]Player {
 var ErrNilPlayer = errors.New("nil PlayerID requested")
 
 // Exists determines if a player with the given ID exists in the database
-func Exists(playerID string, conn redis.Conn) (bool, error) {
+func Exists(ctx context.Context, client redis.Cmdable, playerID string) (bool, error) {
 	if playerID == "" {
 		return false, fmt.Errorf(
 			"empty PlayerID passed to PlayerExists: %w", ErrNilPlayer,
 		)
 	}
-	return redis.Bool(conn.Do("exists", "player:"+playerID))
+	intVal, err := client.Exists(ctx, "player:"+playerID).Result()
+	return intVal == 1, err
 }
 
 // GetByID retrieves a player from Redis
-func GetByID(playerID string, conn redis.Conn) (*Player, error) {
+func GetByID(ctx context.Context, client redis.Cmdable, playerID string) (*Player, error) {
 	if playerID == "" {
 		return nil, fmt.Errorf(
-			"%w: empty PlayerID passed to GetPlayerByID", ErrNilPlayer,
+			"%w: empty PlayerID passed to player.GetByID", ErrNilPlayer,
 		)
 	}
 	var player Player
-	data, err := conn.Do("hgetall", "player:"+playerID)
-	if errors.Is(err, redis.ErrNil) {
+	result := client.HGetAll(ctx, "player:"+playerID)
+	resultMap, err := result.Result()
+	if errors.Is(err, redis.Nil) {
 		return nil, fmt.Errorf(
 			"%w: %v", ErrNotFound, playerID,
 		)
@@ -154,15 +158,15 @@ func GetByID(playerID string, conn redis.Conn) (*Player, error) {
 			"redis error retrieving data for %v: %w", playerID, err,
 		)
 	}
-	if data == nil || len(data.([]interface{})) == 0 {
+	if resultMap == nil || len(resultMap) == 0 {
 		return nil, fmt.Errorf(
 			"%w: no data for %v", ErrNotFound, playerID,
 		)
 	}
-	err = redis.ScanStruct(data.([]interface{}), &player)
+	err = result.Scan(&player) // TODO does this take a reference or not
 	if err != nil {
 		return nil, fmt.Errorf(
-			"redis error parsing player %v: %w", playerID, err,
+			"scanning player %v: %w", playerID, err,
 		)
 	}
 	if player.Username == "" {
@@ -175,12 +179,12 @@ func GetByID(playerID string, conn redis.Conn) (*Player, error) {
 }
 
 // GetIDOf returns the playerID for the given username.
-func GetIDOf(username string, conn redis.Conn) (string, error) {
+func GetIDOf(ctx context.Context, client redis.Cmdable, username string) (string, error) {
 	if username == "" {
-		return "", fmt.Errorf("%w: empty username passed to GetPlayerIDOf", ErrNilPlayer)
+		return "", fmt.Errorf("%w: empty username passed to player.GetIDOf", ErrNilPlayer)
 	}
-	playerID, err := redis.String(conn.Do("GET", "player_id:"+username))
-	if errors.Is(err, redis.ErrNil) {
+	playerID, err := client.Get(ctx, "player_id:"+username).Result()
+	if errors.Is(err, redis.Nil) {
 		return "", fmt.Errorf(
 			"%w: %v", ErrNotFound, username,
 		)
@@ -197,13 +201,13 @@ func GetIDOf(username string, conn redis.Conn) (string, error) {
 
 // GetByUsername retrieves a player based on the username given.
 // Returns ErrPlayerNotFound if no player is found.
-func GetByUsername(username string, conn redis.Conn) (*Player, error) {
+func GetByUsername(ctx context.Context, client redis.Cmdable, username string) (*Player, error) {
 	if username == "" {
-		return nil, fmt.Errorf("empty username passed to GetPlayerByUsername")
+		return nil, fmt.Errorf("empty username passed to player.GetByUsername")
 	}
 
-	playerID, err := redis.String(conn.Do("HGET", "player_ids", username))
-	if errors.Is(err, redis.ErrNil) {
+	playerID, err := client.HGet(ctx, "player_ids", username).Result()
+	if errors.Is(err, redis.Nil) {
 		return nil, fmt.Errorf("%w: %v", ErrNotFound, username)
 	} else if err != nil {
 		return nil, fmt.Errorf("redis error checking `player_ids`: %w", err)
@@ -212,7 +216,7 @@ func GetByUsername(username string, conn redis.Conn) (*Player, error) {
 		return nil, fmt.Errorf("%w: %v (empty string stored)", ErrNotFound, username)
 	}
 
-	return GetByID(playerID, conn)
+	return GetByID(ctx, client, playerID)
 }
 
 // RandomHue creates a random hue value for a player
@@ -228,7 +232,7 @@ func ValidName(name string) bool {
 
 /*
 // GetPlayerCharIDs returns the IDs of all the chars of a player
-func GetPlayerCharIDs(playerID UID, conn redis.Conn) ([]UID, error) {
+func GetPlayerCharIDs(playerID UID) ([]UID, error) {
 	ids, err := redis.Strings(conn.Do("SGETALL", "chars:"+string(playerID)))
 	if err != nil {
 		return nil, err
@@ -241,7 +245,7 @@ func GetPlayerCharIDs(playerID UID, conn redis.Conn) ([]UID, error) {
 }
 
 // GetPlayerChars returns the chars of a given player
-func GetPlayerChars(playerID UID, conn redis.Conn) ([]Char, error) {
+func GetPlayerChars(playerID UID) ([]Char, error) {
 	ids, err := GetPlayerCharIDs(playerID, conn)
 	if err != nil {
 		return nil, fmt.Errorf("error from GetPlayerCharIDs: %w", err)
@@ -283,32 +287,30 @@ func GetPlayerChars(playerID UID, conn redis.Conn) ([]Char, error) {
 }
 */
 
-// Create adds the given Player to the database
-func Create(player *Player, conn redis.Conn) error {
-	err := conn.Send("MULTI")
+// Create adds the given player to the database
+func Create(ctx context.Context, client redis.Cmdable, player *Player) error {
+	var setUsername *redis.IntCmd
+	var setPlayer *redis.IntCmd
+	playerMap, err := redisUtil.StructToStringMap(player)
 	if err != nil {
-		return fmt.Errorf("redis error sending `MULTI`: %w", err)
+		return fmt.Errorf("unable to serialize player %v: %w", player, err)
 	}
-
-	err = conn.Send("HSET", "player_ids", player.Username, player.ID)
+	_, err = client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		setUsername = pipe.HSet(ctx, "player_ids", player.Username, player.ID)
+		setPlayer = pipe.HSet(ctx, player.RedisKey(), playerMap)
+		return nil
+	})
 	if err != nil {
-		return fmt.Errorf("redis error sending `player_ids` `HSET`: %w", err)
+		return fmt.Errorf("running pipeline: %w", err)
 	}
-
-	playerData := redis.Args{}.Add(player.RedisKey()).AddFlat(player)
-	err = conn.Send("HSET", playerData...)
-	if err != nil {
-		return fmt.Errorf("redis error sending `player:id` `HSET`: %w", err)
+	if err := setUsername.Err(); err != nil {
+		return fmt.Errorf("setting username: %w", err)
 	}
-
-	data, err := redis.Ints(conn.Do("Exec"))
-	if err != nil {
-		return fmt.Errorf("redis error sending `EXEC`: %w", err)
-	}
-
-	// expected 1 update for player_ids, n updates for player fields
-	if len(data) != 2 || data[0] != 1 || data[1] <= 2 {
-		return fmt.Errorf("redis error with multi: expected [1, >1], got %v", data)
+	if count, err := setPlayer.Result(); err != nil || count < int64(len(playerMap)) {
+		return fmt.Errorf(
+			"expected %v fields to be added to player, got %v %w",
+			len(playerMap), count, err,
+		)
 	}
 	return nil
 }
@@ -320,8 +322,6 @@ const IncreaseConnections = +1
 const DecreaseConnections = -1
 
 // ModifyConnections modifies the Connections attribute of a player; used by the subscription handler
-func ModifyConnections(playerID id.UID, amount int, conn redis.Conn) (int, error) {
-	return redis.Int(conn.Do(
-		"HINCRBY", "player:"+playerID, "connections", amount,
-	))
+func ModifyConnections(ctx context.Context, client redis.Cmdable, playerID id.UID, amount int) (int64, error) {
+	return client.HIncrBy(ctx, "player:"+string(playerID), "connections", int64(amount)).Result()
 }

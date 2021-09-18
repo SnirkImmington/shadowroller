@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
-	"github.com/janberktold/sse"
 	"log"
 	"net/http"
 	"sr/config"
 	"strings"
 	"time"
+
+	"github.com/janberktold/sse"
 )
 
 var sseUpgrader = sse.Upgrader{
@@ -28,20 +28,6 @@ var errExtraBody = errors.New("encountered additional data after end of JSON bod
 type updateEventRequest struct {
 	ID   int64                  `json:"id"`
 	Diff map[string]interface{} `json:"diff"`
-}
-
-// closeRedis closes the redis connection and logs any errors found
-func closeRedis(request *Request, conn redis.Conn) {
-	if config.RedisConnectionsDebug {
-		rawLog(1, request, "Called closeRedis with conn %p", conn)
-	}
-	if conn == nil {
-		rawLog(1, request, "nil connection passed to closeRedis")
-		return
-	}
-	if err := conn.Close(); err != nil {
-		rawLog(1, request, "Error closing redis connection: %v", err)
-	}
 }
 
 func requestRemoteAddr(request *Request) string {

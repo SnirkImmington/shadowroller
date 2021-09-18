@@ -5,8 +5,11 @@ import (
 	"sr/event"
 	"sr/game"
 	"sr/id"
+	"sr/player"
 	"sr/roll"
 	"sr/update"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type initiativeRollRequest struct {
@@ -18,12 +21,11 @@ type initiativeRollRequest struct {
 	Blitzed bool   `json:"blitzed"`
 }
 
-var _ = gameRouter.HandleFunc("/roll-initiative", handleRollInitiative).Methods("POST")
+var _ = gameRouter.HandleFunc("/roll-initiative", Wrap(handleRollInitiative)).Methods("POST")
 
 // $ POST /roll-initiative title base dice
-func handleRollInitiative(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleRollInitiative(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var initRequest initiativeRollRequest
@@ -50,7 +52,7 @@ func handleRollInitiative(response Response, request *Request) {
 		sess.PlayerID, initRequest.Base, initRequest.Dice, share.String(), initRequest.Blitzed, initRequest.Seized, initRequest.Title,
 	)
 
-	player, err := sess.GetPlayer(conn)
+	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	httpInternalErrorIf(response, request, err)
 
 	dice := make([]int, initRequest.Dice)
@@ -58,9 +60,9 @@ func handleRollInitiative(response Response, request *Request) {
 	logf(request, "Rolled %v + %v = %v", initRequest.Base, dice, initRequest.Base+roll.SumDice(dice))
 
 	event := event.ForInitiativeRoll(
-		player, share, initRequest.Title, initRequest.Base, dice, initRequest.Seized, initRequest.Blitzed,
+		plr, share, initRequest.Title, initRequest.Base, dice, initRequest.Seized, initRequest.Blitzed,
 	)
-	err = game.PostEvent(sess.GameID, &event, conn)
+	err = game.PostEvent(ctx, client, sess.GameID, &event)
 	httpInternalErrorIf(response, request, err)
 	httpSuccess(
 		response, request,
@@ -68,11 +70,10 @@ func handleRollInitiative(response Response, request *Request) {
 	)
 }
 
-var _ = gameRouter.HandleFunc("/edit-initiative", handleEditInitiative).Methods("POST")
+var _ = gameRouter.HandleFunc("/edit-initiative", Wrap(handleEditInitiative)).Methods("POST")
 
-func handleEditInitiative(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleEditInitiative(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var updateRequest updateEventRequest
@@ -85,7 +86,7 @@ func handleEditInitiative(response Response, request *Request) {
 
 	logf(request, "%s wants to update %v", sess.PlayerInfo(), updateRequest.ID)
 
-	eventText, err := event.GetByID(sess.GameID, updateRequest.ID, conn)
+	eventText, err := event.GetByID(ctx, client, sess.GameID, updateRequest.ID)
 	httpBadRequestIf(response, request, err)
 
 	evt, err := event.Parse([]byte(eventText))
@@ -148,7 +149,7 @@ func handleEditInitiative(response Response, request *Request) {
 	}
 	update := update.ForEventDiff(initEvent, diff)
 	logf(request, "Found diff %v", diff)
-	err = game.UpdateEvent(sess.GameID, initEvent, update, conn)
+	err = game.UpdateEvent(ctx, client, sess.GameID, initEvent, update)
 	httpInternalErrorIf(response, request, err)
 	httpSuccess(response, request, "Update sent")
 }

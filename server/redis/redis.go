@@ -2,12 +2,14 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
-
-	"github.com/go-redis/redis/v8"
+	"strings"
 
 	"sr/config"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var logger *log.Logger
@@ -20,42 +22,74 @@ type redisHooks struct{}
 
 var hooks redis.Hook = redisHooks{}
 
+func printCmd(cmd redis.Cmder) string {
+	var nameParts []string
+	for _, arg := range cmd.Args() {
+		nameParts = append(nameParts, fmt.Sprintf("%v", arg))
+	}
+	name := strings.Join(nameParts, " ")
+	full := cmd.String()
+	if len(full) > len(name)+2 {
+		return fmt.Sprintf("%v => %v", name, full[len(name)+2:])
+	}
+	return full
+}
+
 func (_ redisHooks) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	log.Printf("Preparing to run %v", cmd)
 	return ctx, nil
 }
 
 func (_ redisHooks) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
-	log.Printf("Result: %v", cmd)
+	logger.Printf("REDIS %v", printCmd(cmd))
 	return nil
 }
 
 func (_ redisHooks) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
-	log.Printf("Preparing to run %v", cmds)
 	return ctx, nil
 }
 
 func (_ redisHooks) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
-	log.Printf("Result: %v", cmds)
+	logger.Printf("Pipeline %v:", len(cmds))
+	for ix, cmd := range cmds {
+		logger.Printf("%02d %v", ix, printCmd(cmd))
+	}
 	return nil
+}
+
+// RetryWatchTxn retries a WATCH transaction based on config.RedisRetries.
+func RetryWatchTxn(ctx context.Context, client *redis.Client, txf func(*redis.Tx) error, keys ...string) error {
+	for i := 0; i < config.RedisRetries; i++ {
+		err := client.Watch(ctx, txf, keys...)
+		if err == nil {
+			return nil
+		}
+		if err == redis.TxFailedErr {
+			continue
+		}
+		return fmt.Errorf("%w (try %v)", err, i+1)
+	}
+	return fmt.Errorf("%w: no more retries", redis.TxFailedErr)
 }
 
 // SetupWithConfig configures Client.
 func SetupWithConfig() {
-	opts := &redis.Options{
-		MaxRetries: 10,
-		PoolSize:   10,
+	if config.RedisDebug || config.RedisConnectionsDebug {
+		logger = log.New(os.Stdout, "", log.Ltime|log.Lshortfile)
 	}
+	opts, err := redis.ParseURL(config.RedisURL)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing redis URL even after config check: %v", err))
+	}
+	opts.MaxRetries = config.RedisRetries
+	opts.PoolSize = 10 // I don't think we get accurate information running in a container.
 	if config.RedisConnectionsDebug {
 		opts.OnConnect = func(ctx context.Context, conn *redis.Conn) error {
-			log.Printf("Connected to redis")
+			logger.Printf("Connected to redis")
 			return nil
 		}
 	}
 	Client = redis.NewClient(opts)
 	if config.RedisDebug {
-		logger = log.New(os.Stdout, "", log.Ltime|log.Lshortfile)
-		//redis.SetLogger(logger) // It wants to send a context to each logging call
 		Client.AddHook(hooks)
 	}
 }
@@ -63,10 +97,10 @@ func SetupWithConfig() {
 // Close closes the redis client(s). It should only be called at process termination.
 func Close() {
 	if config.RedisConnectionsDebug {
-		log.Printf("Called redisUtil.Close()")
+		logger.Printf("Called redisUtil.Close()")
 	}
 	err := Client.Close()
 	if err != nil {
-		log.Printf("Error closing redis conn: %v", err)
+		logger.Printf("Error closing redis conn: %v", err)
 	}
 }

@@ -1,10 +1,15 @@
 package task
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"os"
+
 	"sr/game"
-	redisUtil "sr/redis"
+	"sr/shutdownHandler"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // PrintAvailableTasks prints the list of CLI tasks
@@ -14,8 +19,12 @@ func PrintAvailableTasks() {
 }
 
 // RunSelectedTask runs the passed in task from the command line
-func RunSelectedTask(task string, args []string) {
+func RunSelectedTask(ctx context.Context, client *redis.Client, task string, args []string) {
 	log.Printf("Run task %v %v", task, args)
+	ctx, release := shutdownHandler.Register(ctx, fmt.Sprintf("task main - %v", task))
+	// not really called because of os.Exit; we want the interrupt delay even if
+	// we're not going to actually terminate naturally
+	defer release()
 	switch task {
 	case "migrate":
 		if len(args) != 1 {
@@ -23,13 +32,11 @@ func RunSelectedTask(task string, args []string) {
 			os.Exit(1)
 		}
 		gameID := args[0]
-		conn := redisUtil.Connect()
-		defer redisUtil.Close(conn)
-		if ok, err := game.Exists(gameID, conn); !ok || err != nil {
+		if ok, err := game.Exists(ctx, client, gameID); !ok || err != nil {
 			log.Printf("Game %v does not exist (%v)", args[0], err)
 			os.Exit(1)
 		}
-		if err := handleGameMigrationTask(gameID, conn); err != nil {
+		if err := handleGameMigrationTask(ctx, client, gameID); err != nil {
 			log.Printf("Error with task: %v", err)
 			os.Exit(1)
 		}

@@ -1,11 +1,12 @@
 package routes
 
 import (
+	"context"
 	"errors"
-	"github.com/gomodule/redigo/redis"
-	redisUtil "sr/redis"
 	"sr/session"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var errNoAuthBearer = errors.New("httpSession: no auth: bearer header")
@@ -28,33 +29,30 @@ func sessionFromParams(request *Request) (string, error) {
 }
 
 // requestSession retrieves the authenticated session for the request.
-// It does not open redis if an invalid session is supplied.
-func requestSession(request *Request) (*session.Session, redis.Conn, error) {
+func requestSession(request *Request, client redis.Cmdable) (*session.Session, context.Context, error) {
 	sessionID, err := sessionFromHeader(request)
 	if err != nil {
 		logf(request, "Didn't have a session ID")
 		return nil, nil, err
 	}
-	conn := contextRedisConn(request.Context())
-	session, err := session.GetByID(sessionID, conn)
+	ctx := request.Context()
+	sess, err := session.GetByID(ctx, client, sessionID)
 	if err != nil {
 		logf(request, "Didn't get %s by id", sessionID)
-		redisUtil.Close(conn)
 		return nil, nil, err
 	}
-	return session, conn, nil
+	return sess, ctx, nil
 }
 
-func requestParamSession(request *Request) (*session.Session, redis.Conn, error) {
+func requestParamSession(request *Request, client redis.Cmdable) (*session.Session, context.Context, error) {
 	sessionID, err := sessionFromParams(request)
 	if err != nil {
 		return nil, nil, err
 	}
-	conn := contextRedisConn(request.Context())
-	session, err := session.GetByID(sessionID, conn)
+	ctx := request.Context()
+	sess, err := session.GetByID(ctx, client, sessionID)
 	if err != nil {
-		redisUtil.Close(conn)
 		return nil, nil, err
 	}
-	return session, conn, nil
+	return sess, ctx, nil
 }
