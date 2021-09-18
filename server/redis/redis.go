@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"sr/config"
+	"sr/taskCtx"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -24,8 +25,12 @@ var hooks redis.Hook = redisHooks{}
 
 func printCmd(cmd redis.Cmder) string {
 	var nameParts []string
-	for _, arg := range cmd.Args() {
-		nameParts = append(nameParts, fmt.Sprintf("%v", arg))
+	for ix, arg := range cmd.Args() {
+		if ix == 0 {
+			nameParts = append(nameParts, strings.ToUpper(arg.(string)))
+		} else {
+			nameParts = append(nameParts, fmt.Sprintf("%v", arg))
+		}
 	}
 	name := strings.Join(nameParts, " ")
 	full := cmd.String()
@@ -40,7 +45,12 @@ func (_ redisHooks) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context
 }
 
 func (_ redisHooks) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
-	logger.Printf("REDIS %v", printCmd(cmd))
+	id := taskCtx.GetID(ctx)
+	if id != 0 {
+		taskCtx.RawLog(ctx, 1, "%v", printCmd(cmd))
+	} else {
+		logger.Printf("%v", printCmd(cmd))
+	}
 	return nil
 }
 
@@ -49,9 +59,17 @@ func (_ redisHooks) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmde
 }
 
 func (_ redisHooks) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
-	logger.Printf("Pipeline %v:", len(cmds))
-	for ix, cmd := range cmds {
-		logger.Printf("%02d %v", ix, printCmd(cmd))
+	id := taskCtx.GetID(ctx)
+	if id != 0 {
+		taskCtx.RawLog(ctx, 1, "Redis pipline (%v)", len(cmds))
+		for ix, cmd := range cmds {
+			taskCtx.RawLog(ctx, 1, "%02d: %v", ix, printCmd(cmd))
+		}
+	} else {
+		logger.Printf("Pipeline %v:", len(cmds))
+		for ix, cmd := range cmds {
+			logger.Printf("%02d %v", ix, printCmd(cmd))
+		}
 	}
 	return nil
 }
@@ -84,7 +102,11 @@ func SetupWithConfig() {
 	opts.PoolSize = 10 // I don't think we get accurate information running in a container.
 	if config.RedisConnectionsDebug {
 		opts.OnConnect = func(ctx context.Context, conn *redis.Conn) error {
-			logger.Printf("Connected to redis")
+			if id := taskCtx.GetID(ctx); id != 0 {
+				taskCtx.Log(ctx, "Connected to redis")
+			} else {
+				logger.Printf("Connected to redis")
+			}
 			return nil
 		}
 	}

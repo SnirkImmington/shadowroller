@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+
 	"sr/id"
 	"sr/player"
 	"sr/update"
@@ -61,7 +61,6 @@ func UpdatePlayerConnections(ctx context.Context, client redis.Cmdable, gameID s
 	} else if newConns == 1 && mod == player.IncreaseConnections {
 		ud = update.ForPlayerOnline(playerID, true)
 	} else {
-		log.Printf("Mod = %v, connections = %v, not sending an update", mod, newConns)
 		return newConns, nil
 	}
 	updateBytes, err := json.Marshal(ud)
