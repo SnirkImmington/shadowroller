@@ -34,6 +34,7 @@
         "react-scripts": "4.0.3",
         "stylelint": "^13.13.1",
         "stylelint-config-standard": "^22.0.0",
+        "ts-node": "^10.2.1",
         "typescript": "^4.1.5",
         "typescript-coverage-report": "^0.5.0"
     },
@@ -50,14 +51,15 @@
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "react-scripts build",
-        "postbuild": "npx presite",
         "test": "react-scripts test",
+        "stylelint": "npx stylelint 'src/**/*.css'",
         "coverage": "typescript-coverage-report",
-        "predeploy": "npm run build",
-        "deploy": "gh-pages -f -d build-presite",
-        "clean": "rm -rvf ./build ./build-presite",
-        "stylelint": "npx stylelint 'src/**/*.css'"
+        "clean": "rm -rf ./build ./build-presite",
+        "build": "react-scripts build",
+        "snapshot": "npx presite",
+        "postsnapshot": "npx ts-node script/fix-presite.ts ./build/index.html ./build-presite/index.html",
+        "compress": "npx ts-node script/compress-all.ts ./build-presite",
+        "build-full": "npm run build && npm run snapshot && npm run compress"
     },
     "presite": {
         "routes": [

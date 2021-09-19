@@ -6,7 +6,7 @@ COPY package*.json ./
 COPY tsconfig* ./
 COPY .env* ./
 
-RUN npm install
+RUN npm ci
 RUN chown -R node:node node_modules
 
 USER node
