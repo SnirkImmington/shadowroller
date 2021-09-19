@@ -2,18 +2,20 @@ package update
 
 import (
 	"encoding/json"
-	"github.com/gomodule/redigo/redis"
+	"fmt"
+
 	"sr/id"
 	"sr/player"
+	redisUtil "sr/redis"
 )
 
 // Player is an update for properties of a player changing.
 type Player interface {
 	Update
 
-	PlayerID() id.UID                       // ID of the player being updated
-	MakeRedisCommand() (string, redis.Args) // For updating redis...
-	IsEmpty() bool                          // If a diff update was created empty
+	PlayerID() id.UID                                     // ID of the player being updated
+	MakeRedisCommand() (string, map[string]string, error) // For updating redis...
+	IsEmpty() bool                                        // If a diff update was created empty
 }
 
 type playerOnline struct {
@@ -21,8 +23,8 @@ type playerOnline struct {
 	online bool
 }
 
-func (update *playerOnline) MakeRedisCommand() (string, redis.Args) {
-	panic("MakeRedisCommand called on update.playerOnline")
+func (update *playerOnline) MakeRedisCommand() (string, map[string]string, error) {
+	return "", nil, fmt.Errorf("cannot call MakeRedisCommand on playerOnline.")
 }
 
 func (update *playerOnline) Type() string {
@@ -54,8 +56,12 @@ type playerDiff struct {
 	diff map[string]interface{}
 }
 
-func (update *playerDiff) MakeRedisCommand() (string, redis.Args) {
-	return "HSET", redis.Args{}.Add("player:" + update.id).AddFlat(update.diff)
+func (update *playerDiff) MakeRedisCommand() (string, map[string]string, error) {
+	mapped, err := redisUtil.StructToStringMap(update.diff)
+	if err != nil {
+		return "", nil, fmt.Errorf("converting update diff: %w", err)
+	}
+	return "player:" + string(update.id), mapped, err
 }
 
 func (update *playerDiff) Type() string {
@@ -104,10 +110,12 @@ func (update *playerAdd) MarshalJSON() ([]byte, error) {
 	return json.Marshal(fields)
 }
 
-func (update *playerAdd) MakeRedisCommand() (string, redis.Args) {
-	return "HSET", redis.Args{}.
-		Add("player:" + update.player.ID).
-		AddFlat(update.player)
+func (update *playerAdd) MakeRedisCommand() (string, map[string]string, error) {
+	mapped, err := redisUtil.StructToStringMap(update.player)
+	if err != nil {
+		return "", nil, fmt.Errorf("converting update player: %w", err)
+	}
+	return "player:" + string(update.player.ID), mapped, err
 }
 
 // ForPlayerAdd constructs an update for adding a player to a game

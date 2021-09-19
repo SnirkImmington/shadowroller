@@ -82,9 +82,12 @@ func UpdatePlayer(ctx context.Context, client redis.Cmdable, gameID string, play
 
 	_, err := client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		if !internalUpdate.IsEmpty() {
-			playerSet, playerData := internalUpdate.MakeRedisCommand()
+			key, playerData, err := internalUpdate.MakeRedisCommand()
+			if err != nil {
+				return fmt.Errorf("serializing player data: %w", err)
+			}
 			// Apply update to player
-			_ = pipe.Do(ctx, playerSet, playerData)
+			_ = pipe.HSet(ctx, key, playerData)
 		}
 		if !externalUpdate.IsEmpty() {
 			updateBytes, err := json.Marshal(externalUpdate)
