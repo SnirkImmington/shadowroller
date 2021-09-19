@@ -46,6 +46,8 @@ docker:
 
 redis-cli-docker:
 	docker-compose exec redis redis-cli
+update-web-docker:
+	docker-compose exec web npm ci
 
 tmuxp:
 	tmuxp load . -a

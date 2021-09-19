@@ -38,6 +38,8 @@ services:
       - ./web/public:/var/code/public:ro
       - ./web/build:/var/code/build
       - ./web/build-presite:/var/code/build-presite
+      - ./web/package.json:/var/code/package.json:ro
+      - ./web/package-lock.json:/var/code/package-lock.json
     ports:
       - "3000:3000"
     entrypoint: npm run start
