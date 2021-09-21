@@ -49,6 +49,30 @@ func IsGMOf(game *Info, playerID id.UID) bool {
 	return IsGM(game.GMs, playerID)
 }
 
+// Create creates a new game with the given ID.
+func Create(ctx context.Context, client redis.Cmdable, gameID string) error {
+	created, err := client.HSet(ctx, "game:"+gameID, "event_id", "0").Result()
+	if err != nil {
+		return fmt.Errorf("creating game %v: %w", gameID, err)
+	}
+	if created != 1 {
+		return fmt.Errorf("creating game %v: expected to set 1, got %v", gameID, created)
+	}
+	return nil
+}
+
+// AddGM adds a gm to the given game
+func AddGM(ctx context.Context, client redis.Cmdable, gameID string, playerID id.UID) error {
+	added, err := client.SAdd(ctx, "gms:"+gameID, playerID.String()).Result()
+	if err != nil {
+		return fmt.Errorf("adding gm %v to %v: %w", playerID, gameID, err)
+	}
+	if added != 1 {
+		return fmt.Errorf("adding gm %v to %v: expected 1, got %v", playerID, gameID, added)
+	}
+	return nil
+}
+
 // GetPlayers gets the players in a game.
 func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]player.Player, error) {
 	var players []player.Player

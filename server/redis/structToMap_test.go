@@ -47,7 +47,7 @@ type TooComplex struct {
 }
 
 func TestInvalidTypes(t *testing.T) {
-	t.Run("does not allow builtins", func(t *testing.T) {
+	test.RunParallel(t, "does not allow builtins", func(t *testing.T) {
 		cases := []struct {
 			input interface{}
 			name  string
@@ -67,12 +67,12 @@ func TestInvalidTypes(t *testing.T) {
 		}
 	})
 
-	t.Run("does not allow nil", func(t *testing.T) {
+	test.RunParallel(t, "does not allow nil", func(t *testing.T) {
 		_, err := StructToStringMap(nil)
 		test.AssertError(t, err, "nil")
 	})
 
-	t.Run("does not allow collections", func(t *testing.T) {
+	test.RunParallel(t, "does not allow collections", func(t *testing.T) {
 		cases := []struct {
 			input interface{}
 			name  string
@@ -87,13 +87,13 @@ func TestInvalidTypes(t *testing.T) {
 		}
 	})
 
-	t.Run("does not allow non-pointed struct", func(t *testing.T) {
+	test.RunParallel(t, "does not allow non-pointed struct", func(t *testing.T) {
 		input := Basic{Name: "hello"}
 		_, err := StructToStringMap(input)
 		test.AssertError(t, err, "non-pointer error")
 	})
 
-	t.Run("allows struct values", func(t *testing.T) {
+	test.RunParallel(t, "allows struct values", func(t *testing.T) {
 		input := Basic{Name: "hello"}
 		expected := map[string]string{
 			"Name": "hello",
@@ -103,7 +103,7 @@ func TestInvalidTypes(t *testing.T) {
 		test.AssertEqual(t, expected, result)
 	})
 
-	t.Run("follows just redis keys", func(t *testing.T) {
+	test.RunParallel(t, "follows just redis keys", func(t *testing.T) {
 		input := WithRedisFlag{FieldOne: "hello", FieldTwo: 2}
 		expected := map[string]string{
 			"FieldOne": "hello",
@@ -114,7 +114,7 @@ func TestInvalidTypes(t *testing.T) {
 		test.AssertEqual(t, expected, result)
 	})
 
-	t.Run("adds all element types", func(t *testing.T) {
+	test.RunParallel(t, "adds all element types", func(t *testing.T) {
 		input := AvailableKeys{String: "foo", Bytes: []byte("bar")} // Just leave everything empty
 		expect := map[string]string{
 			"Int8": "0", "Int16": "0", "Int32": "0", "Int64": "0",
@@ -126,7 +126,7 @@ func TestInvalidTypes(t *testing.T) {
 		test.AssertEqual(t, expect, result)
 	})
 
-	t.Run("adds all named element types", func(t *testing.T) {
+	test.RunParallel(t, "adds all named element types", func(t *testing.T) {
 		input := AvailableKeysRedis{String: "foo", Bytes: []byte("bar")} // Just leave everything empty
 		expect := map[string]string{
 			"i8": "0", "i16": "0", "i32": "0", "i64": "0",
@@ -138,7 +138,7 @@ func TestInvalidTypes(t *testing.T) {
 		test.AssertEqual(t, expect, result)
 	})
 
-	t.Run("does not accept nested struct", func(t *testing.T) {
+	test.RunParallel(t, "does not accept nested struct", func(t *testing.T) {
 		type Advanced struct {
 			Basic Basic
 		}
@@ -147,7 +147,7 @@ func TestInvalidTypes(t *testing.T) {
 		test.AssertError(t, err, "invalid field")
 	})
 
-	t.Run("errors for unexposed fields", func(t *testing.T) {
+	test.RunParallel(t, "errors for unexposed fields", func(t *testing.T) {
 		type private struct {
 			Exposed bool
 			private int

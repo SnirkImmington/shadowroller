@@ -9,7 +9,7 @@ import (
 )
 
 func TestParseExlude(t *testing.T) {
-	t.Run("it parses no exclude", func(t *testing.T) {
+	test.RunParallel(t, "it parses no exclude", func(t *testing.T) {
 		ud := playerOnline{id: id.UID("someplayer"), online: false}
 		udBytes, err := json.Marshal(ud)
 		test.AssertSuccess(t, err, "marshaling json")
@@ -19,7 +19,7 @@ func TestParseExlude(t *testing.T) {
 		test.AssertEqual(t, excludeID, id.UID(""))
 		test.AssertEqual(t, excludeGMs, false)
 	})
-	t.Run("it parses an exclude", func(t *testing.T) {
+	test.RunParallel(t, "it parses an exclude", func(t *testing.T) {
 		ud := playerOnline{id: id.UID("someplayer"), online: false}
 		udBytes, err := json.Marshal(&ud)
 		t.Logf("Update: %v", string(udBytes))
