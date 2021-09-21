@@ -2,14 +2,16 @@ package gen
 
 import (
 	mathRand "math/rand"
-	"reflect"
-	"testing/quick"
+	"strings"
 )
 
 func String(rand *mathRand.Rand) string {
-	val, err := quick.Value(reflect.TypeOf(new(string)), rand)
-	if err {
-		panic("Unable to generate a random string")
+	const ascii = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !@#$%^&*()_+-=\\|[]{}`~'\":;<>,."
+	stringLen := rand.Intn(10) + 10
+	var result strings.Builder
+	for i := 0; i < stringLen; i++ {
+		ix := rand.Intn(len(ascii))
+		result.WriteByte(ascii[ix])
 	}
-	return val.Interface().(string)
+	return result.String()
 }

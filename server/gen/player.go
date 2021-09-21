@@ -28,6 +28,15 @@ func Player(rand *mathRand.Rand) *player.Player {
 	}
 }
 
+func Players(rand *mathRand.Rand) []player.Player {
+	lenPlayers := rand.Intn(4) + 1
+	result := make([]player.Player, lenPlayers)
+	for i := 0; i < lenPlayers; i++ {
+		result[i] = *Player(rand)
+	}
+	return result
+}
+
 func PlayerInfo(rand *mathRand.Rand) *player.Info {
 	return &player.Info{
 		ID:     id.GenUIDWith(rand),
