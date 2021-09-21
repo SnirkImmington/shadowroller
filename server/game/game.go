@@ -50,8 +50,8 @@ func IsGMOf(game *Info, playerID id.UID) bool {
 }
 
 // GetPlayers gets the players in a game.
-func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]*player.Player, error) {
-	var players []*player.Player
+func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]player.Player, error) {
+	var players []player.Player
 	watched := func(tx *redis.Tx) error {
 		playerIDs, err := tx.SMembers(ctx, "players:"+gameID).Result()
 		if err != nil && err != redis.Nil {
@@ -65,7 +65,7 @@ func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]*pl
 			if err != nil {
 				return fmt.Errorf("getting info on player %v: %w", playerID, err)
 			}
-			players = append(players, plr)
+			players = append(players, *plr)
 		}
 		return nil
 	}
