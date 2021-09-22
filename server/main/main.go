@@ -8,15 +8,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
+
 	"sr"
 	"sr/config"
+	srOtel "sr/otel"
 	redisUtil "sr/redis"
 	"sr/roll"
 	"sr/routes"
 	"sr/setup"
 	"sr/shutdownHandler"
 	"sr/task"
-	"time"
 )
 
 // SHADOWROLLER ascii art from  http://www.patorjk.com/software/taag/ "Small Slant"
@@ -94,6 +96,13 @@ func main() {
 	} else {
 		log.SetFlags(log.Ltime | log.Lshortfile)
 	}
+	shutdown := srOtel.Setup(ctx)
+	defer func() {
+		err := shutdown(ctx)
+		if err != nil {
+			log.Printf("otel shutdown error: %v", err)
+		}
+	}()
 	flag.Parse()
 	config.VerifyConfig()
 	shutdownHandler.Start()

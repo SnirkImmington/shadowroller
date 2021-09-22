@@ -207,6 +207,17 @@ var (
 
 	// Library Options
 
+	// OtelExport controls how otel traces and metrics are exported.
+	// - stdout      => exported to stdout. Not pretty.
+	// - oltp:url    => exported to the given otel endpoint.
+	// - uptrace => oltp exported to Uptrace with the given dsn
+	OtelExport = readString("OTEL_EXPORT", "uptrace")
+
+	// UptraceDSNFile controls the keyfile used for Uptrace export
+	UptraceDSN = readFile("OTEL_DSN_FILE", "../data/otel-dsn.txt", "")
+
+	UptraceExportURL = readString("OTEL_EXPORT_URL", "otlp.uptrace.dev:4317")
+
 	// RedisURL is the URI used to dial redis.
 	RedisURL = readString("REDIS_URL", "redis://:6379")
 	// RedisRetries controls the number of times a retry is attempted for some retryable
@@ -332,6 +343,24 @@ func readKeyFile(name string, defaultValue string) []byte {
 		panic(fmt.Sprintf("Unable to decode key %v: %v", name, err))
 	}
 	return val
+}
+
+func readFile(name string, defaultPath string, defaultValue string) string {
+	envVal, ok := os.LookupEnv("SR_" + name)
+	var foundPath string
+	if !ok {
+		foundPath = defaultPath
+	} else {
+		foundPath = envVal
+	}
+
+	fileContent, err := ioutil.ReadFile(foundPath)
+	if err != nil {
+		log.Printf("config: unable to read file %v: %v", name, err)
+		return defaultValue
+	}
+	// Allow for a trailing newline in the file
+	return strings.TrimSpace(string(fileContent))
 }
 
 // VerifyConfig performs sanity checks and prints warnings.

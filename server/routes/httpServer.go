@@ -3,14 +3,18 @@ package routes
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
+	"time"
+
+	"sr/config"
+
+	//"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"golang.org/x/crypto/acme/autocert"
-	"log"
-	"net/http"
-	"sr/config"
-	"strings"
-	"time"
 )
 
 //
@@ -25,6 +29,7 @@ func makeBaseRouter() *mux.Router {
 	router.Use(
 		mux.MiddlewareFunc(requestContextMiddleware),
 		//mux.MiddlewareFunc(requestShutdownMiddleware),
+		//otelmux.Middleware("server"),
 		mux.MiddlewareFunc(recoveryMiddleware),
 		mux.MiddlewareFunc(rateLimitedMiddleware),
 		mux.MiddlewareFunc(universalHeadersMiddleware),

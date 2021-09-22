@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"sr/game"
+	srOtel "sr/otel"
 	"sr/player"
 
 	"github.com/go-redis/redis/v8"
@@ -20,18 +21,27 @@ var ErrNotAuthorized = errors.New("not authorized")
 // Returns ErrPlayerNotFound if the username is not found, ErrGameNotFound if
 // the game is not found. These should not be distinguished to users.
 func LogPlayerIn(ctx context.Context, client *redis.Client, gameID string, username string) (*game.Info, *player.Player, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "LogPlayerIn")
+	defer span.End()
+
 	plr, err := player.GetByUsername(ctx, client, username)
 	if errors.Is(err, player.ErrNotFound) {
-		return nil, nil, fmt.Errorf("%w (%v logging into %v)", err, username, gameID)
+		err = fmt.Errorf("%w (%v logging into %v)", err, username, gameID)
+		return nil, nil, err
 	} else if err != nil {
-		return nil, nil, fmt.Errorf("redis error getting %v: %w", username, err)
+		err = fmt.Errorf("getting player %v: %w", username, err)
+		span.RecordError(err)
+		return nil, nil, err
 	}
 
 	info, err := game.GetInfo(ctx, client, gameID)
 	if errors.Is(err, game.ErrNotFound) {
-		return nil, nil, fmt.Errorf("when logging %v in to %v: %w", username, gameID, err)
+		err = fmt.Errorf("logging %v into %v: %w", username, gameID, err)
+		return nil, nil, err
 	} else if err != nil {
-		return nil, nil, fmt.Errorf("redis error fetching game info for %v: %w", gameID, err)
+		err = fmt.Errorf("fetching game info for %v: %w", gameID, err)
+		span.RecordError(err)
+		return nil, nil, err
 	}
 
 	// Ensure player is in the game

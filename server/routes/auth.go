@@ -2,10 +2,14 @@ package routes
 
 import (
 	"errors"
+
 	"sr/auth"
 	"sr/game"
 	"sr/player"
 	"sr/session"
+
+	attr "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/semconv/v1.4.0"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -25,9 +29,10 @@ type loginResponse struct {
 }
 
 // POST /auth/login { gameID, playerName } -> auth token, session token
-var _ = authRouter.HandleFunc("/login", Wrap(handleLogin)).Methods("POST")
+var _ = authRouter.HandleFunc("/login", Wrap2(handleLogin)).Methods("POST")
 
-func handleLogin(response Response, request *Request, client *redis.Client) {
+func handleLogin(args *Args) {
+	ctx, response, request, client, _ := args.Get()
 	var login loginRequest
 	err := readBodyJSON(request, &login)
 	httpBadRequestIf(response, request, err)
@@ -36,32 +41,33 @@ func handleLogin(response Response, request *Request, client *redis.Client) {
 	if !login.Persist {
 		status = "temp"
 	}
-	logf(request,
-		"Login request: %v to join %v (%v)",
-		login.Username, login.GameID, status,
+	logEvent(ctx, "Got login",
+		attr.String("request.gameID", login.GameID),
+		attr.String("request.type", status),
 	)
 
-	ctx := request.Context()
 	gameInfo, plr, err := auth.LogPlayerIn(ctx, client, login.GameID, login.Username)
 	if err != nil {
-		logf(request, "Login response: %v", err)
+		logf2(ctx, "Login response: %v", err)
 	}
 	if errors.Is(err, player.ErrNotFound) ||
 		errors.Is(err, game.ErrNotFound) ||
 		errors.Is(err, auth.ErrNotAuthorized) {
 		httpForbiddenIf(response, request, err)
-	} else if err != nil {
-		logf(request, "Error with redis operation: %v", err)
-		httpInternalErrorIf(response, request, err)
 	}
+	httpInternalErrorIf(response, request, err)
 	logf(request, "Found %v in %v", plr.ID, login.GameID)
+	logEvent(ctx, "Found player",
+		semconv.EnduserIDKey.String(plr.ID.String()),
+	)
 
 	logf(request, "Creating session %s for %v", status, plr.ID)
 	sess := session.New(plr, login.GameID, login.Persist)
 	err = session.Create(ctx, client, sess)
 	httpInternalErrorIf(response, request, err)
-	logf(request, "Created session %v for %v", sess.ID, plr.ID)
-	logf(request, "Got game info %v", gameInfo)
+	logEvent(ctx, "Created session",
+		attr.String("response.session", sess.ID.String()),
+	)
 
 	err = writeBodyJSON(response, loginResponse{
 		Player:   plr,
@@ -99,10 +105,10 @@ func handleReauth(response Response, request *Request, client *redis.Client) {
 	gameExists, err := game.Exists(ctx, client, sess.GameID)
 	httpInternalErrorIf(response, request, err)
 	if !gameExists {
-		logf(request, "Game %v does not exist", sess.GameID)
+		logf2(ctx, "Game %v does not exist", sess.GameID)
 		err = session.Remove(ctx, client, sess)
 		httpInternalErrorIf(response, request, err)
-		logf(request,
+		logf2(ctx,
 			"Removed session %v for deleted game %v", sess.ID, sess.GameID,
 		)
 		httpUnauthorized(response, request, "Your session is now invalid")
@@ -111,7 +117,7 @@ func handleReauth(response Response, request *Request, client *redis.Client) {
 
 	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	if errors.Is(err, player.ErrNotFound) {
-		logf(request, "Player %v does not exist", sess.PlayerID)
+		logf2(ctx, "Player does not exist")
 		err = session.Remove(ctx, client, sess)
 		httpInternalErrorIf(response, request, err)
 		logf(request,
