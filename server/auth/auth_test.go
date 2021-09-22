@@ -4,8 +4,10 @@ import (
 	"context"
 	"testing"
 
+	genGame "sr/gen/game"
+	genPlayer "sr/gen/player"
+
 	"sr/game"
-	"sr/gen"
 	"sr/player"
 	"sr/test"
 )
@@ -15,9 +17,9 @@ func TestLogPlayerIn(t *testing.T) {
 	_, client := test.GetRedis(t)
 	rng := test.RNG()
 
-	gameID := gen.GameID(rng)
-	plr := gen.Player(rng)
-	plr2 := gen.Player(rng)
+	gameID := genGame.GameID(rng)
+	plr := genPlayer.Player(rng)
+	plr2 := genPlayer.Player(rng)
 
 	err := game.Create(ctx, client, gameID)
 	test.AssertSuccess(t, err, "creating game")
@@ -53,13 +55,13 @@ func TestLogPlayerIn(t *testing.T) {
 	})
 
 	test.RunParallel(t, "no game", func(t *testing.T) {
-		invalidGameID := gen.GameID(rng)
+		invalidGameID := genGame.GameID(rng)
 		_, _, err := LogPlayerIn(ctx, client, invalidGameID, plr.Username)
 		test.AssertErrorIs(t, err, ErrNotAuthorized)
 	})
 
 	test.RunParallel(t, "no player", func(t *testing.T) {
-		invalidPlr := gen.Player(rng)
+		invalidPlr := genPlayer.Player(rng)
 		_, _, err := LogPlayerIn(ctx, client, gameID, invalidPlr.Username)
 		test.AssertErrorIs(t, err, player.ErrNotFound)
 	})

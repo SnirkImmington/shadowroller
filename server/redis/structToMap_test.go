@@ -1,8 +1,12 @@
-package redis
+package redis_test
 
 import (
-	"sr/test"
 	"testing"
+
+	genPlayer "sr/gen/player"
+
+	redisUtil "sr/redis"
+	"sr/test"
 )
 
 type Basic struct {
@@ -46,6 +50,14 @@ type TooComplex struct {
 	basic Basic
 }
 
+func TesetRequiredTypes(t *testing.T) {
+	test.RunParallel(t, "generates a player", func(t *testing.T) {
+		plr := genPlayer.Player(test.RNG())
+		_, err := redisUtil.StructToStringMap(&plr)
+		test.AssertSuccess(t, err, "mapping player")
+	})
+}
+
 func TestInvalidTypes(t *testing.T) {
 	test.RunParallel(t, "does not allow builtins", func(t *testing.T) {
 		cases := []struct {
@@ -62,13 +74,13 @@ func TestInvalidTypes(t *testing.T) {
 			{input: float32(1), name: "float32"},
 		}
 		for _, c := range cases {
-			_, err := StructToStringMap(&c.input)
+			_, err := redisUtil.StructToStringMap(&c.input)
 			test.AssertError(t, err, c.name)
 		}
 	})
 
 	test.RunParallel(t, "does not allow nil", func(t *testing.T) {
-		_, err := StructToStringMap(nil)
+		_, err := redisUtil.StructToStringMap(nil)
 		test.AssertError(t, err, "nil")
 	})
 
@@ -82,14 +94,14 @@ func TestInvalidTypes(t *testing.T) {
 			{input: map[string]string{"foo": "bar"}, name: "string map"},
 		}
 		for _, c := range cases {
-			_, err := StructToStringMap(&c.input)
+			_, err := redisUtil.StructToStringMap(&c.input)
 			test.AssertError(t, err, c.name)
 		}
 	})
 
 	test.RunParallel(t, "does not allow non-pointed struct", func(t *testing.T) {
 		input := Basic{Name: "hello"}
-		_, err := StructToStringMap(input)
+		_, err := redisUtil.StructToStringMap(input)
 		test.AssertError(t, err, "non-pointer error")
 	})
 
@@ -98,7 +110,7 @@ func TestInvalidTypes(t *testing.T) {
 		expected := map[string]string{
 			"Name": "hello",
 		}
-		result, err := StructToStringMap(&input)
+		result, err := redisUtil.StructToStringMap(&input)
 		test.AssertSuccess(t, err, "map created")
 		test.AssertEqual(t, expected, result)
 	})
@@ -109,7 +121,7 @@ func TestInvalidTypes(t *testing.T) {
 			"FieldOne": "hello",
 			"field3":   "2",
 		}
-		result, err := StructToStringMap(&input)
+		result, err := redisUtil.StructToStringMap(&input)
 		test.AssertSuccess(t, err, "map created")
 		test.AssertEqual(t, expected, result)
 	})
@@ -121,7 +133,7 @@ func TestInvalidTypes(t *testing.T) {
 			"Uint8": "0", "Uint16": "0", "Uint32": "0", "Uint64": "0",
 			"Bool": "false", "String": "foo", "Bytes": "bar",
 		}
-		result, err := StructToStringMap(&input)
+		result, err := redisUtil.StructToStringMap(&input)
 		test.AssertSuccess(t, err, "map created")
 		test.AssertEqual(t, expect, result)
 	})
@@ -133,7 +145,7 @@ func TestInvalidTypes(t *testing.T) {
 			"u8": "0", "u16": "0", "u32": "0", "u64": "0",
 			"bool": "false", "str": "foo", "bytes": "bar",
 		}
-		result, err := StructToStringMap(&input)
+		result, err := redisUtil.StructToStringMap(&input)
 		test.AssertSuccess(t, err, "map created")
 		test.AssertEqual(t, expect, result)
 	})
@@ -143,7 +155,7 @@ func TestInvalidTypes(t *testing.T) {
 			Basic Basic
 		}
 		input := Advanced{Basic: Basic{Name: "hello"}}
-		_, err := StructToStringMap(&input)
+		_, err := redisUtil.StructToStringMap(&input)
 		test.AssertError(t, err, "invalid field")
 	})
 
@@ -153,7 +165,7 @@ func TestInvalidTypes(t *testing.T) {
 			private int
 		}
 		input := private{}
-		_, err := StructToStringMap(&input)
+		_, err := redisUtil.StructToStringMap(&input)
 		test.AssertError(t, err, "map created")
 	})
 }

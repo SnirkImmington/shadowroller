@@ -1,9 +1,12 @@
-package gen
+package event
 
 import (
 	mathRand "math/rand"
 
+	"sr/gen"
+
 	"sr/event"
+	"sr/player"
 	"sr/roll"
 )
 
@@ -23,35 +26,32 @@ func Share(rand *mathRand.Rand) event.Share {
 	return event.Share(rand.Intn(3))
 }
 
-func RollEvent(rand *mathRand.Rand) event.Roll {
-	plr := Player(rand)
+func Roll(rand *mathRand.Rand, plr *player.Player) event.Roll {
 	pool := 1 + rand.Intn(20)
 	dice, _ := roll.MakeMathRoller(rand).Roll(pool)
 	return event.ForRoll(
 		plr,
 		Share(rand),
-		String(rand),
+		gen.String(rand),
 		dice,
 		Glitchy(rand),
 	)
 }
 
-func PushLimitEvent(rand *mathRand.Rand) event.EdgeRoll {
-	plr := Player(rand)
+func PushLimit(rand *mathRand.Rand, plr *player.Player) event.EdgeRoll {
 	pool := 4 + rand.Intn(20)
 	rounds, _ := roll.MakeMathRoller(rand).ExplodingSixes(pool)
 	return event.ForEdgeRoll(
 		plr,
 		Share(rand),
-		String(rand),
+		gen.String(rand),
 		rounds,
 		Glitchy(rand),
 	)
 }
 
-func RerollEvent(rand *mathRand.Rand) event.Reroll {
-	plr := Player(rand)
-	prev := RollEvent(rand)
+func Reroll(rand *mathRand.Rand, plr *player.Player) event.Reroll {
+	prev := Roll(rand, plr)
 	rerolled, _ := roll.MakeMathRoller(rand).RerollMisses(prev.Dice)
 	return event.ForReroll(
 		plr,
@@ -60,8 +60,7 @@ func RerollEvent(rand *mathRand.Rand) event.Reroll {
 	)
 }
 
-func InitiativeRollEvent(rand *mathRand.Rand) event.InitiativeRoll {
-	plr := Player(rand)
+func InitiativeRoll(rand *mathRand.Rand, plr *player.Player) event.InitiativeRoll {
 	seized := rand.Intn(4) == 0
 	blitzed := !seized && rand.Intn(4) == 0
 	diceCount := 1 + rand.Intn(5)
@@ -72,7 +71,7 @@ func InitiativeRollEvent(rand *mathRand.Rand) event.InitiativeRoll {
 	return event.ForInitiativeRoll(
 		plr,
 		Share(rand),
-		String(rand),
+		gen.String(rand),
 		5+rand.Intn(12),
 		dice,
 		seized,
@@ -80,28 +79,27 @@ func InitiativeRollEvent(rand *mathRand.Rand) event.InitiativeRoll {
 	)
 }
 
-func PlayerJoinEvent(rand *mathRand.Rand) event.Event {
-	plr := Player(rand)
+func PlayerJoin(rand *mathRand.Rand, plr *player.Player) event.Event {
 	return event.ForPlayerJoin(plr)
 }
 
 // Generate implements quick.Generator for Event.
-func Event(rand *mathRand.Rand) event.Event {
+func Event(rand *mathRand.Rand, plr *player.Player) event.Event {
 	ty := rand.Intn(5)
 	switch ty {
 	case 0: // initiativeRoll
-		evt := InitiativeRollEvent(rand)
+		evt := InitiativeRoll(rand, plr)
 		return &evt
 	case 1: // playerJoin
-		return PlayerJoinEvent(rand)
+		return PlayerJoin(rand, plr)
 	case 2: // roll
-		evt := RollEvent(rand)
+		evt := Roll(rand, plr)
 		return &evt
 	case 3: // edgeRoll
-		evt := PushLimitEvent(rand)
+		evt := PushLimit(rand, plr)
 		return &evt
 	case 4: // rerollFailures
-		evt := RerollEvent(rand)
+		evt := Reroll(rand, plr)
 		return &evt
 	default:
 		panic("Invalid choice when generating an event!")

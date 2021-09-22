@@ -1,8 +1,10 @@
-package gen
+package game
 
 import (
 	mathRand "math/rand"
 	"strings"
+
+	genPlayer "sr/gen/player"
 
 	"sr/game"
 	"sr/player"
@@ -29,7 +31,7 @@ func GameInfo(rand *mathRand.Rand) game.Info {
 	var gms []string
 
 	for i := 0; i < lenPlayers; i++ {
-		plr := PlayerInfo(rand)
+		plr := genPlayer.Info(rand)
 		players[plr.ID.String()] = *plr
 		if numGMs > 0 {
 			gms = append(gms, plr.ID.String())

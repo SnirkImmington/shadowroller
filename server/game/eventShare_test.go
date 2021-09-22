@@ -10,7 +10,6 @@ import (
 )
 
 func TestPlayerCanSeeEvent(t *testing.T) {
-	t.Parallel()
 	plr := &player.Player{
 		ID:          id.UID("plr"),
 		Name:        "plebby",
@@ -28,13 +27,14 @@ func TestPlayerCanSeeEvent(t *testing.T) {
 		OnlineMode:  player.OnlineModeAuto,
 	}
 
-	evt := event.ForPlayerJoin(plr)
 	test.RunParallel(t, "share in game visible", func(t *testing.T) {
+		evt := event.ForPlayerJoin(plr)
 		evt.SetShare(event.ShareInGame)
 		test.AssertEqual(t, PlayerCanSeeEvent(plr, false, evt), true)
 		test.AssertEqual(t, PlayerCanSeeEvent(plr2, true, evt), true)
 	})
 	test.RunParallel(t, "share private visible only to player", func(t *testing.T) {
+		evt := event.ForPlayerJoin(plr)
 		evt.SetShare(event.SharePrivate)
 		test.AssertEqual(t, PlayerCanSeeEvent(plr, false, evt), true)
 		test.AssertEqual(t, PlayerCanSeeEvent(plr, true, evt), true)
@@ -42,6 +42,7 @@ func TestPlayerCanSeeEvent(t *testing.T) {
 		test.AssertEqual(t, PlayerCanSeeEvent(plr2, true, evt), false)
 	})
 	test.RunParallel(t, "share private visible only to player and GMs", func(t *testing.T) {
+		evt := event.ForPlayerJoin(plr)
 		evt.SetShare(event.ShareGMs)
 		test.AssertEqual(t, PlayerCanSeeEvent(plr, false, evt), true)
 		test.AssertEqual(t, PlayerCanSeeEvent(plr, true, evt), true)
