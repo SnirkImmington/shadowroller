@@ -20,7 +20,6 @@ func setupRedis(t *testing.T) (*miniredis.Miniredis, *redis.Client) {
 	if err != nil {
 		t.Fatalf("Could not initialize miniredis: %v", err)
 	}
-	t.Cleanup(db.Close)
 	opts, err := redis.ParseURL("redis://" + db.Addr())
 	if err != nil {
 		t.Fatalf("Unable to parse url %v", db.Addr())
@@ -28,12 +27,6 @@ func setupRedis(t *testing.T) (*miniredis.Miniredis, *redis.Client) {
 	opts.MaxRetries = -1
 	opts.PoolSize = 3
 	client := redis.NewClient(opts)
-	t.Cleanup(func() {
-		err = client.Close()
-		if err != nil {
-			t.Fatalf("Error closing redis client: %v", err)
-		}
-	})
 	return db, client
 }
 
@@ -46,6 +39,19 @@ func GetRedis(t *testing.T) (*miniredis.Miniredis, *redis.Client) {
 
 func RNG() *mathRand.Rand {
 	return mathRand.New(mathRand.NewSource(mathRand.Int63()))
+}
+
+// Must fails the test on an error result.
+func Must(t *testing.T, errs ...error) {
+	t.Helper()
+	for ix, err := range errs {
+		if err != nil {
+			if len(errs) == 1 {
+				t.Fatalf("test.Must: error %v", err)
+			}
+			t.Fatalf("t.Must: error %v: %v", ix+1, err)
+		}
+	}
 }
 
 // Assert calls t.ErrorF if cond is false.

@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
+
 	"sr/id"
 	redisUtil "sr/redis"
-	"strings"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -58,7 +59,7 @@ func (p *Player) String() string {
 	)
 }
 
-// MarshalJSON writes a player to JSON. It secifies `online` instead of connections.
+// MarshalJSON writes a player to JSON. It specifies `online` instead of connections.
 func (p *Player) MarshalJSON() ([]byte, error) {
 	fields := make(map[string]interface{}, 5)
 	fields["id"] = p.ID
@@ -163,7 +164,7 @@ func GetByID(ctx context.Context, client redis.Cmdable, playerID string) (*Playe
 			"%w: no data for %v", ErrNotFound, playerID,
 		)
 	}
-	err = result.Scan(&player) // TODO does this take a reference or not
+	err = result.Scan(&player)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"scanning player %v: %w", playerID, err,
@@ -183,7 +184,7 @@ func GetIDOf(ctx context.Context, client redis.Cmdable, username string) (string
 	if username == "" {
 		return "", fmt.Errorf("%w: empty username passed to player.GetIDOf", ErrNilPlayer)
 	}
-	playerID, err := client.Get(ctx, "player_id:"+username).Result()
+	playerID, err := client.HGet(ctx, "player_ids", username).Result()
 	if errors.Is(err, redis.Nil) {
 		return "", fmt.Errorf(
 			"%w: %v", ErrNotFound, username,
@@ -203,7 +204,7 @@ func GetIDOf(ctx context.Context, client redis.Cmdable, username string) (string
 // Returns ErrPlayerNotFound if no player is found.
 func GetByUsername(ctx context.Context, client redis.Cmdable, username string) (*Player, error) {
 	if username == "" {
-		return nil, fmt.Errorf("empty username passed to player.GetByUsername")
+		return nil, fmt.Errorf("%w: empty username passed to player.GetByUsername", ErrNilPlayer)
 	}
 
 	playerID, err := client.HGet(ctx, "player_ids", username).Result()
@@ -289,6 +290,9 @@ func GetPlayerChars(playerID UID) ([]Char, error) {
 
 // Create adds the given player to the database
 func Create(ctx context.Context, client redis.Cmdable, player *Player) error {
+	if player == nil {
+		return fmt.Errorf("%w: nil player passed to player.Create", ErrNilPlayer)
+	}
 	var setUsername *redis.IntCmd
 	var setPlayer *redis.IntCmd
 	playerMap, err := redisUtil.StructToStringMap(player)
@@ -308,7 +312,7 @@ func Create(ctx context.Context, client redis.Cmdable, player *Player) error {
 	}
 	if count, err := setPlayer.Result(); err != nil || count < int64(len(playerMap)) {
 		return fmt.Errorf(
-			"expected %v fields to be added to player, got %v %w",
+			"expected %v fields to be added to player, got %v (%v)",
 			len(playerMap), count, err,
 		)
 	}

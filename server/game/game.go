@@ -20,7 +20,6 @@ var ErrTransactionAborted = errors.New("transaction aborted")
 
 // Exists returns whether the given game exists in Redis.
 func Exists(ctx context.Context, client redis.Cmdable, gameID string) (bool, error) {
-	// TODO request ID
 	num, err := client.Exists(ctx, "game:"+gameID).Result()
 	return num == 1, err
 }
