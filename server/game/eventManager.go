@@ -74,9 +74,8 @@ func DeleteEvent(ctx context.Context, client redis.Cmdable, gameID string, evt e
 func UpdateEventShare(ctx context.Context, client redis.Cmdable, gameID string, evt event.Event, newShare event.Share) error {
 	eventID := evt.GetID()
 	if evt.GetShare() == newShare {
-		return fmt.Errorf("event %s matches share %s", evt, newShare.String())
+		return fmt.Errorf("share matches: event %v share %v matches new share %s", evt.GetID(), evt.GetShare().String(), newShare.String())
 	}
-	res := client.foo()
 
 	// Do the logic of figuring out how to send the minimum number of updates
 	packets := sharePacketsModifyingEvent(gameID, evt, newShare)
