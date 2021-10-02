@@ -33,10 +33,10 @@ var (
 	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", false)
 
 	// StreamDebug toggles extra logging for the SSE stream tasks
-	StreamDebug = readBool("STREAM_DEBUG", true)
+	StreamDebug = readBool("STREAM_DEBUG", false)
 
 	// UpdatesDebug toggles extra logging for updates being created and sent
-	UpdatesDebug = readBool("UDPATES_DEBUG", true)
+	UpdatesDebug = readBool("UDPATES_DEBUG", false)
 
 	// SlowResponsesDebug adds 5s to each response handler for debugging purposes.
 	// This value is ignored on production.
