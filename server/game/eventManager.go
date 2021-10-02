@@ -76,6 +76,7 @@ func UpdateEventShare(ctx context.Context, client redis.Cmdable, gameID string, 
 	if evt.GetShare() == newShare {
 		return fmt.Errorf("event %s matches share %s", evt, newShare.String())
 	}
+	res := client.foo()
 
 	// Do the logic of figuring out how to send the minimum number of updates
 	packets := sharePacketsModifyingEvent(gameID, evt, newShare)
@@ -99,7 +100,7 @@ func UpdateEventShare(ctx context.Context, client redis.Cmdable, gameID string, 
 			return fmt.Errorf("redis error sending event delete: %w", err)
 		}
 		for _, packet := range packets {
-			err := publishPacket(ctx, client, &packet)
+			err := publishPacket(ctx, pipe, &packet)
 			if err != nil {
 				return fmt.Errorf("sending packet %#v: %w", packet, err)
 			}
@@ -109,10 +110,10 @@ func UpdateEventShare(ctx context.Context, client redis.Cmdable, gameID string, 
 
 	// EXEC: [#deleted=1, #added=1, #players1, ...#players3]
 	if err != nil {
-		return fmt.Errorf("redis error EXECing event post: %w", err)
+		return fmt.Errorf("ececing event post: %w", err)
 	}
 	if len(results) < 4 {
-		return fmt.Errorf("redis error updating event share, expected [1, 1, **], got %v", results)
+		return fmt.Errorf("updating event share, expected [1, 1, **], got %v", results)
 	}
 	return nil
 }
