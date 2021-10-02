@@ -24,6 +24,7 @@ func makeBaseRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Use(
 		mux.MiddlewareFunc(requestContextMiddleware),
+		//mux.MiddlewareFunc(requestShutdownMiddleware),
 		mux.MiddlewareFunc(recoveryMiddleware),
 		mux.MiddlewareFunc(rateLimitedMiddleware),
 		mux.MiddlewareFunc(universalHeadersMiddleware),

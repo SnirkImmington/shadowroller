@@ -6,19 +6,20 @@ import (
 	"sr/player"
 	"sr/update"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var playerRouter = restRouter.PathPrefix("/player").Subrouter()
 
-var _ = playerRouter.HandleFunc("/update", handleUpdatePlayer).Methods("POST")
+var _ = playerRouter.HandleFunc("/update", Wrap(handleUpdatePlayer)).Methods("POST")
 
 type playerUpdateRequest struct {
 	Diff map[string]interface{} `json:"diff"`
 }
 
-func handleUpdatePlayer(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleUpdatePlayer(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var updateRequest playerUpdateRequest
@@ -64,7 +65,7 @@ func handleUpdatePlayer(response Response, request *Request) {
 			mode = modeInt
 
 			// Determine if online mode changes player online status
-			plr, err := player.GetByID(string(sess.PlayerID), conn)
+			plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
 			httpInternalErrorIf(response, request, err)
 			previouslyOnline := plr.IsOnline()
 			// Change the variable `plr` to see if the change affects IsOnline()
@@ -88,7 +89,7 @@ func handleUpdatePlayer(response Response, request *Request) {
 		httpBadRequest(response, request, "No update made?")
 	}
 
-	err = game.UpdatePlayer(sess.GameID, sess.PlayerID, externalUpdate, internalUpdate, conn)
+	err = game.UpdatePlayer(ctx, client, sess.GameID, sess.PlayerID, externalUpdate, internalUpdate)
 	httpInternalErrorIf(response, request, err)
 	err = writeBodyJSON(response, internalDiff)
 	httpInternalErrorIf(response, request, err)

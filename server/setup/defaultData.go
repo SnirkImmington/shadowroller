@@ -1,18 +1,20 @@
 package setup
 
 import (
+	"context"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"log"
+	"strings"
+
 	"sr/config"
 	"sr/game"
 	"sr/player"
-	redisUtil "sr/redis"
-	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
-func addHardcodedGames(conn redis.Conn) error {
-	gameKeys, err := redis.Strings(conn.Do("keys", "game:*"))
+func addHardcodedGames(ctx context.Context, client redis.Cmdable) error {
+	gameKeys, err := client.Keys(ctx, "game:*").Result()
 	if err != nil {
 		return fmt.Errorf("reading games from redis: %w", err)
 	}
@@ -23,7 +25,8 @@ func addHardcodedGames(conn redis.Conn) error {
 	if !config.IsProduction && len(gameKeys) < len(config.HardcodedGameNames) {
 		log.Printf("Creating games %v", config.HardcodedGameNames)
 		for i, game := range config.HardcodedGameNames {
-			if _, err := conn.Do("hmset", "game:"+game, "event_id", 0); err != nil {
+			_, err := client.HMSet(ctx, "game:"+game, "event_id", 0).Result()
+			if err != nil {
 				return fmt.Errorf("unable to add game #%v, %v: %w", i+1, game, err)
 			}
 		}
@@ -31,12 +34,12 @@ func addHardcodedGames(conn redis.Conn) error {
 	return nil
 }
 
-func addHardcodedPlayers(conn redis.Conn) error {
-	playerKeys, err := redis.Strings(conn.Do("keys", "player:*"))
+func addHardcodedPlayers(ctx context.Context, client redis.Cmdable) error {
+	playerKeys, err := client.Keys(ctx, "player:*").Result()
 	if err != nil {
 		return fmt.Errorf("reading player keys from redis: %w", err)
 	}
-	playerMapping, err := redis.StringMap(conn.Do("hgetall", "player_ids"))
+	playerMapping, err := client.HGetAll(ctx, "player_ids").Result()
 	if err != nil {
 		return fmt.Errorf("reading player ID mapping from redis: %w", err)
 	}
@@ -62,12 +65,12 @@ func addHardcodedPlayers(conn redis.Conn) error {
 		games := config.HardcodedGameNames
 		for _, username := range config.HardcodedUsernames {
 			plr := player.Make(username, strings.Title(username))
-			err := player.Create(&plr, conn)
+			err := player.Create(ctx, client, &plr)
 			if err != nil {
 				return fmt.Errorf("creating %v: %w", username, err)
 			}
 			for _, gameID := range games {
-				err := game.AddPlayer(gameID, &plr, conn)
+				err := game.AddPlayer(ctx, client, gameID, &plr)
 				if err != nil {
 					return fmt.Errorf("adding %v to %v: %w", username, gameID, err)
 				}
@@ -79,14 +82,11 @@ func addHardcodedPlayers(conn redis.Conn) error {
 
 // CheckGamesAndPlayers adds the game names from the config to Redis
 // if missing, and prints existing games and players.
-func CheckGamesAndPlayers() {
-	conn := redisUtil.Connect()
-	defer redisUtil.Close(conn)
-
-	if err := addHardcodedGames(conn); err != nil {
+func CheckGamesAndPlayers(ctx context.Context, client redis.Cmdable) {
+	if err := addHardcodedGames(ctx, client); err != nil {
 		panic(fmt.Errorf("Error adding hardcoded games: %w", err))
 	}
-	if err := addHardcodedPlayers(conn); err != nil {
+	if err := addHardcodedPlayers(ctx, client); err != nil {
 		panic(fmt.Errorf("Error adding hardcoded players: %w", err))
 	}
 }

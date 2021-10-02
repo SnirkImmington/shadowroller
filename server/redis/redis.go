@@ -2,68 +2,127 @@ package redis
 
 import (
 	"context"
-	"github.com/gomodule/redigo/redis"
+	"fmt"
 	"log"
 	"os"
+	"strings"
+
 	"sr/config"
-	"time"
+	"sr/taskCtx"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var logger *log.Logger
 
-// RedisPool is the pool of redis connections
-var pool = &redis.Pool{
-	MaxIdle:     10,
-	IdleTimeout: time.Duration(60) * time.Second,
-	Dial: func() (redis.Conn, error) {
-		conn, err := redis.DialURL(config.RedisURL)
-		if config.RedisDebug && err == nil {
-			return redis.NewLoggingConn(conn, logger, "redis"), nil
-		}
-		if config.RedisConnectionsDebug {
-			log.Printf("Dialing connection from pool: %p", conn)
-		}
-		return conn, err
-	},
-	DialContext: func(ctx context.Context) (redis.Conn, error) {
-		conn, err := redis.DialURL(config.RedisURL)
-		if config.RedisDebug && err == nil {
-			return redis.NewLoggingConn(conn, logger, "redis"), nil
-		}
-		if config.RedisConnectionsDebug {
-			log.Printf("Dialing connection from pool: %p", conn)
-		}
-		return conn, err
-	},
-}
+// Client is the redis client to be used across the service. It is initialized in
+// main and is closed in `Close()`
+var Client *redis.Client
 
-// Connect opens a connection from the redis pool
-func Connect() redis.Conn {
-	return pool.Get()
-}
+type redisHooks struct{}
 
-func ConnectWithContext(ctx context.Context) (redis.Conn, error) {
-	return pool.GetContext(ctx)
-}
+var hooks redis.Hook = redisHooks{}
 
-// Close closes a redis connection and logs errors if they occur
-func Close(conn redis.Conn) {
-	if config.RedisConnectionsDebug {
-		log.Printf("Called redisUtil.Close(): %p", conn)
+func printCmd(cmd redis.Cmder) string {
+	var nameParts []string
+	for ix, arg := range cmd.Args() {
+		if ix == 0 {
+			nameParts = append(nameParts, strings.ToUpper(arg.(string)))
+		} else {
+			nameParts = append(nameParts, fmt.Sprintf("%v", arg))
+		}
 	}
-	if conn == nil {
-		log.Printf("Attempted to close nil connection")
-		return
+	name := strings.Join(nameParts, " ")
+	full := cmd.String()
+	if len(full) > len(name)+2 {
+		return fmt.Sprintf("%v => %v", name, full[len(name)+2:])
 	}
-	err := conn.Close()
-	if err != nil {
-		log.Printf("Error closing redis connection %p: %v", conn, err)
-	}
+	return full
 }
 
-// SetupWithConfig sets up redis using Shadowroller's config
+func (_ redisHooks) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+	return ctx, nil
+}
+
+func (_ redisHooks) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+	id := taskCtx.GetID(ctx)
+	if id != 0 {
+		taskCtx.RawLog(ctx, 1, "%v", printCmd(cmd))
+	} else {
+		logger.Printf("%v", printCmd(cmd))
+	}
+	return nil
+}
+
+func (_ redisHooks) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+	return ctx, nil
+}
+
+func (_ redisHooks) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+	id := taskCtx.GetID(ctx)
+	if id != 0 {
+		taskCtx.RawLog(ctx, 1, "Redis pipline (%v)", len(cmds))
+		for ix, cmd := range cmds {
+			taskCtx.RawLog(ctx, 1, "%02d: %v", ix, printCmd(cmd))
+		}
+	} else {
+		logger.Printf("Pipeline %v:", len(cmds))
+		for ix, cmd := range cmds {
+			logger.Printf("%02d %v", ix, printCmd(cmd))
+		}
+	}
+	return nil
+}
+
+// RetryWatchTxn retries a WATCH transaction based on config.RedisRetries.
+func RetryWatchTxn(ctx context.Context, client *redis.Client, txf func(*redis.Tx) error, keys ...string) error {
+	for i := 0; i < config.RedisRetries; i++ {
+		err := client.Watch(ctx, txf, keys...)
+		if err == nil {
+			return nil
+		}
+		if err == redis.TxFailedErr {
+			continue
+		}
+		return fmt.Errorf("%w (try %v)", err, i+1)
+	}
+	return fmt.Errorf("%w: no more retries", redis.TxFailedErr)
+}
+
+// SetupWithConfig configures Client.
 func SetupWithConfig() {
-	if config.RedisDebug {
+	if config.RedisDebug || config.RedisConnectionsDebug {
 		logger = log.New(os.Stdout, "", log.Ltime|log.Lshortfile)
+	}
+	opts, err := redis.ParseURL(config.RedisURL)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing redis URL even after config check: %v", err))
+	}
+	opts.MaxRetries = config.RedisRetries
+	opts.PoolSize = 10 // I don't think we get accurate information running in a container.
+	if config.RedisConnectionsDebug {
+		opts.OnConnect = func(ctx context.Context, conn *redis.Conn) error {
+			if id := taskCtx.GetID(ctx); id != 0 {
+				taskCtx.Log(ctx, "Connected to redis")
+			} else {
+				logger.Printf("Connected to redis")
+			}
+			return nil
+		}
+	}
+	Client = redis.NewClient(opts)
+	if config.RedisDebug {
+		Client.AddHook(hooks)
+	}
+}
+
+// Close closes the redis client(s). It should only be called at process termination.
+func Close() {
+	if config.RedisConnectionsDebug {
+		logger.Printf("Called redisUtil.Close()")
+	}
+	err := Client.Close()
+	if err != nil {
+		logger.Printf("Error closing redis conn: %v", err)
 	}
 }

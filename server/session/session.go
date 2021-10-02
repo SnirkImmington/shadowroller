@@ -1,13 +1,16 @@
 package session
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"sr/config"
 	"sr/id"
 	"sr/player"
+	redisUtil "sr/redis"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // Session is a temporary or persistent authentication token for users.
@@ -58,74 +61,77 @@ func (s *Session) redisKey() string {
 	return "session:" + string(s.ID)
 }
 
-// New makes a new session for the given player.
-// MakeSession adds a session for the given player in the given game
-func New(gameID string, player *player.Player, persist bool, conn redis.Conn) (*Session, error) {
+// New constructs a new session.
+func New(plr *player.Player, gameID string, persist bool) *Session {
 	sessionID := id.GenSessionID()
-	session := Session{
+	return &Session{
 		ID:       sessionID,
 		GameID:   gameID,
-		PlayerID: player.ID,
-		Username: player.Username,
+		PlayerID: plr.ID,
+		Username: plr.Username,
 		Persist:  persist,
 	}
+}
 
-	sessionArgs := redis.Args{}.Add(session.redisKey()).AddFlat(&session)
-	_, err := redis.String(conn.Do("hmset", sessionArgs...))
+// New makes a new session for the given player.
+// MakeSession adds a session for the given player in the given game
+func Create(ctx context.Context, client redis.Cmdable, sess *Session) error {
+	sessionFields, err := redisUtil.StructToStringMap(sess)
 	if err != nil {
-		return nil, fmt.Errorf("Redis error adding session %v: %w", sessionID, err)
+		return fmt.Errorf("getting fields for session %v: %w", sess, err)
 	}
-	_, err = session.Expire(conn)
+	ok, err := client.HMSet(ctx, sess.redisKey(), sessionFields).Result() // TODO it expects a list, not a map?
+	if err != nil || !ok {
+		return fmt.Errorf("HMSET adding session %v: %w", sess, err)
+	}
+	_, err = Expire(ctx, client, sess)
 	if err != nil {
-		return nil, fmt.Errorf("Redis error expiring session %v: %w", sessionID, err)
+		return fmt.Errorf("Redis error expiring session %v: %w", sess, err)
 	}
-	return &session, nil
+	return nil
 }
 
 var errNilSession = errors.New("Nil sessionID requested")
 var errNoSessionData = errors.New("Session not found")
 
 // Exists returns whether the session exists in Redis.
-func Exists(sessionID string, conn redis.Conn) (bool, error) {
+func Exists(ctx context.Context, client redis.Cmdable, sessionID string) (bool, error) {
 	if sessionID == "" {
 		return false, errNilSession
 	}
-	return redis.Bool(conn.Do("exists", "session:"+sessionID))
+	count, err := client.Exists(ctx, "session:"+sessionID).Result()
+	return count == 1, err
 }
 
 // GetByID retrieves a session from redis.
-func GetByID(sessionID string, conn redis.Conn) (*Session, error) {
+func GetByID(ctx context.Context, client redis.Cmdable, sessionID string) (*Session, error) {
 	if sessionID == "" {
 		return nil, errNilSession
 	}
-	var session Session
-	data, err := conn.Do("hgetall", "session:"+sessionID)
+	var sess Session
+	result := client.HGetAll(ctx, "session:"+sessionID)
+	data, err := result.Result()
 	if err != nil {
-		return nil, fmt.Errorf("Redis error retrieving data for %v: %w", sessionID, err)
+		return nil, fmt.Errorf("retrieving data for %v: %w", sessionID, err)
 	}
-	if data == nil || len(data.([]interface{})) == 0 {
+	if data == nil || len(data) == 0 {
 		return nil, errNoSessionData
 	}
-	err = redis.ScanStruct(data.([]interface{}), &session)
+	err = result.Scan(&sess)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing session struct: %w", err)
+		return nil, fmt.Errorf("parsing session struct: %w", err)
 	}
-	if session.GameID == "" || session.PlayerID == "" {
+	if sess.GameID == "" || sess.PlayerID == "" {
 		return nil, errNoSessionData
 	}
-	session.ID = id.UID(sessionID)
+	sess.ID = id.UID(sessionID)
 
-	return &session, nil
-}
-
-// GetPlayer retrieves the full player info for a given session
-func (s *Session) GetPlayer(conn redis.Conn) (*player.Player, error) {
-	return player.GetByID(string(s.PlayerID), conn)
+	return &sess, nil
 }
 
 // Remove removes a session from Redis.
-func (s *Session) Remove(conn redis.Conn) error {
-	result, err := redis.Int(conn.Do("DEL", s.redisKey()))
+func Remove(ctx context.Context, client redis.Cmdable, sess *Session) error {
+	result, err := client.Del(ctx, sess.redisKey()).Result()
 	if err != nil {
 		return fmt.Errorf("sending redis DEL: %w", err)
 	}
@@ -136,17 +142,17 @@ func (s *Session) Remove(conn redis.Conn) error {
 }
 
 // Expire sets the session to expire in `config.SesssionExpirySecs`.
-func (s *Session) Expire(conn redis.Conn) (bool, error) {
-	ttl := config.TempSessionTTLSecs
-	if s.Persist {
-		ttl = int(time.Duration(config.PersistSessionTTLDays*24) * time.Hour)
+func Expire(ctx context.Context, client redis.Cmdable, sess *Session) (bool, error) {
+	var ttl time.Duration
+	if sess.Persist {
+		ttl = time.Duration(config.PersistSessionTTLDays*24) * time.Hour
+	} else {
+		ttl = time.Duration(config.TempSessionTTLSecs) * time.Second
 	}
-	return redis.Bool(conn.Do(
-		"expire", s.redisKey(), ttl,
-	))
+	return client.Expire(ctx, sess.redisKey(), ttl).Result()
 }
 
 // Unexpire prevents the session from exipiring.
-func (s *Session) Unexpire(conn redis.Conn) (bool, error) {
-	return redis.Bool(conn.Do("persist", s.redisKey()))
+func Unexpire(ctx context.Context, client redis.Cmdable, sess *Session) (bool, error) {
+	return client.Persist(ctx, sess.redisKey()).Result()
 }

@@ -3,14 +3,14 @@ package routes
 import (
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
+	"time"
+
 	"sr/config"
 	"sr/game"
 	"sr/id"
 	"sr/player"
-	redisUtil "sr/redis"
-	"sr/session"
-	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // RegisterTasksViaConfig adds the /task route if it's enabled.
@@ -26,40 +26,29 @@ func RegisterTasksViaConfig() {
 
 var tasksRouter = makeTasksRouter()
 
-var _ = tasksRouter.HandleFunc("/clear-all-sessions", handleClearSessions).Methods("GET")
+var _ = tasksRouter.HandleFunc("/clear-all-sessions", Wrap(handleClearSessions)).Methods("GET")
 
-func handleClearSessions(response Response, request *Request) {
-	logRequest(request)
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
-	keyNames, err := redis.Strings(conn.Do("keys", "session:*"))
+func handleClearSessions(response Response, request *Request, client *redis.Client) {
+	ctx := request.Context()
+	keys, err := client.Keys(ctx, "session:*").Result()
 	httpInternalErrorIf(response, request, err)
 
-	httpInternalErrorIf(response, request,
-		conn.Send("MULTI"),
-	)
-	for _, keyName := range keyNames {
-		httpInternalErrorIf(response, request,
-			conn.Send("DEL", keyName),
-		)
-	}
-	results, err := redis.Ints(conn.Do("EXEC"))
+	deleted, err := client.Del(ctx, keys...).Result()
 	httpInternalErrorIf(response, request, err)
-	if len(results) != len(keyNames) {
-		logf(request, "Expected %v results, got %v", len(keyNames), results)
+
+	if deleted != int64(len(keys)) {
+		logf(request, "Expected %v results, got %v", len(keys), deleted)
 		httpInternalError(response, request, "Invalid response from redis")
 	}
 	httpSuccess(response, request,
-		"Deleted ", len(results), " sessions",
+		"Deleted ", deleted, " sessions",
 	)
 }
 
-var _ = tasksRouter.HandleFunc("/timeout-all-sessions", handleTimeoutAllSessions).Methods("GET")
+var _ = tasksRouter.HandleFunc("/timeout-all-sessions", Wrap(handleTimeoutAllSessions)).Methods("GET")
 
-func handleTimeoutAllSessions(response Response, request *Request) {
-	logRequest(request)
-
+func handleTimeoutAllSessions(response Response, request *Request, client *redis.Client) {
+	ctx := request.Context()
 	durString := request.FormValue("dur")
 	if durString == "" {
 		httpBadRequest(response, request, "Must specify dur")
@@ -70,26 +59,20 @@ func handleTimeoutAllSessions(response Response, request *Request) {
 		msg := fmt.Sprintf("Error parsing duration: %v", err)
 		httpBadRequest(response, request, msg)
 	}
-	durSecs := int64(dur.Seconds())
 
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
-	keyNames, err := redis.Strings(conn.Do("keys", "session:*"))
+	keys, err := client.Keys(ctx, "session:*").Result()
 	httpInternalErrorIf(response, request, err)
 
-	httpInternalErrorIf(response, request,
-		conn.Send("MULTI"),
-	)
-	for _, keyName := range keyNames {
-		httpInternalErrorIf(response, request,
-			conn.Send("EXPIRE", keyName, durSecs),
-		)
-	}
-	results, err := redis.Ints(conn.Do("EXEC"))
+	results, err := client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+		for _, key := range keys {
+			pipe.Expire(ctx, key, dur)
+		}
+		return nil
+	})
 	httpInternalErrorIf(response, request, err)
-	if len(results) != len(keyNames) {
-		logf(request, "Expected %v results, got %v", len(keyNames), results)
+
+	if len(results) != len(keys) {
+		logf(request, "Expected %v results, got %v", len(keys), results)
 		httpInternalError(response, request, "Invalid response from redis")
 	}
 	httpSuccess(response, request,
@@ -97,27 +80,21 @@ func handleTimeoutAllSessions(response Response, request *Request) {
 	)
 }
 
-var _ = tasksRouter.HandleFunc("/create-game", handleCreateGame).Methods("GET")
+var _ = tasksRouter.HandleFunc("/create-game", Wrap(handleCreateGame)).Methods("GET")
 
-func handleCreateGame(response Response, request *Request) {
-	logRequest(request)
+func handleCreateGame(response Response, request *Request, client *redis.Client) {
 	gameID := request.FormValue("gameID")
 	if gameID == "" {
 		httpBadRequest(response, request, "Invalid game ID")
 	}
 
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
-	if exists, err := game.Exists(gameID, conn); exists {
+	ctx := request.Context()
+	if exists, err := game.Exists(ctx, client, gameID); exists || err != nil {
 		httpInternalErrorIf(response, request, err)
 		httpBadRequest(response, request, "Game already exists")
 	}
 
-	set, err := redis.Int(conn.Do(
-		"HSET", "game:"+gameID,
-		"created_at", id.TimestampNow(),
-	))
+	set, err := client.HSet(ctx, "game:"+gameID, "created_at", id.TimestampNow()).Result()
 	httpInternalErrorIf(response, request, err)
 	if set != 1 {
 		httpInternalError(response, request,
@@ -129,30 +106,29 @@ func handleCreateGame(response Response, request *Request) {
 	)
 }
 
-var _ = tasksRouter.HandleFunc("/delete-game", handleCreateGame).Methods("GET")
+var _ = tasksRouter.HandleFunc("/delete-game", Wrap(handleDeleteGame)).Methods("GET")
 
-func handleDeleteGame(response Response, request *Request) {
-	logRequest(request)
+func handleDeleteGame(response Response, request *Request, client *redis.Client) {
 	gameID := request.FormValue("gameID")
 	if gameID == "" {
 		httpBadRequest(response, request, "Invalid game ID")
 	}
 
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
-	if exists, err := game.Exists(gameID, conn); !exists {
+	ctx := request.Context()
+	if exists, err := game.Exists(ctx, client, gameID); !exists || err != nil {
 		httpInternalErrorIf(response, request, err)
 		httpBadRequest(response, request, "Game does not exist")
 	}
 
-	set, err := redis.Int(conn.Do(
-		"del", "game:"+gameID,
-	))
+	results, err := client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		pipe.Del(ctx, "game:"+gameID)
+		pipe.Del(ctx, "players:"+gameID)
+		return nil
+	})
 	httpInternalErrorIf(response, request, err)
-	if set != 1 {
+	if len(results) != 2 {
 		httpInternalError(response, request,
-			fmt.Sprintf("Expected 1 game to be deleted, got %v", set),
+			fmt.Sprintf("expected 2 keys to be deleted, got %v", results),
 		)
 	}
 	httpSuccess(response, request,
@@ -160,14 +136,10 @@ func handleDeleteGame(response Response, request *Request) {
 	)
 }
 
-var _ = tasksRouter.HandleFunc("/create-player", handleCreatePlayer).Methods("GET")
+var _ = tasksRouter.HandleFunc("/create-player", Wrap(handleCreatePlayer)).Methods("GET")
 
-func handleCreatePlayer(response Response, request *Request) {
-	logRequest(request)
-
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
+func handleCreatePlayer(response Response, request *Request, client *redis.Client) {
+	ctx := request.Context()
 	username := request.FormValue("uname")
 	if username == "" {
 		httpBadRequest(response, request, "Username `uname` not specified")
@@ -176,29 +148,20 @@ func handleCreatePlayer(response Response, request *Request) {
 	if name == "" {
 		httpBadRequest(response, request, "Name `name` not specified")
 	}
-	id := id.GenUID()
-	hue := player.RandomHue()
 
-	plr := player.Player{
-		ID:       id,
-		Username: username,
-		Name:     name,
-		Hue:      hue,
-	}
+	plr := player.Make(username, name)
 	logf(request, "Created %#v", plr)
 
-	err := player.Create(&plr, conn)
+	err := player.Create(ctx, client, &plr)
 	httpInternalErrorIf(response, request, err)
 	httpSuccess(response, request,
 		"Player ", plr.Username, " created with ID ", plr.ID,
 	)
 }
 
-var _ = tasksRouter.HandleFunc("/add-to-game", handleAddToGame).Methods("GET")
+var _ = tasksRouter.HandleFunc("/add-to-game", Wrap(handleAddToGame)).Methods("GET")
 
-func handleAddToGame(response Response, request *Request) {
-	logRequest(request)
-
+func handleAddToGame(response Response, request *Request, client *redis.Client) {
 	username := request.FormValue("uname")
 	if username == "" {
 		httpBadRequest(response, request, "Username `uname` not specified")
@@ -208,10 +171,8 @@ func handleAddToGame(response Response, request *Request) {
 		httpBadRequest(response, request, "GameID `game` not specified")
 	}
 
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
-	plr, err := player.GetByUsername(username, conn)
+	ctx := request.Context()
+	plr, err := player.GetByUsername(ctx, client, username)
 	if errors.Is(err, player.ErrNotFound) {
 		httpBadRequest(response, request,
 			fmt.Sprintf("Player with username %v not found", username),
@@ -220,21 +181,17 @@ func handleAddToGame(response Response, request *Request) {
 	httpInternalErrorIf(response, request, err)
 	logf(request, "Found %#v", plr)
 
-	err = game.AddPlayer(gameID, plr, conn)
+	err = game.AddPlayer(ctx, client, gameID, plr)
 	httpInternalErrorIf(response, request, err)
 	httpSuccess(response, request,
 		"Added ", plr, " to ", gameID,
 	)
 }
 
-var _ = tasksRouter.HandleFunc("/trim-players", handleTrimPlayers).Methods("GET")
+/*
+var _ = tasksRouter.HandleFunc("/trim-players", Wrap(handleTrimPlayers)).Methods("GET")
 
-func handleTrimPlayers(response Response, request *Request) {
-	logRequest(request)
-	_, conn, err := requestSession(request)
-	defer closeRedis(request, conn)
-	httpUnauthorizedIf(response, request, err)
-
+func handleTrimPlayers(response Response, request *Request, client *redis.Client) {
 	gameID := request.URL.Query().Get("gameID")
 	if gameID == "" {
 		httpBadRequest(response, request, "No game ID given")
@@ -265,3 +222,4 @@ func handleTrimPlayers(response Response, request *Request) {
 		httpInternalErrorIf(response, request, err)
 	}
 }
+*/

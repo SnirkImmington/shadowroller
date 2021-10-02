@@ -1,50 +1,47 @@
 package game
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
-	"log"
+
 	"sr/id"
 	"sr/player"
 	"sr/update"
+
+	"github.com/go-redis/redis/v8"
 )
 
-// AddPlayer adds an existing player to a specific game
-func AddPlayer(gameID string, player *player.Player, conn redis.Conn) error {
+// AddPlayer adds a player to a given game.
+func AddPlayer(ctx context.Context, client redis.Cmdable, gameID string, player *player.Player) error {
 	updateBytes, err := json.Marshal(update.ForPlayerAdd(player))
 	if err != nil {
 		return fmt.Errorf("marshal update to JSON: %w", err)
 	}
-	// MULTI: create player, publish update
-	if err = conn.Send("MULTI"); err != nil {
-		return fmt.Errorf("sending MULTI for player update: %w", err)
-	}
-	// Update game player list
-	if err = conn.Send("SADD", "players:"+gameID, player.ID); err != nil {
-		return fmt.Errorf("sending SADD for player update: %w", err)
-	}
-	// Send update
-	if err = conn.Send("PUBLISH", "update:"+gameID, updateBytes); err != nil {
-		return fmt.Errorf("sending PUBLISH for player update; %w", err)
-	}
-	// EXEC: [#added=1, #updated]
-	results, err := redis.Ints(conn.Do("EXEC"))
+
+	var added *redis.IntCmd
+	var published *redis.IntCmd
+	_, err = client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		added = pipe.SAdd(ctx, "players:"+gameID, player.ID)
+		published = pipe.Publish(ctx, "update:"+gameID, updateBytes)
+		return nil
+	})
 	if err != nil {
-		return fmt.Errorf("redis error sending EXEC: %w", err)
+		return fmt.Errorf("running transaction: %v", err)
 	}
-	if len(results) != 2 || results[0] != 1 {
-		return fmt.Errorf(
-			"redis invalid adding %v to %v: expected [1, *], got %v",
-			player, gameID, results,
-		)
+
+	if added, err := added.Result(); err != nil || added != 1 {
+		return fmt.Errorf("adding to list: expected to add 1, got %v %v", added, err)
+	}
+	if err := published.Err(); err != nil {
+		return fmt.Errorf("publishing: %w", err)
 	}
 	return nil
 }
 
 // UpdatePlayerConnections tracks a player's online status, and updates the game accordingly
-func UpdatePlayerConnections(gameID string, playerID id.UID, mod int, conn redis.Conn) (int, error) {
-	newConns, err := player.ModifyConnections(playerID, mod, conn)
+func UpdatePlayerConnections(ctx context.Context, client redis.Cmdable, gameID string, playerID id.UID, mod int) (int64, error) {
+	newConns, err := player.ModifyConnections(ctx, client, playerID, mod)
 	if err != nil {
 		return 0, fmt.Errorf("redis error updating connections for %v: %w", playerID, err)
 	}
@@ -64,14 +61,13 @@ func UpdatePlayerConnections(gameID string, playerID id.UID, mod int, conn redis
 	} else if newConns == 1 && mod == player.IncreaseConnections {
 		ud = update.ForPlayerOnline(playerID, true)
 	} else {
-		log.Printf("Mod = %v, connections = %v, not sending an update", mod, newConns)
 		return newConns, nil
 	}
 	updateBytes, err := json.Marshal(ud)
 	if err != nil {
 		return newConns, fmt.Errorf("unable to marshal %#v to JSON: %w", ud, err)
 	}
-	if _, err = conn.Do("PUBLISH", "update:"+gameID, updateBytes); err != nil {
+	if err = client.Publish(ctx, "update:"+gameID, updateBytes).Err(); err != nil {
 		return newConns, fmt.Errorf("redis error publishing %#v: %w", ud, err)
 	}
 	return newConns, nil
@@ -79,34 +75,31 @@ func UpdatePlayerConnections(gameID string, playerID id.UID, mod int, conn redis
 
 // UpdatePlayer updates a player in the database.
 // It does not allow for username updates. It only publishes the update to the given game.
-func UpdatePlayer(gameID string, playerID id.UID, externalUpdate update.Player, internalUpdate update.Player, conn redis.Conn) error {
+func UpdatePlayer(ctx context.Context, client redis.Cmdable, gameID string, playerID id.UID, externalUpdate update.Player, internalUpdate update.Player) error {
 	if internalUpdate.IsEmpty() && externalUpdate.IsEmpty() {
 		return fmt.Errorf("external update %v empty and internal update %v empty", externalUpdate, internalUpdate)
 	}
-	// MULTI: update player, publish update
-	if err := conn.Send("MULTI"); err != nil {
-		return fmt.Errorf("redis error sending MULTI for player update: %w", err)
-	}
-	if !internalUpdate.IsEmpty() {
-		playerSet, playerData := internalUpdate.MakeRedisCommand()
-		// Apply update to player
-		if err := conn.Send(playerSet, playerData...); err != nil {
-			return fmt.Errorf("redis error sending HSET for player update: %w", err)
+
+	_, err := client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		if !internalUpdate.IsEmpty() {
+			key, playerData, err := internalUpdate.MakeRedisCommand()
+			if err != nil {
+				return fmt.Errorf("serializing player data: %w", err)
+			}
+			// Apply update to player
+			_ = pipe.HSet(ctx, key, playerData)
 		}
-	}
-	if !externalUpdate.IsEmpty() {
-		updateBytes, err := json.Marshal(externalUpdate)
-		if err != nil {
-			return fmt.Errorf("unable to marshal update to JSON :%w", err)
+		if !externalUpdate.IsEmpty() {
+			updateBytes, err := json.Marshal(externalUpdate)
+			if err != nil {
+				return fmt.Errorf("unable to marshal update to JSON: %w", err)
+			}
+			_ = pipe.Publish(ctx, "update:"+gameID, updateBytes)
 		}
-		if err = conn.Send("PUBLISH", "update:"+gameID, updateBytes); err != nil {
-			return fmt.Errorf("redis error sending event publish: %w", err)
-		}
-	}
-	// EXEC: [0] for just internal, [#players] for just external, [#new=0, #players] for both
-	_, err := redis.Ints(conn.Do("EXEC"))
+		return nil
+	})
 	if err != nil {
-		return fmt.Errorf("redis error sending EXEC: %w", err)
+		return fmt.Errorf("sending transaction: %w", err)
 	}
 	return nil
 }

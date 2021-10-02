@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var (
@@ -180,7 +182,7 @@ var (
 	SSEClientRetrySecs = readInt("SSE_CLIENT_RETRY_SECS", 5)
 	// SSEPingSecs is the amount of time between SSE pings.
 	// Lack of SSE pings may cause the browser to close the SSE connection.
-	SSEPingSecs = readInt("SSE_PING_SECS", 15)
+	SSEPingSecs = readInt("SSE_PING_SECS", 18)
 	// MaxHeaderBytes is the maximum number of header bytes which can be read by
 	// the Go server.
 	MaxHeaderBytes = readInt("MAX_HEADER_BYTES", 1<<20)
@@ -210,6 +212,9 @@ var (
 	// RedisRetries controls the number of times a retry is attempted for some retryable
 	// redis queries.
 	RedisRetries = readInt("REDIS_RETRIES", 5)
+	// RedisHealthcheckSecs controls the healthcheck interval for the redis client and
+	// pubsub connections.
+	RedisHealthcheckSecs = readInt("REDIS_HEALTHCHECK_SECS", 15)
 
 	// Backend options
 
@@ -344,6 +349,9 @@ func VerifyConfig() {
 		if len(HealthCheckSecretKey) != 0 && len(HealthCheckSecretKey) < 256 {
 			panic("HealthcheckSecretKey should be longer")
 		}
+	}
+	if _, err := redis.ParseURL(RedisURL); err != nil {
+		panic(fmt.Sprintf("Unable to parse redis URL: %v", err))
 	}
 	if RedirectListenHTTP == MainListenHTTPS && MainListenHTTPS != "" {
 		panic("Cannot publish HTTP redirect and HTTPS servers on the same port!")

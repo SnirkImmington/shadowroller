@@ -3,11 +3,11 @@ package routes
 import (
 	"bytes"
 	"encoding/base64"
-	"github.com/gomodule/redigo/redis"
 	"net/http"
 	"sr/config"
-	redisUtil "sr/redis"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func handleRoot(response Response, request *Request) {
@@ -57,17 +57,13 @@ type healthCheckResponse struct {
 	Sessions int `json:"sessions"`
 }
 
-var _ = restRouter.HandleFunc("/health-check", handleHealthCheck).Methods("GET")
+var _ = restRouter.HandleFunc("/health-check", Wrap(handleHealthCheck)).Methods("GET")
 
-func handleHealthCheck(response Response, request *Request) {
-	logRequest(request)
-
-	conn := redisUtil.Connect()
-	defer closeRedis(request, conn)
-
-	ok, err := redis.Bool(conn.Do("exists", "auth_version"))
+func handleHealthCheck(response Response, request *Request, client *redis.Client) {
+	ctx := request.Context()
+	found, err := client.Exists(ctx, "auth_version").Result()
 	httpInternalErrorIf(response, request, err)
-	if !ok {
+	if found != 1 {
 		httpInternalError(response, request, "Server is not healthy!")
 	}
 
@@ -97,19 +93,19 @@ func handleHealthCheck(response Response, request *Request) {
 	}
 
 	// Okay, send them stuff
-	gameCount, err := redis.Int(conn.Do("keys", "game:*"))
+	games, err := client.Keys(ctx, "game:*").Result()
 	httpInternalErrorIf(response, request, err)
 
-	sessionCount, err := redis.Int(conn.Do("keys", "session:*"))
+	sessions, err := client.Keys(ctx, "session:*").Result()
 	httpInternalErrorIf(response, request, err)
 
 	resp := healthCheckResponse{
-		Games:    gameCount,
-		Sessions: sessionCount,
+		Games:    len(games),
+		Sessions: len(sessions),
 	}
 	err = writeBodyJSON(response, &resp)
 	httpInternalErrorIf(response, request, err)
 	httpSuccess(response, request,
-		gameCount, " games ", sessionCount, " sessions",
+		resp.Games, " games, ", resp.Sessions, " sessions",
 	)
 }

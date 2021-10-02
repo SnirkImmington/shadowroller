@@ -8,21 +8,23 @@ import (
 	"sr/event"
 	"sr/game"
 	"sr/id"
+	"sr/player"
 	"sr/roll"
 	"sr/update"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var gameRouter = restRouter.PathPrefix("/game").Subrouter()
 
-var _ = gameRouter.HandleFunc("/info", handleInfo).Methods("GET")
+var _ = gameRouter.HandleFunc("/info", Wrap(handleInfo)).Methods("GET")
 
 // GET /info {gameInfo}
-func handleInfo(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleInfo(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
-	info, err := game.GetInfo(sess.GameID, conn)
+	info, err := game.GetInfo(ctx, client, sess.GameID)
 	httpInternalErrorIf(response, request, err)
 
 	err = writeBodyJSON(response, &info)
@@ -37,11 +39,10 @@ type renameRequest struct {
 	Name string `json:"name"`
 }
 
-var _ = gameRouter.HandleFunc("/modify-roll", handleUpdateEvent).Methods("POST")
+var _ = gameRouter.HandleFunc("/modify-roll", Wrap(handleUpdateEvent)).Methods("POST")
 
-func handleUpdateEvent(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleUpdateEvent(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var updateRequest updateEventRequest
@@ -51,7 +52,7 @@ func handleUpdateEvent(response Response, request *Request) {
 	logf(request,
 		"%s requests update %v", sess.PlayerInfo(), updateRequest,
 	)
-	eventText, err := event.GetByID(sess.GameID, updateRequest.ID, conn)
+	eventText, err := event.GetByID(ctx, client, sess.GameID, updateRequest.ID)
 	httpBadRequestIf(response, request, err)
 
 	evt, err := event.Parse([]byte(eventText))
@@ -103,19 +104,18 @@ func handleUpdateEvent(response Response, request *Request) {
 	update := update.ForEventDiff(evt, diff)
 
 	logf(request, "Event %v diff %v", evt.GetID(), diff)
-	err = game.UpdateEvent(sess.GameID, evt, update, conn)
+	err = game.UpdateEvent(ctx, client, sess.GameID, evt, update)
 	httpInternalErrorIf(response, request, err)
 }
 
-var _ = gameRouter.HandleFunc("/delete-roll", handleDeleteEvent).Methods("POST")
+var _ = gameRouter.HandleFunc("/delete-roll", Wrap(handleDeleteEvent)).Methods("POST")
 
 type deleteEventRequest struct {
 	ID int64 `json:"id"`
 }
 
-func handleDeleteEvent(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleDeleteEvent(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var delete deleteEventRequest
@@ -125,7 +125,7 @@ func handleDeleteEvent(response Response, request *Request) {
 	logf(request,
 		"%v requests to delete %v", sess.PlayerInfo(), delete.ID,
 	)
-	eventText, err := event.GetByID(sess.GameID, delete.ID, conn)
+	eventText, err := event.GetByID(ctx, client, sess.GameID, delete.ID)
 	httpBadRequestIf(response, request, err)
 
 	evt, err := event.Parse([]byte(eventText))
@@ -141,7 +141,7 @@ func handleDeleteEvent(response Response, request *Request) {
 	logf(request,
 		"%v deleting event %v", sess.PlayerInfo(), delete.ID,
 	)
-	err = game.DeleteEvent(sess.GameID, evt, conn)
+	err = game.DeleteEvent(ctx, client, sess.GameID, evt)
 	httpInternalErrorIf(response, request, err)
 
 	httpSuccess(response, request, "Deleted event ", evt.GetID())
@@ -155,12 +155,11 @@ type rollRequest struct {
 	Glitchy int    `json:"glitchy"`
 }
 
-var _ = gameRouter.HandleFunc("/roll", handleRoll).Methods("POST")
+var _ = gameRouter.HandleFunc("/roll", Wrap(handleRoll)).Methods("POST")
 
 // $ POST /roll count
-func handleRoll(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleRoll(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var rollRequest rollRequest
@@ -178,7 +177,7 @@ func handleRoll(response Response, request *Request) {
 	}
 	share := event.Share(rollRequest.Share)
 
-	player, err := sess.GetPlayer(conn)
+	player, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	httpInternalErrorIf(response, request, err)
 
 	var evt event.Event
@@ -204,7 +203,7 @@ func handleRoll(response Response, request *Request) {
 		)
 		evt = &rollEvent
 	}
-	err = game.PostEvent(sess.GameID, evt, conn)
+	err = game.PostEvent(ctx, client, sess.GameID, evt)
 	httpInternalErrorIf(response, request, err)
 	httpSuccess(
 		response, request,
@@ -217,11 +216,10 @@ type rerollRequest struct {
 	Type   string `json:"rerollType"`
 }
 
-var _ = gameRouter.HandleFunc("/reroll", handleReroll).Methods("POST")
+var _ = gameRouter.HandleFunc("/reroll", Wrap(handleReroll)).Methods("POST")
 
-func handleReroll(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleReroll(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var reroll rerollRequest
@@ -236,7 +234,7 @@ func handleReroll(response Response, request *Request) {
 		reroll.RollID, sess.PlayerInfo(),
 	)
 
-	previousRollText, err := event.GetByID(sess.GameID, reroll.RollID, conn)
+	previousRollText, err := event.GetByID(ctx, client, sess.GameID, reroll.RollID)
 	httpInternalErrorIf(response, request, err)
 	previousRollType := event.ParseTy(previousRollText)
 	if previousRollType != "roll" {
@@ -264,16 +262,16 @@ func handleReroll(response Response, request *Request) {
 	}
 	logf(request, "Rerolled %v, %v hits total", newRound, totalHits)
 
-	player, err := sess.GetPlayer(conn)
+	player, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	httpInternalErrorIf(response, request, err)
 
 	rerolled := event.ForReroll(
 		player, &previousRoll, [][]int{newRound, previousRoll.Dice},
 	)
 	// Rerolls are getting their own IDs. We should instead just swap dice with rounds.
-	err = game.DeleteEvent(sess.GameID, &previousRoll, conn)
+	err = game.DeleteEvent(ctx, client, sess.GameID, &previousRoll)
 	httpInternalErrorIf(response, request, err)
-	err = game.PostEvent(sess.GameID, &rerolled, conn)
+	err = game.PostEvent(ctx, client, sess.GameID, &rerolled)
 	httpInternalErrorIf(response, request, err)
 
 	httpSuccess(
@@ -303,7 +301,7 @@ type eventRangeResponse struct {
 	More   bool          `json:"more"`
 }
 
-var _ = gameRouter.HandleFunc("/events", handleEvents).Methods("GET")
+var _ = gameRouter.HandleFunc("/events", Wrap(handleEvents)).Methods("GET")
 
 /*
    on join: { start: '', end: <lastEventID> }, backfill buffer
@@ -311,9 +309,8 @@ var _ = gameRouter.HandleFunc("/events", handleEvents).Methods("GET")
   if there's < max responses, client knows it's hit the boundary.
 */
 // GET /event-range { start: <id>, end: <id>, max: int }
-func handleEvents(response Response, request *Request) {
-	logRequest(request)
-	sess, conn, err := requestSession(request)
+func handleEvents(response Response, request *Request, client *redis.Client) {
+	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	newest := request.FormValue("newest")
@@ -337,13 +334,13 @@ func handleEvents(response Response, request *Request) {
 		oldest, newest, sess.PlayerInfo(),
 	)
 
-	plr, err := sess.GetPlayer(conn)
+	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	httpInternalErrorIf(response, request, err)
-	events, err := event.GetBetween(
-		sess.GameID, newest, oldest, config.MaxEventRange, conn,
+	events, err := event.GetBetween(ctx, client,
+		sess.GameID, newest, oldest, config.MaxEventRange,
 	)
 	httpInternalErrorIf(response, request, err)
-	isGM, err := game.HasGM(sess.GameID, sess.PlayerID, conn)
+	isGM, err := game.HasGM(ctx, client, sess.GameID, sess.PlayerID)
 	httpInternalErrorIf(response, request, err)
 
 	var eventRange eventRangeResponse

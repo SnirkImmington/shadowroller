@@ -33,11 +33,11 @@ func runServer(name string, server *http.Server, tls bool) {
 	log.Printf("Running %v server at %v...", name, server.Addr)
 
 	go func() {
-		client := shutdownHandler.MakeClient(fmt.Sprintf("%v server", name))
-		defer client.Close()
+		shutdownCtx, release := shutdownHandler.Register(context.Background(), fmt.Sprintf("%v server", name))
+		defer release()
 
 		// Wait for interrupt
-		<-client.Channel
+		<-shutdownCtx.Done()
 		ctx, cancel := context.WithCancel(context.Background())
 		// Timeout terminate server in 10s
 		go func() {
@@ -86,6 +86,7 @@ func runServer(name string, server *http.Server, tls bool) {
 }
 
 func main() {
+	ctx := context.Background()
 	log.SetOutput(os.Stdout)
 	if config.IsProduction {
 		// You may want to set UTC logs here
@@ -95,16 +96,20 @@ func main() {
 	}
 	flag.Parse()
 	config.VerifyConfig()
-	shutdownHandler.Init()
+	shutdownHandler.Start()
+	redisUtil.SetupWithConfig()
 	if taskFlag != nil && *taskFlag != "" {
-		task.RunSelectedTask(*taskFlag, flag.Args())
+		task.RunSelectedTask(ctx, redisUtil.Client, *taskFlag, flag.Args())
 	}
 
 	log.Print("Starting up...")
-	redisUtil.SetupWithConfig()
 	sr.SeedRand()
 	roll.Init()
-	setup.CheckGamesAndPlayers()
+	defer roll.Shutdown()
+	ctx, release := shutdownHandler.Register(ctx, "setup")
+	log.Print("Shutdown registered")
+	setup.CheckGamesAndPlayers(ctx, redisUtil.Client)
+	release()
 	routes.RegisterTasksViaConfig()
 
 	log.Print("Shadowroller:", SHADOWROLLER, "\n")

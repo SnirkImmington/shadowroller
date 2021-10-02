@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,7 +12,7 @@ import (
 	"sr/player"
 	"sr/update"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 // PlayerCanSeeEvent determines if the given player can see the given event
@@ -78,7 +79,7 @@ type Packet struct {
 	Update  update.Update // Update to be sent.
 }
 
-func publishPacket(packet *Packet, conn redis.Conn) error {
+func publishPacket(ctx context.Context, client redis.Cmdable, packet *Packet) error {
 	ud := packet.Update
 	var updateBytes []byte
 	var err error
@@ -94,7 +95,7 @@ func publishPacket(packet *Packet, conn redis.Conn) error {
 	if err != nil {
 		return fmt.Errorf("unable to marshal update %#v to json: %w", ud, err)
 	}
-	err = conn.Send("PUBLISH", packet.Channel, updateBytes)
+	err = client.Publish(ctx, packet.Channel, updateBytes).Err()
 	if err != nil {
 		return fmt.Errorf("redis error sending PUBLISH: %w", err)
 	}

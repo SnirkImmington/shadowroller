@@ -8,7 +8,7 @@ import (
 )
 
 func TestConstructor(t *testing.T) {
-	t.Run("it passes fields through", func(t *testing.T) {
+	test.RunParallel(t, "it passes fields through", func(t *testing.T) {
 		var source RandBytes = nil
 		var ch = make(chan int)
 		gen := NewGenerator(source, 2, ch)
@@ -21,7 +21,7 @@ func TestConstructor(t *testing.T) {
 func TestContext(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("it does not generate rolls if canceled", func(t *testing.T) {
+	test.RunParallel(t, "it does not generate rolls if canceled", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		cancel()
 		src := mockSource([]byte{111})
@@ -40,7 +40,7 @@ func TestContext(t *testing.T) {
 		}
 		test.AssertEqual(t, 1, src.Len()) // no bytes were read
 	})
-	t.Run("it stops generating rolls once canceled", func(t *testing.T) {
+	test.RunParallel(t, "it stops generating rolls once canceled", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		srcChan := make(chan byte, 2)
 		src := &channelRandBytes{srcChan}
@@ -64,7 +64,7 @@ func TestContext(t *testing.T) {
 func TestGeneratorRNG(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("it produces 1-6 consistently", func(t *testing.T) {
+	test.RunParallel(t, "it produces 1-6 consistently", func(t *testing.T) {
 		bufferSize := 200
 		rollsGenerated := 2000
 		ctx, cancel := context.WithCancel(ctx)

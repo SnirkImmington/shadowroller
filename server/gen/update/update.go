@@ -3,37 +3,41 @@ package gen
 import (
 	mathRand "math/rand"
 
+	"sr/gen"
+	genEvent "sr/gen/event"
+
+	"sr/player"
 	"sr/roll"
 	"sr/update"
 )
 
-func NewEventUpdate(rand *mathRand.Rand) update.Event {
-	evt := Event(rand)
+func NewEvent(rand *mathRand.Rand, plr *player.Player) update.Event {
+	evt := genEvent.Event(rand, plr)
 	return update.ForNewEvent(evt)
 }
 
-func ModEventShareUpdate(rand *mathRand.Rand) update.Event {
-	evt := Event(rand)
-	share := Share(rand)
+func ModEventShare(rand *mathRand.Rand, plr *player.Player) update.Event {
+	evt := genEvent.Event(rand, plr)
+	share := genEvent.Share(rand)
 	for share == evt.GetShare() {
-		share = Share(rand)
+		share = genEvent.Share(rand)
 	}
 	return update.ForEventShare(evt, share)
 }
 
-func ModEventUpdate(rand *mathRand.Rand) update.Event {
-	evt := Event(rand)
+func ModEventUpdate(rand *mathRand.Rand, plr *player.Player) update.Event {
+	evt := genEvent.Event(rand, plr)
 	var diff map[string]interface{}
-	key := String(rand)
+	key := gen.String(rand)
 	switch rand.Intn(3) {
 	case 0:
 		diff[key] = rand.Intn(50)
 	case 1:
-		diff[key] = String(rand)
+		diff[key] = gen.String(rand)
 	case 2:
 		diff[key] = rand.Intn(2) == 0
 	case 3:
-		diff["share"] = Share(rand)
+		diff["share"] = genEvent.Share(rand)
 	}
 	return update.ForEventDiff(evt, diff)
 }
@@ -42,8 +46,8 @@ func DelEventUpdate(rand *mathRand.Rand) update.Event {
 	return update.ForEventDelete(rand.Int63())
 }
 
-func SecondChanceUpdate(rand *mathRand.Rand) update.Event {
-	rollEvt := RollEvent(rand)
+func SecondChance(rand *mathRand.Rand, plr *player.Player) update.Event {
+	rollEvt := genEvent.Roll(rand, plr)
 	reroll, _ := roll.MakeMathRoller(rand).RerollMisses(rollEvt.Dice)
 	return update.ForSecondChance(&rollEvt, reroll)
 }
@@ -57,6 +61,6 @@ func FilteredUpdate(rand *mathRand.Rand) update.FilteredUpdate {
 	panic("unimplemented")
 }
 
-func MaybeFilteredUpdate(rand *mathRand.Rand) update.Update {
+func UnfilteredUpdate(rand *mathRand.Rand) update.Update {
 	panic("unimplemented")
 }
