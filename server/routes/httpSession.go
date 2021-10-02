@@ -38,9 +38,7 @@ func requestSession2(request *Request, client redis.Cmdable) (*session.Session, 
 	}
 	sess, err := session.GetByID(ctx, client, sessionID)
 	if err != nil {
-		logf2(ctx, "Couldn't find session",
-			attr.String("sr.session.id", sessionID),
-		)
+		logf2(ctx, "Couldn't find session %v", sessionID)
 		return nil, err
 	}
 	return sess, nil
