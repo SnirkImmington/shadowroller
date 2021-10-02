@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+
 	"sr/config"
 	"sr/event"
 	"sr/game"
@@ -11,6 +12,9 @@ import (
 	"sr/player"
 	"sr/roll"
 	"sr/update"
+
+	attr "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/semconv/v1.4.0"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -155,10 +159,11 @@ type rollRequest struct {
 	Glitchy int    `json:"glitchy"`
 }
 
-var _ = gameRouter.HandleFunc("/roll", Wrap(handleRoll)).Methods("POST")
+var _ = gameRouter.HandleFunc("/roll", Wrap2(handleRoll)).Methods("POST")
 
 // $ POST /roll count
-func handleRoll(response Response, request *Request, client *redis.Client) {
+func handleRoll(args *Args) {
+	ctx, response, request, client, _ := args.Get()
 	sess, ctx, err := requestSession(request, client)
 	httpUnauthorizedIf(response, request, err)
 
@@ -184,8 +189,13 @@ func handleRoll(response Response, request *Request, client *redis.Client) {
 	if rollRequest.Edge {
 		rolls, hits, err := roll.Rolls.ExplodingSixes(request.Context(), rollRequest.Count)
 		httpInternalErrorIf(response, request, err)
-		logf(request, "%v: edge roll %v: %v (%v hits)",
-			sess.PlayerInfo(), share.String(), rolls, hits,
+		logEvent(ctx, "edge roll",
+			semconv.EnduserIDKey.String(sess.PlayerID.String()),
+			attr.String("sr.event.share", share.String()),
+			attr.Int("sr.roll.pool", rollRequest.Count),
+			attr.IntSlice("sr.roll.dice", roll.FlatMap(rolls)),
+			attr.Int("sr.roll.glitchy", rollRequest.Glitchy),
+			attr.Int("sr.roll.hits", hits),
 		)
 		rollEvent := event.ForEdgeRoll(
 			player, share, rollRequest.Title, rolls, rollRequest.Glitchy,
@@ -195,8 +205,12 @@ func handleRoll(response Response, request *Request, client *redis.Client) {
 		dice := make([]int, rollRequest.Count)
 		hits, err := roll.Rolls.Fill(request.Context(), dice)
 		httpInternalErrorIf(response, request, err)
-		logf(request, "%v rolls %v %v (%v hits)",
-			sess.PlayerID, dice, share.String(), hits,
+		logEvent(ctx, "roll",
+			semconv.EnduserIDKey.String(sess.PlayerID.String()),
+			attr.String("sr.event.share", share.String()),
+			attr.IntSlice("sr.roll.dice", dice),
+			attr.Int("sr.roll.glitchy", rollRequest.Glitchy),
+			attr.Int("sr.roll.hits", hits),
 		)
 		rollEvent := event.ForRoll(
 			player, share, rollRequest.Title, dice, rollRequest.Glitchy,
@@ -216,10 +230,11 @@ type rerollRequest struct {
 	Type   string `json:"rerollType"`
 }
 
-var _ = gameRouter.HandleFunc("/reroll", Wrap(handleReroll)).Methods("POST")
+var _ = gameRouter.HandleFunc("/reroll", Wrap2(handleReroll)).Methods("POST")
 
-func handleReroll(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
+func handleReroll(args *Args) {
+	ctx, response, request, client, _ := args.Get()
+	sess, err := requestSession2(request, client)
 	httpUnauthorizedIf(response, request, err)
 
 	var reroll rerollRequest
@@ -227,10 +242,10 @@ func handleReroll(response Response, request *Request, client *redis.Client) {
 	httpInternalErrorIf(response, request, err)
 
 	if !event.ValidRerollType(reroll.Type) {
-		logf(request, "Got invalid roll type %v", reroll)
+		logf2(ctx, "Got invalid roll type %v", reroll)
 		httpBadRequest(response, request, "Invalid reroll type")
 	}
-	logf(request, "Rerolling roll %v from %v",
+	logf2(ctx, "Rerolling roll %v from %v",
 		reroll.RollID, sess.PlayerInfo(),
 	)
 

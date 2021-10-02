@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis/v8"
+	attr "go.opentelemetry.io/otel/attribute"
 )
 
 var errNoAuthBearer = errors.New("httpSession: no auth: bearer header")
@@ -26,6 +27,23 @@ func sessionFromParams(request *Request) (string, error) {
 		return "", errNoSessionParam
 	}
 	return session, nil
+}
+
+func requestSession2(request *Request, client redis.Cmdable) (*session.Session, error) {
+	ctx := request.Context()
+	sessionID, err := sessionFromHeader(request)
+	if err != nil {
+		logEvent(ctx, "Didn't have a session ID")
+		return nil, err
+	}
+	sess, err := session.GetByID(ctx, client, sessionID)
+	if err != nil {
+		logf2(ctx, "Couldn't find session",
+			attr.String("sr.session.id", sessionID),
+		)
+		return nil, err
+	}
+	return sess, nil
 }
 
 // requestSession retrieves the authenticated session for the request.

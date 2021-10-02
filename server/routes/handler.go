@@ -50,16 +50,22 @@ func standardizeHeaderName(headerName string) string {
 
 func logf2(ctx context.Context, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
-	trace.SpanFromContext(ctx).AddEvent(msg)
+	trace.SpanFromContext(ctx).AddEvent(
+		"log", trace.WithAttributes(attr.String("log.message", msg)),
+	)
 	taskCtx.RawLog(ctx, 1, format, args...)
 }
 
 func logEvent(ctx context.Context, name string, attrs ...attr.KeyValue) {
 	span := trace.SpanFromContext(ctx)
-	span.AddEvent(name, trace.WithAttributes(attrs...))
+	attrs = append(attrs, attr.String("log.message", name))
+	span.AddEvent("log", trace.WithAttributes(attrs...))
 	result := strings.Builder{}
 	result.WriteString(name)
 	for _, attr := range attrs {
+		if string(attr.Key) == "log.message" {
+			continue
+		}
 		result.WriteString(" ")
 		result.WriteString(string(attr.Key))
 		result.WriteString("=")
@@ -96,6 +102,7 @@ func Wrap2(handler Handler) http.HandlerFunc {
 		)
 		defer span.End()
 
+		request = request.WithContext(ctx)
 		wrapped := wrapResponse(response)
 		args := &Args{ctx, wrapped, request, redisUtil.Client, span}
 		handler(args)

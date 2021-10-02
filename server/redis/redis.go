@@ -114,6 +114,10 @@ func SetupWithConfig() {
 	if config.RedisDebug {
 		Client.AddHook(hooks)
 	}
+	if config.OtelExport != "" {
+		SetupTracer()
+		Client.AddHook(NewTraceHook())
+	}
 }
 
 // Close closes the redis client(s). It should only be called at process termination.
