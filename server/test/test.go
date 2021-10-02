@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/redis/v8"
@@ -148,4 +149,23 @@ func RunParallel(t *testing.T, name string, test func(t *testing.T)) {
 		t.Parallel()
 		test(t)
 	})
+}
+
+// WaitForMessage starts a goroutine that checks for a message from messages which matches the expected value.
+// This should be called before a function which publishes a message, and the return value's `.Wait()` should
+// be called afterwards to ensure the AssertEqual or Error has been called on t.
+func WaitForMessage(t *testing.T, messages <-chan miniredis.PubsubMessage, match string) *sync.WaitGroup {
+	var wait sync.WaitGroup
+	wait.Add(1)
+	go func() {
+		defer wait.Done()
+		select {
+		case msg := <-messages:
+			AssertEqual(t, match, msg.Message)
+		case <-time.After(time.Duration(5) * time.Second):
+			t.Error("Did not read update")
+		}
+	}()
+
+	return &wait
 }
