@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"sr/game"
-	"sr/shutdownHandler"
+	"sr/shutdown"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -21,7 +21,7 @@ func PrintAvailableTasks() {
 // RunSelectedTask runs the passed in task from the command line
 func RunSelectedTask(ctx context.Context, client *redis.Client, task string, args []string) {
 	log.Printf("Run task %v %v", task, args)
-	ctx, release := shutdownHandler.Register(ctx, fmt.Sprintf("task main - %v", task))
+	ctx, release := shutdown.Register(ctx, fmt.Sprintf("task main - %v", task))
 	// not really called because of os.Exit; we want the interrupt delay even if
 	// we're not going to actually terminate naturally
 	defer release()

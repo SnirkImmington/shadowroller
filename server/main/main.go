@@ -16,7 +16,7 @@ import (
 	"sr/roll"
 	"sr/routes"
 	"sr/setup"
-	"sr/shutdownHandler"
+	"sr/shutdown"
 	"sr/task"
 
 	"go.opentelemetry.io/otel/trace"
@@ -38,7 +38,7 @@ func runServer(ctx context.Context, name string, server *http.Server, tls bool) 
 		trace.WithSpanKind(trace.SpanKindInternal),
 	)
 	defer serverSpan.End()
-	shutdownCtx, release := shutdownHandler.Registerf(context.Background(), name)
+	shutdownCtx, release := shutdown.Registerf(context.Background(), name)
 	log.Printf(ctx, "Running %v server at %v...", name, server.Addr)
 
 	go func() {
@@ -90,7 +90,7 @@ func runServer(ctx context.Context, name string, server *http.Server, tls bool) 
 
 func main() {
 	ctx := context.Background()
-	shutdownHandler.Start(ctx)
+	shutdown.Start(ctx)
 	srOtel.Setup(ctx)
 	ctx, mainSpan := srOtel.Tracer.Start(ctx, "main",
 		trace.WithSpanKind(trace.SpanKindServer),
@@ -109,7 +109,7 @@ func main() {
 	defer roll.Shutdown()
 
 	{
-		ctx, release := shutdownHandler.Register(ctx, "setup")
+		ctx, release := shutdown.Register(ctx, "setup")
 		setup.CheckGamesAndPlayers(ctx, redisUtil.Client)
 		release()
 	}
@@ -135,6 +135,6 @@ func main() {
 		runServer(ctx, "main", siteServer, true)
 	}
 	// Wait for all handlers to finish and return cleanly
-	shutdownHandler.WaitGroup.Wait()
+	shutdown.WaitGroup.Wait()
 	log.Stdout(ctx, "Shadowroller out.")
 }

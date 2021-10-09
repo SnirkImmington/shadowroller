@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"sr/config"
-	"sr/shutdownHandler"
+	"sr/shutdown"
 
 	"go.opentelemetry.io/otel"
 	traceExport "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -127,7 +127,7 @@ func CreateTraceExporter(ctx context.Context) func(context.Context) error {
 }
 
 func Setup(ctx context.Context) {
-	ctx, release := shutdownHandler.Register(ctx, "otel")
+	ctx, release := shutdown.Register(ctx, "otel")
 	shutdown := CreateTraceExporter(ctx)
 	Tracer = otel.GetTracerProvider().Tracer("shadowroller")
 	go func() {

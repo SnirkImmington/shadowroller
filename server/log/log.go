@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const fileNameLen = 10
+const fileNameLen = 14
 
 func writeStacktrace(builder *strings.Builder) {
 	stack := debug.Stack()
