@@ -123,7 +123,10 @@ Site UI and CSS is done via [Styled Components](https://styled-components.com).
 
 Shadowroller's server is written in [Go](https://golang.org/), using the
 [Gorilla](https://github.com/gorilla) routers that build on top of the standard
-library's robust HTTP server.
+library's robust HTTP server. We use [Redis](https://redis.io/) for storage,
+accessed via the [go-redis](https://github.com/go-redis/redis) library. We use
+[OpenTelementry](https://opentelemetry.io/) for tracing and error reporting via
+[Uptrace](https://uptrace.dev).
 
 Shadowroller uses icons from [Font Awesome](https://fontawesome.com).
 
