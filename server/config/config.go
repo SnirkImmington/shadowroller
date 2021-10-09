@@ -26,11 +26,14 @@ var (
 	// RedisDebug toggles logging every Redis command.
 	RedisDebug = readBool("REDIS_DEBUG", false)
 
+	// OtelDebug toggles logging of otel processes
+	OtelDebug = readBool("OTEL_DEBUG", true)
+
 	// RedisConnectionsDebug toggles logging when redis connections are obtained and freed.
 	RedisConnectionsDebug = readBool("REDIS_CONNECTIONS", false)
 
 	// ShutdownHandlersDebug toggles logging of shutdown handlers being registered and used.
-	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", false)
+	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", true)
 
 	// StreamDebug toggles extra logging for the SSE stream tasks
 	StreamDebug = readBool("STREAM_DEBUG", false)
@@ -351,6 +354,7 @@ func readFile(name string, defaultPath string, defaultValue string) string {
 	if !ok {
 		foundPath = defaultPath
 	} else {
+		log.Printf("config: read env file SR_%v", name)
 		foundPath = envVal
 	}
 

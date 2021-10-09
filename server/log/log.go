@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -15,6 +16,11 @@ import (
 
 const fileNameLen = 10
 
+func writeStacktrace(builder *strings.Builder) {
+	stack := debug.Stack()
+	builder.Write(stack)
+}
+
 func writePrefix(builder *strings.Builder, depth int) {
 	now := time.Now()
 	_, file, line, ok := runtime.Caller(depth + 2)
@@ -22,7 +28,21 @@ func writePrefix(builder *strings.Builder, depth int) {
 		file = "???????.go"
 		line = 0
 	}
-	builder.WriteString(now.Format(now.Format("15:04:05 ")))
+	builder.WriteString(now.Format("15:04:05 "))
+
+	seenSlash := false
+	slashIndex := len(file) - 1
+	for ; slashIndex > 0; slashIndex-- {
+		found := file[slashIndex]
+		if found == '/' {
+			if seenSlash {
+				break
+			}
+			seenSlash = true
+		}
+	}
+	file = file[slashIndex+1:]
+
 	// Write file name
 	// Try slicing off .go first
 	if len(file) > fileNameLen {
@@ -71,7 +91,7 @@ func writeAttrs(builder *strings.Builder, attrs []attr.KeyValue) {
 	}
 }
 
-func RawInfo(depth int, ctx context.Context, name string, info ...attr.KeyValue) {
+func RawEvent(depth int, ctx context.Context, name string, info ...attr.KeyValue) {
 	span := trace.SpanFromContext(ctx)
 	builder := strings.Builder{}
 	writePrefix(&builder, depth)
@@ -85,11 +105,11 @@ func RawInfo(depth int, ctx context.Context, name string, info ...attr.KeyValue)
 	}
 }
 
-func Info(ctx context.Context, name string, info ...attr.KeyValue) {
-	RawInfo(1, ctx, name, info...)
+func Event(ctx context.Context, name string, info ...attr.KeyValue) {
+	RawEvent(1, ctx, name, info...)
 }
 
-func RawEvent(depth int, ctx context.Context, message string, args ...interface{}) {
+func RawPrintf(depth int, ctx context.Context, message string, args ...interface{}) {
 	builder := strings.Builder{}
 	writePrefix(&builder, depth)
 	msg := fmt.Sprintf(message, args...)
@@ -102,6 +122,27 @@ func RawEvent(depth int, ctx context.Context, message string, args ...interface{
 	}
 }
 
-func Event(ctx context.Context, message string, args ...interface{}) {
-	RawEvent(1, ctx, message, args...)
+func Print(ctx context.Context, message string) {
+	RawPrintf(1, ctx, message)
+}
+
+func Printf(ctx context.Context, message string, args ...interface{}) {
+	RawPrintf(1, ctx, message, args...)
+}
+
+func RawStdout(depth int, ctx context.Context, message string) {
+	builder := strings.Builder{}
+	writePrefix(&builder, depth)
+	span := trace.SpanFromContext(ctx)
+	writeSpanID(&builder, span.SpanContext().SpanID())
+	builder.WriteString(message)
+	fmt.Println(builder.String())
+}
+
+func Stdout(ctx context.Context, message string) {
+	RawStdout(1, ctx, message)
+}
+
+func Stdoutf(ctx context.Context, message string, args ...interface{}) {
+	Stdout(ctx, fmt.Sprintf(message, args...))
 }

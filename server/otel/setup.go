@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"sr/config"
+	"sr/shutdownHandler"
 
 	"go.opentelemetry.io/otel"
 	traceExport "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/trace"
+
 	//"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
@@ -123,8 +126,19 @@ func CreateTraceExporter(ctx context.Context) func(context.Context) error {
 	panic(fmt.Sprintf("Invalid otel export %v", config.OtelExport))
 }
 
-func Setup(ctx context.Context) func(context.Context) error {
-	result := CreateTraceExporter(ctx)
+func Setup(ctx context.Context) {
+	ctx, release := shutdownHandler.Register(ctx, "otel")
+	shutdown := CreateTraceExporter(ctx)
 	Tracer = otel.GetTracerProvider().Tracer("shadowroller")
-	return result
+	go func() {
+		<-ctx.Done()
+		defer release()
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(8)*time.Second)
+		defer cancel()
+		err := shutdown(ctx)
+		if err != nil {
+			log.Printf("otel shutdown error: %v", err)
+		}
+	}()
 }
