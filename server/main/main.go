@@ -47,8 +47,7 @@ func main() {
 	}
 
 	sr.SeedRand(ctx)
-	roll.Init()
-	defer roll.Shutdown()
+	roll.Init(ctx)
 
 	{
 		ctx, release := shutdown.Register(ctx, "setup")

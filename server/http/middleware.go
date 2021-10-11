@@ -79,7 +79,7 @@ func RecoveryMiddleware(wrapped netHTTP.Handler) netHTTP.Handler {
 				}
 				ctx := request.Context()
 				span := trace.SpanFromContext(ctx)
-				srOtel.SetError(span, err, trace.WithStackTrace(true))
+				srOtel.WithSetError(span, err, trace.WithStackTrace(true))
 				log.Stdoutf(ctx, "Panic serving %v %v: %v",
 					request.Method, request.URL, errVal,
 				)

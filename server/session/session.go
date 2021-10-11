@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"sr/config"
 	"sr/id"
+	srOtel "sr/otel"
 	"sr/player"
 	redisUtil "sr/redis"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -76,17 +78,19 @@ func New(plr *player.Player, gameID string, persist bool) *Session {
 // New makes a new session for the given player.
 // MakeSession adds a session for the given player in the given game
 func Create(ctx context.Context, client redis.Cmdable, sess *Session) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "session.Create")
+	defer span.End()
 	sessionFields, err := redisUtil.StructToStringMap(sess)
 	if err != nil {
-		return fmt.Errorf("getting fields for session %v: %w", sess, err)
+		return srOtel.WithSetErrorf(span, "getting fields for session %v: %w", sess, err)
 	}
 	ok, err := client.HMSet(ctx, sess.redisKey(), sessionFields).Result() // TODO it expects a list, not a map?
 	if err != nil || !ok {
-		return fmt.Errorf("HMSET adding session %v: %w", sess, err)
+		return srOtel.WithSetErrorf(span, "HMSET adding session %v: %w", sess, err)
 	}
 	_, err = Expire(ctx, client, sess)
 	if err != nil {
-		return fmt.Errorf("Redis error expiring session %v: %w", sess, err)
+		return srOtel.WithSetErrorf(span, "Redis error expiring session %v: %w", sess, err)
 	}
 	return nil
 }
@@ -105,24 +109,26 @@ func Exists(ctx context.Context, client redis.Cmdable, sessionID string) (bool, 
 
 // GetByID retrieves a session from redis.
 func GetByID(ctx context.Context, client redis.Cmdable, sessionID string) (*Session, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "session.GetByID")
+	defer span.End()
 	if sessionID == "" {
 		return nil, errNilSession
 	}
 	if client == nil {
-		return nil, fmt.Errorf("Client was nil!!")
+		return nil, srOtel.WithSetErrorf(span, "Client was nil!!")
 	}
 	var sess Session
 	result := client.HGetAll(ctx, "session:"+sessionID)
 	data, err := result.Result()
 	if err != nil {
-		return nil, fmt.Errorf("retrieving data for %v: %w", sessionID, err)
+		return nil, srOtel.WithSetErrorf(span, "retrieving data for %v: %w", sessionID, err)
 	}
 	if data == nil || len(data) == 0 {
 		return nil, errNoSessionData
 	}
 	err = result.Scan(&sess)
 	if err != nil {
-		return nil, fmt.Errorf("parsing session struct: %w", err)
+		return nil, srOtel.WithSetErrorf(span, "parsing session struct: %w", err)
 	}
 	if sess.GameID == "" || sess.PlayerID == "" {
 		return nil, errNoSessionData
@@ -134,12 +140,14 @@ func GetByID(ctx context.Context, client redis.Cmdable, sessionID string) (*Sess
 
 // Remove removes a session from Redis.
 func Remove(ctx context.Context, client redis.Cmdable, sess *Session) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "session.Remove")
+	defer span.End()
 	result, err := client.Del(ctx, sess.redisKey()).Result()
 	if err != nil {
-		return fmt.Errorf("sending redis DEL: %w", err)
+		return srOtel.WithSetErrorf(span, "sending redis DEL: %w", err)
 	}
 	if result != 1 {
-		return fmt.Errorf("expected 1 key deleted, got %v", result)
+		return srOtel.WithSetErrorf(span, "expected 1 key deleted, got %v", result)
 	}
 	return nil
 }

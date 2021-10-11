@@ -19,7 +19,7 @@ func RawHalt(ctx context.Context, file string, line int, err error) {
 	log.RawStdout(ctx, file, line, fmt.Sprintf(">> %v %v", code, err))
 	span := trace.SpanFromContext(ctx)
 	if span.IsRecording() {
-		srOtel.SetError(span, err)
+		srOtel.WithSetError(span, err)
 	}
 
 	panic(err)

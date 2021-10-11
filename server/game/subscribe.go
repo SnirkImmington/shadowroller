@@ -8,6 +8,7 @@ import (
 	"sr/config"
 	"sr/id"
 	"sr/log"
+	srOtel "sr/otel"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -17,6 +18,8 @@ import (
 // ctx is used to cancel the remote task and must also have been initialized with a redis connection.
 // As noted in redis client.Subscribe(), the subscription is not immediately active.
 func Subscribe(ctx context.Context, client *redis.Client, gameID string, playerID id.UID, isGM bool) (<-chan *redis.Message, <-chan error, func()) {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.Subscribe")
+	defer span.End()
 	channels := []string{
 		GameChannel(gameID), PlayerChannel(gameID, playerID),
 	}
@@ -30,7 +33,9 @@ func Subscribe(ctx context.Context, client *redis.Client, gameID string, playerI
 	)
 	errors := make(chan error)
 	cleanup := func() {
-		log.Print(ctx, "Cleaning up subscribe task")
+		if config.StreamDebug {
+			log.Print(ctx, "Cleaning up subscribe task")
+		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
 		defer cancel()
 		if err := sub.Unsubscribe(ctx); err != nil {

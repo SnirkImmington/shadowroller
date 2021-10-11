@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"sr/errs"
+	srOtel "sr/otel"
+
 	"github.com/go-redis/redis/v8"
 )
 
@@ -25,6 +28,8 @@ func ValidRerollType(ty string) bool {
 
 // GetByID retrieves a single event from Redis via its ID.
 func GetByID(ctx context.Context, client redis.Cmdable, gameID string, eventID int64) (string, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "event.GetByID")
+	defer span.End()
 	eventIDStr := fmt.Sprintf("%v", eventID)
 	opts := &redis.ZRangeBy{
 		Max: eventIDStr, Min: eventIDStr,
@@ -32,10 +37,10 @@ func GetByID(ctx context.Context, client redis.Cmdable, gameID string, eventID i
 	}
 	events, err := client.ZRevRangeByScore(ctx, "history:"+gameID, opts).Result()
 	if err != nil {
-		return "", fmt.Errorf("redis error finding event by ID: %w", err)
+		return "", srOtel.WithSetErrorf(span, "finding event by ID: %w", err)
 	}
 	if len(events) == 0 {
-		return "", fmt.Errorf("%w: no event %v found in %v", ErrNotFound, eventID, gameID)
+		return "", errs.NotFoundf("no event %v found in %v", eventID, gameID)
 	}
 	return events[0], nil
 }
@@ -52,13 +57,16 @@ func GetOlderThan(ctx context.Context, client redis.Cmdable, gameID string, newe
 
 // GetBetween returns up to count events between the given newest and oldest IDs.
 func GetBetween(ctx context.Context, client redis.Cmdable, gameID string, newest string, oldest string, count int) ([]string, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "event.GetBetween")
+	defer span.End()
 	opts := &redis.ZRangeBy{
 		Max: newest, Min: oldest,
 		Offset: 0, Count: int64(count),
 	}
 	events, err := client.ZRevRangeByScore(ctx, "history:"+gameID, opts).Result()
 	if err != nil {
-		return nil, fmt.Errorf("Redis error finding events older than %v: %w", newest, err)
+		return nil, srOtel.WithSetErrorf(span,
+			"finding events older than %v: %v", newest, err)
 	}
 
 	return events, nil
@@ -66,13 +74,15 @@ func GetBetween(ctx context.Context, client redis.Cmdable, gameID string, newest
 
 // BulkUpdate updates all of the given events at once
 func BulkUpdate(ctx context.Context, client redis.Cmdable, gameID string, events []Event) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "event.BulkUpdate")
+	defer span.End()
 	gameKey := "history:" + gameID
 	eventStrings := make([]string, len(events))
 	for ix, evt := range events {
 		eventBytes, err := json.Marshal(evt)
 		if err != nil {
-			return fmt.Errorf("marshal event #%v (%v %v): %w",
-				ix, evt.GetType(), evt.GetID(), err,
+			return srOtel.WithSetErrorf(span, "marshal event #%v (%v %v): %w",
+				ix+1, evt.GetType(), evt.GetID(), err,
 			)
 		}
 		eventStrings[ix] = string(eventBytes)
@@ -83,20 +93,21 @@ func BulkUpdate(ctx context.Context, client redis.Cmdable, gameID string, events
 			eventIDStr := fmt.Sprintf("%v", eventID)
 			eventString := eventStrings[ix]
 			if err := pipe.ZRemRangeByScore(ctx, gameKey, eventIDStr, eventIDStr).Err(); err != nil {
-				return fmt.Errorf("sending remove event: %w", err)
+				return srOtel.WithSetErrorf(span, "sending remote event: %w", err)
 			}
 			if err := pipe.ZAddNX(ctx, gameKey, &redis.Z{Score: float64(eventID), Member: eventString}).Err(); err != nil {
-				return fmt.Errorf("sending add event: %w", err)
+				return srOtel.WithSetErrorf(span, "sending add event: %w", err)
 			}
 		}
 		return nil
 	})
 	// [#deleted = 1, #added = 1, ... * len(events)]
 	if err != nil {
-		return fmt.Errorf("sending `EXEC` and getting Ints: %w", err)
+		return srOtel.WithSetErrorf(span, "sending `EXEC` and getting Ints: %w", err)
 	}
 	if len(results) != len(events)*2 {
-		return fmt.Errorf("Unexpected # of results: expected %v got %v",
+		return srOtel.WithSetErrorf(span,
+			"unexpected # of results: expected %v got %v",
 			len(events)*2, results,
 		)
 	}

@@ -2,9 +2,10 @@ package roll
 
 import (
 	"context"
-	"fmt"
 	"math"
-	//	"sr/shutdown"
+
+	srOtel "sr/otel"
+	"sr/shutdown"
 )
 
 // Generator is an object which sends rolls from its RollSource through its channel.
@@ -33,6 +34,10 @@ const inputByteMax = math.MaxUint8 - ((math.MaxUint8 % rollMax) + 1)
 // from its source. Run will terminate when ctx is canceled or when the source
 // returns an error.
 func (g *Generator) Run(ctx context.Context) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "roll.Generator.Run")
+	defer span.End()
+	ctx, release := shutdown.Register(ctx, "roll generation")
+	defer release()
 	defer close(g.channel)
 	select {
 	case <-ctx.Done():
@@ -43,14 +48,15 @@ func (g *Generator) Run(ctx context.Context) error {
 	for {
 		_, err := g.source.Read(buffer)
 		if err != nil {
-			return fmt.Errorf("from rand source: %w", err)
+			return srOtel.WithSetErrorf(span, "from rand source: %w", err)
 		}
 
 		for _, randByte := range buffer {
 			// We need to filter out bytes which we can't modulo into a roll.
-			// This only drops some random bytes. In the absolute worst case
-			// scenario, (with a broken RNG) we call g.source.Read() twice
-			// between checks for done.
+			// This is expected to only drop a small percentage of random bytes.
+			// If there is a stream of invalid bytes with a significantly long
+			// length (if the RNG source is malicious), we also miss our window
+			// to check our context.
 			if randByte > inputByteMax {
 				continue
 			}

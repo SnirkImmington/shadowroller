@@ -28,12 +28,6 @@ func NewTraceHook() redis.Hook {
 	return new(traceHook)
 }
 
-func recordError(ctx Context, span trace.Span, err error) {
-	if err != redis.Nil {
-		srOtel.SetError(span, err)
-	}
-}
-
 func (traceHook) BeforeProcess(ctx Context, cmd redis.Cmder) (Context, error) {
 	if !trace.SpanFromContext(ctx).IsRecording() {
 		return ctx, nil
@@ -51,8 +45,8 @@ func (traceHook) BeforeProcess(ctx Context, cmd redis.Cmder) (Context, error) {
 
 func (traceHook) AfterProcess(ctx Context, cmd redis.Cmder) error {
 	span := trace.SpanFromContext(ctx)
-	if err := cmd.Err(); err != nil {
-		recordError(ctx, span, err)
+	if err := cmd.Err(); err != nil && err != redis.Nil {
+		srOtel.WithSetError(span, err)
 	}
 	span.End()
 	return nil
@@ -79,8 +73,8 @@ func (traceHook) AfterProcessPipeline(ctx Context, cmds []redis.Cmder) error {
 		return nil
 	}
 	span := trace.SpanFromContext(ctx)
-	if err := cmds[0].Err(); err != nil {
-		recordError(ctx, span, err)
+	if err := cmds[0].Err(); err != nil && err != redis.Nil {
+		srOtel.WithSetError(span, err)
 	}
 	span.End()
 	return nil

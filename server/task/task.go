@@ -7,6 +7,7 @@ import (
 
 	"sr/game"
 	"sr/log"
+	srOtel "sr/otel"
 	"sr/shutdown"
 
 	"github.com/go-redis/redis/v8"
@@ -20,8 +21,11 @@ func PrintAvailableTasks(ctx context.Context) {
 
 // RunSelectedTask runs the passed in task from the command line
 func RunSelectedTask(ctx context.Context, client *redis.Client, task string, args []string) {
-	log.Printf(ctx, "Run task %v %v", task, args)
-	ctx, release := shutdown.Register(ctx, fmt.Sprintf("task main - %v", task))
+	taskName := fmt.Sprintf("Task %v %v", task, args)
+	log.Printf(ctx, "Run %v", taskName)
+	ctx, release := shutdown.Register(ctx, taskName)
+	ctx, span := srOtel.Tracer.Start(ctx, taskName)
+	defer span.End()
 	// not really called because of os.Exit; we want the interrupt delay even if
 	// we're not going to actually terminate naturally
 	defer release()

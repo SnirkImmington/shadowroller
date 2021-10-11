@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"sr/id"
+	srOtel "sr/otel"
 	"sr/player"
 	redisUtil "sr/redis"
 
@@ -50,12 +51,15 @@ func IsGMOf(game *Info, playerID id.UID) bool {
 
 // Create creates a new game with the given ID.
 func Create(ctx context.Context, client redis.Cmdable, gameID string) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.Create")
+	defer span.End()
 	created, err := client.HSet(ctx, "game:"+gameID, "event_id", "0").Result()
 	if err != nil {
-		return fmt.Errorf("creating game %v: %w", gameID, err)
+		return srOtel.WithSetErrorf(span, "creating game %v: %w", gameID, err)
 	}
 	if created != 1 {
-		return fmt.Errorf("creating game %v: expected to set 1, got %v", gameID, created)
+		return srOtel.WithSetErrorf(span,
+			"creating game %v: expected to set 1, got %v", gameID, created)
 	}
 	return nil
 }
@@ -74,11 +78,13 @@ func AddGM(ctx context.Context, client redis.Cmdable, gameID string, playerID id
 
 // GetPlayers gets the players in a game.
 func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]player.Player, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.GetPlayers")
+	defer span.End()
 	var players []player.Player
 	watched := func(tx *redis.Tx) error {
 		playerIDs, err := tx.SMembers(ctx, "players:"+gameID).Result()
 		if err != nil && err != redis.Nil {
-			return fmt.Errorf("getting players:gameID: %w", err)
+			return srOtel.WithSetErrorf(span, "getting players:gameID: %w", err)
 		}
 		if err == redis.Nil || len(playerIDs) == 0 {
 			return nil
@@ -86,7 +92,8 @@ func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]pla
 		for _, playerID := range playerIDs {
 			plr, err := player.GetByID(ctx, tx, playerID)
 			if err != nil {
-				return fmt.Errorf("getting info on player %v: %w", playerID, err)
+				return srOtel.WithSetErrorf(span,
+					"getting info on player %v: %w", playerID, err)
 			}
 			players = append(players, *plr)
 		}
@@ -95,7 +102,7 @@ func GetPlayers(ctx context.Context, client *redis.Client, gameID string) ([]pla
 
 	err := redisUtil.RetryWatchTxn(ctx, client, watched, "players:"+gameID)
 	if err != nil {
-		return nil, fmt.Errorf("running transaction: %w", err)
+		return nil, srOtel.WithSetErrorf(span, "running transaction: %w", err)
 	}
 	return players, nil
 }
@@ -110,13 +117,17 @@ type Info struct {
 
 // GetInfo retrieves `Info` for the given ID
 func GetInfo(ctx context.Context, client *redis.Client, gameID string) (*Info, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.GetInfo")
+	defer span.End()
 	players, err := GetPlayers(ctx, client, gameID)
 	if err != nil {
-		return nil, fmt.Errorf("getting players in game %v: %w", gameID, err)
+		return nil, srOtel.WithSetErrorf(span,
+			"getting players in game %v: %w", gameID, err)
 	}
 	gms, err := GetGMs(ctx, client, gameID)
 	if err != nil {
-		return nil, fmt.Errorf("getting GMs in game %v: %w", gameID, err)
+		return nil, srOtel.WithSetErrorf(span,
+			"getting GMs in game %v: %w", gameID, err)
 	}
 	info := make(map[string]player.Info, len(players))
 	for _, player := range players {

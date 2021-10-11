@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"sr/id"
+	srOtel "sr/otel"
 	redisUtil "sr/redis"
 
 	"github.com/go-redis/redis/v8"
@@ -129,8 +130,10 @@ var ErrNilPlayer = errors.New("nil PlayerID requested")
 
 // Exists determines if a player with the given ID exists in the database
 func Exists(ctx context.Context, client redis.Cmdable, playerID string) (bool, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "player.Exists")
+	defer span.End()
 	if playerID == "" {
-		return false, fmt.Errorf(
+		return false, srOtel.WithSetErrorf(span,
 			"empty PlayerID passed to PlayerExists: %w", ErrNilPlayer,
 		)
 	}
@@ -140,8 +143,10 @@ func Exists(ctx context.Context, client redis.Cmdable, playerID string) (bool, e
 
 // GetByID retrieves a player from Redis
 func GetByID(ctx context.Context, client redis.Cmdable, playerID string) (*Player, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "player.GetByID")
+	defer span.End()
 	if playerID == "" {
-		return nil, fmt.Errorf(
+		return nil, srOtel.WithSetErrorf(span,
 			"%w: empty PlayerID passed to player.GetByID", ErrNilPlayer,
 		)
 	}
@@ -149,27 +154,27 @@ func GetByID(ctx context.Context, client redis.Cmdable, playerID string) (*Playe
 	result := client.HGetAll(ctx, "player:"+playerID)
 	resultMap, err := result.Result()
 	if errors.Is(err, redis.Nil) {
-		return nil, fmt.Errorf(
+		return nil, srOtel.WithSetErrorf(span,
 			"%w: %v", ErrNotFound, playerID,
 		)
 	} else if err != nil {
-		return nil, fmt.Errorf(
+		return nil, srOtel.WithSetErrorf(span,
 			"redis error retrieving data for %v: %w", playerID, err,
 		)
 	}
 	if resultMap == nil || len(resultMap) == 0 {
-		return nil, fmt.Errorf(
+		return nil, srOtel.WithSetErrorf(span,
 			"%w: no data for %v", ErrNotFound, playerID,
 		)
 	}
 	err = result.Scan(&player)
 	if err != nil {
-		return nil, fmt.Errorf(
+		return nil, srOtel.WithSetErrorf(span,
 			"scanning player %v: %w", playerID, err,
 		)
 	}
 	if player.Username == "" {
-		return nil, fmt.Errorf(
+		return nil, srOtel.WithSetErrorf(span,
 			"no data for %v after redis parse: %w", playerID, ErrNilPlayer,
 		)
 	}
@@ -179,21 +184,23 @@ func GetByID(ctx context.Context, client redis.Cmdable, playerID string) (*Playe
 
 // GetIDOf returns the playerID for the given username.
 func GetIDOf(ctx context.Context, client redis.Cmdable, username string) (string, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "player.GetIDOf")
+	defer span.End()
 	if username == "" {
-		return "", fmt.Errorf("%w: empty username passed to player.GetIDOf", ErrNilPlayer)
+		return "", srOtel.WithSetErrorf(span, "%w: empty username passed to player.GetIDOf", ErrNilPlayer)
 	}
 	playerID, err := client.HGet(ctx, "player_ids", username).Result()
 	if errors.Is(err, redis.Nil) {
-		return "", fmt.Errorf(
+		return "", srOtel.WithSetErrorf(span,
 			"%w: %v", ErrNotFound, username,
 		)
 	} else if err != nil {
-		return "", fmt.Errorf(
+		return "", srOtel.WithSetErrorf(span,
 			"redis error getting player ID of %v: %w", username, err,
 		)
 	}
 	if playerID == "" {
-		return "", fmt.Errorf("%w: %v (empty string stored)", ErrNotFound, username)
+		return "", srOtel.WithSetErrorf(span, "%w: %v (empty string stored)", ErrNotFound, username)
 	}
 	return playerID, nil
 }
@@ -201,18 +208,20 @@ func GetIDOf(ctx context.Context, client redis.Cmdable, username string) (string
 // GetByUsername retrieves a player based on the username given.
 // Returns ErrPlayerNotFound if no player is found.
 func GetByUsername(ctx context.Context, client redis.Cmdable, username string) (*Player, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "player.GetByUsername")
+	defer span.End()
 	if username == "" {
-		return nil, fmt.Errorf("%w: empty username passed to player.GetByUsername", ErrNilPlayer)
+		return nil, srOtel.WithSetErrorf(span, "%w: empty username passed to player.GetByUsername", ErrNilPlayer)
 	}
 
 	playerID, err := client.HGet(ctx, "player_ids", username).Result()
 	if errors.Is(err, redis.Nil) {
-		return nil, fmt.Errorf("%w: %v", ErrNotFound, username)
+		return nil, srOtel.WithSetErrorf(span, "%w: %v", ErrNotFound, username)
 	} else if err != nil {
-		return nil, fmt.Errorf("redis error checking `player_ids`: %w", err)
+		return nil, srOtel.WithSetErrorf(span, "redis error checking `player_ids`: %w", err)
 	}
 	if playerID == "" {
-		return nil, fmt.Errorf("%w: %v (empty string stored)", ErrNotFound, username)
+		return nil, srOtel.WithSetErrorf(span, "%w: %v (empty string stored)", ErrNotFound, username)
 	}
 
 	return GetByID(ctx, client, playerID)
@@ -247,36 +256,36 @@ func GetPlayerCharIDs(playerID UID) ([]UID, error) {
 func GetPlayerChars(playerID UID) ([]Char, error) {
 	ids, err := GetPlayerCharIDs(playerID, conn)
 	if err != nil {
-		return nil, fmt.Errorf("error from GetPlayerCharIDs: %w", err)
+		return nil, srOtel.WithSetErrorf(span, "error from GetPlayerCharIDs: %w", err)
 	}
 	err = conn.Send("MULTI")
 	if err != nil {
-		return nil, fmt.Errorf("redis error sending `MULTI`: %w", err)
+		return nil, srOtel.WithSetErrorf(span, "redis error sending `MULTI`: %w", err)
 	}
 	found := make([]Char, len(ids))
 	for _, charID := range ids {
 		err = conn.Send("HGETALL", "char:"+string(charID))
 		if err != nil {
-			return nil, fmt.Errorf(
+			return nil, srOtel.WithSetErrorf(span,
 				"redis error sending `HGETALL` for %v: %w", charID, err,
 			)
 		}
 	}
 	charsData, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
-		return nil, fmt.Errorf("redis error sending `EXEC`: %w", err)
+		return nil, srOtel.WithSetErrorf(span, "redis error sending `EXEC`: %w", err)
 	}
 
 	for ix, charData := range charsData {
 		var char Char
 		err = redis.ScanStruct(charData.([]interface{}), &char)
 		if err != nil {
-			return nil, fmt.Errorf(
+			return nil, srOtel.WithSetErrorf(span,
 				"redis error parsing char #%v %v: %w", ix, ids[ix], err,
 			)
 		}
 		if char.Name == "" {
-			return nil, fmt.Errorf(
+			return nil, srOtel.WithSetErrorf(span,
 				"no data for char #%v %v after redis parse", ix, ids[ix],
 			)
 		}
@@ -288,14 +297,16 @@ func GetPlayerChars(playerID UID) ([]Char, error) {
 
 // Create adds the given player to the database
 func Create(ctx context.Context, client redis.Cmdable, player *Player) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "player.Create")
+	defer span.End()
 	if player == nil {
-		return fmt.Errorf("%w: nil player passed to player.Create", ErrNilPlayer)
+		return srOtel.WithSetErrorf(span, "%w: nil player passed to player.Create", ErrNilPlayer)
 	}
 	var setUsername *redis.IntCmd
 	var setPlayer *redis.IntCmd
 	playerMap, err := redisUtil.StructToStringMap(player)
 	if err != nil {
-		return fmt.Errorf("unable to serialize player %v: %w", player, err)
+		return srOtel.WithSetErrorf(span, "unable to serialize player %v: %w", player, err)
 	}
 	_, err = client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		setUsername = pipe.HSet(ctx, "player_ids", player.Username, player.ID)
@@ -303,13 +314,13 @@ func Create(ctx context.Context, client redis.Cmdable, player *Player) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("running pipeline: %w", err)
+		return srOtel.WithSetErrorf(span, "running pipeline: %w", err)
 	}
 	if err := setUsername.Err(); err != nil {
-		return fmt.Errorf("setting username: %w", err)
+		return srOtel.WithSetErrorf(span, "setting username: %w", err)
 	}
 	if count, err := setPlayer.Result(); err != nil || count < int64(len(playerMap)) {
-		return fmt.Errorf(
+		return srOtel.WithSetErrorf(span,
 			"expected %v fields to be added to player, got %v (%v)",
 			len(playerMap), count, err,
 		)
