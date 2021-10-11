@@ -14,7 +14,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var tracer trace.Tracer
+var tracer = otel.Tracer("shadowroller.net/libsr/redis")
 
 type traceHook struct{}
 

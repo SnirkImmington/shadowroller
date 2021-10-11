@@ -57,7 +57,7 @@ func TestContext(t *testing.T) {
 		}()
 		gen := NewGenerator(src, 2, ch)
 		err := gen.Run(ctx) // Should get canceled during the first round
-		test.AssertError(t, err, "should have been canceled by context")
+		test.AssertSuccess(t, err, "should have been canceled by context")
 	})
 }
 

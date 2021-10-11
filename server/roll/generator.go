@@ -2,10 +2,8 @@ package roll
 
 import (
 	"context"
+	"fmt"
 	"math"
-
-	srOtel "sr/otel"
-	"sr/shutdown"
 )
 
 // Generator is an object which sends rolls from its RollSource through its channel.
@@ -34,10 +32,6 @@ const inputByteMax = math.MaxUint8 - ((math.MaxUint8 % rollMax) + 1)
 // from its source. Run will terminate when ctx is canceled or when the source
 // returns an error.
 func (g *Generator) Run(ctx context.Context) error {
-	ctx, span := srOtel.Tracer.Start(ctx, "roll.Generator.Run")
-	defer span.End()
-	ctx, release := shutdown.Register(ctx, "roll generation")
-	defer release()
 	defer close(g.channel)
 	select {
 	case <-ctx.Done():
@@ -48,7 +42,7 @@ func (g *Generator) Run(ctx context.Context) error {
 	for {
 		_, err := g.source.Read(buffer)
 		if err != nil {
-			return srOtel.WithSetErrorf(span, "from rand source: %w", err)
+			return fmt.Errorf("from rand source: %w", err)
 		}
 
 		for _, randByte := range buffer {
@@ -66,7 +60,7 @@ func (g *Generator) Run(ctx context.Context) error {
 			roll := int((randByte % rollMax) + 1)
 			select { // Block to send next byte or be notified of shutdown
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case g.channel <- roll:
 				continue
 			}

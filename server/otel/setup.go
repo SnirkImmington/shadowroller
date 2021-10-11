@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"sr/config"
+	"sr/log"
 	"sr/shutdown"
 
 	"go.opentelemetry.io/otel"
@@ -26,15 +27,20 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-var Tracer trace.Tracer
+var Tracer trace.Tracer = otel.Tracer("default")
 
 func DefaultResource(ctx context.Context) *resource.Resource {
+	deployment := "production"
+	if !config.IsProduction {
+		deployment = "development"
+	}
 	result, err := resource.New(ctx,
 		resource.WithHost(),
 		resource.WithOS(),
 		resource.WithTelemetrySDK(),
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String("server"),
+			semconv.DeploymentEnvironmentKey.String(deployment),
 		),
 	)
 	if err != nil {
@@ -129,13 +135,14 @@ func CreateTraceExporter(ctx context.Context) func(context.Context) error {
 func Setup(ctx context.Context) {
 	ctx, release := shutdown.Register(ctx, "otel")
 	shutdown := CreateTraceExporter(ctx)
-	Tracer = otel.GetTracerProvider().Tracer("shadowroller")
+	Tracer = otel.Tracer("shadowroller")
 	go func() {
 		<-ctx.Done()
 		defer release()
 		ctx := context.Background()
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(8)*time.Second)
 		defer cancel()
+		log.Stdoutf(ctx, "shutting down otel..")
 		err := shutdown(ctx)
 		if err != nil {
 			stdLog.Printf("otel shutdown error: %v", err)

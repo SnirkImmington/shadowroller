@@ -6,7 +6,7 @@ import (
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"fmt"
-	"math/rand"
+	mathRand "math/rand"
 	"time"
 
 	"sr/log"
@@ -18,7 +18,7 @@ func SeedRand(ctx context.Context) {
 	_, err := cryptoRand.Read(buffer)
 	if err != nil {
 		log.Printf(ctx, "Error reading bytes from /dev/random: %v", err)
-		rand.Seed(time.Now().UnixNano())
+		mathRand.Seed(time.Now().UnixNano())
 		return
 	}
 	reader := bytes.NewReader(buffer)
@@ -27,7 +27,7 @@ func SeedRand(ctx context.Context) {
 	if err != nil {
 		panic(fmt.Sprintf("Unable to get a random int64: %v", err))
 	}
-	rand.Seed(seed)
+	mathRand.Seed(seed)
 }
 
 func ConvertRolls(in []interface{}) []int {
