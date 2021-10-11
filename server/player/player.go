@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"strings"
 
@@ -91,7 +90,6 @@ func (p *Player) IsOnline() bool {
 	case OnlineModeOffline:
 		return false
 	default:
-		log.Printf("Called IsOnline() on %#v", p)
 		return false
 	}
 }

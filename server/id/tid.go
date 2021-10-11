@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -67,7 +66,6 @@ func (tuid TUID) RedisScan(src interface{}) error {
 		tuid = TUID(src.(int64))
 		return nil
 	default:
-		log.Printf("Attempted to scan an invalid TUID: %v", src)
 		return ErrInvalidTUID
 	}
 }

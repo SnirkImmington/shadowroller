@@ -4,17 +4,18 @@ import (
 	"errors"
 
 	"sr/auth"
+	"sr/errs"
 	"sr/game"
+	srHTTP "sr/http"
+	"sr/log"
 	"sr/player"
 	"sr/session"
 
 	attr "go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/semconv/v1.4.0"
-
-	"github.com/go-redis/redis/v8"
 )
 
-var authRouter = restRouter.PathPrefix("/auth").Subrouter()
+var authRouter = RESTRouter.PathPrefix("/auth").Subrouter()
 
 type loginRequest struct {
 	GameID   string `json:"gameID"`
@@ -29,54 +30,53 @@ type loginResponse struct {
 }
 
 // POST /auth/login { gameID, playerName } -> auth token, session token
-var _ = authRouter.HandleFunc("/login", Wrap2(handleLogin)).Methods("POST")
+var _ = srHTTP.Handle(authRouter, "POST /login", handleLogin)
 
-func handleLogin(args *Args) {
+func handleLogin(args *srHTTP.Args) {
 	ctx, response, request, client, _ := args.Get()
 	var login loginRequest
-	err := readBodyJSON(request, &login)
-	httpBadRequestIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &login)
 
 	status := "persist"
 	if !login.Persist {
 		status = "temp"
 	}
-	logEvent(ctx, "Got login",
+	log.Event(ctx, "Got login",
 		attr.String("request.gameID", login.GameID),
 		attr.String("request.type", status),
 	)
 
 	gameInfo, plr, err := auth.LogPlayerIn(ctx, client, login.GameID, login.Username)
 	if err != nil {
-		logf2(ctx, "Login response: %v", err)
+		log.Printf(ctx, "Login error: %v", err)
 	}
 	if errors.Is(err, player.ErrNotFound) ||
 		errors.Is(err, game.ErrNotFound) ||
 		errors.Is(err, auth.ErrNotAuthorized) {
-		httpForbiddenIf(response, request, err)
+		srHTTP.Halt(ctx, errs.NoAccess(err))
 	}
-	httpInternalErrorIf(response, request, err)
-	logf(request, "Found %v in %v", plr.ID, login.GameID)
-	logEvent(ctx, "Found player",
+	srHTTP.HaltInternal(ctx, err)
+	log.Printf(ctx, "Found %v in %v", plr.ID, login.GameID)
+	log.Event(ctx, "Found player",
 		semconv.EnduserIDKey.String(plr.ID.String()),
 	)
 
-	logf(request, "Creating session %s for %v", status, plr.ID)
+	log.Printf(ctx, "Creating session %s for %v", status, plr.ID)
 	sess := session.New(plr, login.GameID, login.Persist)
 	err = session.Create(ctx, client, sess)
-	httpInternalErrorIf(response, request, err)
-	logEvent(ctx, "Created session",
+	srHTTP.HaltInternal(ctx, err)
+	log.Event(ctx, "Created session",
 		attr.String("response.session", sess.ID.String()),
 	)
 
-	err = writeBodyJSON(response, loginResponse{
+	srHTTP.MustWriteBodyJSON(ctx, response, loginResponse{
 		Player:   plr,
 		GameInfo: gameInfo,
 		Session:  string(sess.ID),
 	})
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request,
-		sess.Type(), " ", sess.ID, " for ", sess.PlayerID, " in ", login.GameID,
+	srHTTP.LogSuccessf(ctx, "%v %v for %v in %v",
+		sess.Type(), sess.ID,
+		sess.PlayerID, login.GameID,
 	)
 }
 
@@ -85,76 +85,71 @@ type reauthRequest struct {
 }
 
 // POST /auth/reauth { session } -> { login response }
-var _ = authRouter.HandleFunc("/reauth", Wrap(handleReauth)).Methods("POST")
+var _ = srHTTP.Handle(authRouter, "POST /reauth", handleReauth)
 
-func handleReauth(response Response, request *Request, client *redis.Client) {
+func handleReauth(args *srHTTP.Args) {
+	ctx, response, request, client, _ := args.Get()
 	var reauth reauthRequest
-	err := readBodyJSON(request, &reauth)
-	httpBadRequestIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &reauth)
 	reauthSession := reauth.Session
 
-	logf(request,
+	log.Printf(ctx,
 		"Reauth request for session %v", reauthSession,
 	)
-	ctx := request.Context()
 	sess, err := session.GetByID(ctx, client, reauthSession)
-	httpUnauthorizedIf(response, request, err)
-	logf(request, "Found session %v", sess.String())
+	srHTTP.Halt(ctx, errs.NoAccess(err))
+	log.Printf(ctx, "Found session %v", sess.String())
 
 	// Double check that the relevant items exist.
 	gameExists, err := game.Exists(ctx, client, sess.GameID)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	if !gameExists {
-		logf2(ctx, "Game %v does not exist", sess.GameID)
+		log.Printf(ctx, "Game %v does not exist", sess.GameID)
 		err = session.Remove(ctx, client, sess)
-		httpInternalErrorIf(response, request, err)
-		logf2(ctx,
+		srHTTP.HaltInternal(ctx, err)
+		log.Printf(ctx,
 			"Removed session %v for deleted game %v", sess.ID, sess.GameID,
 		)
-		httpUnauthorized(response, request, "Your session is now invalid")
+		srHTTP.Halt(ctx, errs.NoAccessf("Your session is invalid"))
 	}
-	logf(request, "Confirmed game %v exists", sess.GameID)
+	log.Printf(ctx, "Confirmed game %v exists", sess.GameID)
 
 	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	if errors.Is(err, player.ErrNotFound) {
-		logf2(ctx, "Player does not exist")
+		log.Printf(ctx, "Player does not exist")
 		err = session.Remove(ctx, client, sess)
-		httpInternalErrorIf(response, request, err)
-		logf(request,
+		srHTTP.HaltInternal(ctx, err)
+		log.Printf(ctx,
 			"Removed session %v for deleted player %v", sess.ID, sess.PlayerID,
 		)
-		httpUnauthorized(response, request, "Your session is now invalid")
+		srHTTP.Halt(ctx, errs.NoAccessf("Your session is invalid"))
 	} else if err != nil {
-		httpInternalErrorIf(response, request, err)
+		srHTTP.HaltInternal(ctx, err)
 	}
-	logf(request, "Confirmed player %s exists", plr.ID)
+	log.Printf(ctx, "Confirmed player %s exists", plr.ID)
 
 	gameInfo, err := game.GetInfo(ctx, client, sess.GameID)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
-	reauthed := loginResponse{
+	srHTTP.MustWriteBodyJSON(ctx, response, loginResponse{
 		Player:   plr,
 		GameInfo: gameInfo,
 		Session:  string(sess.ID),
-	}
-	err = writeBodyJSON(response, reauthed)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request,
-		sess.PlayerID, " reauthed for ", sess.GameID,
+	})
+	srHTTP.LogSuccessf(ctx, "%v reauthed for %v",
+		sess.PlayerID, sess.GameID,
 	)
 }
 
 // POST auth/logout { session } -> OK
 
-var _ = authRouter.HandleFunc("/logout", Wrap(handleLogout)).Methods("POST")
+var _ = srHTTP.Handle(authRouter, "POST /logout", handleLogout)
 
-func handleLogout(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+func handleLogout(args *srHTTP.Args) {
+	ctx, _, _, client, sess := args.MustSession()
 
-	err = session.Remove(ctx, client, sess)
-	httpInternalErrorIf(response, request, err)
-	logf(request, "Logged out %v", sess.PlayerInfo())
+	err := session.Remove(ctx, client, sess)
+	srHTTP.HaltInternal(ctx, err)
 
-	httpSuccess(response, request, "logged out")
+	srHTTP.LogSuccessf(ctx, "Logged out %v", sess.PlayerID)
 }

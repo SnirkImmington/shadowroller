@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"sr/config"
 	"sr/event"
 	"sr/id"
+	"sr/log"
 	"sr/player"
 	"sr/update"
 
@@ -100,7 +100,7 @@ func publishPacket(ctx context.Context, client redis.Cmdable, packet *Packet) er
 		return fmt.Errorf("redis error sending PUBLISH: %w", err)
 	}
 	if config.UpdatesDebug {
-		log.Printf(
+		log.Printf(ctx,
 			"Update: publish %v to %v filter %v",
 			ud.Type(), packet.Channel, packet.Filter,
 		)

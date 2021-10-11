@@ -2,20 +2,22 @@ package sr
 
 import (
 	"bytes"
+	"context"
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
+
+	"sr/log"
 )
 
 // SeedRand seeds the PRNG with bytes from crypo random (/dev/random).
-func SeedRand() {
+func SeedRand(ctx context.Context) {
 	buffer := make([]byte, binary.MaxVarintLen64)
 	_, err := cryptoRand.Read(buffer)
 	if err != nil {
-		log.Printf("Error reading bytes from /dev/random: %v", err)
+		log.Printf(ctx, "Error reading bytes from /dev/random: %v", err)
 		rand.Seed(time.Now().UnixNano())
 		return
 	}

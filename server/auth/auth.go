@@ -30,7 +30,7 @@ func LogPlayerIn(ctx context.Context, client *redis.Client, gameID string, usern
 		return nil, nil, err
 	} else if err != nil {
 		err = fmt.Errorf("getting player %v: %w", username, err)
-		span.RecordError(err)
+		srOtel.SetError(span, err)
 		return nil, nil, err
 	}
 
@@ -40,7 +40,7 @@ func LogPlayerIn(ctx context.Context, client *redis.Client, gameID string, usern
 		return nil, nil, err
 	} else if err != nil {
 		err = fmt.Errorf("fetching game info for %v: %w", gameID, err)
-		span.RecordError(err)
+		srOtel.SetError(span, err)
 		return nil, nil, err
 	}
 

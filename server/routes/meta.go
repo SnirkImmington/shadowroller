@@ -3,73 +3,77 @@ package routes
 import (
 	"bytes"
 	"encoding/base64"
-	"net/http"
-	"sr/config"
+	netHTTP "net/http"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
+	"sr/config"
+	"sr/errs"
+	srHTTP "sr/http"
+	"sr/log"
 )
 
-func handleRoot(response Response, request *Request) {
-	logRequest(request)
+func handleRoot(response srHTTP.Response, request srHTTP.Request) {
+	ctx := request.Context()
+	srHTTP.LogRequest(request, "/")
 	response.Header().Set("Content-Type", "text/plain")
-	httpNotFound(response, request, "Yep, this is the API.")
+	srHTTP.Halt(ctx, errs.NotFoundf("Yep, this is the API."))
 }
 
-func handleFrontendRedirect(response Response, request *Request) {
+func handleFrontendRedirect(response srHTTP.Response, request srHTTP.Request) {
 	var status int
 	if config.FrontendRedirectPermanent {
-		status = http.StatusMovedPermanently
+		status = netHTTP.StatusMovedPermanently
 		response.Header().Set("Cache-Control", "max-age=31536000, public, immutable")
 	} else {
-		status = http.StatusSeeOther
+		status = netHTTP.StatusSeeOther
 		response.Header().Add("Cache-Control", "max-age=86400, public")
 	}
-	http.Redirect(response, request, config.FrontendOrigin.String(), status)
-	dur := displayRequestDuration(request.Context())
-	logf(request, ">> %v Redirect %v (%v)", status, config.FrontendOrigin.String(), dur)
+	netHTTP.Redirect(response, request, config.FrontendOrigin.String(), status)
+	srHTTP.LogSuccessf(request.Context(),
+		"%v Redirect %v", status, config.FrontendOrigin.String(),
+	)
 }
 
-var _ = restRouter.HandleFunc("/robots.txt", handleRobots).Methods("GET")
+var _ = srHTTP.Handle(RESTRouter, "GET /robots.txt", handleRobots)
 
-func handleRobots(response Response, request *Request) {
-	logRequest(request)
+func handleRobots(args *srHTTP.Args) {
+	ctx, response, _, _, _ := args.Get()
 	// No bots in the API please
 	response.Header().Set("Content-Type", "text/plain")
 	response.Header().Set("Cache-Control", "max-age=31536000, public, immutable")
 	_, err := response.Write([]byte("user-agent: *\ndisallow: *"))
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request, "user-agent: * disallow: *")
+	srHTTP.HaltInternal(ctx, err)
+	srHTTP.LogSuccess(ctx, "user-agent: * disallow: *")
 }
 
-var _ = restRouter.HandleFunc("/coffee", handleCoffee).Methods("GET")
+var _ = srHTTP.Handle(RESTRouter, "GET /coffee", handleCoffee)
 
-func handleCoffee(response Response, request *Request) {
-	logRequest(request)
+func handleCoffee(args *srHTTP.Args) {
+	ctx, response, request, _, _ := args.Get()
 	response.Header().Set("Content-Type", "text/plain")
-	http.Error(response, "Soy coffee only", http.StatusTeapot)
 	cacheIndefinitely(request, response)
-	logf(request, ">> 418 Soy coffee only")
+	netHTTP.Error(response, "Soy coffee only", netHTTP.StatusTeapot)
+	log.Printf(ctx, ">> 418 Soy coffee only")
 }
 
 type healthCheckResponse struct {
 	Games    int `json:"games"`
-	Sessions int `json:"sessions"`
+	Sessions int `json:"fsessions"`
 }
 
-var _ = restRouter.HandleFunc("/health-check", Wrap(handleHealthCheck)).Methods("GET")
+var _ = srHTTP.Handle(RESTRouter, "GET /robots.txt", handleRobots)
 
-func handleHealthCheck(response Response, request *Request, client *redis.Client) {
-	ctx := request.Context()
+func handleHealthCheck(args *srHTTP.Args) {
+	ctx, response, request, client, _ := args.Get()
 	found, err := client.Exists(ctx, "auth_version").Result()
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	if found != 1 {
-		httpInternalError(response, request, "Server is not healthy!")
+		srHTTP.Halt(ctx, errs.Internalf("Server is not healthy!"))
 	}
 
 	// Check if we're just saying ok
 	if config.IsProduction && len(config.HealthCheckSecretKey) == 0 {
-		httpSuccess(response, request, "OK (skip extra info)")
+		srHTTP.LogSuccess(ctx, "OK (skip extra info)")
 		return
 	}
 
@@ -77,35 +81,32 @@ func handleHealthCheck(response Response, request *Request, client *redis.Client
 	if config.IsProduction {
 		auth := request.Header.Get("Authentication")
 		if !strings.HasPrefix(auth, "Bearer ") {
-			httpSuccess(response, request, "OK (missing auth for extra info)")
+			srHTTP.LogSuccess(ctx, "OK (missing auth for extra info)")
 			return
 		}
 		key, err := base64.StdEncoding.DecodeString(auth[8:])
 		if err != nil {
-			logf(request, "Error decoding auth key: %v", err)
-			httpSuccess(response, request, "OK (error decoding key)")
+			log.Printf(ctx, "Error decoding auth key: %v", err)
+			srHTTP.LogSuccess(ctx, "OK (error decoding key)")
 			return
 		}
 		if !bytes.Equal(key, config.HealthCheckSecretKey) {
-			httpSuccess(response, request, "OK (attempted to auth with bad key)")
+			srHTTP.LogSuccess(ctx, "OK (attempted to auth with bad key)")
 			return
 		}
 	}
 
 	// Okay, send them stuff
 	games, err := client.Keys(ctx, "game:*").Result()
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
 	sessions, err := client.Keys(ctx, "session:*").Result()
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
 	resp := healthCheckResponse{
 		Games:    len(games),
 		Sessions: len(sessions),
 	}
-	err = writeBodyJSON(response, &resp)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request,
-		resp.Games, " games, ", resp.Sessions, " sessions",
-	)
+	srHTTP.MustWriteBodyJSON(ctx, response, &resp)
+	srHTTP.LogSuccessf(ctx, "%v games, %v sessions", resp.Games, resp.Sessions)
 }

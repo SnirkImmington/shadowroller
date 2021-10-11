@@ -2,14 +2,16 @@ package routes
 
 import (
 	"math"
+
+	"sr/errs"
 	"sr/event"
 	"sr/game"
+	srHTTP "sr/http"
 	"sr/id"
+	"sr/log"
 	"sr/player"
 	"sr/roll"
 	"sr/update"
-
-	"github.com/go-redis/redis/v8"
 )
 
 type initiativeRollRequest struct {
@@ -21,82 +23,76 @@ type initiativeRollRequest struct {
 	Blitzed bool   `json:"blitzed"`
 }
 
-var _ = gameRouter.HandleFunc("/roll-initiative", Wrap(handleRollInitiative)).Methods("POST")
-
 // $ POST /roll-initiative title base dice
-func handleRollInitiative(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+var _ = srHTTP.Handle(gameRouter, "POST /roll-initiative", handleRollInitiative)
+
+func handleRollInitiative(args *srHTTP.Args) {
+	ctx, _, request, client, sess := args.MustSession()
 
 	var initRequest initiativeRollRequest
-	err = readBodyJSON(request, &initRequest)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &initRequest)
+
 	if initRequest.Dice < 1 {
-		httpBadRequest(response, request, "Invalid dice count")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid dice count"))
 	}
 	if initRequest.Base < -2 {
-		httpBadRequest(response, request, "Invalid initiative base")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid initiative base"))
 	}
 	if initRequest.Dice > 5 {
-		httpBadRequest(response, request, "Cannot roll more than 5 dice")
+		srHTTP.Halt(ctx, errs.BadRequestf("Cannot roll more than 5 dice"))
 	}
 	if initRequest.Blitzed {
 		initRequest.Dice = 5
 	}
 	if !event.IsShare(initRequest.Share) {
-		httpBadRequest(response, request, "share: invalid")
+		srHTTP.Halt(ctx, errs.BadRequestf("share: invalid"))
 	}
 	share := event.Share(initRequest.Share)
 
-	logf(request, "%v to roll %v + %vd6 %v (blitz = %v, seize = %v) %v",
+	log.Printf(ctx, "%v to roll %v + %vd6 %v (blitz = %v, seize = %v) %v",
 		sess.PlayerID, initRequest.Base, initRequest.Dice, share.String(), initRequest.Blitzed, initRequest.Seized, initRequest.Title,
 	)
 
 	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
 	dice := make([]int, initRequest.Dice)
 	roll.Rolls.Fill(request.Context(), dice)
-	logf(request, "Rolled %v + %v = %v", initRequest.Base, dice, initRequest.Base+roll.SumDice(dice))
+	log.Printf(ctx, "Rolled %v + %v = %v", initRequest.Base, dice, initRequest.Base+roll.SumDice(dice))
 
 	event := event.ForInitiativeRoll(
 		plr, share, initRequest.Title, initRequest.Base, dice, initRequest.Seized, initRequest.Blitzed,
 	)
 	err = game.PostEvent(ctx, client, sess.GameID, &event)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(
-		response, request,
-		"Initiative ", event.GetID(), " posted",
-	)
+	srHTTP.HaltInternal(ctx, err)
+	srHTTP.LogSuccessf(ctx, "Initiative %v posted", event.GetID())
 }
 
-var _ = gameRouter.HandleFunc("/edit-initiative", Wrap(handleEditInitiative)).Methods("POST")
+var _ = srHTTP.Handle(gameRouter, "POST /edit-initiative", handleEditInitiative)
 
-func handleEditInitiative(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+func handleEditInitiative(args *srHTTP.Args) {
+	ctx, _, request, client, sess := args.MustSession()
 
 	var updateRequest updateEventRequest
-	err = readBodyJSON(request, &updateRequest)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &updateRequest)
 
 	if len(updateRequest.Diff) == 0 {
-		httpBadRequest(response, request, "No diff requested")
+		srHTTP.Halt(ctx, errs.BadRequestf("No diff requested"))
 	}
 
-	logf(request, "%s wants to update %v", sess.PlayerInfo(), updateRequest.ID)
+	log.Printf(ctx, "%s wants to update %v", sess.PlayerInfo(), updateRequest.ID)
 
 	eventText, err := event.GetByID(ctx, client, sess.GameID, updateRequest.ID)
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(ctx, errs.BadRequest(err))
 
 	evt, err := event.Parse([]byte(eventText))
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(ctx, errs.BadRequest(err))
 
 	if evt.GetType() != event.EventTypeInitiativeRoll {
-		httpForbidden(response, request, "Invalid event type.")
+		srHTTP.Halt(ctx, errs.NoAccessf("Invalid event type."))
 	}
 	if evt.GetPlayerID() != sess.PlayerID {
-		httpForbidden(response, request, "You may not update this event.")
+		srHTTP.Halt(ctx, errs.NoAccessf("You may not update this event."))
 	}
 
 	initEvent := evt.(*event.InitiativeRoll)
@@ -108,7 +104,7 @@ func handleEditInitiative(response Response, request *Request, client *redis.Cli
 		case "title":
 			title, ok := value.(string)
 			if !ok {
-				httpBadRequest(response, request, "title: expected string")
+				srHTTP.Halt(ctx, errs.BadRequestf("title: expected string"))
 			}
 			if title == initEvent.Title {
 				continue
@@ -118,7 +114,7 @@ func handleEditInitiative(response Response, request *Request, client *redis.Cli
 		case "base":
 			base, ok := value.(float64)
 			if !ok || base < -2 || base > 50 || math.Round(base) != base {
-				httpBadRequest(response, request, "base: expected number between -2 and 50")
+				srHTTP.Halt(ctx, errs.BadRequestf("base: expected number between -2 and 50"))
 			}
 			baseVal := int(base)
 			if baseVal == initEvent.Base {
@@ -127,11 +123,11 @@ func handleEditInitiative(response Response, request *Request, client *redis.Cli
 			initEvent.Base = baseVal
 			diff["base"] = base
 		case "dice":
-			httpBadRequest(response, request, "Cannot set dice at this time")
+			srHTTP.Halt(ctx, errs.BadRequestf("Cannot set dice at this time"))
 		case "seized":
 			seized, ok := value.(bool)
 			if !ok {
-				httpBadRequest(response, request, "seized: can only be unset")
+				srHTTP.Halt(ctx, errs.BadRequestf("seized: can only be unset"))
 			}
 			if initEvent.Seized == seized {
 				continue
@@ -139,17 +135,18 @@ func handleEditInitiative(response Response, request *Request, client *redis.Cli
 			initEvent.Seized = seized
 			diff["seized"] = seized
 		case "blitzed":
-			httpBadRequest(response, request, "blitzed: cannot set")
+			srHTTP.Halt(ctx, errs.BadRequestf("blitzed: cannot set"))
 		default:
-			httpBadRequest(response, request, "cannot set")
+			srHTTP.Halt(ctx, errs.BadRequestf("cannot set"))
 		}
 	}
 	if len(diff) == 0 {
-		httpSuccess(response, request, "(Idempotent, no changes made)")
+		srHTTP.LogSuccess(ctx, "(Idempotent, no changes made)")
 	}
 	update := update.ForEventDiff(initEvent, diff)
-	logf(request, "Found diff %v", diff)
+	log.Printf(ctx, "Found diff %v", diff)
 	err = game.UpdateEvent(ctx, client, sess.GameID, initEvent, update)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request, "Update sent")
+	srHTTP.HaltInternal(ctx, err)
+
+	srHTTP.LogSuccess(ctx, "Update sent")
 }

@@ -108,6 +108,9 @@ func GetByID(ctx context.Context, client redis.Cmdable, sessionID string) (*Sess
 	if sessionID == "" {
 		return nil, errNilSession
 	}
+	if client == nil {
+		return nil, fmt.Errorf("Client was nil!!")
+	}
 	var sess Session
 	result := client.HGetAll(ctx, "session:"+sessionID)
 	data, err := result.Result()

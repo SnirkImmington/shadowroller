@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
-	"net/http"
-	"time"
 
 	"sr"
 	"sr/config"
+	srHTTP "sr/http"
 	"sr/log"
 	srOtel "sr/otel"
 	redisUtil "sr/redis"
@@ -32,62 +30,6 @@ const SHADOWROLLER = `
 
 var taskFlag = flag.String("task", "", "Select a task to run interactively")
 
-func runServer(ctx context.Context, name string, server *http.Server, tls bool) {
-	name = fmt.Sprintf("server %v", name)
-	ctx, serverSpan := srOtel.Tracer.Start(ctx, name,
-		trace.WithSpanKind(trace.SpanKindInternal),
-	)
-	defer serverSpan.End()
-	shutdownCtx, release := shutdown.Registerf(context.Background(), name)
-	log.Printf(ctx, "Running %v server at %v...", name, server.Addr)
-
-	go func() {
-		// Wait for interrupt
-		<-shutdownCtx.Done()
-		defer release()
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
-		defer cancel()
-		err := server.Shutdown(ctx)
-		if err != nil {
-			log.Printf(ctx, "%v server closed: %v", name, err)
-		}
-	}()
-
-	for {
-		var err error
-		if tls {
-			var pemFile, keyFile string
-			if len(config.TLSCertFiles) != 2 {
-				pemFile = ""
-				keyFile = ""
-				log.Print(ctx, "TLS server with autocert started")
-			} else {
-				pemFile = config.TLSCertFiles[0]
-				keyFile = config.TLSCertFiles[1]
-				log.Printf(ctx,
-					"TLS server with cert files %v, %v started",
-					pemFile, keyFile,
-				)
-			}
-			err = server.ListenAndServeTLS(pemFile, keyFile)
-		} else {
-			log.Print(ctx, "HTTP (unencrypted) server started.")
-			err = server.ListenAndServe()
-		}
-
-		if errors.Is(err, http.ErrServerClosed) {
-			log.Printf(ctx, "%v server has shut down.", name)
-			return
-		}
-
-		if err != nil {
-			log.Printf(ctx, "%v server failed! Restarting in 10s: %v", name, err)
-			time.Sleep(time.Duration(10) * time.Second)
-			log.Printf(ctx, "%v server restarting.", name)
-		}
-	}
-}
-
 func main() {
 	ctx := context.Background()
 	shutdown.Start(ctx)
@@ -96,7 +38,7 @@ func main() {
 		trace.WithSpanKind(trace.SpanKindServer),
 	)
 	defer mainSpan.End()
-	log.Print(ctx, "Starting up...")
+	log.Stdout(ctx, "Starting up...")
 	flag.Parse()
 	config.VerifyConfig()
 	redisUtil.SetupWithConfig()
@@ -104,7 +46,7 @@ func main() {
 		task.RunSelectedTask(ctx, redisUtil.Client, *taskFlag, flag.Args())
 	}
 
-	sr.SeedRand()
+	sr.SeedRand(ctx)
 	roll.Init()
 	defer roll.Shutdown()
 
@@ -116,25 +58,25 @@ func main() {
 
 	routes.RegisterTasksViaConfig()
 
-	log.Stdoutf(ctx, "Shadowroller: %v\n", SHADOWROLLER)
-	err := routes.DisplaySiteRoutes()
+	log.Stdoutf(ctx, "Shadowroller: %v", SHADOWROLLER)
+	err := routes.DisplaySiteRoutes(ctx)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to walk routes: %v", err))
 	}
 
 	if config.RedirectListenHTTP != "" {
-		redirectServer := routes.MakeHTTPRedirectServer()
-		go runServer(ctx, "redirect", redirectServer, false)
+		redirectServer := srHTTP.MakeHTTPRedirectServer(routes.MakeRedirectRouter())
+		go srHTTP.RunServer(ctx, "redirect", redirectServer, false)
 	}
 
 	if config.MainListenHTTP != "" {
-		siteServer := routes.MakeHTTPSiteServer()
-		runServer(ctx, "main", siteServer, false)
+		siteServer := srHTTP.MakeHTTPSiteServer(routes.MakeMainRouter())
+		srHTTP.RunServer(ctx, "main", siteServer, false)
 	} else {
-		siteServer := routes.MakeHTTPSSiteServer()
-		runServer(ctx, "main", siteServer, true)
+		siteServer := srHTTP.MakeHTTPSSiteServer(routes.MakeMainRouter())
+		srHTTP.RunServer(ctx, "main", siteServer, true)
 	}
 	// Wait for all handlers to finish and return cleanly
 	shutdown.WaitGroup.Wait()
-	log.Stdout(ctx, "Shadowroller out.")
+	defer log.Stdout(ctx, "Shadowroller out.")
 }

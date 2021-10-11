@@ -9,27 +9,33 @@ import (
 	"time"
 
 	"sr/config"
+	"sr/taskCtx"
 
 	attr "go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
 const fileNameLen = 14
+const timeFormat = "15:04:05 "
+
+func FileAndLine(depth int) (string, int) {
+	_, file, line, ok := runtime.Caller(depth + 1)
+	if !ok {
+		return "??????.go", 0
+	}
+	return file, line
+}
 
 func writeStacktrace(builder *strings.Builder) {
 	stack := debug.Stack()
 	builder.Write(stack)
 }
 
-func writePrefix(builder *strings.Builder, depth int) {
-	now := time.Now()
-	_, file, line, ok := runtime.Caller(depth + 2)
-	if !ok {
-		file = "???????.go"
-		line = 0
-	}
-	builder.WriteString(now.Format("15:04:05 "))
+func writeTime(builder *strings.Builder, ts time.Time) {
+	builder.WriteString(ts.Format(timeFormat))
+}
 
+func writeLocation(builder *strings.Builder, file string, line int) {
 	seenSlash := false
 	slashIndex := len(file) - 1
 	for ; slashIndex > 0; slashIndex-- {
@@ -63,17 +69,12 @@ func writePrefix(builder *strings.Builder, depth int) {
 	builder.WriteString(fmt.Sprintf(":%03d ", line))
 }
 
-func writeSpanID(builder *strings.Builder, spanID trace.SpanID) {
-	var hash int64
-	for _, b := range spanID {
-		hash += int64(b)
-	}
+func writeSpanID(builder *strings.Builder, ctx context.Context) {
+	id := taskCtx.GetID(ctx)
 	if config.IsProduction {
-		hash = hash % 4096
-		builder.WriteString(fmt.Sprintf("%03x ", hash))
+		builder.WriteString(fmt.Sprintf("%03x ", id))
 	} else {
-		hash = hash % 256
-		builder.WriteString(fmt.Sprintf("\033[38;5;%vm%02x\033[m ", hash, hash))
+		builder.WriteString(fmt.Sprintf("\033[38;5;%vm%02x\033[m ", id, id))
 	}
 }
 
@@ -91,11 +92,13 @@ func writeAttrs(builder *strings.Builder, attrs []attr.KeyValue) {
 	}
 }
 
-func RawEvent(depth int, ctx context.Context, name string, info ...attr.KeyValue) {
+func RawEvent(ctx context.Context, file string, line int, name string, info ...attr.KeyValue) {
+	now := time.Now()
 	span := trace.SpanFromContext(ctx)
 	builder := strings.Builder{}
-	writePrefix(&builder, depth)
-	writeSpanID(&builder, span.SpanContext().SpanID())
+	writeTime(&builder, now)
+	writeLocation(&builder, file, line)
+	writeSpanID(&builder, ctx)
 	builder.WriteString(name)
 	writeAttrs(&builder, info)
 	fmt.Println(builder.String())
@@ -105,44 +108,66 @@ func RawEvent(depth int, ctx context.Context, name string, info ...attr.KeyValue
 	}
 }
 
-func Event(ctx context.Context, name string, info ...attr.KeyValue) {
-	RawEvent(1, ctx, name, info...)
+func CallerEvent(ctx context.Context, name string, info ...attr.KeyValue) {
+	file, line := FileAndLine(2)
+	RawEvent(ctx, file, line, name, info...)
 }
 
-func RawPrintf(depth int, ctx context.Context, message string, args ...interface{}) {
+func Event(ctx context.Context, name string, info ...attr.KeyValue) {
+	file, line := FileAndLine(1)
+	RawEvent(ctx, file, line, name, info...)
+}
+
+func RawPrint(ctx context.Context, file string, line int, message string) {
+	now := time.Now()
 	builder := strings.Builder{}
-	writePrefix(&builder, depth)
-	msg := fmt.Sprintf(message, args...)
 	span := trace.SpanFromContext(ctx)
-	writeSpanID(&builder, span.SpanContext().SpanID())
-	builder.WriteString(msg)
+	writeTime(&builder, now)
+	writeLocation(&builder, file, line)
+	writeSpanID(&builder, ctx)
+	builder.WriteString(message)
 	fmt.Println(builder.String())
 	if span.IsRecording() {
-		span.AddEvent(msg)
+		span.AddEvent(message)
 	}
 }
 
+func CallerPrint(ctx context.Context, message string) {
+	file, line := FileAndLine(2)
+	RawPrint(ctx, file, line, message)
+}
+
 func Print(ctx context.Context, message string) {
-	RawPrintf(1, ctx, message)
+	file, line := FileAndLine(1)
+	RawPrint(ctx, file, line, message)
 }
 
 func Printf(ctx context.Context, message string, args ...interface{}) {
-	RawPrintf(1, ctx, message, args...)
+	file, line := FileAndLine(1)
+	RawPrint(ctx, file, line, fmt.Sprintf(message, args...))
 }
 
-func RawStdout(depth int, ctx context.Context, message string) {
+func RawStdout(ctx context.Context, file string, line int, message string) {
+	now := time.Now()
 	builder := strings.Builder{}
-	writePrefix(&builder, depth)
-	span := trace.SpanFromContext(ctx)
-	writeSpanID(&builder, span.SpanContext().SpanID())
+	writeTime(&builder, now)
+	writeLocation(&builder, file, line)
+	writeSpanID(&builder, ctx)
 	builder.WriteString(message)
 	fmt.Println(builder.String())
 }
 
+func CallerStdout(ctx context.Context, message string) {
+	file, line := FileAndLine(2)
+	RawStdout(ctx, file, line, message)
+}
+
 func Stdout(ctx context.Context, message string) {
-	RawStdout(1, ctx, message)
+	file, line := FileAndLine(1)
+	RawStdout(ctx, file, line, message)
 }
 
 func Stdoutf(ctx context.Context, message string, args ...interface{}) {
-	Stdout(ctx, fmt.Sprintf(message, args...))
+	file, line := FileAndLine(1)
+	RawStdout(ctx, file, line, fmt.Sprintf(message, args...))
 }

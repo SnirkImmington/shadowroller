@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
+	stdLog "log"
 	"strings"
 	"time"
 
@@ -38,7 +38,7 @@ func DefaultResource(ctx context.Context) *resource.Resource {
 		),
 	)
 	if err != nil {
-		log.Printf("otel init: DefaultResource: %v", err)
+		stdLog.Printf("otel init: DefaultResource: %v", err)
 		panic("Failed to create default resource")
 	}
 	return result
@@ -49,7 +49,7 @@ func CreateStdoutTrace(ctx context.Context) func(context.Context) error {
 		stdouttrace.WithPrettyPrint(),
 	)
 	if err != nil {
-		log.Printf("otel init: CreateStdoutTrace: %v", err)
+		stdLog.Printf("otel init: CreateStdoutTrace: %v", err)
 		panic("Failed to create stdout tracer")
 	}
 
@@ -93,7 +93,7 @@ func CreateUptraceTrace(ctx context.Context) func(context.Context) error {
 		})),
 	)
 	if err != nil {
-		log.Printf("otel init: CreateUptraceTrace: %v", err)
+		stdLog.Printf("otel init: CreateUptraceTrace: %v", err)
 		panic("Failed to create grpc traces exporter")
 	}
 
@@ -138,7 +138,7 @@ func Setup(ctx context.Context) {
 		defer cancel()
 		err := shutdown(ctx)
 		if err != nil {
-			log.Printf("otel shutdown error: %v", err)
+			stdLog.Printf("otel shutdown error: %v", err)
 		}
 	}()
 }

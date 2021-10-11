@@ -1,35 +1,35 @@
 package routes
 
 import (
-	"fmt"
-	"sr/game"
-	"sr/player"
-	"sr/update"
 	"strings"
 
-	"github.com/go-redis/redis/v8"
+	"sr/errs"
+	"sr/game"
+	srHTTP "sr/http"
+	"sr/log"
+	"sr/player"
+	"sr/update"
 )
 
-var playerRouter = restRouter.PathPrefix("/player").Subrouter()
-
-var _ = playerRouter.HandleFunc("/update", Wrap(handleUpdatePlayer)).Methods("POST")
+var playerRouter = RESTRouter.PathPrefix("/player").Subrouter()
 
 type playerUpdateRequest struct {
 	Diff map[string]interface{} `json:"diff"`
 }
 
-func handleUpdatePlayer(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+var _ = srHTTP.Handle(playerRouter, "POST /update", handleUpdatePlayer)
+
+func handleUpdatePlayer(args *srHTTP.Args) {
+	ctx, response, request, client, sess := args.MustSession()
 
 	var updateRequest playerUpdateRequest
-	err = readBodyJSON(request, &updateRequest)
-	httpUnauthorizedIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &updateRequest)
+
 	requestDiff := updateRequest.Diff
 	if len(requestDiff) == 0 {
-		httpBadRequest(response, request, "empty diff request")
+		srHTTP.Halt(ctx, errs.BadRequestf("empty diff request"))
 	}
-	logf(request,
+	log.Printf(ctx,
 		"%v requests update %v", sess.PlayerInfo(), updateRequest.Diff,
 	)
 
@@ -40,18 +40,18 @@ func handleUpdatePlayer(response Response, request *Request, client *redis.Clien
 		case "name":
 			name, ok := value.(string)
 			if !ok {
-				httpBadRequest(response, request, "name: expected string")
+				srHTTP.Halt(ctx, errs.BadRequestf("name: expected string"))
 			}
 			name = strings.TrimSpace(name)
 			if !player.ValidName(name) {
-				httpBadRequest(response, request, "name: invalid")
+				srHTTP.Halt(ctx, errs.BadRequestf("name: invalid"))
 			}
 			externalDiff["name"] = name
 			internalDiff["name"] = name
 		case "hue":
 			hue, ok := value.(float64)
 			if !ok || hue < 0 || hue > 360 {
-				httpBadRequest(response, request, "hue: expected int 0-360")
+				srHTTP.Halt(ctx, errs.BadRequestf("hue: expected int 0-360"))
 			}
 			internalDiff["hue"] = int(hue)
 			externalDiff["hue"] = int(hue)
@@ -60,13 +60,13 @@ func handleUpdatePlayer(response Response, request *Request, client *redis.Clien
 			modeFloat, ok := value.(float64)
 			modeInt := int(modeFloat)
 			if !ok || modeInt < player.OnlineModeAuto || modeInt > player.OnlineModeOffline {
-				httpBadRequest(response, request, "mode: expected auto, online, offline")
+				srHTTP.Halt(ctx, errs.BadRequestf("mode: expected auto, online, offline"))
 			}
 			mode = modeInt
 
 			// Determine if online mode changes player online status
 			plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
-			httpInternalErrorIf(response, request, err)
+			srHTTP.HaltInternal(ctx, err)
 			previouslyOnline := plr.IsOnline()
 			// Change the variable `plr` to see if the change affects IsOnline()
 			plr.OnlineMode = mode
@@ -77,23 +77,19 @@ func handleUpdatePlayer(response Response, request *Request, client *redis.Clien
 			}
 			internalDiff["onlineMode"] = mode
 		default:
-			httpBadRequest(response, request,
-				fmt.Sprintf("Cannot update field %v", key),
-			)
+			srHTTP.Halt(ctx, errs.BadRequestf("Cannot update field %v", key))
 		}
 	}
-	logf(request, "Created updates %#v and %#v", externalDiff, internalDiff)
+	log.Printf(ctx, "Created updates %#v and %#v", externalDiff, internalDiff)
 	externalUpdate := update.ForPlayerDiff(sess.PlayerID, externalDiff)
 	internalUpdate := update.ForPlayerDiff(sess.PlayerID, internalDiff)
 	if externalUpdate.IsEmpty() && internalUpdate.IsEmpty() {
-		httpBadRequest(response, request, "No update made?")
+		srHTTP.Halt(ctx, errs.BadRequestf("No update made?"))
 	}
 
-	err = game.UpdatePlayer(ctx, client, sess.GameID, sess.PlayerID, externalUpdate, internalUpdate)
-	httpInternalErrorIf(response, request, err)
-	err = writeBodyJSON(response, internalDiff)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request,
-		"Player ", sess.PlayerID, " update ", internalDiff,
-	)
+	err := game.UpdatePlayer(ctx, client, sess.GameID, sess.PlayerID, externalUpdate, internalUpdate)
+	srHTTP.HaltInternal(ctx, err)
+	srHTTP.MustWriteBodyJSON(ctx, response, internalDiff)
+
+	srHTTP.LogSuccessf(ctx, "Player %v update %v", sess.PlayerID, internalDiff)
 }

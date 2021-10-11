@@ -3,9 +3,10 @@ package redis
 import (
 	. "context"
 
+	srOtel "sr/otel"
+
 	"go.opentelemetry.io/otel"
 	attr "go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 
@@ -15,26 +16,25 @@ import (
 
 var tracer trace.Tracer
 
-type TraceHook struct{}
+type traceHook struct{}
 
-var _ redis.Hook = (*TraceHook)(nil)
+var _ redis.Hook = (*traceHook)(nil)
 
 func SetupTracer() {
 	tracer = otel.Tracer("shadowroller.net/libsr/redis")
 }
 
-func NewTraceHook() *TraceHook {
-	return new(TraceHook)
+func NewTraceHook() redis.Hook {
+	return new(traceHook)
 }
 
 func recordError(ctx Context, span trace.Span, err error) {
 	if err != redis.Nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
+		srOtel.SetError(span, err)
 	}
 }
 
-func (TraceHook) BeforeProcess(ctx Context, cmd redis.Cmder) (Context, error) {
+func (traceHook) BeforeProcess(ctx Context, cmd redis.Cmder) (Context, error) {
 	if !trace.SpanFromContext(ctx).IsRecording() {
 		return ctx, nil
 	}
@@ -49,7 +49,7 @@ func (TraceHook) BeforeProcess(ctx Context, cmd redis.Cmder) (Context, error) {
 	return ctx, nil
 }
 
-func (TraceHook) AfterProcess(ctx Context, cmd redis.Cmder) error {
+func (traceHook) AfterProcess(ctx Context, cmd redis.Cmder) error {
 	span := trace.SpanFromContext(ctx)
 	if err := cmd.Err(); err != nil {
 		recordError(ctx, span, err)
@@ -58,7 +58,7 @@ func (TraceHook) AfterProcess(ctx Context, cmd redis.Cmder) error {
 	return nil
 }
 
-func (TraceHook) BeforeProcessPipeline(ctx Context, cmds []redis.Cmder) (Context, error) {
+func (traceHook) BeforeProcessPipeline(ctx Context, cmds []redis.Cmder) (Context, error) {
 	if !trace.SpanFromContext(ctx).IsRecording() {
 		return ctx, nil
 	}
@@ -74,7 +74,7 @@ func (TraceHook) BeforeProcessPipeline(ctx Context, cmds []redis.Cmder) (Context
 	return ctx, nil
 }
 
-func (TraceHook) AfterProcessPipeline(ctx Context, cmds []redis.Cmder) error {
+func (traceHook) AfterProcessPipeline(ctx Context, cmds []redis.Cmder) error {
 	if len(cmds) == 0 {
 		return nil
 	}

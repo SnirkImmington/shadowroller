@@ -3,11 +3,11 @@ package setup
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	"sr/config"
 	"sr/game"
+	"sr/log"
 	"sr/player"
 
 	"github.com/go-redis/redis/v8"
@@ -21,9 +21,9 @@ func addHardcodedGames(ctx context.Context, client redis.Cmdable) error {
 	for i, gameKey := range gameKeys {
 		gameKeys[i] = gameKey[5:]
 	}
-	log.Printf("Games (%v): %v", len(gameKeys), gameKeys)
+	log.Printf(ctx, "Games (%v): %v", len(gameKeys), gameKeys)
 	if !config.IsProduction && len(gameKeys) < len(config.HardcodedGameNames) {
-		log.Printf("Creating games %v", config.HardcodedGameNames)
+		log.Printf(ctx, "Creating games %v", config.HardcodedGameNames)
 		for i, game := range config.HardcodedGameNames {
 			_, err := client.HMSet(ctx, "game:"+game, "event_id", 0).Result()
 			if err != nil {
@@ -56,12 +56,12 @@ func addHardcodedPlayers(ctx context.Context, client redis.Cmdable) error {
 			}
 		}
 		if players[i] == "" {
-			log.Printf("Need player_ids mapping for %v", playerID)
+			log.Printf(ctx, "Need player_ids mapping for %v", playerID)
 		}
 	}
-	log.Printf("Players (%v): %v", len(players), players)
+	log.Printf(ctx, "Players (%v): %v", len(players), players)
 	if !config.IsProduction && len(players) < len(config.HardcodedUsernames) {
-		log.Printf("Adding %v to all games", config.HardcodedUsernames)
+		log.Printf(ctx, "Adding %v to all games", config.HardcodedUsernames)
 		games := config.HardcodedGameNames
 		for _, username := range config.HardcodedUsernames {
 			plr := player.Make(username, strings.Title(username))

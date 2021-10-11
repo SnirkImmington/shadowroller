@@ -1,16 +1,12 @@
 package routes
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"net/http"
-	"strings"
 	"time"
 
 	"sr/config"
-	"sr/taskCtx"
+	srHTTP "sr/http"
+	"sr/log"
 
 	"github.com/janberktold/sse"
 )
@@ -19,62 +15,18 @@ var sseUpgrader = sse.Upgrader{
 	RetryTime: time.Duration(config.SSEClientRetrySecs) * time.Second,
 }
 
-// Request is an alias for http.Request
-type Request = http.Request
-
-// Response is an alias for http.ResponseWriter
-type Response = http.ResponseWriter
-
-var errExtraBody = errors.New("encountered additional data after end of JSON body")
-
 type updateEventRequest struct {
 	ID   int64                  `json:"id"`
 	Diff map[string]interface{} `json:"diff"`
 }
 
-func requestRemoteAddr(request *Request) string {
-	if config.ClientIPHeader != "" {
-		res := request.Header.Get(config.ClientIPHeader)
-		if res != "" {
-			return res
-		}
-	}
-	return request.RemoteAddr
-}
-
-func requestRemoteIP(request *Request) string {
-	addr := requestRemoteAddr(request)
-	portIx := strings.LastIndex(addr, ":")
-	if portIx == -1 {
-		return addr
-	}
-	return addr[:portIx]
-}
-
-func cacheIndefinitely(request *Request, response Response) {
-	rawLog(1, request, "Caching for 24 hours")
+func cacheIndefinitely(request srHTTP.Request, response srHTTP.Response) {
+	log.CallerPrint(request.Context(), "Caching for 24 hours")
 	response.Header().Set("Cache-Control", "max-age=86400")
 }
 
-func readBodyJSON(request *Request, value interface{}) error {
-	decoder := json.NewDecoder(request.Body)
-	decoder.DisallowUnknownFields()
-	err := decoder.Decode(value)
-	if err != nil {
-		return err
-	}
-	if decoder.More() {
-		return errExtraBody
-	}
-	return nil
-}
-
-func writeBodyJSON(response Response, value interface{}) error {
-	response.Header().Set("Content-Type", "text/json")
-	return json.NewEncoder(response).Encode(value)
-}
-
-func logRequest(request *Request) {
+func logFrontendRequest(request srHTTP.Request) {
+	file, line := log.FileAndLine(1)
 	if config.IsProduction {
 		extra := ""
 		if len(config.LogExtraHeaders) != 0 {
@@ -89,72 +41,17 @@ func logRequest(request *Request) {
 			}
 			extra = fmt.Sprintf(" %v", grabbed)
 		}
-		rawLog(1, request,
-			"<< %v%v %v %v %v",
-			requestRemoteIP(request),
-			extra,
-			request.Proto,
-			request.Method,
-			request.URL,
-		)
-	} else {
-		rawLog(1, request, "<< %v %v", request.Method, request.URL)
-	}
-}
-
-func logFrontendRequest(request *Request) {
-	if config.IsProduction {
-		extra := ""
-		if len(config.LogExtraHeaders) != 0 {
-			grabbed := make([]string, len(config.LogExtraHeaders))
-			for i, header := range config.LogExtraHeaders {
-				found := request.Header.Get(header)
-				if found != "" {
-					grabbed[i] = found
-				} else {
-					grabbed[i] = "??"
-				}
-			}
-			extra = fmt.Sprintf(" %v", grabbed)
-		}
-		rawLog(1, request,
+		log.RawPrint(request.Context(), file, line, fmt.Sprintf(
 			"<* %v%v %v %v %v",
-			requestRemoteIP(request),
+			srHTTP.RequestRemoteIP(request),
 			extra,
 			request.Proto,
 			request.Method,
 			request.URL,
-		)
+		))
 	} else {
-		rawLog(1, request, "<* %v %v", request.Method, request.URL)
+		log.RawPrint(request.Context(), file, line, fmt.Sprintf(
+			"<* %v %v", request.Method, request.URL,
+		))
 	}
-}
-
-func logf(request *Request, format string, values ...interface{}) {
-	taskCtx.RawLog(request.Context(), 1, format, values...)
-}
-
-func logc(ctx context.Context, format string, values ...interface{}) {
-	taskCtx.RawLog(ctx, 1, format, values...)
-}
-
-func rawLog(stack int, request *Request, format string, values ...interface{}) {
-	taskCtx.RawLog(request.Context(), stack+1, format, values...)
-}
-
-func httpSuccess(response Response, request *Request, message ...interface{}) {
-	if len(message) == 0 {
-		message = []interface{}{"OK"}
-	}
-	dur := displayRequestDuration(request.Context())
-	rawLog(1, request, fmt.Sprintf(">> 200 %v (%v)", fmt.Sprint(message...), dur))
-}
-
-func logServedContent(response Response, request *Request, fileName string, zipped bool) {
-	dur := displayRequestDuration(request.Context())
-	msg := "zipped"
-	if !zipped {
-		msg = "unzipped"
-	}
-	rawLog(1, request, fmt.Sprintf("*> Served %v %v (%v)", fileName, msg, dur))
 }

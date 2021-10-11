@@ -6,36 +6,34 @@ import (
 	"reflect"
 
 	"sr/config"
+	"sr/errs"
 	"sr/event"
 	"sr/game"
+	srHTTP "sr/http"
 	"sr/id"
+	"sr/log"
 	"sr/player"
 	"sr/roll"
 	"sr/update"
 
 	attr "go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/semconv/v1.4.0"
-
-	"github.com/go-redis/redis/v8"
 )
 
-var gameRouter = restRouter.PathPrefix("/game").Subrouter()
-
-var _ = gameRouter.HandleFunc("/info", Wrap(handleInfo)).Methods("GET")
+var gameRouter = RESTRouter.PathPrefix("/game").Subrouter()
 
 // GET /info {gameInfo}
-func handleInfo(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+var _ = srHTTP.Handle(gameRouter, "GET /info", handleInfo)
+
+func handleInfo(args *srHTTP.Args) {
+	ctx, response, _, client, sess := args.MustSession()
 
 	info, err := game.GetInfo(ctx, client, sess.GameID)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
-	err = writeBodyJSON(response, &info)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(
-		response, request,
-		info.ID, ": ", len(info.Players), " players",
+	srHTTP.MustWriteBodyJSON(ctx, response, &info)
+	srHTTP.LogSuccessf(ctx, "%v: %v players",
+		info.ID, len(info.Players),
 	)
 }
 
@@ -43,33 +41,31 @@ type renameRequest struct {
 	Name string `json:"name"`
 }
 
-var _ = gameRouter.HandleFunc("/modify-roll", Wrap(handleUpdateEvent)).Methods("POST")
+var _ = srHTTP.Handle(gameRouter, "POST /modify-roll", handleUpdateEvent)
 
-func handleUpdateEvent(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+func handleUpdateEvent(args *srHTTP.Args) {
+	ctx, _, request, client, sess := args.MustSession()
 
 	var updateRequest updateEventRequest
-	err = readBodyJSON(request, &updateRequest)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &updateRequest)
 
-	logf(request,
+	log.Printf(ctx,
 		"%s requests update %v", sess.PlayerInfo(), updateRequest,
 	)
 	eventText, err := event.GetByID(ctx, client, sess.GameID, updateRequest.ID)
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(ctx, errs.BadRequest(err))
 
 	evt, err := event.Parse([]byte(eventText))
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(ctx, errs.BadRequest(err))
 
 	if evt.GetPlayerID() != sess.PlayerID {
-		httpForbidden(response, request, "You may not update this event.")
+		srHTTP.Halt(ctx, errs.NoAccessf("You may not update this event"))
 	}
 	if evt.GetType() == event.EventTypePlayerJoin {
-		httpForbidden(response, request, "You may not update this event.")
+		srHTTP.Halt(ctx, errs.NoAccessf("You may not update this event"))
 	}
 
-	logf(request, "Event type %v found, updating", evt.GetType())
+	log.Printf(ctx, "Event type %v found, updating", evt.GetType())
 	updateTime := id.NewEventID()
 	evt.SetEdit(updateTime)
 	diff := make(map[string]interface{})
@@ -79,76 +75,74 @@ func handleUpdateEvent(response Response, request *Request, client *redis.Client
 		case "title":
 			title, ok := value.(string)
 			if !ok {
-				httpBadRequest(response, request, "Event diff: title: expected string")
+				srHTTP.Halt(ctx, errs.BadRequestf("Event diff: title: expected string"))
 			}
 			// Title is common to many events to be worth type switch
 			titleField := reflect.Indirect(reflect.ValueOf(evt)).FieldByName("Title")
 			if !titleField.CanSet() {
-				httpInternalError(response, request, "Cannot set Title field")
+				srHTTP.Halt(ctx, errs.Internalf("could not set Title field"))
 			}
 			titleField.SetString(title)
 			diff["title"] = title
 		case "glitchy":
 			glitchy, ok := value.(float64)
 			if !ok {
-				httpBadRequest(response, request, "Event diff: glitchy: expected int")
+				srHTTP.Halt(ctx, errs.BadRequestf("event diff: glitchy: expected int"))
 			}
 			glitchyField := reflect.Indirect(reflect.ValueOf(evt)).FieldByName("Glitchy")
 			if !glitchyField.CanSet() {
-				httpInternalError(response, request, "Cannot set Glitchy field")
+				srHTTP.Halt(ctx, errs.Internalf("could not set Glitchy field"))
 			}
 			glitchyField.SetInt(int64(glitchy))
 			diff["glitchy"] = glitchy
 		case "share":
-			httpBadRequest(response, request, "Event diff: cannot update share here")
+			srHTTP.Halt(ctx, errs.BadRequestf("event diff: cannot update share here"))
 		default:
-			logf(request, "Received unknown value %v = %v", key, value)
+			log.Printf(ctx, "Received unknown value %v = %v", key, value)
 		}
 	}
 	update := update.ForEventDiff(evt, diff)
 
-	logf(request, "Event %v diff %v", evt.GetID(), diff)
+	log.Printf(ctx, "Event %v diff %v", evt.GetID(), diff)
 	err = game.UpdateEvent(ctx, client, sess.GameID, evt, update)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 }
-
-var _ = gameRouter.HandleFunc("/delete-roll", Wrap(handleDeleteEvent)).Methods("POST")
 
 type deleteEventRequest struct {
 	ID int64 `json:"id"`
 }
 
-func handleDeleteEvent(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+var _ = srHTTP.Handle(gameRouter, "POST /delete-roll", handleDeleteEvent)
+
+func handleDeleteEvent(args *srHTTP.Args) {
+	ctx, _, request, client, sess := args.MustSession()
 
 	var delete deleteEventRequest
-	err = readBodyJSON(request, &delete)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &delete)
 
-	logf(request,
+	log.Printf(ctx,
 		"%v requests to delete %v", sess.PlayerInfo(), delete.ID,
 	)
 	eventText, err := event.GetByID(ctx, client, sess.GameID, delete.ID)
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(ctx, errs.BadRequest(err))
 
 	evt, err := event.Parse([]byte(eventText))
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(ctx, errs.BadRequest(err))
 
 	if evt.GetPlayerID() != sess.PlayerID {
-		httpForbidden(response, request, "You may not delete this event.")
+		srHTTP.Halt(ctx, errs.NoAccessf("You may not delete this event."))
 	}
 	if evt.GetType() == event.EventTypePlayerJoin {
-		httpForbidden(response, request, "You may not delete this event.")
+		srHTTP.Halt(ctx, errs.NoAccessf("You may not delete this event."))
 	}
 
-	logf(request,
+	log.Printf(ctx,
 		"%v deleting event %v", sess.PlayerInfo(), delete.ID,
 	)
 	err = game.DeleteEvent(ctx, client, sess.GameID, evt)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
-	httpSuccess(response, request, "Deleted event ", evt.GetID())
+	srHTTP.LogSuccessf(ctx, "Deleted event %v", evt.GetID())
 }
 
 type rollRequest struct {
@@ -159,37 +153,34 @@ type rollRequest struct {
 	Glitchy int    `json:"glitchy"`
 }
 
-var _ = gameRouter.HandleFunc("/roll", Wrap2(handleRoll)).Methods("POST")
-
 // $ POST /roll count
-func handleRoll(args *Args) {
-	ctx, response, request, client, _ := args.Get()
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+var _ = srHTTP.Handle(gameRouter, "POST /roll", handleRoll)
+
+func handleRoll(args *srHTTP.Args) {
+	ctx, _, request, client, sess := args.MustSession()
 
 	var rollRequest rollRequest
-	err = readBodyJSON(request, &rollRequest)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &rollRequest)
 
 	if rollRequest.Count < 1 {
-		httpBadRequest(response, request, "Invalid roll count")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid roll count"))
 	}
 	if rollRequest.Count > config.MaxSingleRoll {
-		httpBadRequest(response, request, "Roll count too high")
+		srHTTP.Halt(ctx, errs.BadRequestf("Roll count too high"))
 	}
 	if !event.IsShare(rollRequest.Share) {
-		httpBadRequest(response, request, "share: invalid")
+		srHTTP.Halt(ctx, errs.BadRequestf("share: invalid"))
 	}
 	share := event.Share(rollRequest.Share)
 
 	player, err := player.GetByID(ctx, client, string(sess.PlayerID))
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
 	var evt event.Event
 	if rollRequest.Edge {
 		rolls, hits, err := roll.Rolls.ExplodingSixes(request.Context(), rollRequest.Count)
-		httpInternalErrorIf(response, request, err)
-		logEvent(ctx, "edge roll",
+		srHTTP.HaltInternal(ctx, err)
+		log.Event(ctx, "edge roll",
 			semconv.EnduserIDKey.String(sess.PlayerID.String()),
 			attr.String("sr.event.share", share.String()),
 			attr.Int("sr.roll.pool", rollRequest.Count),
@@ -204,8 +195,8 @@ func handleRoll(args *Args) {
 	} else {
 		dice := make([]int, rollRequest.Count)
 		hits, err := roll.Rolls.Fill(request.Context(), dice)
-		httpInternalErrorIf(response, request, err)
-		logEvent(ctx, "roll",
+		srHTTP.HaltInternal(ctx, err)
+		log.Event(ctx, "roll",
 			semconv.EnduserIDKey.String(sess.PlayerID.String()),
 			attr.String("sr.event.share", share.String()),
 			attr.IntSlice("sr.roll.dice", dice),
@@ -218,11 +209,8 @@ func handleRoll(args *Args) {
 		evt = &rollEvent
 	}
 	err = game.PostEvent(ctx, client, sess.GameID, evt)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(
-		response, request,
-		"OK; roll ", evt.GetID(), " posted",
-	)
+	srHTTP.HaltInternal(ctx, err)
+	srHTTP.LogSuccessf(ctx, "Roll %v posted", evt.GetID())
 }
 
 type rerollRequest struct {
@@ -230,68 +218,63 @@ type rerollRequest struct {
 	Type   string `json:"rerollType"`
 }
 
-var _ = gameRouter.HandleFunc("/reroll", Wrap2(handleReroll)).Methods("POST")
+var _ = srHTTP.Handle(gameRouter, "POST /reroll", handleReroll)
 
-func handleReroll(args *Args) {
-	ctx, response, request, client, _ := args.Get()
-	sess, err := requestSession2(request, client)
-	httpUnauthorizedIf(response, request, err)
+func handleReroll(args *srHTTP.Args) {
+	ctx, _, request, client, sess := args.MustSession()
 
 	var reroll rerollRequest
-	err = readBodyJSON(request, &reroll)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.MustReadBodyJSON(request, &reroll)
 
 	if !event.ValidRerollType(reroll.Type) {
-		logf2(ctx, "Got invalid roll type %v", reroll)
-		httpBadRequest(response, request, "Invalid reroll type")
+		log.Printf(ctx, "Got invalid roll type %v", reroll)
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid reroll type"))
 	}
-	logf2(ctx, "Rerolling roll %v from %v",
+	log.Printf(ctx, "Rerolling roll %v from %v",
 		reroll.RollID, sess.PlayerInfo(),
 	)
 
 	previousRollText, err := event.GetByID(ctx, client, sess.GameID, reroll.RollID)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	previousRollType := event.ParseTy(previousRollText)
 	if previousRollType != "roll" {
-		httpBadRequest(response, request, "Invalid previous roll type")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid previous roll type"))
 	}
 
 	var previousRoll event.Roll
 	err = json.Unmarshal([]byte(previousRollText), &previousRoll)
 	if err != nil {
-		logf(request, "Expecting to parse previous roll")
-		httpBadRequest(response, request, "Invalid previous roll")
+		log.Printf(ctx, "Expecting to parse previous roll")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid previous roll"))
 	}
 	if previousRoll.PlayerID != sess.PlayerID {
-		httpBadRequest(response, request, "That is not your roll")
+		srHTTP.Halt(ctx, errs.BadRequestf("That is not your roll"))
 	}
-	logf(request, "Got previous roll `%v` %v",
+	log.Printf(ctx, "Got previous roll `%v` %v",
 		previousRoll.Title, previousRoll.Dice,
 	)
 
 	newRound, totalHits, err := roll.Rolls.RerollMisses(request.Context(), previousRoll.Dice)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	if len(newRound) == 0 {
 		// Cannot reroll failures on all hits
-		httpBadRequest(response, request, "Invalid previous roll")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid previous roll"))
 	}
-	logf(request, "Rerolled %v, %v hits total", newRound, totalHits)
+	log.Printf(ctx, "Rerolled %v, %v hits total", newRound, totalHits)
 
 	player, err := player.GetByID(ctx, client, string(sess.PlayerID))
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
 	rerolled := event.ForReroll(
 		player, &previousRoll, [][]int{newRound, previousRoll.Dice},
 	)
 	// Rerolls are getting their own IDs. We should instead just swap dice with rounds.
 	err = game.DeleteEvent(ctx, client, sess.GameID, &previousRoll)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	err = game.PostEvent(ctx, client, sess.GameID, &rerolled)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
-	httpSuccess(
-		response, request, "Rerolled ", rerolled.ID, newRound,
-	)
+	srHTTP.LogSuccessf(ctx, "Rerolled %v", rerolled.ID)
 }
 
 func collectRolls(in interface{}) ([]int, error) {
@@ -316,17 +299,16 @@ type eventRangeResponse struct {
 	More   bool          `json:"more"`
 }
 
-var _ = gameRouter.HandleFunc("/events", Wrap(handleEvents)).Methods("GET")
-
 /*
    on join: { start: '', end: <lastEventID> }, backfill buffer
   -> [ {id: <some-early-id>, ... } ]
   if there's < max responses, client knows it's hit the boundary.
 */
 // GET /event-range { start: <id>, end: <id>, max: int }
-func handleEvents(response Response, request *Request, client *redis.Client) {
-	sess, ctx, err := requestSession(request, client)
-	httpUnauthorizedIf(response, request, err)
+var _ = srHTTP.Handle(gameRouter, "GET /events", handleEvents)
+
+func handleEvents(args *srHTTP.Args) {
+	ctx, response, request, client, sess := args.MustSession()
 
 	newest := request.FormValue("newest")
 	oldest := request.FormValue("oldest")
@@ -336,27 +318,27 @@ func handleEvents(response Response, request *Request, client *redis.Client) {
 	if newest == "" {
 		newest = "+inf"
 	} else if !event.ValidID(newest) {
-		httpBadRequest(response, request, "Invalid newest ID")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid newest ID"))
 	}
 
 	if oldest == "" {
 		oldest = "-inf"
 	} else if !event.ValidID(oldest) {
-		httpBadRequest(response, request, "Invalid oldest ID")
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid oldest ID"))
 	}
 
-	logf(request, "Retrieve events [%s ... %s] for %s",
+	log.Printf(ctx, "Retrieve events [%s ... %s] for %s",
 		oldest, newest, sess.PlayerInfo(),
 	)
 
 	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	events, err := event.GetBetween(ctx, client,
 		sess.GameID, newest, oldest, config.MaxEventRange,
 	)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 	isGM, err := game.HasGM(ctx, client, sess.GameID, sess.PlayerID)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(ctx, err)
 
 	var eventRange eventRangeResponse
 	var message string
@@ -374,7 +356,7 @@ func handleEvents(response Response, request *Request, client *redis.Client) {
 			evt, err := event.Parse([]byte(eventText))
 			if err != nil {
 				err := fmt.Errorf("error parsing event %v: %w", i, err)
-				httpInternalErrorIf(response, request, err)
+				srHTTP.HaltInternal(ctx, err)
 			}
 			if !game.PlayerCanSeeEvent(plr, isGM, evt) {
 				continue
@@ -404,7 +386,6 @@ func handleEvents(response Response, request *Request, client *redis.Client) {
 		}
 	}
 
-	err = writeBodyJSON(response, eventRange)
-	httpInternalErrorIf(response, request, err)
-	httpSuccess(response, request, message)
+	srHTTP.MustWriteBodyJSON(ctx, response, eventRange)
+	srHTTP.LogSuccess(ctx, message)
 }

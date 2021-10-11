@@ -3,11 +3,11 @@ package game
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"sr/config"
 	"sr/id"
+	"sr/log"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -30,16 +30,16 @@ func Subscribe(ctx context.Context, client *redis.Client, gameID string, playerI
 	)
 	errors := make(chan error)
 	cleanup := func() {
-		log.Print("Cleaning up subscribe task")
+		log.Print(ctx, "Cleaning up subscribe task")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
 		defer cancel()
 		if err := sub.Unsubscribe(ctx); err != nil {
 			errors <- fmt.Errorf("unsubscribing: %w", err)
-			log.Printf("Error unsubscribing %v from %v: %v", playerID, gameID, err)
+			log.Printf(ctx, "Error unsubscribing %v from %v: %v", playerID, gameID, err)
 		}
 		if err := sub.Close(); err != nil {
 			errors <- fmt.Errorf("closing subscription: %w", err)
-			log.Printf("Error closing redis subscription for %v in %v: %v", playerID, gameID, err)
+			log.Printf(ctx, "Error closing redis subscription for %v in %v: %v", playerID, gameID, err)
 		}
 
 		close(errors)

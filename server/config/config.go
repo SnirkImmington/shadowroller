@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"log" // Can't import SR log due to import cycle.
 	"net/url"
 	"os"
 	"strconv"
@@ -33,7 +33,7 @@ var (
 	RedisConnectionsDebug = readBool("REDIS_CONNECTIONS", false)
 
 	// ShutdownHandlersDebug toggles logging of shutdown handlers being registered and used.
-	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", true)
+	ShutdownHandlersDebug = readBool("SHUTDOWN_HANDLERS_DEBUG", false)
 
 	// StreamDebug toggles extra logging for the SSE stream tasks
 	StreamDebug = readBool("STREAM_DEBUG", false)
@@ -264,14 +264,14 @@ func readString(name string, defaultValue string) string {
 	if !ok {
 		return defaultValue
 	}
-	log.Print("config: read env string SR_", name)
+	log.Printf("config: read env string SR_%v", name)
 	return val
 }
 
 func readStringArray(name string, defaultValue string) []string {
 	val, ok := os.LookupEnv("SR_" + name)
 	if ok {
-		log.Print("config: read env string array SR_", name)
+		log.Printf("config: read env string array SR_%v", name)
 	} else {
 		val = defaultValue
 	}
@@ -286,7 +286,7 @@ func readInt(name string, defaultValue int) int {
 	if !ok {
 		return defaultValue
 	}
-	log.Print("config: read env int SR_", name)
+	log.Printf("config: read env int SR_%v", name)
 	val, err := strconv.Atoi(envVal)
 	if err != nil {
 		panic("Unable to read " + name + ": " + envVal)
@@ -299,7 +299,7 @@ func readBool(name string, defaultValue bool) bool {
 	if !ok {
 		return defaultValue
 	}
-	log.Print("config: read env bool SR_", name)
+	log.Printf("config: read env bool SR_%v", name)
 	val, err := strconv.ParseBool(envVal)
 	if err != nil {
 		panic("Unable to read " + name + ": " + envVal)
@@ -316,7 +316,7 @@ func readOrigin(name string, defaultValue string) *url.URL {
 		}
 		return parsed
 	}
-	log.Print("config: read env origin SR_", name)
+	log.Printf("config: read env origin SR_%v", name)
 	val, err := url.Parse(envVal)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to parse SR_%v: %v", name, envVal))
