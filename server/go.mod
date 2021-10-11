@@ -5,18 +5,18 @@ go 1.17
 require (
 	github.com/alicebob/miniredis/v2 v2.15.1
 	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.3
-	github.com/go-redis/redis/v8 v8.11.3
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0
 	github.com/janberktold/sse v0.0.0-20160725172337-a8efe87fc656
 	github.com/rs/cors v1.7.0
-	go.opentelemetry.io/otel v1.0.0
+	go.opentelemetry.io/otel v1.0.1
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.0.0
 	//go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v0.23.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.0.0
 	go.opentelemetry.io/otel/sdk v1.0.0
 	//go.opentelemetry.io/otel/metric v0.23.0 // indirect
 	//go.opentelemetry.io/otel/sdk/export/metric v0.23.0 // indirect
-	go.opentelemetry.io/otel/trace v1.0.0
+	go.opentelemetry.io/otel/trace v1.0.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // ACME support in x/crypto/acme
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
 	google.golang.org/grpc v1.40.0
