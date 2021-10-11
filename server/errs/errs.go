@@ -89,6 +89,30 @@ func NoAccessf(format string, args ...interface{}) error {
 	return formatted(ErrNoAccess, format, args...)
 }
 
+func GetType(err error) string {
+	for {
+		if err == nil {
+			return "unspecified"
+		}
+		if err == ErrHalt {
+			return "cancel"
+		}
+		if err == ErrInternal {
+			return "internal"
+		}
+		if err == ErrBadRequest {
+			return "bad request"
+		}
+		if err == ErrNotFound {
+			return "not found"
+		}
+		if err == ErrNoAccess {
+			return "no access"
+		}
+		err = errors.Unwrap(err) // eventually returns nil
+	}
+}
+
 func IsSpecified(err error) bool {
 	for {
 		if err == nil {

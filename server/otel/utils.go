@@ -2,8 +2,10 @@ package otel
 
 import (
 	"fmt"
+	"sr/errs"
 
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -11,12 +13,12 @@ import (
 func WithSetError(span trace.Span, err error, opts ...trace.EventOption) error {
 	span.RecordError(err, opts...)
 	span.SetStatus(codes.Error, err.Error())
+	if ty := errs.GetType(err); ty != "unspecified" {
+		span.SetAttributes(semconv.ExceptionTypeKey.String(ty))
+	}
 	return err
 }
 
 func WithSetErrorf(span trace.Span, message string, args ...interface{}) error {
-	err := fmt.Errorf(message, args...)
-	span.RecordError(err)
-	span.SetStatus(codes.Error, err.Error())
-	return err
+	return WithSetError(span, fmt.Errorf(message, args...))
 }

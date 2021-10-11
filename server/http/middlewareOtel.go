@@ -26,6 +26,8 @@ func OtelMiddleware(wrapped netHTTP.Handler) netHTTP.Handler {
 		attrs = append(attrs, semconv.HTTPServerMetricAttributesFromHTTPRequest(config.BackendOrigin.Host, request)...)
 		// Set by semconv but we use a different header on CloudFlare, so this should override?
 		attrs = append(attrs, semconv.HTTPClientIPKey.String(RequestRemoteIP(request)))
+		// This is something we should be working with the HTTP lib to do.
+		attrs = append(attrs, attr.String("http.route", request.URL.Path))
 
 		for _, header := range config.LogExtraHeaders {
 			found := request.Header.Get(header)
