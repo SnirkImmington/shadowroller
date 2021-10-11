@@ -5,7 +5,7 @@
 
 # https://threedots.tech/post/go-docker-dev-environment-with-go-modules-and-live-code-reloading/
 
-FROM golang:1.16.3-alpine
+FROM golang:1.17.2-alpine
 
 WORKDIR /go/src/sr
 COPY . .
