@@ -9,6 +9,8 @@ import (
 	"sr/log"
 	"sr/player"
 	"sr/update"
+
+	attr "go.opentelemetry.io/otel/attribute"
 )
 
 var playerRouter = RESTRouter.PathPrefix("/player").Subrouter()
@@ -35,7 +37,9 @@ func handleUpdatePlayer(args *srHTTP.Args) {
 
 	externalDiff := make(map[string]interface{}, len(requestDiff))
 	internalDiff := make(map[string]interface{})
+	fields := make([]string, 0, len(requestDiff))
 	for key, value := range requestDiff {
+		fields = append(fields, key)
 		switch key {
 		case "name":
 			name, ok := value.(string)
@@ -90,6 +94,11 @@ func handleUpdatePlayer(args *srHTTP.Args) {
 	err := game.UpdatePlayer(ctx, client, sess.GameID, sess.PlayerID, externalUpdate, internalUpdate)
 	srHTTP.HaltInternal(ctx, err)
 	srHTTP.MustWriteBodyJSON(ctx, response, internalDiff)
+
+	log.Event(ctx, "Player update",
+		attr.String("sr.player.id", sess.PlayerID.String()),
+		attr.StringSlice("sr.update.fields", fields),
+	)
 
 	srHTTP.LogSuccessf(ctx, "Player %v update %v", sess.PlayerID, internalDiff)
 }

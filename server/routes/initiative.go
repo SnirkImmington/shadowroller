@@ -12,6 +12,8 @@ import (
 	"sr/player"
 	"sr/roll"
 	"sr/update"
+
+	attr "go.opentelemetry.io/otel/attribute"
 )
 
 type initiativeRollRequest struct {
@@ -65,6 +67,17 @@ func handleRollInitiative(args *srHTTP.Args) {
 	)
 	err = game.PostEvent(ctx, client, sess.GameID, &event)
 	srHTTP.HaltInternal(ctx, err)
+
+	log.Event(ctx, "Initiative rolled",
+		attr.Int64("sr.event.id", event.GetID()),
+		attr.String("sr.event.share", share.String()),
+		attr.Bool("sr.event.edge", initRequest.Blitzed || initRequest.Seized),
+		attr.Int("sr.init.base", initRequest.Base),
+		attr.IntSlice("sr.init.dice", dice),
+		attr.Bool("sr.init.blitzed", initRequest.Blitzed),
+		attr.Bool("sr.init.seized", initRequest.Seized),
+	)
+
 	srHTTP.LogSuccessf(ctx, "Initiative %v posted", event.GetID())
 }
 
@@ -98,8 +111,10 @@ func handleEditInitiative(args *srHTTP.Args) {
 	initEvent := evt.(*event.InitiativeRoll)
 	updateTime := id.NewEventID()
 	initEvent.SetEdit(updateTime)
-	diff := make(map[string]interface{})
+	diff := make(map[string]interface{}, len(updateRequest.Diff))
+	fields := make([]string, 0, len(diff))
 	for key, value := range updateRequest.Diff {
+		fields = append(fields, key)
 		switch key {
 		case "title":
 			title, ok := value.(string)
@@ -147,6 +162,11 @@ func handleEditInitiative(args *srHTTP.Args) {
 	log.Printf(ctx, "Found diff %v", diff)
 	err = game.UpdateEvent(ctx, client, sess.GameID, initEvent, update)
 	srHTTP.HaltInternal(ctx, err)
+
+	log.Event(ctx, "Event edited",
+		attr.Int64("sr.event.id", evt.GetID()),
+		attr.StringSlice("sr.update.fields", fields),
+	)
 
 	srHTTP.LogSuccess(ctx, "Update sent")
 }

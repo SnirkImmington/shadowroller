@@ -83,7 +83,7 @@ func writeAttrs(builder *strings.Builder, attrs []attr.KeyValue) {
 		builder.WriteRune(' ')
 		key := string(attr.Key)
 		if strings.HasPrefix(key, "sr.") {
-			builder.WriteString(key[strings.LastIndex(key, "."):])
+			builder.WriteString(key[strings.LastIndex(key, ".")+1:])
 		} else {
 			builder.WriteString(key)
 		}

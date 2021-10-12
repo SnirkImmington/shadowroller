@@ -146,7 +146,9 @@ func handleSubscription(args *srHTTP.Args) {
 		sess.GameID, sess.PlayerID, player.IncreaseConnections,
 	)
 	srHTTP.HaltInternal(requestCtx, err)
-	log.Printf(requestCtx, "Incremented online status for %v", sess.PlayerID)
+	if config.StreamDebug {
+		log.Printf(requestCtx, "Incremented online status for %v", sess.PlayerID)
+	}
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
 		defer cancel()
@@ -173,7 +175,10 @@ func handleSubscription(args *srHTTP.Args) {
 	defer pingTicker.Stop()
 	pollTicker := time.NewTicker(time.Duration(2) * time.Second)
 	defer pollTicker.Stop()
-	log.Printf(requestCtx, "Begin receiving events...")
+
+	log.Event(requestCtx, "Game subscription started")
+	defer log.Event(requestCtx, "Game subscription ended")
+
 	for {
 		// End connction if stream not open
 		if !stream.IsOpen() {

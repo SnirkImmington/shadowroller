@@ -18,8 +18,11 @@ func RawHalt(ctx context.Context, file string, line int, err error) {
 	code := errs.HTTPCode(err)
 	log.RawStdout(ctx, file, line, fmt.Sprintf(">> %v %v", code, err))
 	span := trace.SpanFromContext(ctx)
-	if span.IsRecording() {
+	if span.IsRecording() && errs.GetType(err) == "internal" {
+		log.Printf(ctx, "Gonna record %v %v", errs.GetType((err)), err)
 		srOtel.WithSetError(span, err)
+	} else {
+		log.Printf(ctx, "Not gonna record %v", err)
 	}
 
 	panic(err)

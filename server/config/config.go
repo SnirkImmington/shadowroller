@@ -191,7 +191,7 @@ var (
 	MaxHeaderBytes = readInt("MAX_HEADER_BYTES", 1<<20)
 	// MaxRequestsPer10Secs is a per-address rate limit for all endpoints.
 	// For details, see `middleware.go`.
-	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 30)
+	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 5)
 
 	// TempSessionTTLSecs is the amount of time a temporary session is stored
 	// in redis after the subscription disconnects.

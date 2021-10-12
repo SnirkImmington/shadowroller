@@ -17,7 +17,6 @@ import (
 	"sr/update"
 
 	attr "go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 var gameRouter = RESTRouter.PathPrefix("/game").Subrouter()
@@ -68,8 +67,10 @@ func handleUpdateEvent(args *srHTTP.Args) {
 	log.Printf(ctx, "Event type %v found, updating", evt.GetType())
 	updateTime := id.NewEventID()
 	evt.SetEdit(updateTime)
-	diff := make(map[string]interface{})
+	diff := make(map[string]interface{}, len(updateRequest.Diff))
+	keys := make([]string, 0, len(updateRequest.Diff))
 	for key, value := range updateRequest.Diff {
+		keys = append(keys, key)
 		switch key {
 		// Title: the player can set the event title.
 		case "title":
@@ -103,7 +104,11 @@ func handleUpdateEvent(args *srHTTP.Args) {
 	}
 	update := update.ForEventDiff(evt, diff)
 
-	log.Printf(ctx, "Event %v diff %v", evt.GetID(), diff)
+	log.Event(ctx, "Event edited",
+		attr.Int64("sr.event.id", evt.GetID()),
+		attr.StringSlice("sr.update.fields", keys),
+	)
+
 	err = game.UpdateEvent(ctx, client, sess.GameID, evt, update)
 	srHTTP.HaltInternal(ctx, err)
 }
@@ -141,6 +146,11 @@ func handleDeleteEvent(args *srHTTP.Args) {
 	)
 	err = game.DeleteEvent(ctx, client, sess.GameID, evt)
 	srHTTP.HaltInternal(ctx, err)
+
+	log.Event(ctx, "Event deleted",
+		attr.Int64("sr.event.id", evt.GetID()),
+		attr.String("sr.event.type", evt.GetType()),
+	)
 
 	srHTTP.LogSuccessf(ctx, "Deleted event %v", evt.GetID())
 }
@@ -180,33 +190,38 @@ func handleRoll(args *srHTTP.Args) {
 	if rollRequest.Edge {
 		rolls, hits, err := roll.Rolls.ExplodingSixes(request.Context(), rollRequest.Count)
 		srHTTP.HaltInternal(ctx, err)
-		log.Event(ctx, "edge roll",
-			semconv.EnduserIDKey.String(sess.PlayerID.String()),
+		rollEvent := event.ForEdgeRoll(
+			player, share, rollRequest.Title, rolls, rollRequest.Glitchy,
+		)
+		evt = &rollEvent
+		log.Event(ctx, "Dice roll",
+			attr.Int64("sr.event.id", evt.GetID()),
+			attr.String("sr.event.type", evt.GetType()),
+			attr.Bool("sr.event.edge", true),
 			attr.String("sr.event.share", share.String()),
 			attr.Int("sr.roll.pool", rollRequest.Count),
 			attr.IntSlice("sr.roll.dice", roll.FlatMap(rolls)),
 			attr.Int("sr.roll.glitchy", rollRequest.Glitchy),
 			attr.Int("sr.roll.hits", hits),
 		)
-		rollEvent := event.ForEdgeRoll(
-			player, share, rollRequest.Title, rolls, rollRequest.Glitchy,
-		)
-		evt = &rollEvent
 	} else {
 		dice := make([]int, rollRequest.Count)
 		hits, err := roll.Rolls.Fill(request.Context(), dice)
 		srHTTP.HaltInternal(ctx, err)
-		log.Event(ctx, "roll",
-			semconv.EnduserIDKey.String(sess.PlayerID.String()),
-			attr.String("sr.event.share", share.String()),
-			attr.IntSlice("sr.roll.dice", dice),
-			attr.Int("sr.roll.glitchy", rollRequest.Glitchy),
-			attr.Int("sr.roll.hits", hits),
-		)
 		rollEvent := event.ForRoll(
 			player, share, rollRequest.Title, dice, rollRequest.Glitchy,
 		)
 		evt = &rollEvent
+		log.Event(ctx, "Dice roll",
+			attr.Int64("sr.event.id", evt.GetID()),
+			attr.String("sr.event.type", evt.GetType()),
+			attr.Bool("sr.event.edge", false),
+			attr.String("sr.event.share", share.String()),
+			attr.Int("sr.roll.pool", len(dice)),
+			attr.IntSlice("sr.roll.dice", dice),
+			attr.Int("sr.roll.glitchy", rollRequest.Glitchy),
+			attr.Int("sr.roll.hits", hits),
+		)
 	}
 	err = game.PostEvent(ctx, client, sess.GameID, evt)
 	srHTTP.HaltInternal(ctx, err)
@@ -260,7 +275,6 @@ func handleReroll(args *srHTTP.Args) {
 		// Cannot reroll failures on all hits
 		srHTTP.Halt(ctx, errs.BadRequestf("Invalid previous roll"))
 	}
-	log.Printf(ctx, "Rerolled %v, %v hits total", newRound, totalHits)
 
 	player, err := player.GetByID(ctx, client, string(sess.PlayerID))
 	srHTTP.HaltInternal(ctx, err)
@@ -274,7 +288,11 @@ func handleReroll(args *srHTTP.Args) {
 	err = game.PostEvent(ctx, client, sess.GameID, &rerolled)
 	srHTTP.HaltInternal(ctx, err)
 
-	srHTTP.LogSuccessf(ctx, "Rerolled %v", rerolled.ID)
+	log.Event(ctx, "Dice rerolled",
+		attr.Int64("sr.event.id", previousRoll.ID),
+		attr.IntSlice("sr.dice.rerolled", newRound),
+		attr.Int("sr.roll.hits", totalHits),
+	)
 }
 
 func collectRolls(in interface{}) ([]int, error) {

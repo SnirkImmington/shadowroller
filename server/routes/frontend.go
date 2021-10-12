@@ -14,8 +14,11 @@ import (
 	"sr/errs"
 	srHTTP "sr/http"
 	"sr/log"
+	srOtel "sr/otel"
 	"sr/taskCtx"
 
+	attr "go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -26,12 +29,19 @@ const hashLength = 8
 var validStaticSubdirs = []string{"media", "js", "css"}
 
 func logServedContent(response srHTTP.Response, request srHTTP.Request, fileName string, zipped bool) {
-	dur := taskCtx.FormatDuration(request.Context())
+	ctx := request.Context()
+	dur := taskCtx.FormatDuration(ctx)
 	msg := "zipped"
 	if !zipped {
 		msg = "unzipped"
 	}
-	log.CallerStdout(request.Context(), fmt.Sprintf("*> Served %v %v (%v)", fileName, msg, dur))
+
+	log.Event(ctx, "Page served",
+		attr.Bool("http.compressed", zipped),
+		semconv.HTTPRouteKey.String(fileName),
+	)
+
+	log.CallerStdout(ctx, fmt.Sprintf("*> Served %v %v (%v)", fileName, msg, dur))
 }
 
 var frontendRouter = makeFrontendRouter()
@@ -89,10 +99,13 @@ func etagForFile(ctx Context, subFolder string, fileName string) string {
 		}
 		return fileName[offset:offset+hashLength] + ext
 	default:
-		err := fmt.Errorf("Unknown subfolder %v", subFolder)
-		log.Printf(ctx, err.Error())
 		span := trace.SpanFromContext(ctx)
-		span.RecordError(err)
+		err := fmt.Errorf("Unknown subfolder %v", subFolder)
+		if span.IsRecording() {
+			srOtel.WithSetError(span, err)
+		} else {
+			log.Stdoutf(ctx, "Unknown subfolder %v", subFolder)
+		}
 		return ""
 	}
 }
@@ -110,7 +123,7 @@ func openFrontendFile(ctx Context, filePath string, useZipped bool, useDefault b
 	// Try to open <file>.gz
 	if useZipped {
 		storagePath = path.Join(config.FrontendBasePath, filePath+".gz")
-		log.Printf(ctx, "Zipped exact %s", storagePath)
+		log.Stdoutf(ctx, "Zipped exact %s", storagePath)
 		file, err := os.Open(storagePath)
 		if err == nil {
 			return file, true, false, nil
@@ -119,7 +132,7 @@ func openFrontendFile(ctx Context, filePath string, useZipped bool, useDefault b
 	// Either not found, or can't use compressed
 	// Try to open <file>
 	storagePath = path.Join(config.FrontendBasePath, filePath)
-	log.Printf(ctx, "Unzipped exact %s", storagePath)
+	log.Stdoutf(ctx, "Unzipped exact %s", storagePath)
 	file, err = os.Open(storagePath)
 	if err == nil {
 		return file, false, false, nil
@@ -131,7 +144,7 @@ func openFrontendFile(ctx Context, filePath string, useZipped bool, useDefault b
 	if useZipped {
 		// Try to open index.html.gz
 		storagePath = path.Join(config.FrontendBasePath, "index.html.gz")
-		log.Printf(ctx, "Zipped index %s", storagePath)
+		log.Stdoutf(ctx, "Zipped index %s", storagePath)
 		file, err = os.Open(storagePath)
 		if err == nil {
 			return file, true, true, nil
@@ -142,7 +155,7 @@ func openFrontendFile(ctx Context, filePath string, useZipped bool, useDefault b
 	// ignore not found, could still be a name issue
 	// Try to open index.html
 	storagePath = path.Join(config.FrontendBasePath, "index.html")
-	log.Printf(ctx, "Unzipped index %s", storagePath)
+	log.Stdoutf(ctx, "Unzipped index %s", storagePath)
 	file, err = os.Open(path.Join(config.FrontendBasePath, "index.html"))
 	if err == nil {
 		return file, false, true, nil

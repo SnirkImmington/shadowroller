@@ -41,9 +41,9 @@ func handleLogin(args *srHTTP.Args) {
 	if !login.Persist {
 		status = "temp"
 	}
-	log.Event(ctx, "Got login",
-		attr.String("request.gameID", login.GameID),
-		attr.String("request.type", status),
+	log.Event(ctx, "Login request",
+		attr.String("sr.login.requestGameID", login.GameID),
+		attr.String("sr.login.requestType", status),
 	)
 
 	gameInfo, plr, err := auth.LogPlayerIn(ctx, client, login.GameID, login.Username)
@@ -57,23 +57,24 @@ func handleLogin(args *srHTTP.Args) {
 	}
 	srHTTP.HaltInternal(ctx, err)
 	log.Printf(ctx, "Found %v in %v", plr.ID, login.GameID)
-	log.Event(ctx, "Found player",
-		semconv.EnduserIDKey.String(plr.ID.String()),
-	)
 
 	log.Printf(ctx, "Creating session %s for %v", status, plr.ID)
 	sess := session.New(plr, login.GameID, login.Persist)
 	err = session.Create(ctx, client, sess)
 	srHTTP.HaltInternal(ctx, err)
-	log.Event(ctx, "Created session",
-		attr.String("response.session", sess.ID.String()),
-	)
 
 	srHTTP.MustWriteBodyJSON(ctx, response, loginResponse{
 		Player:   plr,
 		GameInfo: gameInfo,
 		Session:  string(sess.ID),
 	})
+
+	log.Event(ctx, "Player login",
+		semconv.EnduserIDKey.String(sess.PlayerID.String()),
+		attr.String("sr.login.sessionID", sess.ID.String()),
+		attr.String("sr.login.sessionType", sess.Type()),
+	)
+
 	srHTTP.LogSuccessf(ctx, "%v %v for %v in %v",
 		sess.Type(), sess.ID,
 		sess.PlayerID, login.GameID,
@@ -136,6 +137,13 @@ func handleReauth(args *srHTTP.Args) {
 		GameInfo: gameInfo,
 		Session:  string(sess.ID),
 	})
+
+	log.Event(ctx, "Player reauth",
+		semconv.EnduserIDKey.String(sess.PlayerID.String()),
+		attr.String("sr.login.sessionID", sess.ID.String()),
+		attr.String("sr.login.sessionType", sess.Type()),
+	)
+
 	srHTTP.LogSuccessf(ctx, "%v reauthed for %v",
 		sess.PlayerID, sess.GameID,
 	)
@@ -150,6 +158,11 @@ func handleLogout(args *srHTTP.Args) {
 
 	err := session.Remove(ctx, client, sess)
 	srHTTP.HaltInternal(ctx, err)
+
+	log.Event(ctx, "Player logout",
+		semconv.EnduserIDKey.String(sess.PlayerID.String()),
+		attr.String("sr.login.sessionID", sess.ID.String()),
+	)
 
 	srHTTP.LogSuccessf(ctx, "Logged out %v", sess.PlayerID)
 }

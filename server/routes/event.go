@@ -7,6 +7,8 @@ import (
 	srHTTP "sr/http"
 	"sr/id"
 	"sr/log"
+
+	attr "go.opentelemetry.io/otel/attribute"
 )
 
 type shareEventRequest struct {
@@ -55,6 +57,10 @@ func handleShareEvent(args *srHTTP.Args) {
 
 	err = game.UpdateEventShare(ctx, client, sess.GameID, evt, share)
 	srHTTP.HaltInternal(ctx, err)
+
+	log.Event(ctx, "Event share changed",
+		attr.Int64("sr.event.id", evt.GetID()),
+	)
 
 	srHTTP.LogSuccessf(ctx, "Event %v is not share %v",
 		evt.GetID(), share.String(),
