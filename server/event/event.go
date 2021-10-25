@@ -27,6 +27,7 @@ func ValidRerollType(ty string) bool {
 }
 
 // GetByID retrieves a single event from Redis via its ID.
+// Returns errs.ErrNotFound if the event does not exist.
 func GetByID(ctx context.Context, client redis.Cmdable, gameID string, eventID int64) (string, error) {
 	ctx, span := srOtel.Tracer.Start(ctx, "event.GetByID")
 	defer span.End()
@@ -40,7 +41,7 @@ func GetByID(ctx context.Context, client redis.Cmdable, gameID string, eventID i
 		return "", srOtel.WithSetErrorf(span, "finding event by ID: %w", err)
 	}
 	if len(events) == 0 {
-		return "", errs.NotFoundf("no event %v found in %v", eventID, gameID)
+		return "", errs.NotFoundf("event %v in %v", eventID, gameID)
 	}
 	return events[0], nil
 }

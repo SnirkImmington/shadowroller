@@ -14,7 +14,7 @@ import (
 
 func OtelMiddleware(wrapped netHTTP.Handler) netHTTP.Handler {
 	return netHTTP.HandlerFunc(func(response Response, request Request) {
-		name := fmt.Sprintf("%v %v", request.Method, request.URL)
+		name := fmt.Sprintf("%v %v", request.Method, request.URL.Path)
 		ctx := request.Context()
 		// Get HTTP stuff
 		var attrs []attr.KeyValue

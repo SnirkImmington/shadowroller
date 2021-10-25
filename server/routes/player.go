@@ -88,7 +88,8 @@ func handleUpdatePlayer(args *srHTTP.Args) {
 	externalUpdate := update.ForPlayerDiff(sess.PlayerID, externalDiff)
 	internalUpdate := update.ForPlayerDiff(sess.PlayerID, internalDiff)
 	if externalUpdate.IsEmpty() && internalUpdate.IsEmpty() {
-		srHTTP.Halt(ctx, errs.BadRequestf("No update made?"))
+		srHTTP.LogSuccess(ctx, "No update was applied")
+		return // Idempotent return
 	}
 
 	err := game.UpdatePlayer(ctx, client, sess.GameID, sess.PlayerID, externalUpdate, internalUpdate)

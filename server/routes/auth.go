@@ -48,14 +48,13 @@ func handleLogin(args *srHTTP.Args) {
 
 	gameInfo, plr, err := auth.LogPlayerIn(ctx, client, login.GameID, login.Username)
 	if err != nil {
-		log.Printf(ctx, "Login error: %v", err)
+		log.Printf(ctx, "Login result: %v", err)
 	}
-	if errors.Is(err, player.ErrNotFound) ||
-		errors.Is(err, game.ErrNotFound) ||
-		errors.Is(err, auth.ErrNotAuthorized) {
+	if errors.Is(err, errs.ErrNoAccess) ||
+		errors.Is(err, errs.ErrNotFound) {
 		srHTTP.Halt(ctx, errs.NoAccess(err))
 	}
-	srHTTP.HaltInternal(ctx, err)
+	srHTTP.HaltInternal(ctx, err) // else it's an inner error
 	log.Printf(ctx, "Found %v in %v", plr.ID, login.GameID)
 
 	log.Printf(ctx, "Creating session %s for %v", status, plr.ID)
@@ -101,10 +100,9 @@ func handleReauth(args *srHTTP.Args) {
 	srHTTP.Halt(ctx, errs.NoAccess(err))
 	log.Printf(ctx, "Found session %v", sess.String())
 
-	// Double check that the relevant items exist.
-	gameExists, err := game.Exists(ctx, client, sess.GameID)
-	srHTTP.HaltInternal(ctx, err)
-	if !gameExists {
+	// Get the session's game info
+	gameInfo, err := game.GetInfo(ctx, client, sess.GameID)
+	if errors.Is(err, errs.ErrNotFound) {
 		log.Printf(ctx, "Game %v does not exist", sess.GameID)
 		err = session.Remove(ctx, client, sess)
 		srHTTP.HaltInternal(ctx, err)
@@ -112,11 +110,31 @@ func handleReauth(args *srHTTP.Args) {
 			"Removed session %v for deleted game %v", sess.ID, sess.GameID,
 		)
 		srHTTP.Halt(ctx, errs.NoAccessf("Your session is invalid"))
+	} else if err != nil {
+		srHTTP.HaltInternal(ctx, err)
 	}
 	log.Printf(ctx, "Confirmed game %v exists", sess.GameID)
 
+	// Check if game still has the player
+	found := false
+	for id, _ := range gameInfo.Players {
+		if id == string(sess.PlayerID) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		log.Printf(ctx, "Player is no longer part of game %v", sess.GameID)
+		err = session.Remove(ctx, client, sess)
+		srHTTP.HaltInternal(ctx, err)
+		log.Printf(ctx,
+			"Removed session %v for no longer being in game %v", sess.ID, sess.GameID,
+		)
+	}
+
+	// Get the session's player info
 	plr, err := player.GetByID(ctx, client, string(sess.PlayerID))
-	if errors.Is(err, player.ErrNotFound) {
+	if errors.Is(err, errs.ErrNotFound) {
 		log.Printf(ctx, "Player does not exist")
 		err = session.Remove(ctx, client, sess)
 		srHTTP.HaltInternal(ctx, err)
@@ -128,9 +146,6 @@ func handleReauth(args *srHTTP.Args) {
 		srHTTP.HaltInternal(ctx, err)
 	}
 	log.Printf(ctx, "Confirmed player %s exists", plr.ID)
-
-	gameInfo, err := game.GetInfo(ctx, client, sess.GameID)
-	srHTTP.HaltInternal(ctx, err)
 
 	srHTTP.MustWriteBodyJSON(ctx, response, loginResponse{
 		Player:   plr,

@@ -62,7 +62,7 @@ func handleShareEvent(args *srHTTP.Args) {
 		attr.Int64("sr.event.id", evt.GetID()),
 	)
 
-	srHTTP.LogSuccessf(ctx, "Event %v is not share %v",
+	srHTTP.LogSuccessf(ctx, "Event %v is now share %v",
 		evt.GetID(), share.String(),
 	)
 }

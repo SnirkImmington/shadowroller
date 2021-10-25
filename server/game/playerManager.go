@@ -41,7 +41,7 @@ func AddPlayer(ctx context.Context, client redis.Cmdable, gameID string, player 
 	return nil
 }
 
-// UpdatePlayerConnections tracks a player's online status, and updates the game accordingly
+// UpdatePlayerConnections tracks a player's online status, and updates the game accordingly.
 func UpdatePlayerConnections(ctx context.Context, client redis.Cmdable, gameID string, playerID id.UID, mod int) (int64, error) {
 	ctx, span := srOtel.Tracer.Start(ctx, "game.UpdatePlayerConnections")
 	defer span.End()

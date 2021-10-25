@@ -142,6 +142,9 @@ func handleCreatePlayer(response srHTTP.Response, request srHTTP.Request, client
 	log.Printf(ctx, "Created %#v", plr)
 
 	err := player.Create(ctx, client, &plr)
+	if errors.Is(err, errs.ErrBadRequest) {
+		srHTTP.Halt(ctx, errs.BadRequestf("A player with that username already exists"))
+	}
 	srHTTP.HaltInternal(ctx, err)
 	srHTTP.LogSuccessf(ctx, "Player %v created with ID %v", plr.Username, plr.ID)
 }
@@ -160,7 +163,7 @@ func handleAddToGame(response srHTTP.Response, request srHTTP.Request, client *r
 	}
 
 	plr, err := player.GetByUsername(ctx, client, username)
-	if errors.Is(err, player.ErrNotFound) {
+	if errors.Is(err, errs.ErrNotFound) {
 		srHTTP.Halt(ctx, errs.BadRequestf("Player with username %v not found", username))
 	}
 	srHTTP.HaltInternal(ctx, err)

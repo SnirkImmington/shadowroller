@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -111,6 +112,10 @@ func handleUpdateEvent(args *srHTTP.Args) {
 
 	err = game.UpdateEvent(ctx, client, sess.GameID, evt, update)
 	srHTTP.HaltInternal(ctx, err)
+
+	srHTTP.LogSuccessf(ctx,
+		"updated %v fields on event %v", len(keys), evt.GetID(),
+	)
 }
 
 type deleteEventRequest struct {
@@ -129,7 +134,10 @@ func handleDeleteEvent(args *srHTTP.Args) {
 		"%v requests to delete %v", sess.PlayerInfo(), delete.ID,
 	)
 	eventText, err := event.GetByID(ctx, client, sess.GameID, delete.ID)
-	srHTTP.Halt(ctx, errs.BadRequest(err))
+	if errors.Is(err, errs.ErrNotFound) {
+		srHTTP.Halt(ctx, err)
+	}
+	srHTTP.HaltInternal(ctx, err)
 
 	evt, err := event.Parse([]byte(eventText))
 	srHTTP.Halt(ctx, errs.BadRequest(err))

@@ -37,11 +37,14 @@ func handleRollInitiative(args *srHTTP.Args) {
 	if initRequest.Dice < 1 {
 		srHTTP.Halt(ctx, errs.BadRequestf("Invalid dice count"))
 	}
-	if initRequest.Base < -2 {
-		srHTTP.Halt(ctx, errs.BadRequestf("Invalid initiative base"))
-	}
 	if initRequest.Dice > 5 {
 		srHTTP.Halt(ctx, errs.BadRequestf("Cannot roll more than 5 dice"))
+	}
+	if initRequest.Base < -10 {
+		srHTTP.Halt(ctx, errs.BadRequestf("Initiative base too small"))
+	}
+	if initRequest.Base > 999 {
+		srHTTP.Halt(ctx, errs.BadRequestf("Initiative base too big"))
 	}
 	if initRequest.Blitzed {
 		initRequest.Dice = 5
