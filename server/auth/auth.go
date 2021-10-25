@@ -25,7 +25,7 @@ func LogPlayerIn(ctx context.Context, client *redis.Client, gameID string, usern
 	if errors.Is(err, errs.ErrNotFound) {
 		return nil, nil, errs.NotFoundf("player %v", username)
 	} else if err != nil {
-		return nil, nil, srOtel.WithSetErrorf(span, "getting player: %w", username, err)
+		return nil, nil, srOtel.WithSetErrorf(span, "getting player %v: %w", username, err)
 	}
 
 	info, err := game.GetInfo(ctx, client, gameID)

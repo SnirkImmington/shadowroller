@@ -160,10 +160,8 @@ func GetByID(ctx context.Context, client redis.Cmdable, playerID string) (*Playe
 			"redis error retrieving data for %v: %w", playerID, err,
 		)
 	}
-	if resultMap == nil || len(resultMap) == 0 {
-		return nil, srOtel.WithSetErrorf(span,
-			"no player data for %v", playerID,
-		)
+	if len(resultMap) == 0 {
+		return nil, errs.NotFoundf("player %v", playerID)
 	}
 	err = result.Scan(&player)
 	if err != nil {
