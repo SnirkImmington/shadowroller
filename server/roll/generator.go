@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	//	"sr/shutdownHandler"
 )
 
 // Generator is an object which sends rolls from its RollSource through its channel.
@@ -48,9 +47,10 @@ func (g *Generator) Run(ctx context.Context) error {
 
 		for _, randByte := range buffer {
 			// We need to filter out bytes which we can't modulo into a roll.
-			// This only drops some random bytes. In the absolute worst case
-			// scenario, (with a broken RNG) we call g.source.Read() twice
-			// between checks for done.
+			// This is expected to only drop a small percentage of random bytes.
+			// If there is a stream of invalid bytes with a significantly long
+			// length (if the RNG source is malicious), we also miss our window
+			// to check our context.
 			if randByte > inputByteMax {
 				continue
 			}
@@ -60,7 +60,7 @@ func (g *Generator) Run(ctx context.Context) error {
 			roll := int((randByte % rollMax) + 1)
 			select { // Block to send next byte or be notified of shutdown
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case g.channel <- roll:
 				continue
 			}

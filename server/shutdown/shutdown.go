@@ -1,14 +1,16 @@
-package shutdownHandler
+package shutdown
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"sr/config"
 	"sync"
 	"sync/atomic"
 	"syscall"
+
+	"sr/log"
 )
 
 type Reason int32
@@ -46,7 +48,7 @@ type shutdown struct {
 	reason Reason
 }
 
-func handleShutdownTask() {
+func handleShutdownTask(ctx context.Context) {
 	var clients = make(map[int32]client)
 	terminating := false
 	// make tracer for shutdown task
@@ -59,7 +61,7 @@ func handleShutdownTask() {
 	Channel = make(chan struct{})
 	WaitGroup.Add(1)
 	if config.ShutdownHandlersDebug {
-		log.Printf("shutdown: task started")
+		log.Printf(ctx, "shutdown: task started")
 	}
 
 	for event := range events {
@@ -67,12 +69,12 @@ func handleShutdownTask() {
 		case client: // New client
 			client := event.(client)
 			if config.ShutdownHandlersDebug {
-				log.Printf("shutdown: new client %v %v", client.id, client.name)
+				log.Printf(ctx, "shutdown: new client %v %v", client.id, client.name)
 			}
 			// Client was added after shutdown, send terminate but still track
 			if terminating {
 				if config.ShutdownHandlersDebug {
-					log.Printf("shutdown: immediate cancel of %v", client.id)
+					log.Printf(ctx, "shutdown: immediate cancel of %v", client.id)
 				}
 				client.cancel()
 			}
@@ -81,44 +83,48 @@ func handleShutdownTask() {
 		case removeClient:
 			remove := event.(removeClient)
 			if config.ShutdownHandlersDebug {
-				log.Printf("shutdown: removing client %v", remove.id)
+				log.Printf(ctx, "shutdown: removing client %v", remove.id)
 			}
 			delete(clients, remove.id)
 			WaitGroup.Done()
 		case shutdown:
 			shutdown := event.(shutdown)
 			if config.ShutdownHandlersDebug {
-				log.Printf("shutdown: interrupt received")
+				log.Printf(ctx, "shutdown: interrupt received")
 			}
 			terminating = true
 			Cause = shutdown.reason
 			close(Channel)
 			WaitGroup.Done() // If we have no clients, main can stop now
 			for _, client := range clients {
-				log.Printf("shutdown: cancel client %v %v", client.id, client.name)
+				log.Printf(ctx, "shutdown: cancel client %v %v", client.id, client.name)
 				client.cancel()
 			}
 		}
 	}
 }
 
-func Start() {
-	go handleShutdownTask()
+func Start(ctx context.Context) {
+	go handleShutdownTask(ctx)
 }
 
 func Register(ctx context.Context, name string) (context.Context, Release) {
 	if config.ShutdownHandlersDebug {
-		log.Printf("shutdown: creating %v", name)
+		log.Printf(ctx, "shutdown: creating %v", name)
 	}
 	id := newID()
 	ctx, cancel := context.WithCancel(ctx)
 	release := func() {
 		if config.ShutdownHandlersDebug {
-			log.Printf("shutdown: client %v %v releasing", id, name)
+			log.Printf(ctx, "shutdown: client %v %v releasing", id, name)
 		}
 		cancel() // Also cancel the context in case, extra cleanup is recommended
 		events <- removeClient{id}
 	}
 	events <- client{id, name, cancel}
 	return ctx, release
+}
+
+func Registerf(ctx context.Context, format string, args ...interface{}) (context.Context, Release) {
+	return Register(ctx, fmt.Sprintf(format, args...))
 }

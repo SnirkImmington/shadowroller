@@ -3,10 +3,10 @@ package task
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"sr/event"
 	"sr/id"
+	"sr/log"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -19,7 +19,7 @@ func streamReadEvents(ctx context.Context, client redis.Cmdable, gameID string, 
 	count := 1
 	newestID := fmt.Sprintf("%v", id.NewEventID())
 	for {
-		log.Printf("> %v read events older than %v", count, newestID)
+		log.Printf(ctx, "> %v read events older than %v", count, newestID)
 		events, err := event.GetOlderThan(ctx, client, gameID, newestID, bufferSize)
 		if err != nil {
 			return fmt.Errorf("getting %v events older than %v: %w",
@@ -27,10 +27,10 @@ func streamReadEvents(ctx context.Context, client redis.Cmdable, gameID string, 
 			)
 		}
 		if len(events) == 1 {
-			log.Printf("> Found all the events!")
+			log.Printf(ctx, "> Found all the events!")
 			return nil
 		}
-		log.Printf("> %v found %v / %v events", count, len(events), bufferSize)
+		log.Printf(ctx, "> %v found %v / %v events", count, len(events), bufferSize)
 		foundEvents := make([]event.Event, len(events))
 		for i, eventText := range events {
 			evt, err := event.Parse([]byte(eventText))

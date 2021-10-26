@@ -2,6 +2,7 @@ package update
 
 import (
 	"encoding/json"
+
 	"sr/event"
 )
 

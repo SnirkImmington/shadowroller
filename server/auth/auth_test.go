@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"sr/errs"
 	genGame "sr/gen/game"
 	genPlayer "sr/gen/player"
 
@@ -51,18 +52,18 @@ func TestLogPlayerIn(t *testing.T) {
 
 	test.RunParallel(t, "player not in game", func(t *testing.T) {
 		_, _, err := LogPlayerIn(ctx, client, gameID, plr2.Username)
-		test.AssertErrorIs(t, err, ErrNotAuthorized)
+		test.AssertErrorIs(t, err, errs.ErrNoAccess)
 	})
 
 	test.RunParallel(t, "no game", func(t *testing.T) {
 		invalidGameID := genGame.GameID(rng)
 		_, _, err := LogPlayerIn(ctx, client, invalidGameID, plr.Username)
-		test.AssertErrorIs(t, err, ErrNotAuthorized)
+		test.AssertErrorIs(t, err, errs.ErrNotFound)
 	})
 
 	test.RunParallel(t, "no player", func(t *testing.T) {
 		invalidPlr := genPlayer.Player(rng)
 		_, _, err := LogPlayerIn(ctx, client, gameID, invalidPlr.Username)
-		test.AssertErrorIs(t, err, player.ErrNotFound)
+		test.AssertErrorIs(t, err, errs.ErrNotFound)
 	})
 }

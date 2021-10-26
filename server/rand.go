@@ -2,21 +2,23 @@ package sr
 
 import (
 	"bytes"
+	"context"
 	cryptoRand "crypto/rand"
 	"encoding/binary"
 	"fmt"
-	"log"
-	"math/rand"
+	mathRand "math/rand"
 	"time"
+
+	"sr/log"
 )
 
 // SeedRand seeds the PRNG with bytes from crypo random (/dev/random).
-func SeedRand() {
+func SeedRand(ctx context.Context) {
 	buffer := make([]byte, binary.MaxVarintLen64)
 	_, err := cryptoRand.Read(buffer)
 	if err != nil {
-		log.Printf("Error reading bytes from /dev/random: %v", err)
-		rand.Seed(time.Now().UnixNano())
+		log.Printf(ctx, "Error reading bytes from /dev/random: %v", err)
+		mathRand.Seed(time.Now().UnixNano())
 		return
 	}
 	reader := bytes.NewReader(buffer)
@@ -25,7 +27,7 @@ func SeedRand() {
 	if err != nil {
 		panic(fmt.Sprintf("Unable to get a random int64: %v", err))
 	}
-	rand.Seed(seed)
+	mathRand.Seed(seed)
 }
 
 func ConvertRolls(in []interface{}) []int {

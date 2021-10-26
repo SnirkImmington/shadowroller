@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"sr/errs"
 	"sr/gen"
 	genPlayer "sr/gen/player"
-
+	"sr/id"
 	"sr/player"
 	"sr/test"
 )
@@ -114,7 +115,7 @@ func TestExists(t *testing.T) {
 
 	test.RunParallel(t, "invalid ID", func(t *testing.T) {
 		_, err := player.Exists(ctx, client, "")
-		test.AssertErrorIs(t, err, player.ErrNilPlayer)
+		test.AssertError(t, err, "hard error invalid ID")
 	})
 }
 
@@ -137,12 +138,12 @@ func TestGetByID(t *testing.T) {
 	test.RunParallel(t, "player not present", func(t *testing.T) {
 		invalidPlayer := genPlayer.Player(rng)
 		_, err := player.GetByID(ctx, client, invalidPlayer.ID.String())
-		test.AssertErrorIs(t, err, player.ErrNotFound)
+		test.AssertErrorIs(t, err, errs.ErrNotFound)
 	})
 
 	test.RunParallel(t, "invalid id", func(t *testing.T) {
 		_, err := player.GetByID(ctx, client, "")
-		test.AssertErrorIs(t, err, player.ErrNilPlayer)
+		test.AssertError(t, err, "hard error invalid ID")
 	})
 }
 
@@ -165,12 +166,12 @@ func TestGetByUsername(t *testing.T) {
 	test.RunParallel(t, "player not present", func(t *testing.T) {
 		invalidPlr := genPlayer.Player(rng)
 		_, err := player.GetByUsername(ctx, client, invalidPlr.Username)
-		test.AssertErrorIs(t, err, player.ErrNotFound)
+		test.AssertErrorIs(t, err, errs.ErrNotFound)
 	})
 
 	test.RunParallel(t, "invalid username", func(t *testing.T) {
 		_, err := player.GetByUsername(ctx, client, "")
-		test.AssertErrorIs(t, err, player.ErrNilPlayer)
+		test.AssertError(t, err, "hard error invalid ID")
 	})
 }
 
@@ -193,12 +194,12 @@ func TestGetIDOf(t *testing.T) {
 	test.RunParallel(t, "player not present", func(t *testing.T) {
 		invalidPlr := genPlayer.Player(rng)
 		_, err := player.GetIDOf(ctx, client, invalidPlr.Username)
-		test.AssertErrorIs(t, err, player.ErrNotFound)
+		test.AssertErrorIs(t, err, errs.ErrNotFound)
 	})
 
 	test.RunParallel(t, "invalid username", func(t *testing.T) {
 		_, err := player.GetIDOf(ctx, client, "")
-		test.AssertErrorIs(t, err, player.ErrNilPlayer)
+		test.AssertError(t, err, "hard error invalid ID")
 	})
 }
 
@@ -219,15 +220,24 @@ func TestCreate(t *testing.T) {
 
 	test.RunParallel(t, "does not overwrite a player", func(t *testing.T) {
 		plr := genPlayer.Player(rng)
+		firstID := plr.ID
+		secondID := id.GenUID()
 		err := player.Create(ctx, client, plr)
 		test.AssertSuccess(t, err, "player created")
+
+		plr.ID = secondID // New player with the same username
 		err = player.Create(ctx, client, plr)
-		test.AssertError(t, err, "player not overwritten")
+		test.AssertErrorIs(t, err, errs.ErrBadRequest)
+
+		plr.ID = firstID // Found should have the original player ID
+		found, err := player.GetByID(ctx, client, plr.ID.String())
+		test.AssertSuccess(t, err, "player was found")
+		test.AssertEqual(t, plr, found)
 	})
 
 	test.RunParallel(t, "nil player", func(t *testing.T) {
 		err := player.Create(ctx, client, nil)
-		test.AssertErrorIs(t, err, player.ErrNilPlayer)
+		test.AssertError(t, err, "hard error nil input")
 	})
 }
 

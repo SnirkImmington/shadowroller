@@ -3,9 +3,9 @@ package game
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"sr/id"
+	srOtel "sr/otel"
 	"sr/player"
 	"sr/update"
 
@@ -14,9 +14,11 @@ import (
 
 // AddPlayer adds a player to a given game.
 func AddPlayer(ctx context.Context, client redis.Cmdable, gameID string, player *player.Player) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.AddPlayer")
+	defer span.End()
 	updateBytes, err := json.Marshal(update.ForPlayerAdd(player))
 	if err != nil {
-		return fmt.Errorf("marshal update to JSON: %w", err)
+		return srOtel.WithSetErrorf(span, "marshal update to JSON: %w", err)
 	}
 
 	var added *redis.IntCmd
@@ -27,23 +29,25 @@ func AddPlayer(ctx context.Context, client redis.Cmdable, gameID string, player 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("running transaction: %v", err)
+		return srOtel.WithSetErrorf(span, "running transaction: %v", err)
 	}
 
 	if added, err := added.Result(); err != nil || added != 1 {
-		return fmt.Errorf("adding to list: expected to add 1, got %v %v", added, err)
+		return srOtel.WithSetErrorf(span, "adding to list: expected to add 1, got %v %v", added, err)
 	}
 	if err := published.Err(); err != nil {
-		return fmt.Errorf("publishing: %w", err)
+		return srOtel.WithSetErrorf(span, "publishing: %w", err)
 	}
 	return nil
 }
 
-// UpdatePlayerConnections tracks a player's online status, and updates the game accordingly
+// UpdatePlayerConnections tracks a player's online status, and updates the game accordingly.
 func UpdatePlayerConnections(ctx context.Context, client redis.Cmdable, gameID string, playerID id.UID, mod int) (int64, error) {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.UpdatePlayerConnections")
+	defer span.End()
 	newConns, err := player.ModifyConnections(ctx, client, playerID, mod)
 	if err != nil {
-		return 0, fmt.Errorf("redis error updating connections for %v: %w", playerID, err)
+		return 0, srOtel.WithSetErrorf(span, "redis error updating connections for %v: %w", playerID, err)
 	}
 	// Race conditions
 	// - We assume that for each incr we will eventually send a decr.
@@ -65,10 +69,10 @@ func UpdatePlayerConnections(ctx context.Context, client redis.Cmdable, gameID s
 	}
 	updateBytes, err := json.Marshal(ud)
 	if err != nil {
-		return newConns, fmt.Errorf("unable to marshal %#v to JSON: %w", ud, err)
+		return newConns, srOtel.WithSetErrorf(span, "unable to marshal %#v to JSON: %w", ud, err)
 	}
 	if err = client.Publish(ctx, "update:"+gameID, updateBytes).Err(); err != nil {
-		return newConns, fmt.Errorf("redis error publishing %#v: %w", ud, err)
+		return newConns, srOtel.WithSetErrorf(span, "redis error publishing %#v: %w", ud, err)
 	}
 	return newConns, nil
 }
@@ -76,15 +80,17 @@ func UpdatePlayerConnections(ctx context.Context, client redis.Cmdable, gameID s
 // UpdatePlayer updates a player in the database.
 // It does not allow for username updates. It only publishes the update to the given game.
 func UpdatePlayer(ctx context.Context, client redis.Cmdable, gameID string, playerID id.UID, externalUpdate update.Player, internalUpdate update.Player) error {
+	ctx, span := srOtel.Tracer.Start(ctx, "game.UpdatePlayer")
+	defer span.End()
 	if internalUpdate.IsEmpty() && externalUpdate.IsEmpty() {
-		return fmt.Errorf("external update %v empty and internal update %v empty", externalUpdate, internalUpdate)
+		return srOtel.WithSetErrorf(span, "external update %v empty and internal update %v empty", externalUpdate, internalUpdate)
 	}
 
 	_, err := client.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		if !internalUpdate.IsEmpty() {
 			key, playerData, err := internalUpdate.MakeRedisCommand()
 			if err != nil {
-				return fmt.Errorf("serializing player data: %w", err)
+				return srOtel.WithSetErrorf(span, "serializing player data: %w", err)
 			}
 			// Apply update to player
 			_ = pipe.HSet(ctx, key, playerData)
@@ -92,14 +98,14 @@ func UpdatePlayer(ctx context.Context, client redis.Cmdable, gameID string, play
 		if !externalUpdate.IsEmpty() {
 			updateBytes, err := json.Marshal(externalUpdate)
 			if err != nil {
-				return fmt.Errorf("unable to marshal update to JSON: %w", err)
+				return srOtel.WithSetErrorf(span, "unable to marshal update to JSON: %w", err)
 			}
 			_ = pipe.Publish(ctx, "update:"+gameID, updateBytes)
 		}
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("sending transaction: %w", err)
+		return srOtel.WithSetErrorf(span, "sending transaction: %w", err)
 	}
 	return nil
 }

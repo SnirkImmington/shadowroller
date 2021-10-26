@@ -7,11 +7,14 @@ import (
 	"time"
 
 	"sr/config"
+	"sr/errs"
 	"sr/game"
+	srHTTP "sr/http"
 	"sr/id"
+	"sr/log"
 	"sr/player"
 	"sr/session"
-	"sr/shutdownHandler"
+	"sr/shutdown"
 	"sr/taskCtx"
 	"sr/update"
 
@@ -23,35 +26,35 @@ func pingStream(stream *sse.Conn) error {
 	return stream.WriteEvent("ping", []byte{})
 }
 
-func shouldSendUpdate(request *Request, message *redis.Message, playerID id.UID, isGM bool) (inner string, should bool) {
+func shouldSendUpdate(ctx context.Context, message *redis.Message, playerID id.UID, isGM bool) (inner string, should bool) {
 	excludeID, excludeGMs, inner, found := update.ParseExclude(message.Payload)
 	if config.UpdatesDebug {
 		if found {
-			logf(request, "Exclude update on %v: !id=%v, !gms=%v",
+			log.Printf(ctx, "Exclude update on %v: !id=%v, !gms=%v",
 				message.Channel, excludeID, excludeGMs,
 			)
 		} else {
-			logf(request, "Regular update from %v", message.Channel)
+			log.Printf(ctx, "Regular update from %v", message.Channel)
 		}
 	}
 	if found {
 		if excludeID == playerID {
 			if config.UpdatesDebug {
-				logf(request, "-> skipping because player ID matched")
+				log.Printf(ctx, "-> skipping because player ID matched")
 			}
 			return inner, false
 		}
 		if isGM && excludeGMs {
 			if config.UpdatesDebug {
-				logf(request, "-> skipping because GMs are excluded")
+				log.Printf(ctx, "-> skipping because GMs are excluded")
 			}
 			return inner, false
 		}
 		if config.UpdatesDebug {
-			logf(request, "-> No exclusion for %v", playerID)
+			log.Printf(ctx, "-> No exclusion for %v", playerID)
 		}
 	} else if config.UpdatesDebug {
-		logf(request, "-> No filter specified")
+		log.Printf(ctx, "-> No filter specified")
 	}
 	return inner, true
 }
@@ -63,39 +66,52 @@ func writeUpdateToStream(updateText string, stream *sse.Conn) error {
 
 var removeDecimal = regexp.MustCompile(`\.\d+`)
 
-var _ = gameRouter.HandleFunc("/subscription", Wrap(handleSubscription))
+var _ = srHTTP.Handle(gameRouter, "GET /subscription", handleSubscription)
 
-func handleSubscription(response Response, request *Request, client *redis.Client) {
-	sess, requestCtx, err := requestParamSession(request, client)
-	httpUnauthorizedIf(response, request, err)
-	logf(request, "Player %v to connect to %v", sess.PlayerID, sess.GameID)
+func handleSubscription(args *srHTTP.Args) {
+	requestCtx, response, request, client, _ := args.Get()
+	sess, err := srHTTP.RequestParamSession(request, client)
+	srHTTP.Halt(requestCtx, errs.NoAccess(err))
+
+	log.Printf(requestCtx, "Player %v to connect to %v", sess.PlayerID, sess.GameID)
 
 	isGM, err := game.HasGM(requestCtx, client, sess.GameID, sess.PlayerID)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(requestCtx, err)
 
 	taskName := fmt.Sprintf("request %v SSE", taskCtx.GetName(requestCtx))
-	shutdownCtx, release := shutdownHandler.Register(context.Background(), taskName)
+	shutdownCtx, release := shutdown.Register(context.Background(), taskName)
 	defer release()
+
+	// This will prevent bytes read and written from being reported to the SSE
+	// library. However, the SSE library won't work with our wrapped library,
+	// and also depends on arbitrary casts:
+	// - Flusher, which Go didn't add to ResponseWriter
+	// - CloseNotifier, which is now deprecated in favor of using the Request's
+	// context.
+	// When we upgrade to WebSockets, we'll address this gap.
+	if inner, ok := response.(srHTTP.WrappedResponse); ok {
+		response = inner.Inner()
+	}
 
 	// Upgrade to SSE stream
 	stream, err := sseUpgrader.Upgrade(response, request)
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(requestCtx, errs.BadRequest(err))
 	if config.StreamDebug {
-		logf(request, "Initial stream ping...")
+		log.Printf(requestCtx, "Initial stream ping...")
 	}
 	err = pingStream(stream)
-	httpBadRequestIf(response, request, err)
+	srHTTP.Halt(requestCtx, errs.BadRequest(err))
 	if config.StreamDebug {
-		logf(request, "Upgrade to SSE successful")
+		log.Printf(requestCtx, "Upgrade to SSE successful")
 	}
 	defer func() {
 		if stream.IsOpen() {
 			stream.Close()
 			if config.StreamDebug {
-				logf(request, "^^ closed SSE stream")
+				log.Printf(shutdownCtx, "^^ closed SSE stream")
 			}
 		} else if config.StreamDebug {
-			logf(request, "^^ SSE stream already closed")
+			log.Printf(shutdownCtx, "^^ SSE stream already closed")
 		}
 	}()
 
@@ -103,25 +119,25 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 	cancelCtx, cancel := context.WithCancel(shutdownCtx)
 	defer cancel()
 	updates, errors, cleanup := game.Subscribe(requestCtx, client, sess.GameID, sess.PlayerID, isGM)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(requestCtx, err)
 	defer cleanup()
 	if config.StreamDebug {
-		logf(request, "Subscription task for %v started", sess.GameID)
+		log.Printf(requestCtx, "Subscription task for %v started", sess.GameID)
 	}
 
 	// Unexpire/delay expire of session
 	_, err = session.Unexpire(requestCtx, client, sess)
-	httpInternalErrorIf(response, request, err)
+	srHTTP.HaltInternal(requestCtx, err)
 	if config.StreamDebug {
-		logf(request, "Session timer for %v %v reset", sess.Type(), sess.ID)
+		log.Printf(requestCtx, "Session timer for %v %v reset", sess.Type(), sess.ID)
 	}
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
 		defer cancel()
 		if _, err := session.Expire(ctx, client, sess); err != nil {
-			logf(request, "^^ Error resetting session: %v", err)
+			log.Printf(ctx, "^^ Error resetting session: %v", err)
 		} else if config.StreamDebug {
-			logf(request, "^^ Reset session %v for %v", sess.ID, sess.PlayerID)
+			log.Printf(ctx, "^^ Reset session %v for %v", sess.ID, sess.PlayerID)
 		}
 	}()
 
@@ -129,24 +145,27 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 	_, err = game.UpdatePlayerConnections(requestCtx, client,
 		sess.GameID, sess.PlayerID, player.IncreaseConnections,
 	)
-	httpInternalErrorIf(response, request, err)
-	logf(request, "Incremented online status for %v", sess.PlayerID)
+	srHTTP.HaltInternal(requestCtx, err)
+	if config.StreamDebug {
+		log.Printf(requestCtx, "Incremented online status for %v", sess.PlayerID)
+	}
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
 		defer cancel()
 		if _, err := game.UpdatePlayerConnections(ctx, client,
 			sess.GameID, sess.PlayerID, player.DecreaseConnections,
 		); err != nil {
-			logf(request, "^^ Error decrementing player connections: %v", err)
+			log.Printf(ctx, "^^ Error decrementing player connections: %v", err)
 		} else if config.StreamDebug {
-			logf(request, "^^ Update online %v for %v", sess.ID, sess.PlayerID)
+			log.Printf(ctx, "^^ Update online %v for %v", sess.ID, sess.PlayerID)
 		}
 	}()
 
 	// Log total time for response
 	defer func() {
-		dur := removeDecimal.ReplaceAllString(displayRequestDuration(requestCtx), "")
-		logf(request, ">> Subscription to %v for %v closed (%v)",
+		dur := taskCtx.FormatDuration(requestCtx)
+		dur = removeDecimal.ReplaceAllString(dur, "")
+		log.Printf(requestCtx, ">> Subscription to %v for %v closed (%v)",
 			sess.GameID, sess.PlayerID, dur,
 		)
 	}()
@@ -156,28 +175,31 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 	defer pingTicker.Stop()
 	pollTicker := time.NewTicker(time.Duration(2) * time.Second)
 	defer pollTicker.Stop()
-	logf(request, "Begin receiving events...")
+
+	log.Event(requestCtx, "Game subscription started")
+	defer log.Event(requestCtx, "Game subscription ended")
+
 	for {
 		// End connction if stream not open
 		if !stream.IsOpen() {
-			logf(request, "Connection closed by remote host")
+			log.Printf(requestCtx, "Connection closed by remote host")
 			return
 		}
 		select { // Receive message/error and wait out interval
 		case updateMessage := <-updates:
-			inner, shouldSend := shouldSendUpdate(request, updateMessage, sess.PlayerID, isGM)
+			inner, shouldSend := shouldSendUpdate(requestCtx, updateMessage, sess.PlayerID, isGM)
 			if !shouldSend {
 				if config.StreamDebug {
-					logf(request, "Skipping update %v to %v", update.ParseType(inner), sess.PlayerID)
+					log.Printf(requestCtx, "Skipping update %v to %v", update.ParseType(inner), sess.PlayerID)
 				}
 				continue
 			}
 			err := writeUpdateToStream(inner, stream)
 			if err != nil {
-				logf(request, "Error writing %v to stream: %v", inner, err)
+				log.Printf(requestCtx, "Error writing %v to stream: %v", inner, err)
 				return
 			} else if config.StreamDebug {
-				logf(request, "Sent update %v to %v", update.ParseType(inner), sess.PlayerID)
+				log.Printf(requestCtx, "Sent update %v to %v", update.ParseType(inner), sess.PlayerID)
 			}
 		case <-pollTicker.C:
 			// Time to re-check stream.IsOpen()
@@ -185,19 +207,19 @@ func handleSubscription(response Response, request *Request, client *redis.Clien
 		case <-pingTicker.C:
 			// Ping stream every interval
 			if err := pingStream(stream); err != nil {
-				logf(request, "Unable to write to stream: %v", err)
+				log.Printf(requestCtx, "Unable to write to stream: %v", err)
 				return
 			} else if config.StreamDebug {
-				logf(request, "Pinged stream")
+				log.Printf(requestCtx, "Pinged stream")
 			}
 		case err := <-errors:
-			logf(request, "<= Error from subscription task: %v", err)
+			log.Printf(requestCtx, "<= Error from subscription task: %v", err)
 			return
 		case err := <-cancelCtx.Done():
-			logf(request, "<= Request cancelled: %v", err)
+			log.Printf(requestCtx, "<= Request cancelled: %v", err)
 			return
 		case err := <-shutdownCtx.Done():
-			logf(request, "<= Cancellation due to shutdown: %v", err)
+			log.Printf(requestCtx, "<= Cancellation due to shutdown: %v", err)
 			return
 		}
 	}

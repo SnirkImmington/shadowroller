@@ -5,6 +5,7 @@
 out/
 # Prod stuff... affects filenames
 prod*
+data/*
 # Redis db
 *.rdb
 

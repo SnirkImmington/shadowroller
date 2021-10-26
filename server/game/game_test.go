@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"sr/errs"
 	genGame "sr/gen/game"
 	genPlayer "sr/gen/player"
 
@@ -162,9 +163,8 @@ func TestGetPlayers(t *testing.T) {
 
 	test.RunParallel(t, "non-existant game", func(t *testing.T) {
 		invalidGameID := genGame.GameID(rng)
-		found, err := game.GetPlayers(ctx, client, invalidGameID)
-		test.AssertSuccess(t, err, "on difference for non-existant game")
-		test.AssertEqual(t, 0, len(found))
+		_, err := game.GetPlayers(ctx, client, invalidGameID)
+		test.AssertErrorIs(t, err, errs.ErrNotFound)
 	})
 }
 

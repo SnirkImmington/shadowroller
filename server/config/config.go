@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"log" // Can't import SR log due to import cycle.
 	"net/url"
 	"os"
 	"strconv"
@@ -25,6 +25,9 @@ var (
 
 	// RedisDebug toggles logging every Redis command.
 	RedisDebug = readBool("REDIS_DEBUG", false)
+
+	// OtelDebug toggles logging of otel processes
+	OtelDebug = readBool("OTEL_DEBUG", true)
 
 	// RedisConnectionsDebug toggles logging when redis connections are obtained and freed.
 	RedisConnectionsDebug = readBool("REDIS_CONNECTIONS", false)
@@ -188,7 +191,7 @@ var (
 	MaxHeaderBytes = readInt("MAX_HEADER_BYTES", 1<<20)
 	// MaxRequestsPer10Secs is a per-address rate limit for all endpoints.
 	// For details, see `middleware.go`.
-	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 30)
+	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 5)
 
 	// TempSessionTTLSecs is the amount of time a temporary session is stored
 	// in redis after the subscription disconnects.
@@ -206,6 +209,17 @@ var (
 	LogExtraHeaders = readStringArray("LOG_EXTRA_HEADERS", "")
 
 	// Library Options
+
+	// OtelExport controls how otel traces and metrics are exported.
+	// - stdout      => exported to stdout. Not pretty.
+	// - oltp:url    => exported to the given otel endpoint.
+	// - uptrace => oltp exported to Uptrace with the given dsn
+	OtelExport = readString("OTEL_EXPORT", "uptrace")
+
+	// UptraceDSNFile controls the keyfile used for Uptrace export
+	UptraceDSN = readFile("OTEL_DSN_FILE", "../data/otel-dsn.txt", "")
+
+	UptraceExportURL = readString("OTEL_EXPORT_URL", "otlp.uptrace.dev:4317")
 
 	// RedisURL is the URI used to dial redis.
 	RedisURL = readString("REDIS_URL", "redis://:6379")
@@ -250,14 +264,14 @@ func readString(name string, defaultValue string) string {
 	if !ok {
 		return defaultValue
 	}
-	log.Print("config: read env string SR_", name)
+	log.Printf("config: read env string SR_%v", name)
 	return val
 }
 
 func readStringArray(name string, defaultValue string) []string {
 	val, ok := os.LookupEnv("SR_" + name)
 	if ok {
-		log.Print("config: read env string array SR_", name)
+		log.Printf("config: read env string array SR_%v", name)
 	} else {
 		val = defaultValue
 	}
@@ -272,7 +286,7 @@ func readInt(name string, defaultValue int) int {
 	if !ok {
 		return defaultValue
 	}
-	log.Print("config: read env int SR_", name)
+	log.Printf("config: read env int SR_%v", name)
 	val, err := strconv.Atoi(envVal)
 	if err != nil {
 		panic("Unable to read " + name + ": " + envVal)
@@ -285,7 +299,7 @@ func readBool(name string, defaultValue bool) bool {
 	if !ok {
 		return defaultValue
 	}
-	log.Print("config: read env bool SR_", name)
+	log.Printf("config: read env bool SR_%v", name)
 	val, err := strconv.ParseBool(envVal)
 	if err != nil {
 		panic("Unable to read " + name + ": " + envVal)
@@ -302,7 +316,7 @@ func readOrigin(name string, defaultValue string) *url.URL {
 		}
 		return parsed
 	}
-	log.Print("config: read env origin SR_", name)
+	log.Printf("config: read env origin SR_%v", name)
 	val, err := url.Parse(envVal)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to parse SR_%v: %v", name, envVal))
@@ -332,6 +346,25 @@ func readKeyFile(name string, defaultValue string) []byte {
 		panic(fmt.Sprintf("Unable to decode key %v: %v", name, err))
 	}
 	return val
+}
+
+func readFile(name string, defaultPath string, defaultValue string) string {
+	envVal, ok := os.LookupEnv("SR_" + name)
+	var foundPath string
+	if !ok {
+		foundPath = defaultPath
+	} else {
+		log.Printf("config: read env file SR_%v", name)
+		foundPath = envVal
+	}
+
+	fileContent, err := ioutil.ReadFile(foundPath)
+	if err != nil {
+		log.Printf("config: unable to read file %v: %v", name, err)
+		return defaultValue
+	}
+	// Allow for a trailing newline in the file
+	return strings.TrimSpace(string(fileContent))
 }
 
 // VerifyConfig performs sanity checks and prints warnings.
