@@ -7,6 +7,7 @@ require (
 	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.3
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/janberktold/sse v0.0.0-20160725172337-a8efe87fc656
 	github.com/rs/cors v1.7.0
 	go.opentelemetry.io/otel v1.0.1
