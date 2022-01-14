@@ -1,4 +1,4 @@
-package sr
+package common
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	mathRand "math/rand"
 	"time"
 
-	"sr/log"
+	"shadowroller.net/common/log"
 )
 
 // SeedRand seeds the PRNG with bytes from crypo random (/dev/random).
