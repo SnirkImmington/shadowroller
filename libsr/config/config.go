@@ -167,6 +167,9 @@ var (
 	// This should really only be used for shadowroller.net
 	FrontendRedirectPermanent = readBool("FRONTEND_REDIRECT_PERMANENT", false)
 
+	JWTVersion = readInt("JWT_VERSION", 1)
+	JWTKey     = readKeyFile("JWT_KEYFILE", "../data/jwt-keyfile.txt")
+
 	// Timeouts
 
 	// ReadTimeoutSecs is the timeout of the http server's request readers.
@@ -235,7 +238,7 @@ var (
 	// HealthCheckSecretKey allows for sending debug info with health checks.
 	// If the contents of this key are passed to /health-check, debug info is sent.
 	// This is always done in development. Leave blank to disable in production.
-	HealthCheckSecretKey = readKeyFile("KEYFILE_HEALTHCHECK", "")
+	HealthCheckSecretKey = readKeyFile("KEYFILE_HEALTHCHECK", "../data/keys/healthcheck.key", []byte{})
 
 	// EnableTasks enables the /task route, which includes administrative commands.
 	// It is recommended you run a separate sr-server instance with this enabled to
@@ -324,21 +327,32 @@ func readOrigin(name string, defaultValue string) *url.URL {
 	return val
 }
 
-func readKeyFile(name string, defaultValue string) []byte {
+func readKeyFile(name string, defaultPath string, defaultValue []byte) []byte {
 	envVal, ok := os.LookupEnv("SR_" + name)
-	var contents string
+	var foundPath string
 	if !ok {
-		contents = defaultValue
+		foundPath = defaultPath
 	} else {
-		fileContent, err := ioutil.ReadFile(envVal)
-		if err != nil {
-			panic(fmt.Sprintf("Unable to read key %v from file %v: %v", name, envVal, err))
-		}
-		// Allow for a trailing newline in the file
-		contents = strings.TrimSpace(string(fileContent))
+		log.Printf("config: read env filepath SR_%v", name)
+		foundPath = envVal
 	}
-	if contents == "" && name != "KEYFILE_HEALTHCHECK" {
-		log.Print("config: empty key ", name, " used!")
+
+	fileContent, err := ioutil.ReadFile(foundPath)
+	if err != nil {
+		if name != "KEYFILE_HEALTHCHECK" && IsProduction {
+			panic(fmt.Sprintf("Unable to read keyfile %v: %v", name, err))
+		}
+		log.Printf("config: unable to read keyfile %v: %v", name, err)
+		return defaultValue
+	}
+	// Allow for a trailing newline in the file
+	contents := strings.TrimSpace(string(fileContent))
+	if contents == "" {
+		if name == "KEYFILE_HEALTHCHECK" {
+			log.Print("config: empty key ", name, " used!")
+		} else if IsProduction {
+			panic(fmt.Sprintf("Empty keyfile provided for %v", name))
+		}
 		return []byte(contents)
 	}
 	val, err := base64.StdEncoding.DecodeString(contents)
@@ -354,7 +368,7 @@ func readFile(name string, defaultPath string, defaultValue string) string {
 	if !ok {
 		foundPath = defaultPath
 	} else {
-		log.Printf("config: read env file SR_%v", name)
+		log.Printf("config: read env filepath SR_%v", name)
 		foundPath = envVal
 	}
 
