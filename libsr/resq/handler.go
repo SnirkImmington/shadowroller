@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"shadowroller.net/common/errs"
-	redisUtil "shadowroller.net/common/redis"
-	"shadowroller.net/common/shutdown"
+	"shadowroller.net/libsr/errs"
+	redisUtil "shadowroller.net/libsr/redis"
+	"shadowroller.net/libsr/shutdown"
 
 	"github.com/go-redis/redis"
 	"go.opentelemetry.io/otel/codes"

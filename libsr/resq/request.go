@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"shadowroller.net/common"
-	"shadowroller.net/common/errs"
+	"shadowroller.net/libsr"
+	"shadowroller.net/libsr/errs"
 
 	"go.opentelemetry.io/otel/trace"
 )

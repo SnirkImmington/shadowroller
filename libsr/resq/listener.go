@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"shadowroller.net/common/errs"
+	"shadowroller.net/libsr/errs"
 
 	"github.com/go-redis/redis"
 )

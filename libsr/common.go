@@ -1,4 +1,4 @@
-package common
+package libsr
 
 var ServiceName string = "unset"
 

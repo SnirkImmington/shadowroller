@@ -1,4 +1,4 @@
-module shadowroller.net/common
+module shadowroller.net/libsr
 
 go 1.17
 

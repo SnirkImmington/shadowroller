@@ -3,7 +3,7 @@ package resq
 import (
 	"encoding/json"
 
-	"shadowroller.net/common/errs"
+	"shadowroller.net/libsr/errs"
 )
 
 type Reply struct {

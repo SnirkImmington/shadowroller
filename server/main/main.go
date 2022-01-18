@@ -5,8 +5,8 @@ import (
 	"flag"
 	"fmt"
 
-	"sr"
-	"sr/config"
+	"shadowroller.net/libsr"
+	"shadowroller.net/libsr/config"
 	srHTTP "sr/http"
 	"sr/log"
 	srOtel "sr/otel"

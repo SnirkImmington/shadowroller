@@ -2,6 +2,10 @@ module sr
 
 go 1.17
 
+require shadowroller.net/libsr v0.0.0-local
+
+replace shadowroller.net/libsr v0.0.0-local => ../libsr
+
 require (
 	github.com/alicebob/miniredis/v2 v2.15.1
 	github.com/go-redis/redis/extra/rediscmd/v8 v8.11.3
