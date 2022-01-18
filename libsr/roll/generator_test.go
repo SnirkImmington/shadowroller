@@ -3,7 +3,7 @@ package roll
 import (
 	"context"
 	mathRand "math/rand"
-	"sr/test"
+	"shadowroller.net/libsr/test"
 	"testing"
 )
 

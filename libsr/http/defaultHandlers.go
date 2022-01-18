@@ -1,8 +1,8 @@
 package http
 
 import (
-	"sr/errs"
-	"sr/log"
+	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/log"
 )
 
 func ShouldNotBeCalledHandler(response Response, request Request) {

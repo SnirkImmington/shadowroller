@@ -3,8 +3,8 @@ package routes
 import (
 	netHTTP "net/http"
 
-	"sr/config"
-	srHTTP "sr/http"
+	"shadowroller.net/libsr/config"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/log"
 	"sr/taskCtx"
 

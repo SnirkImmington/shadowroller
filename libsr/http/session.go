@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"sr/errs"
-	"sr/log"
-	"sr/session"
+	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/log"
+	"shadowroller.net/libsr/session"
 
 	"go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"

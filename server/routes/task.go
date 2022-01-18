@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"sr/config"
-	"sr/errs"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/errs"
 	"sr/game"
-	srHTTP "sr/http"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/id"
 	"sr/log"
 	"sr/player"

@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	eventGen "sr/gen/event"
-	gameGen "sr/gen/game"
-	playerGen "sr/gen/player"
+	eventGen "shadowroller.net/libsr/gen/event"
+	gameGen "shadowroller.net/libsr/gen/game"
+	playerGen "shadowroller.net/libsr/gen/player"
 
 	"sr/event"
 	"sr/game"

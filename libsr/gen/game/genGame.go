@@ -4,10 +4,10 @@ import (
 	mathRand "math/rand"
 	"strings"
 
-	genPlayer "sr/gen/player"
+	genPlayer "shadowroller.net/libsr/gen/player"
 
-	"sr/game"
-	"sr/player"
+	"shadowroller.net/libsr/game"
+	"shadowroller.net/libsr/player"
 )
 
 func GameID(rand *mathRand.Rand) string {

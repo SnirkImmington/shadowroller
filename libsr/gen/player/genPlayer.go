@@ -3,10 +3,10 @@ package player
 import (
 	mathRand "math/rand"
 
-	"sr/gen"
+	"shadowroller.net/libsr/gen"
 
-	"sr/id"
-	"sr/player"
+	"shadowroller.net/libsr/id"
+	"shadowroller.net/libsr/player"
 )
 
 // randomOnlineMode produces a random OnlineMode

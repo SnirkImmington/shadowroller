@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 	"sr/id"
 	"sr/log"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 
 	"github.com/go-redis/redis/v8"
 )

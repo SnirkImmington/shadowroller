@@ -3,10 +3,10 @@ package routes
 import (
 	"math"
 
-	"sr/errs"
+	"shadowroller.net/libsr/errs"
 	"sr/event"
 	"sr/game"
-	srHTTP "sr/http"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/id"
 	"sr/log"
 	"sr/player"

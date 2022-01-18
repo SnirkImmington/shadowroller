@@ -8,10 +8,10 @@ import (
 	netHTTP "net/http"
 	"time"
 
-	"sr/config"
-	"sr/log"
-	srOtel "sr/otel"
-	"sr/shutdown"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/log"
+	srOtel "shadowroller.net/libsr/otel"
+	"shadowroller.net/libsr/shutdown"
 
 	"go.opentelemetry.io/otel/trace"
 

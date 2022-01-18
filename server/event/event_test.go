@@ -6,9 +6,9 @@ import (
 	mathRand "math/rand"
 	"testing"
 
-	//genEvent "sr/gen/event"
-	genGame "sr/gen/game"
-	genPlayer "sr/gen/player"
+	//genEvent "shadowroller.net/libsr/gen/event"
+	genGame "shadowroller.net/libsr/gen/game"
+	genPlayer "shadowroller.net/libsr/gen/player"
 
 	"sr/event"
 	"sr/game"

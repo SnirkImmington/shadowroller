@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 	"sr/event"
 	"sr/id"
 	"sr/log"

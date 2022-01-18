@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 	"sr/log"
 
 	"github.com/gorilla/mux"

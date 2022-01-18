@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"sr/errs"
-	genGame "sr/gen/game"
-	genPlayer "sr/gen/player"
+	"shadowroller.net/libsr/errs"
+	genGame "shadowroller.net/libsr/gen/game"
+	genPlayer "shadowroller.net/libsr/gen/player"
 
 	"sr/game"
 	"sr/player"

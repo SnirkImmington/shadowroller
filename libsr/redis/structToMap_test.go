@@ -3,10 +3,10 @@ package redis_test
 import (
 	"testing"
 
-	genPlayer "sr/gen/player"
+	genPlayer "shadowroller.net/libsr/gen/player"
 
-	redisUtil "sr/redis"
-	"sr/test"
+	redisUtil "shadowroller.net/libsr/redis"
+	"shadowroller.net/libsr/test"
 )
 
 type Basic struct {

@@ -3,12 +3,12 @@ package gen
 import (
 	mathRand "math/rand"
 
-	"sr/gen"
-	genEvent "sr/gen/event"
+	"shadowroller.net/libsr/gen"
+	genEvent "shadowroller.net/libsr/gen/event"
 
-	"sr/player"
-	"sr/roll"
-	"sr/update"
+	"shadowroller.net/libsr/player"
+	"shadowroller.net/libsr/roll"
+	"shadowroller.net/libsr/update"
 )
 
 func NewEvent(rand *mathRand.Rand, plr *player.Player) update.Event {

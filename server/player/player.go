@@ -8,11 +8,11 @@ import (
 	"math/rand"
 	"strings"
 
-	"sr/errs"
+	"shadowroller.net/libsr/errs"
 	"sr/id"
 	"sr/log"
-	srOtel "sr/otel"
-	redisUtil "sr/redis"
+	srOtel "shadowroller.net/libsr/otel"
+	redisUtil "shadowroller.net/libsr/redis"
 
 	"github.com/go-redis/redis/v8"
 )

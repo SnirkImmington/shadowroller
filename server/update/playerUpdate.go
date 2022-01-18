@@ -6,7 +6,7 @@ import (
 
 	"sr/id"
 	"sr/player"
-	redisUtil "sr/redis"
+	redisUtil "shadowroller.net/libsr/redis"
 )
 
 // Player is an update for properties of a player changing.

@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"time"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 
 	"go.opentelemetry.io/otel/trace"
 

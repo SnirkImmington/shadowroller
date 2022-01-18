@@ -6,12 +6,12 @@ import (
 	"runtime/debug"
 	"time"
 
-	"sr/config"
-	"sr/errs"
-	"sr/log"
-	srOtel "sr/otel"
-	redisUtil "sr/redis"
-	"sr/taskCtx"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/log"
+	srOtel "shadowroller.net/libsr/otel"
+	redisUtil "shadowroller.net/libsr/redis"
+	"shadowroller.net/libsr/taskCtx"
 
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/trace"

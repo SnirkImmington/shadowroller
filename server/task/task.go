@@ -7,8 +7,8 @@ import (
 
 	"sr/game"
 	"sr/log"
-	srOtel "sr/otel"
-	"sr/shutdown"
+	srOtel "shadowroller.net/libsr/otel"
+	"shadowroller.net/libsr/shutdown"
 
 	"github.com/go-redis/redis/v8"
 )

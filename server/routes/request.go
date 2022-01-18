@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"sr/config"
-	srHTTP "sr/http"
+	"shadowroller.net/libsr/config"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/log"
 
 	"github.com/janberktold/sse"

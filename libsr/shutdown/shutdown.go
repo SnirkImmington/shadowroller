@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sr/config"
+	"shadowroller.net/libsr/config"
 	"sync"
 	"sync/atomic"
 	"syscall"
 
-	"sr/log"
+	"shadowroller.net/libsr/log"
 )
 
 type Reason int32

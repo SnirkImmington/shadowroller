@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"sr/id"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 	"sr/player"
 	"sr/update"
 

@@ -7,7 +7,7 @@ import (
 	stdLog "log"
 	"strings"
 
-	"sr/log"
+	"shadowroller.net/libsr/log"
 
 	"go.opentelemetry.io/otel/trace"
 )

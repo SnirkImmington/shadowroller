@@ -3,9 +3,9 @@ package roll
 import (
 	"context"
 
-	"sr/config"
-	srOtel "sr/otel"
-	"sr/shutdown"
+	"shadowroller.net/libsr/config"
+	srOtel "shadowroller.net/libsr/otel"
+	"shadowroller.net/libsr/shutdown"
 )
 
 // Rolls is a roll.Roller which is using the roll.CryptoRandSource.

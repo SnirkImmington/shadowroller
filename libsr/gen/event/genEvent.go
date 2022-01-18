@@ -3,11 +3,11 @@ package event
 import (
 	mathRand "math/rand"
 
-	"sr/gen"
+	"shadowroller.net/libsr/gen"
 
-	"sr/event"
-	"sr/player"
-	"sr/roll"
+	"shadowroller.net/libsr/event"
+	"shadowroller.net/libsr/player"
+	"shadowroller.net/libsr/roll"
 )
 
 func Glitchy(rand *mathRand.Rand) int {

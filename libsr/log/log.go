@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"sr/config"
-	"sr/taskCtx"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/taskCtx"
 
 	attr "go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"

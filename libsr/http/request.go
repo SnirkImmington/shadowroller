@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
-	"sr/config"
-	"sr/errs"
-	"sr/log"
-	"sr/taskCtx"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/log"
+	"shadowroller.net/libsr/taskCtx"
 )
 
 func RequestRemoteAddr(request Request) string {

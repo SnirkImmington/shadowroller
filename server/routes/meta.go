@@ -6,9 +6,9 @@ import (
 	netHTTP "net/http"
 	"strings"
 
-	"sr/config"
-	"sr/errs"
-	srHTTP "sr/http"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/errs"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/log"
 )
 

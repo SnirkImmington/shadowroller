@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 	"sr/id"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 	"sr/player"
-	redisUtil "sr/redis"
+	redisUtil "shadowroller.net/libsr/redis"
 
 	"github.com/go-redis/redis/v8"
 )

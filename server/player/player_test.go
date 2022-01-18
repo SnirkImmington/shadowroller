@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"sr/errs"
-	"sr/gen"
-	genPlayer "sr/gen/player"
+	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/gen"
+	genPlayer "shadowroller.net/libsr/gen/player"
 	"sr/id"
 	"sr/player"
 	"sr/test"

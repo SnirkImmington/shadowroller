@@ -3,9 +3,9 @@ package routes
 import (
 	"strings"
 
-	"sr/errs"
+	"shadowroller.net/libsr/errs"
 	"sr/game"
-	srHTTP "sr/http"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/log"
 	"sr/player"
 	"sr/update"

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"sr/config"
-	"sr/log"
-	"sr/shutdown"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/log"
+	"shadowroller.net/libsr/shutdown"
 
 	"go.opentelemetry.io/otel"
 	traceExport "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"

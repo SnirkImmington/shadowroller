@@ -4,8 +4,8 @@ import (
 	"fmt"
 	netHTTP "net/http"
 
-	"sr/config"
-	srOtel "sr/otel"
+	"shadowroller.net/libsr/config"
+	srOtel "shadowroller.net/libsr/otel"
 
 	attr "go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/semconv/v1.4.0"

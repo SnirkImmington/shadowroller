@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"sr/config"
-	"sr/log"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/log"
 
 	"github.com/go-redis/redis/v8"
 )

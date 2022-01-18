@@ -10,7 +10,7 @@ import (
 	redisUtil "shadowroller.net/libsr/redis"
 	"shadowroller.net/libsr/shutdown"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )

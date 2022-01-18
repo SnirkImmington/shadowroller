@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"sr/event"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 	"sr/update"
 
 	"github.com/go-redis/redis/v8"

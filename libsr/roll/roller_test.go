@@ -2,7 +2,7 @@ package roll
 
 import (
 	"context"
-	"sr/test"
+	"shadowroller.net/libsr/test"
 	"testing"
 )
 

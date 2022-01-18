@@ -3,7 +3,7 @@ package redis
 import (
 	. "context"
 
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 
 	"go.opentelemetry.io/otel"
 	attr "go.opentelemetry.io/otel/attribute"

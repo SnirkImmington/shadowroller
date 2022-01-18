@@ -6,10 +6,10 @@ import (
 	netHTTP "net/http"
 	"strings"
 
-	"sr/config"
-	"sr/log"
-	redisUtil "sr/redis"
-	"sr/session"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/log"
+	redisUtil "shadowroller.net/libsr/redis"
+	"shadowroller.net/libsr/session"
 
 	"go.opentelemetry.io/otel/trace"
 

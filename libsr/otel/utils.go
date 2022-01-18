@@ -2,7 +2,7 @@ package otel
 
 import (
 	"fmt"
-	"sr/errs"
+	"shadowroller.net/libsr/errs"
 
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/semconv/v1.4.0"

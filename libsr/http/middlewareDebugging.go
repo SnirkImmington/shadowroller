@@ -4,8 +4,8 @@ import (
 	netHTTP "net/http"
 	"time"
 
-	"sr/log"
-	srOtel "sr/otel"
+	"shadowroller.net/libsr/log"
+	srOtel "shadowroller.net/libsr/otel"
 
 	"go.opentelemetry.io/otel/trace"
 )

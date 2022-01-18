@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"sr/errs"
-	srOtel "sr/otel"
+	"shadowroller.net/libsr/errs"
+	srOtel "shadowroller.net/libsr/otel"
 
 	"github.com/go-redis/redis/v8"
 )

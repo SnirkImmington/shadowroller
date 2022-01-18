@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"sr/errs"
-	"sr/log"
-	srOtel "sr/otel"
+	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/log"
+	srOtel "shadowroller.net/libsr/otel"
 
 	"go.opentelemetry.io/otel/trace"
 

@@ -3,7 +3,7 @@ package http
 import (
 	netHTTP "net/http"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 )
 
 // universalHeadersMiddleware adds headers to all responses.

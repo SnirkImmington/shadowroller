@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"sr/log"
+	"shadowroller.net/libsr/log"
 
 	"github.com/go-redis/redis/v8"
 )

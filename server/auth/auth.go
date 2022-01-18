@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"sr/errs"
+	"shadowroller.net/libsr/errs"
 	"sr/game"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 	"sr/player"
 
 	"github.com/go-redis/redis/v8"

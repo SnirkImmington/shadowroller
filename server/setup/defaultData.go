@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"sr/config"
+	"shadowroller.net/libsr/config"
 	"sr/game"
 	"sr/log"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 	"sr/player"
 
 	"github.com/go-redis/redis/v8"

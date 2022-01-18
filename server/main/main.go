@@ -7,14 +7,14 @@ import (
 
 	"shadowroller.net/libsr"
 	"shadowroller.net/libsr/config"
-	srHTTP "sr/http"
-	"sr/log"
-	srOtel "sr/otel"
-	redisUtil "sr/redis"
+	srHTTP "shadowroller.net/libsr/http"
+	"shadowroller.net/libsr/log"
+	srOtel "shadowroller.net/libsr/otel"
+	redisUtil "shadowroller.net/libsr/redis"
 	"sr/roll"
 	"sr/routes"
 	"sr/setup"
-	"sr/shutdown"
+	"shadowroller.net/libsr/shutdown"
 	"sr/task"
 
 	"go.opentelemetry.io/otel/trace"
@@ -46,7 +46,7 @@ func main() {
 		task.RunSelectedTask(ctx, redisUtil.Client, *taskFlag, flag.Args())
 	}
 
-	sr.SeedRand(ctx)
+	libsr.SeedRand(ctx)
 	roll.Init(ctx)
 
 	{

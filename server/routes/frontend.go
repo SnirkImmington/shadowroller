@@ -10,11 +10,11 @@ import (
 	"path"
 	"strings"
 
-	"sr/config"
-	"sr/errs"
-	srHTTP "sr/http"
+	"shadowroller.net/libsr/config"
+	"shadowroller.net/libsr/errs"
+	srHTTP "shadowroller.net/libsr/http"
 	"sr/log"
-	srOtel "sr/otel"
+	srOtel "shadowroller.net/libsr/otel"
 	"sr/taskCtx"
 
 	attr "go.opentelemetry.io/otel/attribute"
