@@ -168,7 +168,7 @@ var (
 	FrontendRedirectPermanent = readBool("FRONTEND_REDIRECT_PERMANENT", false)
 
 	JWTVersion = readInt("JWT_VERSION", 1)
-	JWTKey     = readKeyFile("JWT_KEYFILE", "../data/jwt-keyfile.txt")
+	JWTKey     = readKeyFile("JWT_KEYFILE", "../data/jwt-keyfile.txt", []byte("argle bargle, foofaraw, hey diddy hoe diddy"))
 
 	// Timeouts
 
