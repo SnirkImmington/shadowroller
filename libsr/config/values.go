@@ -80,31 +80,31 @@ type stringValue struct {
 	val        string
 }
 
-func (s *stringValue) ParseEnv(env string) {
-	val, ok := os.LookupEnv("SR_" + s.name)
+func (v *stringValue) ParseEnv(env string) {
+	val, ok := os.LookupEnv("SR_" + v.name)
 	if !ok {
 		return
 	}
-	s.val = val
-	goLog.Printf("config: set string SR_%v from env", s.name)
+	v.val = val
+	goLog.Printf("config: set string SR_%v from env", v.name)
 }
 
-func (s *stringValue) Get() string {
-	return s.val
+func (v *stringValue) Get() string {
+	return v.val
 }
 
-func (s *stringValue) Default() string {
-	if s.value.config.IsProduction.Get() {
-		panic(fmt.Sprintf("attempt to get default value of config string %v", s.name))
+func (v *stringValue) Default() string {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to get default value of config string %v", v.name))
 	}
-	return s.defaultVal
+	return v.defaultVal
 }
 
-func (s *stringValue) Set(newValue string) {
-	if s.value.config.IsProduction.Get() {
-		panic(fmt.Sprintf("attempt to reassign config string %v", s.name))
+func (v *stringValue) Set(newValue string) {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to reassign config string %v", v.name))
 	}
-	s.val = newValue
+	v.val = newValue
 }
 
 func stringVar(c *Config, name string, defaultValue string) String {
@@ -124,35 +124,35 @@ type intValue struct {
 	val        int
 }
 
-func (s *intValue) ParseEnv(env string) {
-	valText, ok := os.LookupEnv("SR_" + s.name)
+func (v *intValue) ParseEnv(env string) {
+	valText, ok := os.LookupEnv("SR_" + v.name)
 	if !ok {
 		return
 	}
 	val, err := strconv.Atoi(valText)
 	if err != nil {
-		panic("config: unable to parse int SR_" + s.name + " from env: " + err.Error())
+		panic("config: unable to parse int SR_" + v.name + " from env: " + err.Error())
 	}
-	s.val = val
-	goLog.Printf("config: set string SR_%v from env", s.name)
+	v.val = val
+	goLog.Printf("config: set string SR_%v from env", v.name)
 }
 
-func (s *intValue) Get() int {
-	return s.val
+func (v *intValue) Get() int {
+	return v.val
 }
 
-func (s *intValue) Default() int {
-	if s.value.config.IsProduction.Get() {
-		panic(fmt.Sprintf("attempt to get default value of config int %v", s.name))
+func (v *intValue) Default() int {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to get default value of config int %v", v.name))
 	}
-	return s.defaultVal
+	return v.defaultVal
 }
 
-func (s *intValue) Set(newValue int) {
-	if s.value.config.IsProduction.Get() {
-		panic(fmt.Sprintf("attempt to reassign config int %v", s.name))
+func (v *intValue) Set(newValue int) {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to reassign config int %v", v.name))
 	}
-	s.val = newValue
+	v.val = newValue
 }
 
 func intVar(c *Config, name string, defaultValue int) Int {
@@ -172,35 +172,35 @@ type boolValue struct {
 	val        bool
 }
 
-func (s *boolValue) ParseEnv(env string) {
-	valText, ok := os.LookupEnv("SR_" + s.name)
+func (v *boolValue) ParseEnv(env string) {
+	valText, ok := os.LookupEnv("SR_" + v.name)
 	if !ok {
 		return
 	}
 	val, err := strconv.ParseBool(valText)
 	if err != nil {
-		panic("config: unable to parse bool SR_" + s.name + " from env: " + err.Error())
+		panic("config: unable to parse bool SR_" + v.name + " from env: " + err.Error())
 	}
-	s.val = val
-	goLog.Printf("config: set bool SR_%v from env", s.name)
+	v.val = val
+	goLog.Printf("config: set bool SR_%v from env", v.name)
 }
 
-func (s *boolValue) Get() bool {
-	return s.val
+func (v *boolValue) Get() bool {
+	return v.val
 }
 
-func (s *boolValue) Default() bool {
-	if s.value.config.IsProduction.Get() {
-		panic(fmt.Sprintf("attempt to get default value of config bool %v", s.name))
+func (v *boolValue) Default() bool {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to get default value of config bool %v", v.name))
 	}
-	return s.defaultVal
+	return v.defaultVal
 }
 
-func (s *boolValue) Set(newValue bool) {
-	if s.value.config.IsProduction.Get() {
-		panic(fmt.Sprintf("attempt to reassign config bool %v", s.name))
+func (v *boolValue) Set(newValue bool) {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to reassign config bool %v", v.name))
 	}
-	s.val = newValue
+	v.val = newValue
 }
 
 func boolVar(c *Config, name string, defaultValue bool) Bool {
