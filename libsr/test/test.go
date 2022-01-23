@@ -42,6 +42,28 @@ func RNG() *mathRand.Rand {
 	return mathRand.New(mathRand.NewSource(mathRand.Int63()))
 }
 
+// MockTime returns a getter and setter function that operate on the same
+// mocked time. The getter function can be passed to a stream listener to provide
+// its time.Now and the setter can be used to advance or reverse that time.
+func MockTime(start time.Time) (func() time.Time, func(time.Time)) {
+	val := start
+	set := func(newVal time.Time) {
+		val = newVal
+	}
+	get := func() time.Time { return val }
+	return get, set
+}
+
+// MockNow returns a mocked time along with getter and setter functions that
+// operate on an internal value. The getter function can be passed to a stream
+// listener ot provide its time.Now and the setter can be used to advance or
+// reverse that time.
+func MockNow() (time.Time, func() time.Time, func(time.Time)) {
+	now := time.Now()
+	get, set := MockTime(now)
+	return now, get, set
+}
+
 // Must fails the test on an error result.
 func Must(t *testing.T, errs ...error) {
 	t.Helper()
