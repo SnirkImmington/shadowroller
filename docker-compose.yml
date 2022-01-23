@@ -28,6 +28,7 @@ services:
     environment:
       - SR_REDIS_URL=redis://redis:6379
       - SR_OTEL_DSN_FILE=/data/otel-dsn.txt
+      - SR_JWT_KEYFILE=/data/jwt.txt
     ports:
      - "3001:3001"
     entrypoint: reflex -sr .*.go -d none go run main/main.go
