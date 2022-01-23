@@ -39,6 +39,8 @@ var (
 	// written code caused an undesired state or output. Not all logic errors
 	// may be reported.
 	ErrLogic = fmt.Errorf("%w: logic", ErrInternal)
+	// ErrTimeout is an error reported by various functions which can time out
+	ErrTimeout = fmt.Errorf("%w: timeout", ErrInternal)
 )
 
 func Halt() error {
