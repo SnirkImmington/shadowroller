@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"shadowroller.net/libsr/errs"
+	"shadowroller.net/libsr/log"
 	srOtel "shadowroller.net/libsr/otel"
 	"shadowroller.net/libsr/shutdown"
 
@@ -22,6 +23,8 @@ type Handler interface {
 
 // HandlerFunc is a function which can handle a stream message.
 type HandlerFunc func(args *Args)
+
+var _ Handler = (HandlerFunc)(nil)
 
 func (h HandlerFunc) HandleMessage(args *Args) {
 	h(args)
@@ -42,6 +45,7 @@ func (args *Args) Get() (context.Context, *Message, *redis.Client) {
 // Listener is the equivalent of http.Server which listens on a Redis client
 // for messages being posted to the queue.
 type Listener struct {
+	now      func() time.Time
 	group    string        // stream group
 	consumer string        // stream consumer
 	client   *redis.Client // redis client
@@ -55,6 +59,15 @@ type Listener struct {
 // have at least two "standard" listeners to account for basic concurrency.
 func NewListener(client *redis.Client, group string, consumer string) *Listener {
 	return &Listener{}
+}
+
+// SetTimeFunc sets the time func for the listener.
+func (l *Listener) SetTimeFunc(now func() time.Time) {
+	l.now = now
+}
+
+func (l *Listener) Name() string {
+	return fmt.Sprintf("%v:%v", l.consumer, l.group)
 }
 
 // HandleFunc registers the given HandlerFunc for the listener.
@@ -72,7 +85,7 @@ func (l *Listener) Handle(stream string, handler Handler) {
 	l.lastID[stream] = "0-0" // Not sure if we need to track this given xclaim
 }
 
-func (l *Listener) runHandler(ctx context.Context, handler Handler, path string, id string, rawMessage map[string]string) {
+func (l *Listener) runHandler(ctx context.Context, handler Handler, path string, id string, rawMessage map[string]interface{}) {
 	var message *Message
 	//err := redisUtil.Parse(rawMessage, &request)
 	// if err !+ nil {
@@ -149,22 +162,90 @@ func (l *Listener) runHandler(ctx context.Context, handler Handler, path string,
 	handler.HandleMessage(&Args{ctx, message, l.client})
 }
 
-func (l *Listener) handlePending(ctx context.Context) error {
-	// May want to loop this entire section.
-	results, err := l.client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
-		for _, stream := range l.streams {
-			args := redis.XAutoClaimArgs{
-				Stream:   stream,
-				Group:    l.group,
-				Consumer: l.consumer,
-				Start:    "0-0",
-				// Not sure what this should be if we're trying to continue processing
-				MinIdle: time.Duration(4) * time.Second,
-			}
+// Autoclaim runs XAutoclaim for the given stream and calls the handler for that
+// stream on the results. Autoclaim attempts to run handlers for each message
+// received, in order, and returns any errors encountered, indexed by stream ID.
+// Returns BadRequest if the listener does not handle the stream, or Internal if
+// there is a redis error performing the XAutoclaim.
+func (l *Listener) Autoclaim(ctx context.Context, stream string, start string, minIdle time.Duration) (map[string]error, error) {
+	handler, found := l.handlers[stream]
+	if !found {
+		return nil, errs.BadRequestf("listener does not handle stream %v", stream)
+	}
+	var result map[string]error
+	round := 1
+	for /* Until the queue is empty */ {
+		claimArgs := redis.XAutoClaimArgs{
+			Stream:   stream,
+			Group:    l.group,
+			Consumer: l.consumer,
+			Start:    start,
+			MinIdle:  minIdle,
 		}
-	})
+		messages, newStart, err := l.client.XAutoClaim(ctx, &claimArgs).Result()
+		if err != nil {
+			return result, errs.Internalf("on round %v: %w", round, err)
+		}
+		log.Printf(ctx, "autoclaim: round %v, got %v messages", round, len(messages))
+		for _, msg := range messages {
+			log.Printf(ctx, "handle %v", msg.ID)
+			// Can't call runHandler here:
+			// - no way to determine if handler worked or not
+			// -
+			l.runHandler(ctx, handler, stream, msg.ID, msg.Values)
+		}
+		if newStart == "0-0" {
+			break // All messages consumed
+		}
+		start = newStart
+		round++
+	}
+	return result, nil
 }
 
+func (l *Listener) handlePendingOld(ctx context.Context) error {
+	ctx, span := srOtel.Tracer.Start(ctx, l.Name()+" handlePending")
+	defer span.End()
+	// May want to loop this entire section.
+	claimIDs := make(map[string]string, len(l.handlers))
+	handled := 0
+	round := 1
+	var results map[string]*redis.XAutoClaimCmd
+	for handled < len(l.streams) {
+		log.Printf(ctx, "round %v, handled %v", round, handled)
+		_, err := l.client.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+			for _, stream := range l.streams {
+				start, found := claimIDs[stream]
+				if !found {
+					start = "0-0"
+				} else if start == "claimed" {
+					continue
+				}
+				args := redis.XAutoClaimArgs{
+					Stream:   stream,
+					Group:    l.group,
+					Consumer: l.consumer,
+					Start:    start,
+					// Not sure what this should be if we're trying to continue processing
+					MinIdle: time.Duration(4) * time.Second,
+				}
+				result := l.client.XAutoClaim(ctx, &args)
+				results[stream] = result
+			}
+			return nil
+		})
+		if err != nil {
+			return errs.Internalf("round %v: claim pipeline: %w", err)
+		}
+		for ix, result := range results {
+
+		}
+	}
+	return nil
+}
+
+// ListenAndServe starts running each of the listener's clients. It first uses
+// XAUTOCLAIM to catch up with unexpired
 func (l *Listener) ListenAndServe(ctx context.Context) error {
 	// Check the pending queue for messages we missed
 	if err := l.handlePending(ctx); err != nil {

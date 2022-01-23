@@ -33,7 +33,7 @@ func (r *Message) Parse(val interface{}) error {
 	return json.Unmarshal([]byte(r.Body), val)
 }
 
-// ParseTraceContext attempts to parse the Message's TraceContext.
+// ParseTraceContext attempts to parse the Message's SpanContext.
 func (r *Message) ParseSpanContext() (*trace.SpanContext, error) {
 	if r.TraceInfo == "" {
 		return nil, errs.NotFoundf("No trace context saved")
@@ -94,6 +94,9 @@ func SendReply(ctx context.Context, client redis.Cmdable, id string, reply *Repl
 func ReceiveReply(ctx context.Context, client redis.Cmdable, id string) (*Reply, error) {
 	// blpop returns key, value
 	popped, err := client.BLPop(ctx, time.Duration(4)*time.Second, id).Result()
+	if err != nil {
+
+	}
 	if len(popped) != 2 {
 		return nil, errs.Internalf("expected 2 results from redis, got %v", popped)
 	}
