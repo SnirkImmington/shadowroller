@@ -5,8 +5,11 @@ import (
 	goLog "log"
 	"net/url"
 	"os"
+	"regexp"
 	"time"
 )
+
+var commaMatch = regexp.MustCompile(`[^\\],`)
 
 //
 // String array
@@ -17,6 +20,71 @@ type StringArray interface {
 	Get() []string
 	Default() []string
 	Set(newVal []string)
+}
+
+type stringsValue struct {
+	value
+	defaultVal []string
+	val        []string
+}
+
+func parseStrings(input string) []string {
+	var result []string
+	if input == "" {
+		return result
+	}
+	start := 0
+	end := 0
+	for _, match := range commaMatch.FindAllStringIndex(input, -1) {
+		// We're grabbing the entry that comes before the comma.
+		// The regex will match the character prior to the coma as well, so we
+		// only care about the end of the match (the actual comma).
+		end = match[1]
+		result = append(result, input[start:end-1])
+		start = end
+	}
+	// We're looking for the commas so the last bit of the strong is done
+	// outside of the loop. If there are no commas, this grabs the whole input
+	// as one entry in the list.
+	result = append(result, input[end:])
+
+	return result
+}
+
+func (v *stringsValue) ParseEnv(env string) {
+	valText, ok := os.LookupEnv("SR_" + v.name)
+	if !ok {
+		return
+	}
+	v.val = parseStrings(valText)
+	goLog.Printf("config: set strings SR_%v from env", v.name)
+}
+
+func (v *stringsValue) Get() []string {
+	return v.val
+}
+
+func (v *stringsValue) Default() []string {
+	return v.defaultVal
+}
+
+func (v *stringsValue) Set(newValue []string) {
+	if v.value.config.IsProduction.Get() {
+		panic(fmt.Sprintf("attempt to reassign config strings %v", v.name))
+	}
+	v.val = newValue
+}
+
+func stringArrayVar(c *Config, name string, defaultValue string) StringArray {
+	val := parseStrings(defaultValue)
+	return &stringsValue{
+		value: value{
+			name:   name,
+			config: c,
+		},
+		defaultVal: val,
+		val:        val,
+	}
 }
 
 //

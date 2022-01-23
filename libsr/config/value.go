@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"time"
 )
 
 type configContextKey int
@@ -77,11 +78,9 @@ type Config struct {
 	// both in parallel, "redirect" starts a redirect server at HTTPPort that
 	// points to HTTPSPort.
 	HTTPProtocol String
-	// HTTPOrigin is the domain of the HTTP server.
-	HTTPOrigin URL
 	// HTTPReverseProxied must be set on production when the gateway is running
 	// behind HTTPS termination (HTTProtocol is "http" or "both").
-	GatewayReverseProxied Bool
+	HTTPReverseProxied Bool
 	// HTTPReadTimeout is the read timeout for HTTP requests.
 	HTTPReadTimeout Dur
 	// HTTPWriteTimeout is the write timeout for HTTP requests.
@@ -97,7 +96,7 @@ type Config struct {
 	// HTTPResponseLength indicates how many items at a time we should return at
 	// a time in pagination scenarios (such as the client reading through event
 	// history).
-	HTTPResponseLength Int
+	HTTPResponseCount Int
 	// HTTPClientIPHeader indicates a given header should be used to determine
 	// the client's IP. It should be set when operating behind a proxy.
 	HTTPClientIPHeader String
@@ -138,6 +137,10 @@ type Config struct {
 	// variety of services for configuration, but also for formatting URLs on the
 	// site in general.
 	BackendOrigin URL
+
+	// FrontendOrigin is the domain of the site frontend/API. This is also used
+	// by the gateway service to provide redirects.
+	FrontendOrigin URL
 
 	// Frontend configuration - used by the frontend service
 
@@ -209,29 +212,60 @@ func DefaultConfig() *Config {
 	c.DebugWS = boolVar(c, "DEBUG_WS", true)
 	c.DebugOtel = boolVar(c, "DEBUG_OTEL", true)
 	c.DebugShutdown = boolVar(c, "DEBUG_SHUTDOWN", true)
-	c.SlowResponses = boolVar(c, "SLOW_RESPONSES", false)
 
-	c.HTTPMain = stringVar(c, "HTTP_LISTEN_MAIN", ":3001")
-	c.HTTPListenSecure = stringVar(c, "HTTP_LISTEN_SECURE", "")
+	c.SlowResponses = boolVar(c, "SLOW_RESPONSES", false)
+	c.DisableCORS = boolVar(c, "DISABLES_CORS_CHECKS", !c.IsProduction.Get())
+
+	c.HTTPPort = stringVar(c, "HTTP_PORT", ":3001")
+	c.HTTPSPort = stringVar(c, "HTTPS_PORT", "")
+	c.HTTPProtocol = stringVar(c, "HTTP_PROTOCOL", "http")
 	c.HTTPReverseProxied = boolVar(c, "HTTP_REVERSE_PROXIED", false)
+	c.HTTPReadTimeout = durVar(c, "HTTP_READ_TIMEOUT", time.Duration(30)*time.Second)
+	c.HTTPWriteTimeout = durVar(c, "HTTP_WRITE_TIMEOUT", time.Duration(30)*time.Second)
+	c.HTTPIdleTimeout = durVar(c, "HTTP_IDLE_TIMEOUT", time.Duration(60)*time.Second)
+	c.HTTPMaxHeaderBytes = intVar(c, "HTTP_MAX_HEADER_BYTES", 1<<20)
+	c.HTTPMaxRequestsPer10Secs = intVar(c, "HTTP_MAX_REQUESTS_PER_10SECS", 5)
+	c.HTTPResponseCount = intVar(c, "HTTP_RESPONSE_COUNT", 50)
+	c.HTTPClientIPHeader = stringVar(c, "HTTP_CLIENT_IP_HEADER", "")
+	c.HTTPLogExtraHeaders = stringArrayVar(c, "HTTP_LOG_EXTRA_HEADERS", "")
+
 	c.TLSAutocertCertDir = stringVar(c, "TLS_AUTOCERT_CERT_DIR", "")
 	c.TLSCertFiles = stringArrayVar(c, "TLS_CERT_FILES", "")
 
-	c.DisableCORS = boolVar(c, "DISABLE_CORS", !c.IsProduction.Get())
-	c.BackendOrigin = originVar(c, "BACKEND_ORIGIN", "http://localhost:3001")
+	c.GatewayTempSessionTTL = durVar(c, "GATEWAY_TEMP_SESSION_TTL", time.Duration(24)*time.Hour)
+	c.GatewayPersistSesstionTTL = durVar(c, "GATEWAY_PERSIST_SESSION_TTL", time.Duration(30*24)*time.Hour)
+	c.HealthcheckKey = keyfileVar(c, "SR_HEALTHCHECK_KEY", "../data/healthcheck.key", []byte{})
+	c.JWTVersion = intVar(c, "JWT_VERSION", 1)
+	c.JWTMinVersion = intVar(c, "JWT_MIN_VERSION", 2)
+	c.JWTKey = keyfileVar(c, "JWT_KEY", "../data/jwt-keyfile.txt", []byte(defaultKey))
 
-	c.FrontendOrigin = originVar(c, "FRONTEND_ORIGIN", "http://localhost:3000")
+	c.BackendOrigin = urlVar(c, "BACKEND_ORIGIN", "http://localhost:3001")
+	c.FrontendOrigin = urlVar(c, "FRONTEND_ORIGIN", "http://localhost:3000")
+
 	c.FrontendBasePath = stringVar(c, "FRONTEND_BASE_PATH", "")
 	c.FrontendGzipped = boolVar(c, "FRONTEND_GZIPPED", true)
 	c.FrontendUnhostedRedirect = boolVar(c, "FRONTEND_UNHOSTED_REDIRECT", true)
 	c.FrontendRedirectPermanent = boolVar(c, "FRONTEND_REDIRECT_PERMANENT", true)
 
-	c.JWTVersion = intVar(c, "JWT_VERSION", 1)
-	c.JWTKey = keyfileVar(c, "JWT_KEYFILE", "../data/jwt-keyfile.txt", defaultKey)
+	c.OtelExport = stringVar(c, "OTEL_EXPORT", "stdout")
+	c.UptraceDSN = fileVar(c, "UPTRACE_DSN_FILE", "../data/otel-dsn.txt", "")
+	c.UptraceExportURL = stringVar(c, "UPTRACE_EXPORT_URL", "otlp.uptrace.dev:4317")
 
-	AssertConfigCodeIsFullyWritten(&c) // expected to fail
+	c.RedisURL = stringVar(c, "REDIS_URL", "redis://:6379")
+	c.RedisRetries = intVar(c, "REDIS_RETRIES", 5)
+	// c.RedisHealthcheck = durVar(c, "REDIS_HEALTHCHECK", time.Duration(15) * time.Second)
 
-	return &c
+	// tasksEnable, TasksLocalhostOnly
+
+	c.HardcodedGameNames = stringArrayVar(c, "GAME_NAMES", "test1,test2")
+	c.HardcodedUsernames = stringArrayVar(c, "USERNAMES", "snirk,smark,smirk")
+
+	c.RollBufferSize = intVar(c, "ROLL_BUFFER_SIZE", 200)
+	c.MaxSingleRoll = intVar(c, "MAX_SINGLE_ROLL", 100)
+
+	AssertConfigCodeIsFullyWritten(c) // expected to fail
+
+	return c
 }
 
 func AssertConfigCodeIsFullyWritten(conf *Config) {
