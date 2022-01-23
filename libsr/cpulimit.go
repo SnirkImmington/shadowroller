@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"context"
 	"io"
+	"math"
 	"os"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
-	"math"
 
 	"shadowroller.net/libsr/errs"
 	"shadowroller.net/libsr/log"

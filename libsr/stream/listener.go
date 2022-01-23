@@ -40,7 +40,7 @@ func (l *Listener) Run(ctx context.Context, client redis.Cmdable) error {
 	if err := l.catchup(ctx, client); err != nil {
 		return fmt.Errorf("catching up with steam: %w", err)
 	}
-    args := &redis.XReadGroupArgs{
-        Group: "", Consumer: "", Streams, Count, Block, NoAck: true
-    }
+	args := &redis.XReadGroupArgs{
+		Group: "", Consumer: "", Streams, Count, Block, NoAck: true,
+	}
 }
