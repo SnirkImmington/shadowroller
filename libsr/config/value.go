@@ -263,7 +263,7 @@ func DefaultConfig() *Config {
 	c.RollBufferSize = intVar(c, "ROLL_BUFFER_SIZE", 200)
 	c.MaxSingleRoll = intVar(c, "MAX_SINGLE_ROLL", 100)
 
-	AssertConfigCodeIsFullyWritten(c) // expected to fail
+	AssertConfigCodeIsFullyWritten(c)
 
 	return c
 }

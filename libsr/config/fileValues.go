@@ -5,6 +5,7 @@ import (
 	goLog "log"
 	"os"
 	"strings"
+	"encoding/base64"
 )
 
 //

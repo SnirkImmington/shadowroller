@@ -67,6 +67,14 @@ func Internalf(format string, args ...interface{}) error {
 	return formatted(ErrInternal, format, args...)
 }
 
+func Parse(cause error) error {
+	return caused(ErrParse, cause)
+}
+
+func Parsef(format string, args ...interface{}) error {
+	return formatted(ErrParse, format, args...)
+}
+
 func BadRequest(cause error) error {
 	return caused(ErrBadRequest, cause)
 }

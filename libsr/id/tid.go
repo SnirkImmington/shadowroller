@@ -4,9 +4,10 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
+
+	"shadowroller.net/libsr/errs"
 )
 
 // Number of nanoseconds in a decisecond, our TUID interval.
@@ -57,7 +58,7 @@ func (tuid TUID) String() string {
 }
 
 // ErrInvalidTUID indicates a redis input with an invalid TUID was given
-var ErrInvalidTUID = errors.New("tuid: invalid redis value given")
+var ErrInvalidTUID = errs.BadRequest
 
 // RedisScan scans a TUID from a redis int64.
 func (tuid TUID) RedisScan(src interface{}) error {
