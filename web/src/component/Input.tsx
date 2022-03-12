@@ -17,7 +17,6 @@ export default styled.input.attrs(props => ({
 }))<InputProps>(({ monospace, expand, theme }) => ({
     height: "calc(1em + 10px)",
     margin: `0 ${layout.Space.Small}`,
-    border: `1px solid ${theme.colors.neutral}`,
     padding: "5px",
     color: theme.colors.text,
     background: theme.colors.background,
@@ -27,9 +26,11 @@ export default styled.input.attrs(props => ({
     fontSize: layout.FontSize.Regular,
     maxWidth: expand ? "100%" : "14em",
 
+    border: "0",
+    outline: `1px solid ${theme.colors.neutral}`,
+
     ":focus": {
-        outline: `1px solid ${theme.colors.highlight}`,
-        border: `1px solid ${theme.colors.highlight}`,
+        outline: `2px solid ${theme.colors.highlight}`,
     },
     ":disabled": {
         cursor: "not-allowed !important",

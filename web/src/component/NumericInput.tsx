@@ -66,16 +66,16 @@ const Parent = styled(UI.FlexRow)`
     font-family: "Source Code Pro", monospace;
     margin-right: 0.5em;
     margin-left: 0.5em;
-    height: calc(1rem + 10px);
+    height: calc(1em + 10px);
 
-    outline: 1px solid slategray;
+    outline: 1px solid ${props => props.theme.colors.neutral};
 
     & > * {
         height: calc(1rem + 10px);
     }
 
     &:focus-within {
-        outline: 2px solid ${props => props.theme.colors.outline};
+        outline: 2px solid ${props => props.theme.colors.highlight};
     }
 `;
 
