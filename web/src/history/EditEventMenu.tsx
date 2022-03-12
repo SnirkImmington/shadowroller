@@ -5,7 +5,7 @@ import * as Button from 'component/Button';
 import * as Space from 'component/Space';
 import * as layout from 'layout';
 import NumericInput from 'component/NumericInput';
-import EventRecord from 'history/EventRecord';
+import EventRecord from 'record/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
 import * as Event from 'event';

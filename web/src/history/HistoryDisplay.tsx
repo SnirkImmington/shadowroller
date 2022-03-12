@@ -11,6 +11,7 @@ import * as srutil from 'srutil';
 
 import { LoadingResultList } from "history/LoadingEventList";
 import EditEventMenu from 'history/EditEventMenu';
+import { EditEventContext } from 'history/EditingState';
 import PlayerList from 'game/PlayerList';
 
 const DO_SOME_ROLLS_FLAVOR = [
@@ -29,7 +30,7 @@ const HistoryFlavor = styled(Text.Flavor)`
     margin: 1em auto;
 `;
 
-const TitleSpace = styled.div({ height: "2px" });
+const TitleSpace = styled.div({ height: "4px" });
 
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
@@ -59,7 +60,7 @@ export default function EventHistory() {
     }
 
     return (
-        <>
+        <EditEventContext>
         {events.editing &&
             <EditEventMenu event={events.editing} />
         }
@@ -78,6 +79,6 @@ export default function EventHistory() {
                 {body}
             </UI.FlexColumn>
         </UI.Card>
-        </>
+        </EditEventContext>
     );
 }

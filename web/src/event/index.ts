@@ -312,6 +312,8 @@ else {
     reduce = eventReduce;
 }
 
-export { reduce };
 export const Ctx = React.createContext<State>(defaultState);
 export const DispatchCtx = React.createContext<Dispatch>(() => {});
+
+export { reduce };
+export * from './cmd';

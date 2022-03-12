@@ -1,7 +1,8 @@
 import * as React from 'react';
 
 /** Setter is the type of the `setState` function from `React.useState`. */
-export type Setter<T> = (valOrSetter: T | ((prev: T) => T)) => void;
+export type SetterBase<T, S extends T> = (val: T | ((prev: S) => T)) => void;
+export type Setter<T> = (val: T | ((prev: T) => T)) => void;
 
 /** Json is the type of JSON-encodable data. */
 export type Json =

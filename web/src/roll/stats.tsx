@@ -10,6 +10,25 @@ function sumHits(dice: number[]): number {
     return dice.reduce((acc, curr) => curr >= 5 ? acc + 1 : acc, 0);
 }
 
+export function isEdged(event: Event.Event): boolean {
+    switch (event.ty) {
+        case "roll":
+        case "playerJoin":
+            return false;
+        case "edgeRoll":
+        case "rerollFailures":
+            return true;
+        case "initiativeRoll":
+            return event.seized || event.blitzed;
+        default:
+            if (process.env.NODE_ENV !== "production") {
+                const logEvent: never = event;
+                console.error("Unexpected event ", logEvent);
+            }
+            return false;
+    }
+}
+
 /** isGlitched determines if a roll is glitched.
     - If a glitch was rerolled, it is still a glitch.
     - A roll can be rerolled into a [critical] glitch.

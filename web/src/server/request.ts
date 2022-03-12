@@ -1,6 +1,6 @@
 import * as server from 'server';
 import * as auth from './auth';
-import type { Json } from 'srutil';
+import type { Json, Setter } from 'srutil';
 import type { SetConnection, SetRetryConnection, SetResponse } from 'connection';
 
 export class BackendRequest<O extends Json | void> {
@@ -11,11 +11,13 @@ export class BackendRequest<O extends Json | void> {
     handleServerError: (response: Response) => void = () => {};
     handleNetworkError: (error: any) => void = () => {};
     setConnection: SetConnection | SetRetryConnection = () => {};
+    setLoading: Setter<boolean> = () => {};
     setResponse: SetResponse = () => {};
 
     constructor(request: Promise<Response>) {
         this.request = request;
         this.request.then(response => {
+            this.setLoading(false);
             if (response.ok) {
                 this.setConnection("connected");
                 this.setResponse("success");
@@ -129,6 +131,14 @@ export class BackendRequest<O extends Json | void> {
     onConnection(setter: SetConnection | SetRetryConnection): BackendRequest<O> {
         this.setConnection = setter;
         setter("connecting");
+        return this;
+    }
+
+    onLoading(setter?: Setter<boolean>): BackendRequest<O> {
+        if (setter) {
+            this.setLoading = setter;
+            setter(true);
+        }
         return this;
     }
 

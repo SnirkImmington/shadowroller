@@ -19,7 +19,7 @@ import type { ResponseStatus } from 'connection';
 import * as routes from 'routes';
 
 import ColorPicker from 'component/ColorPicker';
-import EventRecord from 'history/EventRecord';
+import EventRecord from 'record/EventRecord';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
 type Props = {

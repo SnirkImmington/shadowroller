@@ -344,7 +344,7 @@ export default function RollDicePrompt() {
                 </Button.Minor>
             </UI.FlexRow>
             <form id="dice-input" onSubmit={onSubmit}>
-                <UI.FlexRow formRow maxWidth flexWrap>
+                <UI.FlexRow maxWidth flexWrap>
                     <RollDiceInput value={diceCount} onSelect={setDiceCount}
                                    text={diceText} setText={setDiceText} />
                     <RollTitleInput title={title} setTitle={setTitle}

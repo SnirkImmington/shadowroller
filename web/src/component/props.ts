@@ -12,6 +12,11 @@ export type Colorable = {
     color: string
 }
 
+/** HasID adds an `id` prop, which is used to generate form IDs. */
+export type HasID = {
+    id: string
+}
+
 export type Toggle = Colorable & {
     checked: boolean,
     setChecked: srutil.Setter<boolean>

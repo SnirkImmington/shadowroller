@@ -39,7 +39,6 @@ export const Scrollable = styled(UI.FlexColumn).attrs(
 export const StyledResults = styled.b<{ hue: number|null|undefined }>`
     color: ${({hue, theme}) => colors.playerColor(hue, theme)};
 
-    align-self: flex-start;
     line-height: 1.2;
     margin-top: 0;
     margin-left: auto;
@@ -150,8 +149,8 @@ function GameActionsRow({ event, result }: Props) {
             {event.source !== "local" && event.source.share === Share.Mode.GMs &&
                 <Button.Minor disabled={connection === "connecting"}
                                onClick={onReveal}>
-                    <Button.Icon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
-                    {' reveal'}
+                    <Button.Icon className="icon-inline" icon={icons.faUsers} transform="grow-6" />
+                    {'reveal'}
                 </Button.Minor>
             }
             {canSecondChance(result) &&

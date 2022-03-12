@@ -1,7 +1,9 @@
 import * as React from 'react';
+import { ThemeContext } from 'styled-components/macro';
 
 import * as Event from 'event';
 import * as Record from 'record';
+import * as Share from 'share';
 import { areEqual } from 'react-window';
 
 type RecordProps = {
@@ -14,7 +16,9 @@ type RecordProps = {
     style?: any
 };
 const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
+    const theme = React.useContext(ThemeContext);
     const { event, playerID, hue, setHeight, noActions, editing, style } = props;
+    const highlight = !editing && event?.source !== "local" && event?.source.share !== Share.Mode.InGame;
 
     const ref = React.useRef<HTMLDivElement|null>(null);
     React.useEffect(() => {
@@ -57,8 +61,10 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
     }
     return (
         <Record.StyledRecord hue={hue} editing={editing} style={style}>
+            <Record.RecordPadding ref={ref} hue={hue} highlight={highlight}>
             {/* We do make sure we have the right event, given the switch above. */}
-            <Inner ref={ref} playerID={playerID} hue={hue} event={event as never} noActions={noActions} />
+                <Inner playerID={playerID} hue={hue} event={event as never} noActions={noActions} />
+            </Record.RecordPadding>
         </Record.StyledRecord>
     );
 }, areEqual);

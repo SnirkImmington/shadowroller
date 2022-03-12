@@ -8,7 +8,7 @@ export {
     // user join icons
     faIdBadge, faIdCard, faPortrait, faLock, faKey,
     // Icons for in game/GM/local rolls
-    faUser, faUsers, faUserFriends, faUserSecret, faChessQueen,
+    faUser, faUsers, faUserFriends, faUserSecret, faChessQueen, faEye,
     // Menu icons
     faList, faPen, faUserEdit, faSun,
     // Roll icons

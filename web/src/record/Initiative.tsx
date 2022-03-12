@@ -65,8 +65,8 @@ function GameActionsRow({ event }: ActionProps) {
         <UI.FlexRow spaced>
             {event.source !== "local" && event.source.share === Share.Mode.GMs &&
                 <Button.Minor disabled={connection === "connecting"} onClick={onReveal}>
-                    <Button.Icon className="icon-inline" icon={icons.faUsers} transform="grow-8" />
-                    {' reveal'}
+                    <Button.Icon className="icon-inline" icon={icons.faUsers} transform="grow-6" />
+                    {'reveal'}
                 </Button.Minor>
             }
             {canSeize &&
@@ -75,8 +75,15 @@ function GameActionsRow({ event }: ActionProps) {
                     seize the initiative
                 </Button.Minor>
             }
+            <Button.Minor onClick={() => {}}>
+                edit
+            </Button.Minor>
         </UI.FlexRow>
     );
+}
+
+function InitiativeEditRecord({ event, playerID, hue }: Props) {
+
 }
 
 function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
@@ -95,9 +102,9 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
 
     const intro: React.ReactNode = event.source !== "local" ? (
         <>
+            {(event.source.share !== Share.Mode.InGame) &&
+                <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
             <Text.Player hue={hue}>
-                {(event.source.share !== Share.Mode.InGame) &&
-                    <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
                 {event.source.name}
             </Text.Player>
             &nbsp;{action}
@@ -138,7 +145,7 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
                     }
                 </Roll.StyledResults>
             </UI.FlexRow>
-            <UI.FlexRow formRow={canModify} floatRight={canModify}>
+            <UI.FlexRow style={{minHeight: "1rem"}} floatRight={canModify}>
                 <humanTime.Since date={Event.timeOf(event)} />
                 {event.edit &&
                     <Text.Small>&nbsp;(edited)</Text.Small>}

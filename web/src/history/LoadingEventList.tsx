@@ -10,7 +10,7 @@ import * as routes from 'routes';
 import InfiniteLoader from "react-window-infinite-loader";
 import { VariableSizeList as List, ListOnItemsRenderedProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import EventRecord from 'history/EventRecord';
+import EventRecord from 'record/EventRecord';
 
 type RowRenderProps = { style: any, index: number, data: Event.Event[] };
 
@@ -70,7 +70,7 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
         return data[index].id;
     }
 
-    function setIndexHeight(height: number, index: number) {
+    const setIndexHeight = React.useCallback(function setIndexHeight(height: number, index: number) {
         if (itemSizes.current[index] === height) {
             return;
         }
@@ -78,11 +78,12 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
         if (listRef.current && listRef.current._listRef) {
             listRef.current._listRef.resetAfterIndex(index);
         }
-    }
+    }, [itemSizes, listRef]);
 
     const gamePlayers = game?.players;
     let RenderRow = React.useMemo(() => ({ index, data, style }: RowRenderProps) => {
         const setHeight = (height: number) => setIndexHeight(height, index);
+
         if (!loadedAt(index)) {
             return <EventRecord event={null} hue={null} setHeight={setHeight} playerID={playerID} style={style} />;
         }
@@ -98,7 +99,7 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
             }
             return <EventRecord event={event} hue={hue} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt, playerID, state.editing, gamePlayers]);
+    }, [loadedAt, playerID, state.editing, gamePlayers, setIndexHeight]);
 
     function loadMoreItems(oldestIx: number): Promise<void> | undefined {
         if (fetchingEvents || connection === "offline" || atHistoryEnd) {

@@ -11,6 +11,8 @@ import * as srutil from 'srutil';
 
 import Shadowroller from 'Shadowroller';
 
+import EditMenu from 'roll/EditMenu';
+
 import 'assets-external/source-code-pro.css';
 
 type ReducerProviderProps<S, A> = {

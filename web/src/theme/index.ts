@@ -56,7 +56,7 @@ const light: Colors = {
     text: "#231f20", // "hsl(60, 75%, 3%)", // "#0e0e02",
     textSecondary: "hsl(60, 85%, 6%)",
     background: "hsl(0, 0%, 97%)", // "#ffffff", hsl(80, 80%, 56%)
-    backgroundSecondary: "hsl(180, 10, 90%)",
+    backgroundSecondary: "hsl(180, 10%, 86%)",
     title: "#85142c", // "#231f20",
 
     foregroundSaturation: 75,
