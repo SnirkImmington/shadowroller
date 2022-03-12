@@ -18,7 +18,9 @@ import GameJoinMenu from 'game/JoinMenu';
 import RollDiceMenu from 'DiceRollMenu';
 import RollInitiativeMenu from 'InitiativeRollMenu';
 import EventHistory from 'history/HistoryDisplay';
+
 import EditMenu from 'roll/EditMenu';
+import InitEditMenu from 'initiative/EditMenu';
 
 const AppGrid = styled.div(({ theme }) => ({
     height: "100%",
@@ -112,6 +114,7 @@ export default function Shadowroller() {
             </AppLeft>
             <AppRight>
                 <EditMenu editing={true} loading={false} setLoading={() => {}} event={{ ty: "roll", dice: [1,2,3,4], id: 0, source: "local", title:"foo", glitchy: 0 }} onEdit={console.log} onSubmit={console.log} color="lightgreen" id="editing-roll" />
+                <InitEditMenu editing={true} loading={false} setLoading={() => {}} event={{ ty: "initiativeRoll", base: 12, dice: [1, 2, 3], id: 0, source: "local", title: "foo", blitzed: false, seized: false }} id="editing-initiative" color="darkgreen" onEdit={console.log} onSubmit={console.log} />
                 <EventHistory />
             </AppRight>
         </AppGrid>

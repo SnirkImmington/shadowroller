@@ -147,7 +147,7 @@ type Props = HasID & Colorable & {
     onSubmit: () => void,
 }
 
-/**  */
+/** Editing menu for a dice roll. */
 export default function EditMenu(props: Props) {
     const cmdDispatch = React.useContext(Event.CmdCtx);
     const { id, editing, loading, color, setLoading, event, onSubmit } = props;
@@ -170,7 +170,7 @@ export default function EditMenu(props: Props) {
         const stats = rollStats.results(event);
         const oldDice = "dice" in event ? event.dice.length : event.rounds[0].length;
         edgeActionsDisabled = stats.edged;
-        diceDiff = (diceCount || 0) - oldDice;
+        diceDiff = (diceCount || oldDice) - oldDice;
     }
 
     return (
@@ -188,6 +188,8 @@ export default function EditMenu(props: Props) {
             <UI.FlexRow formRow maxWidth>
                 <GlitchyInput glitchy={glitchy || 0} setGlitchy={setGlitchy}
                               color={color} id={id} />
+                <Space.FlexGrow />
+                Submit
             </UI.FlexRow>
         </UI.FlexColumn>
     );

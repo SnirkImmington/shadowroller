@@ -12,6 +12,7 @@ import * as srutil from 'srutil';
 import Shadowroller from 'Shadowroller';
 
 import EditMenu from 'roll/EditMenu';
+import InitEditMenu from 'initiative/EditMenu';
 
 import 'assets-external/source-code-pro.css';
 
