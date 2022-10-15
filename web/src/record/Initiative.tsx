@@ -3,9 +3,11 @@ import { ThemeContext } from 'styled-components/macro';
 import * as UI from 'style';
 import * as Text from 'component/Text';
 import * as Button from 'component/Button';
+import Input from 'component/Input';
 import * as icons from 'style/icon';
 import * as dice from 'component/Dice';
 import * as humanTime from 'component/HumanTime';
+import NumericInput from 'component/NumericInput';
 import * as Roll from './RollComponents';
 
 import type { Connection } from 'connection';
@@ -82,7 +84,161 @@ function GameActionsRow({ event }: ActionProps) {
     );
 }
 
-function InitiativeEditRecord({ event, playerID, hue }: Props) {
+interface TitleProps {
+    event: Event.Initiative,
+    setBase?: ((value: number | null) => void),
+    setTitle?: ((value: string) => void),
+    hue: number | null | undefined;
+}
+function LocalInitiativeTitle({ event, setBase, setTitle, hue }: TitleProps) {
+    // Rolled 12 + 2d6 for initiative
+    // Blitzed 12 + 5d6 for initiative
+    // Rolled 2 + 1d6 for matrix ini
+
+    let verb: React.ReactNode;
+    if (event.blitzed) {
+        verb = <b>Blized</b>;
+    } else if (event.seized) {
+        verb = <b>Seized</b>;
+    } else {
+        verb = "Rolled";
+    }
+
+    let base: React.ReactNode;
+    if (setBase) {
+        base = <NumericInput id={`initiative-${event.id}-edit-base`}
+            value={event.base} onSelect={setBase} />;
+    } else {
+        base = <>&nbsp;{event.base ?? "0"}</>;
+    }
+
+    let diceList = (
+        <>
+            {event.dice.length}d6&nbsp;<dice.List small rolls={event.dice} />&nbsp;
+        </>
+    );
+
+    let reason: React.ReactNode;
+    if (setTitle) {
+        const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setTitle(e.target.value);
+        };
+        reason = <Input id={`initiative-${event.id}-edit-title`}
+            value={event.title} onChange={onChange} />;
+    } else {
+        reason = event.title || "initiative";
+    }
+
+    return (
+        <UI.FlexRow flexWrap>
+            {verb}{base} + {diceList} for {reason}
+        </UI.FlexRow>
+    );
+}
+
+function GameInitiativeTitle({ event, setBase, setTitle, hue }: TitleProps) {
+    // Snirk rolled 12 + 2d6 for initiative
+    // {share} {name} rolled
+    if (event.source === "local") {
+        throw new Error("GameInitiativeTitle got a local event");
+    }
+
+    let subject: React.ReactNode = (
+        <>
+            {(event.source.share !== Share.Mode.InGame) &&
+                <UI.FAIcon className="icon-inline" transform="grow-4" icon={Share.icon(event.source.share)} />}
+
+            <Text.Player hue={hue}>{event.source.name}</Text.Player>
+        </>
+    );
+
+    let action: React.ReactNode;
+    if (event.blitzed) {
+        action = <b>blitzes</b>;
+    } else if (event.seized) {
+        action = <b>seizes</b>;
+    } else {
+        action = "rolls";
+    }
+
+    let base: React.ReactNode;
+    if (setBase) {
+        base = <NumericInput id={`initiative-${event.id}-edit-base`}
+            value={event.base} onSelect={setBase} />;
+    } else {
+        base = <>&nbsp;{event.base ?? "0"}&nbsp;</>;
+    }
+
+    let reason: React.ReactNode;
+    if (setTitle) {
+        const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setTitle(e.target.value);
+        };
+        reason = <Input id={`initiative-${event.id}-edit-title`}
+            value={event.title} onChange={onChange} />;
+    } else {
+        reason = event.title;
+    }
+
+    return (
+        <UI.FlexRow flexWrap>
+            {subject}&nbsp;{action}{base} + &nbsp;<dice.List small rolls={event.dice} />&nbsp; for &nbsp; {reason}
+        </UI.FlexRow>
+    );
+}
+
+function InitiativeEditRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
+    const theme = React.useContext(ThemeContext);
+    const [newBase, setNewBase] = React.useState(event.base);
+    const [newTitle, setNewTitle] = React.useState(event.title);
+    const [newSeized, setNewSeized] = React.useState(event.seized);
+    const [editing, setEditing] = React.useState(false);
+    const color = colorUtil.playerColor(hue, theme);
+    const canModify = !noActions && Event.canModify(event, playerID);
+    const isEditing = canModify && editing;
+    const isLocal = event.source === "local";
+
+    function numericInputSetNewBase(value: number | null) {
+        if (value === null) {
+            setNewBase(event.base);
+        } else {
+            setNewBase(value);
+        }
+    }
+
+    const result = (isEditing ? newBase : event.base) + event.dice.reduce((curr, die) => curr + die, 0);
+
+    const editedEvent = isEditing ? event : { ...event, title: newTitle, base: newBase, seized: newSeized };
+    let Title = isLocal ? LocalInitiativeTitle : GameInitiativeTitle;
+
+    return (
+        <UI.FlexColumn ref={ref}>
+            <UI.FlexRow>
+                <Title event={editedEvent} hue={hue}
+                    setBase={isEditing ? numericInputSetNewBase : undefined}
+                    setTitle={isEditing ? setNewTitle : undefined} />
+                <Roll.StyledResults hue={hue}>
+                    {result}
+                    &nbsp;
+                    {event.blitzed && <UI.FAIcon className="icon-inline" icon={icons.faBolt} color={color} fixedWidth />}
+                    {event.seized && <UI.FAIcon className="icon-inline" icon={icons.faSortAmountUp} />}
+                    <UI.FAIcon className="icon-inline" icon={icons.faClipboardList} />
+                </Roll.StyledResults>
+            </UI.FlexRow>
+            <UI.FlexRow style={{ minHeight: "1rem" }} floatRight={canModify}>
+                <humanTime.Since date={Event.timeOf(event)} />
+                {event.edit &&
+                    <Text.Small>
+                        &nbsp;(edited <humanTime.Since date={new Date(event.edit)} />)
+                    </Text.Small>}
+                {canModify && (
+                    event.source === "local" ?
+                        <LocalActionsRow event={event} />
+                        : <GameActionsRow event={event} />
+                )}
+            </UI.FlexRow>
+        </UI.FlexColumn>
+    );
 
 }
 
@@ -159,4 +315,4 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
     );
 }
 
-export const Initiative = React.memo<Props>(React.forwardRef(InitiativeRecord));
+export const Initiative = React.memo<Props>(React.forwardRef(InitiativeEditRecord));
