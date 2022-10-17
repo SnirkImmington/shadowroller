@@ -11,8 +11,6 @@ import * as srutil from 'srutil';
 
 import Shadowroller from 'Shadowroller';
 
-import EditMenu from 'roll/EditMenu';
-import InitEditMenu from 'initiative/EditMenu';
 
 import 'assets-external/source-code-pro.css';
 
@@ -74,11 +72,13 @@ export default function App(_props: {}) {
                          stateCtx={Player.Ctx} dispatchCtx={Player.DispatchCtx}>
         <ReducerProvider defaultState={Event.defaultState} reduce={Event.reduce}
                          stateCtx={Event.Ctx} dispatchCtx={Event.DispatchCtx}>
+        <Event.CmdProvider>
         <StreamProvider>
 
             <Shadowroller />
 
         </StreamProvider>
+        </Event.CmdProvider>
         </ReducerProvider>
         </ReducerProvider>
         </ReducerProvider>
