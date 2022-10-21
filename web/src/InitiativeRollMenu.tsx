@@ -4,6 +4,7 @@ import * as UI from 'style';
 import * as Button from 'component/Button';
 import * as icons from 'style/icon';
 import NumericInput from 'component/NumericInput';
+import type { Selector, InvalidState } from 'component/NumericInput';
 import { Toggle as ToggleProps } from 'component/props';
 import * as Space from 'component/Space';
 import Checkbox from 'component/Checkbox';
@@ -58,12 +59,12 @@ const RollButton = styled.button<{bg: string}>`
 `;
 
 type DiceInputPrompts = {
-    onBaseSelect: (value: number | null) => void,
+    onBaseSelect: Selector,
     baseText: string,
     setBaseText: srutil.Setter<string>,
 
     blitzed: boolean,
-    onDiceSelect: (value: number | null) => void,
+    onDiceSelect: Selector,
     diceText: string,
     setDiceText: srutil.Setter<string>,
 }
@@ -170,10 +171,10 @@ export default function RollInitiativePrompt() {
     const [loading, setLoading] = React.useState(false);
     const [share, setShare] = React.useState<Share.Mode>(Share.Mode.InGame);
 
-    const [base, setBase] = React.useState<number|null>();
+    const [base, setBase] = React.useState<number | InvalidState>("empty");
     const [baseText, setBaseText] = React.useState("");
     const [title, setTitle] = React.useState("");
-    const [dice, setDice] = React.useState<number|null>(1);
+    const [dice, setDice] = React.useState<number | InvalidState>(1);
     const [diceText, setDiceText] = React.useState("");
     const [blitzed, setBlitzed] = React.useState(false);
     const [seized, setSeized] = React.useState(false);
@@ -194,8 +195,8 @@ export default function RollInitiativePrompt() {
 
     const connected = connection === "connected";
     const rollDisabled = (
-        dice == null || dice < 1 || dice > 5
-        || base == null || base < -2 || base > 69
+        (typeof dice !== "number") || dice < 1 || dice > 5
+        || (typeof base !== "number") || base < -2 || base > 69
         || loading || (gameExists && !connected)
     );
     const color = colorUtil.playerColor(player?.hue, theme);
@@ -207,10 +208,10 @@ export default function RollInitiativePrompt() {
         }
 
         if (!gameExists) {
-            const initiativeDice = roll.dice(blitzed ? 5 : dice!);
+            const initiativeDice = roll.dice(blitzed ? 5 : dice);
             const event: Event.Initiative = {
                 ty: "initiativeRoll", id: Event.newID(), source: "local",
-                base: base ?? 0, dice: initiativeDice, title, seized, blitzed,
+                base, dice: initiativeDice, title, seized, blitzed,
             };
 
             dispatch({ ty: "newEvent", event });
@@ -218,7 +219,7 @@ export default function RollInitiativePrompt() {
         else {
             setLoading(true);
             routes.game.rollInitiative({
-                base: base ?? 0, dice: blitzed ? 5 : dice!, title, share, seized, blitzed,
+                base, dice: blitzed ? 5 : dice, title, share, seized, blitzed,
             }).onDone((res, full) => {
                 setLoading(false);
                 if (!res && process.env.NODE_ENV !== "production") {

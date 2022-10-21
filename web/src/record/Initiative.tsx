@@ -10,7 +10,7 @@ import EventRecord from './EventRecord';
 import * as icons from 'style/icon';
 import * as dice from 'component/Dice';
 import * as humanTime from 'component/HumanTime';
-import NumericInput from 'component/NumericInput';
+import NumericInput, { InvalidState } from 'component/NumericInput';
 import * as Roll from './RollComponents';
 
 import type { Connection } from 'connection';
@@ -94,7 +94,8 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
     const setEdit = React.useContext(SetEditEventCtx);
 
     const [title, setTitle] = React.useState(event.title);
-    const [base, setBase] = React.useState(event.base);
+    const [base, setBase] = React.useState<number|InvalidState>(event.base);
+    // const [diceCount, setDiceCount] = React.useState(event.dice.length); 
     const [seized, toggleSeized] = srutil.useToggle(event.seized);
     const [deleteReady, setDeleteReady] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
@@ -102,14 +103,6 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
     const newEvent: Event.Initiative = {
         ...event, title, base, seized
     };
-
-    function handleSetBase(value: number | null) {
-        if (value != null) {
-            setBase(value);
-        } else {
-            setBase(event.base);
-        }
-    }
 
     function handleSetTitle(e: React.ChangeEvent<HTMLInputElement>) {
         setTitle(e.target.value);
@@ -158,9 +151,9 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
             <UI.FlexRow flexWrap formRow style={{ marginTop: "0.5rem" }}>
                 Roll
                 <NumericInput small id={`edit-${event.id}-set-base`} min={-2} max={69}
-                    placeholder={event.base.toString()} onSelect={handleSetBase} />
+                    placeholder={event.base.toString()} onSelect={setBase} />
                 +
-                <NumericInput small id={`edit-${event.id}-set-dice`} disabled value={event.dice.length}
+                <NumericInput small id={`edit-${event.id}-set-dice`} disabled
                     placeholder={event.dice.length.toString()} onSelect={() => { }} />
                 d6 for
                 <Input id={`edit-${event.id}-set-title`}

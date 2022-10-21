@@ -19,9 +19,6 @@ import RollDiceMenu from 'DiceRollMenu';
 import RollInitiativeMenu from 'InitiativeRollMenu';
 import EventHistory from 'history/HistoryDisplay';
 
-import EditMenu from 'roll/EditMenu';
-import InitEditMenu from 'initiative/EditMenu';
-
 const AppGrid = styled.div(({ theme }) => ({
     height: "100%",
     display: "grid",

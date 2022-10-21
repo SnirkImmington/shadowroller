@@ -10,20 +10,19 @@ import * as Event from 'event';
 import * as rollStats from 'roll/stats';
 
 import NumericInput from 'component/NumericInput';
+import type { Selector, InvalidState } from 'component/NumreicInput';
 
 import type { Setter, SetterBase } from 'srutil';
 import type { Colorable, HasID, Disableable, Toggle as ToggleProps } from 'component/props';
 
 type DiceInputProps = HasID & {
-    value: number | null,
-    onSelect: (value: number | null) => void,
+    onSelect: Selector,
     text: string,
     setText: Setter<string>,
 }
 
 /** RollDiceInput renders the dice amount selector */
-function RollDiceInput(props: DiceInputProps) {
-    const { id, value, onSelect, text, setText } = props;
+function RollDiceInput({ id, onSelect, text, setText }: DiceInputProps) {
     const formID = `${id}-select-dice`;
     return (
         <UI.FlexRow formRow>
@@ -32,7 +31,7 @@ function RollDiceInput(props: DiceInputProps) {
             </label>
             <NumericInput id={formID}
                           min={1} max={99}
-                          value={value} onSelect={onSelect}
+                onSelect={onSelect}
                           text={text} setText={setText} />
             <span>dice</span>
             &nbsp;
@@ -98,7 +97,7 @@ const GlitchyExplainLabel = styled.label({
 
 type GlitchyToggleProps = Colorable & HasID & {
     glitchy: number,
-    setGlitchy: Setter<number|null>,
+    setGlitchy: Selector,
 }
 
 function GlitchyInput(props: GlitchyToggleProps) {
@@ -154,14 +153,14 @@ export default function EditMenu(props: Props) {
 
 
     const [title, setTitle] = React.useState(event.title);
-    const [diceCount, setDiceCount] = React.useState<number|null>(
+    const [diceCount, setDiceCount] = React.useState<number | InvalidState>(
         event.ty == "roll" ? event.dice.length : event.rounds[0].length
     );
     const [diceText, setDiceText] = React.useState<string>(
         diceCount ? diceCount.toString() : ""
     );
     const [edge, setEdge] = React.useState(event.ty === "edgeRoll");
-    const [glitchy, setGlitchy] = React.useState<number|null>(event.glitchy);
+    const [glitchy, setGlitchy] = React.useState<number | InvalidState>(event.glitchy);
     const [showGlitchy, setShowGlitchy] = React.useState(event.glitchy !== 0);
 
     let edgeActionsDisabled = false;
@@ -176,7 +175,7 @@ export default function EditMenu(props: Props) {
     return (
         <UI.FlexColumn>
             <UI.FlexRow maxWidth flexWrap>
-                <RollDiceInput value={diceCount} onSelect={setDiceCount}
+                <RollDiceInput onSelect={setDiceCount}
                                text={diceText} setText={setDiceText}
                                id={id} />
                 <RollTitleInput title={title} setTitle={setTitle}

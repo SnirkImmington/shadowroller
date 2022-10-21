@@ -10,7 +10,6 @@ import * as Player from 'player';
 import * as srutil from 'srutil';
 
 import { LoadingResultList } from "history/LoadingEventList";
-import EditEventMenu from 'history/EditEventMenu';
 import { EditEventContext } from 'history/EditingState';
 import PlayerList from 'game/PlayerList';
 
@@ -61,8 +60,6 @@ export default function EventHistory() {
 
     return (
         <EditEventContext>
-            {events.editing &&
-                <EditEventMenu event={events.editing} />}
             <UI.Card padded grow color={theme.colors.primary}>
                 <UI.FlexRow maxWidth>
                     <UI.CardTitleText color={theme.colors.primary}>

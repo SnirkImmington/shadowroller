@@ -11,11 +11,10 @@ import * as icons from 'style/icon';
 type RoundingMode = "up" | "down";
 type Props = {
     id: string,
-    onSelect: (value: number | null) => void,
+    onSelect: Selector,
     min?: number,
     max?: number,
     small?: boolean,
-    value?: number | null,
     text?: string,
     setText?: Setter<string>,
     placeholder?: string,
@@ -23,10 +22,17 @@ type Props = {
     disabled?: boolean,
 };
 
-type ValueState =
+export type Selector = (value: number | InvalidState) => void;
+
+export type InvalidState =
 | "empty"
+    | "error"
 | "tooSmall"
 | "tooBig"
+    ;
+
+type ValueState =
+    | InvalidState
 | ["error", number]
 // value, is rounded
 | ["literal", number, boolean]
@@ -118,7 +124,7 @@ export default function NumericInput(props: Props) {
         // Handle empty field - this is not an error condition
         if (!event.target.value) {
             setState("empty");
-            props.onSelect(null);
+            props.onSelect("empty");
             return;
         }
         // Parse an expression using the library
@@ -128,13 +134,13 @@ export default function NumericInput(props: Props) {
         // On parsing failure, set error
         if (!expr) {
             setState(["error", pos]);
-            props.onSelect(null);
+            props.onSelect("error");
             return;
         }
         // If we didn't consume the whole string, there's garbage at the end
         if (pos !== event.target.value.length) {
             setState(["error", pos]);
-            props.onSelect(null);
+            props.onSelect("error");
             return;
         }
         // Evaluate the expression
@@ -144,7 +150,7 @@ export default function NumericInput(props: Props) {
         if (isNaN(value)) {
             // We can't really give a good error position
             setState(["error", 1]);
-            props.onSelect(null);
+            props.onSelect("error");
             return;
         }
         // Check if we have to round and set flag accordingly
@@ -155,12 +161,12 @@ export default function NumericInput(props: Props) {
         // Check if we're in bounds
         if (props.min != null && value < props.min) {
             setState("tooSmall");
-            props.onSelect(null);
+            props.onSelect("tooSmall");
             return;
         }
         if (props.max != null && value > props.max) {
             setState("tooBig");
-            props.onSelect(null);
+            props.onSelect("tooBig");
             return;
         }
         // Check if this is just a regular number
@@ -216,6 +222,9 @@ export default function NumericInput(props: Props) {
         );
     }
     else if (state[0] === "error") {
+        <ErrorBox key={`err-${state[1]}`}>
+            err @{state[1] as number + 1}
+        </ErrorBox>
     }
 
     return (

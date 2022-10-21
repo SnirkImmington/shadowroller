@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as UI from 'style';
 import EventRecord from "record/EventRecord";
 import NumericInput from "component/NumericInput";
+import type { Selector, InvalidState } from "component/NumericInput";
 import Checkbox from "component/Checkbox";
 import Input from "component/Input";
 

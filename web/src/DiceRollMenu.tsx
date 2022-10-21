@@ -5,6 +5,7 @@ import * as Button from 'component/Button';
 import StatusText from 'connection/StatusText';
 import ShareOptions from 'share/Options';
 import NumericInput from 'component/NumericInput';
+import type { Selector, InvalidState } from 'component/NumericInput';
 import type { Colorable, Toggle as ToggleProps } from 'component/props';
 import * as Space from 'component/Space';
 import * as layout from 'layout';
@@ -124,14 +125,12 @@ const RollButton = styled.button<{ bg: string }>`
 `;
 
 type InputProps = {
-    value: number | null,
-    onSelect: (value: number | null) => void,
+    onSelect: Selector,
     text: string,
     setText: srutil.Setter<string>,
 }
 
-function RollDiceInput(props: InputProps) {
-    const { value, onSelect, text, setText } = props;
+function RollDiceInput({ onSelect, text, setText }: InputProps) {
     return (
         <UI.FlexRow formRow>
             <label htmlFor="roll-select-dice">
@@ -139,7 +138,7 @@ function RollDiceInput(props: InputProps) {
             </label>
             <NumericInput id="roll-select-dice"
                           min={1} max={99}
-                          value={value} onSelect={onSelect}
+                          onSelect={onSelect}
                           text={text} setText={setText} />
             <span>dice</span>
             &nbsp;
@@ -153,8 +152,7 @@ type TitleProps = {
     flavor: string,
 }
 
-function RollTitleInput(props: TitleProps) {
-    const { title, setTitle, flavor } = props;
+function RollTitleInput({ title, setTitle, flavor }: TitleProps) {
     const onChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setTitle(e.target.value);
@@ -173,8 +171,7 @@ function RollTitleInput(props: TitleProps) {
     )
 }
 
-function PushLimitInput(props: ToggleProps) {
-    const { checked, setChecked, color } = props;
+function PushLimitInput({ checked, setChecked, color }: ToggleProps) {
     const onChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setChecked(e.target.checked);
@@ -203,7 +200,7 @@ const GlitchyExplainLabel = styled.label({
 type GlitchyToggleProps = Colorable & {
     glitchy: number,
     setGlitchy: srutil.Setter<number>,
-    onGlitchySelect: (value: number | null) => void,
+    onGlitchySelect: Selector,
 }
 
 function GlitchyInput(props: GlitchyToggleProps) {
@@ -256,27 +253,27 @@ export default function RollDicePrompt() {
     const [share, setShare] = React.useState<Share.Mode>(Share.Mode.InGame);
 
     const [diceText, setDiceText] = React.useState("");
-    const [diceCount, setDiceCount] = React.useState<number|null>(null);
+    const [diceCount, setDiceCount] = React.useState<number | InvalidState>("empty");
     const [title, setTitle] = React.useState("");
     const [edge, setEdge] = React.useState(false);
     const [glitchy, setGlitchy] = React.useState(0);
 
     const connected = connection === "connected";
     const rollDisabled = (
-        !diceCount || diceCount < 1 || diceCount > 100
+        (typeof diceCount !== "number") || diceCount < 1 || diceCount > 100
         || rollLoading || (gameExists && !connected)
     );
 
     const rollBackgound = edge ? RollBackground.edgy : RollBackground.inGame;
 
     const setRollGlitchy = React.useCallback(
-        (g: number|null) => { g != null && setGlitchy(g); },
+        (g: number | InvalidState) => (typeof g === "number") && setGlitchy(g),
         [setGlitchy]
     );
 
     function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (rollDisabled || !diceCount) {
+        if (rollDisabled || typeof diceCount !== "number") {
             return;
         }
 
@@ -345,7 +342,7 @@ export default function RollDicePrompt() {
             </UI.FlexRow>
             <form id="dice-input" onSubmit={onSubmit}>
                 <UI.FlexRow maxWidth flexWrap>
-                    <RollDiceInput value={diceCount} onSelect={setDiceCount}
+                    <RollDiceInput onSelect={setDiceCount}
                                    text={diceText} setText={setDiceText} />
                     <RollTitleInput title={title} setTitle={setTitle}
                                     flavor={titleFlavor} />
