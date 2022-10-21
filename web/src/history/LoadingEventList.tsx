@@ -5,6 +5,7 @@ import * as Game from 'game';
 import { ConnectionCtx } from 'connection';
 import * as server from 'server';
 import * as routes from 'routes';
+import { EditEventCtx, SetEditEventCtx } from './EditingState';
 
 // @ts-ignore For some reason, they did modules the wrong way for this libaray
 import InfiniteLoader from "react-window-infinite-loader";
@@ -14,9 +15,18 @@ import EventRecord from 'record/EventRecord';
 
 type RowRenderProps = { style: any, index: number, data: Event.Event[] };
 
+/** Unique React key prop for the event record at the given index */
+function itemKey(index: number, data: Event.Event[]): any {
+    if (!data || !data[index]) {
+        return index;
+    }
+    return data[index].id;
+}
 export function LoadingResultList({ playerID }: { playerID: string | null }) {
     const game = React.useContext(Game.Ctx);
     const state = React.useContext(Event.Ctx);
+    const inlineEdit = React.useContext(EditEventCtx);
+    const setInlineEdit = React.useContext(SetEditEventCtx);
     const dispatch = React.useContext(Event.DispatchCtx);
     const connection = React.useContext(ConnectionCtx);
 
@@ -51,26 +61,20 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
         }
     }, [eventsLength]);
 
-    // TODO this should take event ID into account.. we can do `<` on IDs though
-    const loadedAt = React.useCallback((index: number): boolean => {
+    const loadedAt = React.useCallback(function loadedAt(index: number): boolean {
         return index < eventsLength || atHistoryEnd;
     }, [atHistoryEnd, eventsLength]);
 
-    const itemSize = (index: number): number => {
+    const itemSize = React.useCallback(function itemSize(index: number): number {
         if (itemSizes.current[index]) {
             return itemSizes.current[index] + 6;
         }
         return 0;
-    };
+    }, [itemSizes]);
 
-    function itemKey(index: number, data: Event.Event[]): any {
-        if (!data || !data[index]) {
-            return index;
-        }
-        return data[index].id;
-    }
 
     const setIndexHeight = React.useCallback(function setIndexHeight(height: number, index: number) {
+        console.log("set height at index", index, "to", height);
         if (itemSizes.current[index] === height) {
             return;
         }
@@ -87,19 +91,19 @@ export function LoadingResultList({ playerID }: { playerID: string | null }) {
         if (!loadedAt(index)) {
             return <EventRecord event={null} hue={null} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-        else {
-            const event = data[index];
-            const editing = state.editing != null && state.editing.id === event.id;
-            let hue = null;
-            if (gamePlayers && event.source !== "local") {
-                const player = gamePlayers.get(event.source.id);
-                if (player) {
-                    hue = player.hue;
-                }
+        const event = data[index];
+        const editing = inlineEdit === event.id;
+        let hue = null;
+        let noActions = event.source !== "local";
+        if (gamePlayers && event.source !== "local") {
+            const player = gamePlayers.get(event.source.id);
+            if (player) {
+                hue = player.hue;
+                noActions = !Event.canModify(event, player.id);
             }
-            return <EventRecord event={event} hue={hue} editing={editing} setHeight={setHeight} playerID={playerID} style={style} />;
         }
-    }, [loadedAt, playerID, state.editing, gamePlayers, setIndexHeight]);
+        return <EventRecord {...{ event, hue, editing, setHeight, noActions, style, playerID }} />;
+    }, [loadedAt, playerID, inlineEdit, gamePlayers, setIndexHeight]);
 
     function loadMoreItems(oldestIx: number): Promise<void> | undefined {
         if (fetchingEvents || connection === "offline" || atHistoryEnd) {

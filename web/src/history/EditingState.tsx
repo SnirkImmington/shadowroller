@@ -3,9 +3,9 @@ import * as React from 'react';
 import type { Setter } from 'srutil';
 
 /** EditEventCtx provides the ID of the event currently being edited. */
-const EditEventCtx = React.createContext<number|null>(null);
+export const EditEventCtx = React.createContext<number | null>(null);
 /** SetEditEventCtx provides the setter to set the currently edit event. */
-const SetEditEventCtx = React.createContext<Setter<number|null>>(() => {});
+export const SetEditEventCtx = React.createContext<Setter<number | null>>(() => { });
 
 /** EditEventContext exposes the EditEventCtx and SetEditEventCtx providers. */
 export function EditEventContext({ children }: React.PropsWithChildren<{}>) {

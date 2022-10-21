@@ -61,24 +61,23 @@ export default function EventHistory() {
 
     return (
         <EditEventContext>
-        {events.editing &&
-            <EditEventMenu event={events.editing} />
-        }
-        <UI.Card padded grow color={theme.colors.primary}>
-            <UI.FlexRow maxWidth>
-                <UI.CardTitleText color={theme.colors.primary}>
-                    <UI.FAIcon icon={ game ? icons.faUsers : icons.faList} />
-                    {title}
-                    {events.historyFetch === "fetching" && "..."}
-                </UI.CardTitleText>
-                &nbsp;&nbsp;
-                {game && <PlayerList />}
-            </UI.FlexRow>
-            <UI.FlexColumn grow>
-                <TitleSpace />
-                {body}
-            </UI.FlexColumn>
-        </UI.Card>
+            {events.editing &&
+                <EditEventMenu event={events.editing} />}
+            <UI.Card padded grow color={theme.colors.primary}>
+                <UI.FlexRow maxWidth>
+                    <UI.CardTitleText color={theme.colors.primary}>
+                        <UI.FAIcon icon={game ? icons.faUsers : icons.faList} />
+                        {title}
+                        {events.historyFetch === "fetching" && "..."}
+                    </UI.CardTitleText>
+                    &nbsp;&nbsp;
+                    {game && <PlayerList />}
+                </UI.FlexRow>
+                <UI.FlexColumn grow>
+                    <TitleSpace />
+                    {body}
+                </UI.FlexColumn>
+            </UI.Card>
         </EditEventContext>
     );
 }

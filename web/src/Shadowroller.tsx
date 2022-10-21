@@ -113,8 +113,6 @@ export default function Shadowroller() {
                 <RollInitiativeMenu />
             </AppLeft>
             <AppRight>
-                <EditMenu editing={true} loading={false} setLoading={() => {}} event={{ ty: "roll", dice: [1,2,3,4], id: 0, source: "local", title:"foo", glitchy: 0 }} onEdit={console.log} onSubmit={console.log} color="lightgreen" id="editing-roll" />
-                <InitEditMenu editing={true} loading={false} setLoading={() => {}} event={{ ty: "initiativeRoll", base: 12, dice: [1, 2, 3], id: 0, source: "local", title: "foo", blitzed: false, seized: false }} id="editing-initiative" color="darkgreen" onEdit={console.log} onSubmit={console.log} />
                 <EventHistory />
             </AppRight>
         </AppGrid>

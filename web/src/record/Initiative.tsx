@@ -19,6 +19,7 @@ import * as Share from 'share';
 import * as routes from 'routes';
 import * as srutil from 'srutil';
 import * as colorUtil from 'colorUtil';
+import { SetEditEventCtx } from "history/EditingState";
 
 
 type Props = {
@@ -89,8 +90,8 @@ function GameActionsRow({ event, children }: React.PropsWithChildren<ActionProps
 }
 
 function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref<HTMLDivElement>) {
-    const eventDispatch = React.useContext(Event.DispatchCtx);
     const eventCmdDispatch = React.useContext(Event.CmdCtx);
+    const setEdit = React.useContext(SetEditEventCtx);
 
     const [title, setTitle] = React.useState(event.title);
     const [base, setBase] = React.useState(event.base);
@@ -115,7 +116,7 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
     }
 
     function handleCancel() {
-        eventDispatch({ ty: "clearEdit" });
+        setEdit(null);
     }
 
     const messages = [];
@@ -143,10 +144,8 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
         if (messages.length > 0 || changes.length === 0) {
             return;
         }
-        console.log("Going to save");
         eventCmdDispatch({ ty: "edit", id: event.id, diff }, setLoading);
-        console.log("Save dispatched");
-        eventDispatch({ ty: "clearEdit" });
+        setEdit(null);
     }
 
     function handleDelete() {
@@ -173,7 +172,7 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
                     Blitz
                 </Checkbox>
                 <Checkbox id={`edit-${event.id}-seize-initiative`}
-                    checked={seized} onChange={toggleSeized}>
+                    checked={seized} onChange={toggleSeized} disabled={event.blitzed}>
                     Seize the initiative
                 </Checkbox>
                 <UI.FlexRow formRow spaced>
@@ -214,7 +213,7 @@ export const InitiativeEditing = React.memo<Props>(React.forwardRef(InitiativeEd
 function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
     console.log("InitiativeRecord:", event, ref);
     const theme = React.useContext(ThemeContext);
-    const eventDispatch = React.useContext(Event.DispatchCtx);
+    const setEdit = React.useContext(SetEditEventCtx);
 
     const result = event.base + event.dice.reduce((curr, die) => curr + die, 0);
     const canModify = !noActions && Event.canModify(event, playerID);
@@ -250,7 +249,7 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
 
 
     function onEdit() {
-        eventDispatch({ ty: "selectEdit", event: event as any as Event.DiceEvent });
+        setEdit(event.id);
     }
 
     const ActionsRow = event.source === "local" ? LocalActionsRow : GameActionsRow;
@@ -273,10 +272,12 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
                 </UI.FlexRow>
                 <Roll.StyledResults hue={hue}>
                     {result}&nbsp;
-                    {event.seized ?
-                       <UI.FAIcon icon={icons.faSortAmountUp} />
-                       : <UI.FAIcon icon={icons.faClipboardList} />
-                    }
+                    {event.blitzed &&
+                        <UI.FAIcon className="icon-inline" icon={icons.faBolt} />}
+                    {event.seized &&
+                        <UI.FAIcon className="icon-inline" icon={icons.faSortAmountUp} />}
+                    <UI.FAIcon icon={icons.faClipboardList} />
+
                 </Roll.StyledResults>
             </UI.FlexRow>
             <UI.FlexRow style={{ minHeight: "1rem" }} floatRight={canModify}>

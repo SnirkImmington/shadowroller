@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { ThemeContext } from 'styled-components/macro';
 
 import * as Event from 'event';
 import * as Record from 'record';
@@ -16,7 +15,6 @@ type RecordProps = {
     style?: any
 };
 const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
-    const theme = React.useContext(ThemeContext);
     const { event, playerID, hue, setHeight, noActions, editing, style } = props;
     const highlight = !editing && event?.source !== "local" && event?.source.share !== Share.Mode.InGame;
 
@@ -50,7 +48,7 @@ const EventRecord = React.memo<RecordProps>(function EventRecord(props) {
             Inner = Record.Roll;
             break;
         case "initiativeRoll":
-            Inner = Record.Initiative;
+            Inner = editing ? Record.InitiativeEditing : Record.Initiative;
             break;
         default:
             if (process.env.NODE_ENV !== "production") {

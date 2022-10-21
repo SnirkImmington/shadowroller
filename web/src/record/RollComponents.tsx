@@ -136,7 +136,7 @@ function GameActionsRow({ event, result }: Props) {
     }
 
     function onEdit() {
-        dispatch({ ty: "selectEdit", event: event });
+        dispatch({ ty: "selectEdit", event });
     }
 
     function onReveal() {

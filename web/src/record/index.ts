@@ -45,4 +45,4 @@ export * from './OtherEvents';
 export { EdgeRoll } from './EdgeRoll';
 export { Reroll } from './Reroll';
 export { RollRecord as Roll } from './Roll';
-export { Initiative } from './Initiative';
+export { Initiative, InitiativeEditing } from './Initiative';
