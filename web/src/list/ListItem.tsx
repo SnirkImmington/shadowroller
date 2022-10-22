@@ -29,13 +29,13 @@ export default function ListItem({ setHeight, children, style }: React.PropsWith
         if (node) {
             console.log(`litem.or(): recorded height ${node.getBoundingClientRect().height}`);
             setHeight(Math.round(node.getBoundingClientRect().height));
-        } else {
-            console.log(`litem.or(): no height`);
         }
     }, [setHeight]);
 
+    // Initial render is called with height of 0, we need to ignore this
+    // attribute so we can render our "actual" child height, and have our
+    // onRender trigger our own rerender with a better style.height.
     if (style?.height === 0) {
-        console.log(`litem(h=0) ignore height`);
         delete style.height;
     }
 
