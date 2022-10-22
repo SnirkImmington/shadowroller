@@ -6,7 +6,7 @@ type Props = {
      * height (plus padding) whenever a new child is rendered. */
     setHeight: (height: number) => void;
 
-    style: React.StyleHTMLAttributes<HTMLDivElement>;
+    style: React.CSSProperties;
 };
 
 /** Padding to separate items in the list */
@@ -23,16 +23,21 @@ const StyledPadding = styled.div({
  *
 */
 export default function ListItem({ setHeight, children, style }: React.PropsWithChildren<Props>) {
-    console.log("Render ListItem", style);
+    console.log(`litem(h=${(style as any)?.height}) render`);
 
     const onRender = React.useCallback((node: HTMLDivElement | null) => {
         if (node) {
-            console.log("onRender(", node, ")");
+            console.log(`litem.or(): recorded height ${node.getBoundingClientRect().height}`);
             setHeight(Math.round(node.getBoundingClientRect().height));
         } else {
-            console.log("onRender(null)");
+            console.log(`litem.or(): no height`);
         }
     }, [setHeight]);
+
+    if (style?.height === 0) {
+        console.log(`litem(h=0) ignore height`);
+        delete style.height;
+    }
 
     return (
         <StyledPadding ref={onRender} style={style}>
