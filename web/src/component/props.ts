@@ -1,4 +1,3 @@
-import * as srutil from 'srutil';
 
 /** DisableableProps adds an optional `disabled` flag to a component. */
 export type Disableable = {
@@ -19,7 +18,7 @@ export type HasID = {
 
 export type Toggle = Colorable & {
     checked: boolean,
-    setChecked: srutil.Setter<boolean>
+    setChecked: (value: boolean) => void,
 }
 
 export type Styleable = {

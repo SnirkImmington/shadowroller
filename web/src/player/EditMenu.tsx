@@ -40,18 +40,22 @@ export default function EditPlayerPanel({ hide }: Props) {
     const [showGames, toggleShowGames] = srutil.useToggle(false);
     const [switchGame, setSwitchGame] = React.useState("");
     const [switchResponse, setSwitchResponse] = React.useState<ResponseStatus>("ready");
-    const handleSwitchGame = React.useCallback((e) => setSwitchGame(e.target.value), [setSwitchGame]);
 
     const [name, setName] = React.useState(player?.name);
     const [hue, setHue] = React.useState<number>(player?.hue || 0);
     const [onlineMode, setOnlineMode] = React.useState<Player.OnlineMode>(player?.onlineMode || Player.OnlineModeAuto);
-    const setOnlineModeAuto = React.useCallback(() => setOnlineMode(Player.OnlineModeAuto), [setOnlineMode]);
-    const setOnlineModeOnline = React.useCallback(() => setOnlineMode(Player.OnlineModeOnline), [setOnlineMode]);
-    const setOnlineModeOffline = React.useCallback(() => setOnlineMode(Player.OnlineModeOffline), [setOnlineMode]);
 
     const [response, setResponse] = React.useState<ResponseStatus>("ready");
     const [exampleTitle] = srutil.useFlavor(ROLL_TITLE_FLAVOR);
     const [dice] = React.useState(() => roll.dice(11));
+
+    const handleSwitchGame = React.useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => setSwitchGame(e.target.value),
+    [setSwitchGame]);
+
+    const setOnlineModeAuto = React.useCallback(() => setOnlineMode(Player.OnlineModeAuto), [setOnlineMode]);
+    const setOnlineModeOnline = React.useCallback(() => setOnlineMode(Player.OnlineModeOnline), [setOnlineMode]);
+    const setOnlineModeOffline = React.useCallback(() => setOnlineMode(Player.OnlineModeOffline), [setOnlineMode]);
 
     if (!player || !game) {
         return null;
@@ -62,6 +66,7 @@ export default function EditPlayerPanel({ hide }: Props) {
     const switchDisabled = !showGames || !switchChanged || response === "loading";
     const changed = name !== player.name || hue !== player.hue || onlineMode !== player.onlineMode;
     const connected = connection === "connected" && response !== "loading";
+
 
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();

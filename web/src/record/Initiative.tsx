@@ -27,6 +27,7 @@ type Props = {
     playerID: string|null,
     hue: number|null|undefined,
     noActions?: boolean,
+    newDice?: number,
     onEdit?: () => void,
 };
 type ActionProps = {
@@ -95,14 +96,10 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
 
     const [title, setTitle] = React.useState(event.title);
     const [base, setBase] = React.useState<number|InvalidState>(event.base);
-    // const [diceCount, setDiceCount] = React.useState(event.dice.length); 
+    // const [diceCount, setDiceCount] = React.useState<number | InvalidState>(event.dice.length);
     const [seized, toggleSeized] = srutil.useToggle(event.seized);
     const [deleteReady, setDeleteReady] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
-
-    const newEvent: Event.Initiative = {
-        ...event, title, base, seized
-    };
 
     function handleSetTitle(e: React.ChangeEvent<HTMLInputElement>) {
         setTitle(e.target.value);
@@ -114,11 +111,13 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
 
     const messages = [];
     const diff: Partial<Event.Initiative> = {};
-    if (base < -2) {
+    if (base === "error") {
+        messages.push("Invalid base");
+    } else if (base === "tooSmall") {
         messages.push("Base too low");
-    } else if (base > 69) {
+    } else if (base === "tooBig") {
         messages.push("Base too high");
-    } else if (base !== event.base) {
+    } else if (base !== "empty" && base !== event.base) {
         diff.base = base;
     }
 
@@ -132,6 +131,7 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
         diff.title = title;
     }
     const changes = Object.keys(diff);
+    const newEvent = { ...event, ...diff };
 
     function handleSave() {
         if (messages.length > 0 || changes.length === 0) {
@@ -161,6 +161,7 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
             </UI.FlexRow>
             <UI.FlexRow formRow flexWrap spaced floatRight>
                 <DeleteConfirm id={`event-${event.id}`} ready={deleteReady} setReady={setDeleteReady} onDelete={handleDelete} />
+                Edge:&nbsp;
                 <Checkbox id={`edit-${event.id}-blitz`} checked={event.blitzed} disabled onChange={() => { }}>
                     Blitz
                 </Checkbox>
@@ -203,7 +204,7 @@ function InitiativeEditingRecord({ event, playerID, hue }: Props, ref: React.Ref
 /** A record to be displayed of an initiative roll which is being edited. */
 export const InitiativeEditing = React.memo<Props>(React.forwardRef(InitiativeEditingRecord));
 
-function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
+function InitiativeRecord({ event, playerID, hue, noActions, newDice }: Props, ref: React.Ref<HTMLDivElement>) {
     console.log("InitiativeRecord:", event, ref);
     const theme = React.useContext(ThemeContext);
     const setEdit = React.useContext(SetEditEventCtx);
@@ -236,7 +237,7 @@ function InitiativeRecord({ event, playerID, hue, noActions }: Props, ref: React
     );
     const dieList = (
         <>
-            &nbsp;{event.base ?? "0"} +&nbsp;<dice.List small rolls={event.dice} />
+            &nbsp;{event.base ?? "0"} +&nbsp;<dice.EditList small rolls={event.dice} newPool={newDice || event.dice.length} />
         </>
     );
 

@@ -118,14 +118,15 @@ export const CmdCtx = React.createContext<CmdDispatch>(() => {});
 export function CmdProvider({ children }: React.PropsWithChildren<{}>) {
     const game = React.useContext(Game.Ctx);
     const eventDispatch = React.useContext(Event.DispatchCtx);
+    const gameExists = game !== null;
 
     const cmdDispatch = React.useCallback((cmd: Command, setLoading?: srutil.Setter<boolean>) => {
-        if (game !== null) {
+        if (gameExists) {
             handleGameCommand(cmd, setLoading);
         } else {
             handleLocalCommand(cmd, eventDispatch);
         }
-    }, [game !== null, eventDispatch]);
+    }, [gameExists, eventDispatch]);
 
     return (
         <CmdCtx.Provider value={cmdDispatch}>

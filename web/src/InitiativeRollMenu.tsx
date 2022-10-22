@@ -103,7 +103,7 @@ const StyledMessageInput = styled(UI.Input)({
 
 type MessageProps = {
     title: string,
-    setTitle: srutil.Setter<string>,
+    setTitle: (value: string) => void,
 }
 
 function MessageInput(props: MessageProps) {
@@ -125,8 +125,7 @@ function MessageInput(props: MessageProps) {
     );
 }
 
-function BlitzToggle(props: ToggleProps) {
-    const { checked, setChecked, color } = props;
+function BlitzToggle({ checked, setChecked, color }: ToggleProps) {
     const onChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setChecked(e.target.checked);
@@ -142,8 +141,7 @@ function BlitzToggle(props: ToggleProps) {
     );
 }
 
-function SeizeToggle(props: ToggleProps) {
-    const { checked, setChecked, color } = props;
+function SeizeToggle({ checked, setChecked, color }: ToggleProps) {
     const onChange = React.useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setChecked(e.target.checked);
@@ -179,14 +177,14 @@ export default function RollInitiativePrompt() {
     const [blitzed, setBlitzed] = React.useState(false);
     const [seized, setSeized] = React.useState(false);
 
-    const exclusiveSetSeized = React.useCallback((value) => {
+    const exclusiveSetSeized = React.useCallback((value: boolean) => {
         if (value) {
             setBlitzed(false);
         }
         setSeized(value);
     }, [setBlitzed, setSeized]);
 
-    const exclusiveSetBlitzed = React.useCallback((value) => {
+    const exclusiveSetBlitzed = React.useCallback((value: boolean) => {
         if (value) {
             setSeized(false);
         }
