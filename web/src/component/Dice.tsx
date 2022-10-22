@@ -116,13 +116,13 @@ export function EditList({ rolls, newPool, small, children }: React.PropsWithChi
 
     // Extra rolls
     if (diff > 0) {
-        const newRolls = [...rolls, new Array<number>(diff).fill(0)];
-        return <List rolls={rolls} small={small}>{children}</List>;
+        const newRolls = [...rolls, ...new Array<number>(diff).fill(0)];
+        return <List rolls={newRolls} small={small}>{children}</List>;
     }
 
     // Missing rolls
     else {
-        const newRolls = [...rolls.slice(0, newPool), new Array(-1 * diff).fill(-1)];
-        return <List rolls={rolls} small={small}>{children}</List>;
+        const newRolls = [...rolls.slice(0, newPool), ...new Array(-1 * diff).fill(-1)];
+        return <List rolls={newRolls} small={small}>{children}</List>;
     }
 }
