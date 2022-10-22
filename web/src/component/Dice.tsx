@@ -6,6 +6,8 @@ import 'index.css';
 
 import { die as rollDie } from 'roll';
 
+import { ReactComponent as DieX } from 'assets/die-x.svg';
+import { ReactComponent as DieQuestion } from 'assets/die-question.svg';
 import { ReactComponent as DieOne } from 'assets/die-1.svg';
 import { ReactComponent as DieTwo } from 'assets/die-2.svg';
 import { ReactComponent as DieThree } from 'assets/die-3.svg';
@@ -19,7 +21,7 @@ export function colorForRoll(roll: number, theme: Theme): string {
         : theme.colors.dieNeutral;
 }
 
-const DiceMap = [DieOne, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
+const DiceMap = [DieQuestion, DieOne, DieTwo, DieThree, DieFour, DieFive, DieSix];
 
 type AnimatedProps = {
     small?: boolean,
@@ -43,7 +45,7 @@ export const Die = React.memo<DieProps>(function Die(props: DieProps) {
     }
     delete newProps.small;
 
-    let Dice = DiceMap[roll] || DieOne;
+    let Dice = DiceMap[roll] || (roll < 0 ? DieX : DieQuestion);
 
     return <Dice className={!small ? "sr-die sr-die-padded" : "sr-die"} {...newProps} />;
 });
@@ -98,4 +100,29 @@ export function List({ rolls, small, children }: React.PropsWithChildren<ListPro
             )}
         </Wrapper>
     );
+}
+
+type EditListProps = ListProps & {
+    newPool: number;
+};
+
+export function EditList({ rolls, newPool, small, children }: React.PropsWithChildren<EditListProps>) {
+    const diff = newPool - rolls.length;
+
+    // Pool matches
+    if (diff === 0) {
+        return <List rolls={rolls} small={small}>{children}</List>;
+    }
+
+    // Extra rolls
+    if (diff > 0) {
+        const newRolls = [...rolls, new Array<number>(diff).fill(0)];
+        return <List rolls={rolls} small={small}>{children}</List>;
+    }
+
+    // Missing rolls
+    else {
+        const newRolls = [...rolls.slice(0, newPool), new Array(-1 * diff).fill(-1)];
+        return <List rolls={rolls} small={small}>{children}</List>;
+    }
 }
