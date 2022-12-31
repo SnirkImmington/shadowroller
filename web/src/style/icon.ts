@@ -2,6 +2,7 @@ import "./iconStyles.css";
 
 export {
     // Angles and arrows
+    faAngleUp,
     // faAngleRight, // faArrowUp, faArrowDown,
     // NumericInput icons
     faPlus, faMinus, faTimes, faDivide,

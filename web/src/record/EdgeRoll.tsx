@@ -4,7 +4,7 @@ import * as Text from 'component/Text';
 import * as dice from 'component/Dice';
 import * as humanTime from 'component/HumanTime';
 import * as icons from 'style/icon';
-import * as Roll from './RollComponents';
+import * as Roll from 'record/RollComponents';
 
 import * as Event from 'event';
 import * as Share from 'share';
@@ -16,7 +16,7 @@ type Props = {
     hue: number|null|undefined,
     noActions?: boolean
 }
-function EdgeRollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<any>) {
+export default function EdgeRoll({ event, playerID, hue, noActions }: Props) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
@@ -41,7 +41,7 @@ function EdgeRollRecord({ event, playerID, hue, noActions }: Props, ref: React.R
     );
 
     return (
-        <UI.FlexColumn ref={ref}>
+        <UI.FlexColumn>
             <UI.FlexRow>
                 <Roll.Title>
                     {intro} {title}
@@ -67,4 +67,3 @@ function EdgeRollRecord({ event, playerID, hue, noActions }: Props, ref: React.R
         </UI.FlexColumn>
     );
 }
-export const EdgeRoll = React.memo<Props>(React.forwardRef(EdgeRollRecord));

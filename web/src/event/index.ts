@@ -241,8 +241,7 @@ function eventReduce(state: State, action: Action): State {
         case "mergeEvents":
             return appendEventsReduce(state, action.events);
         case "clearEvents":
-            const localEvents = state.events.filter(e => e?.source === "local");
-            return { ...state, events: localEvents };
+            return { ...state, events: [] };
 
         case "deleteEvent":
             const deletedEvents = state.events.filter(e => e.id !== action.id);

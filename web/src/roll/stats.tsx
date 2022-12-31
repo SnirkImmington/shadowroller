@@ -10,6 +10,7 @@ function sumHits(dice: number[]): number {
     return dice.reduce((acc, curr) => curr >= 5 ? acc + 1 : acc, 0);
 }
 
+/** Whether edge was spent on the event. */
 export function isEdged(event: Event.Event): boolean {
     switch (event.ty) {
         case "roll":
@@ -87,10 +88,15 @@ export type HitsResults = {
     rerolled: boolean,
     /** The number of times the dice were rolled:
         - 1 for regular rolls
-        - 2 for reroll failures
+        - 2 for second chance
         - 2+ for push the limit
      */
     rounds: number,
+    /** Actions available for the roll */
+    actions: {
+        /** If the player can spend edge to reroll */
+        canReroll: boolean,
+    }
 };
 /** results provides `HitsResults` for the given [edged] roll. */
 export function results(event: Event.DiceEvent): HitsResults {
@@ -116,9 +122,14 @@ export function results(event: Event.DiceEvent): HitsResults {
         || hits > 4
     );
 
+    const canReroll = !rerolled && !edged;
+
     return {
         dice, hits, edged, rerolled, rounds,
-        glitched, glitchy: event.glitchy, critical, shouldDisplay
+        glitched, glitchy: event.glitchy, critical, shouldDisplay,
+        actions: {
+            canReroll
+        }
     }
 }
 

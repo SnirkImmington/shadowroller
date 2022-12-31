@@ -11,15 +11,14 @@ import * as Event from 'event';
 
 type PlayerJoinProps = {
     event: Event.PlayerJoin,
-    playerID: string|null,
     hue: number|null|undefined,
 };
-export const PlayerJoin = React.memo(React.forwardRef<HTMLDivElement, PlayerJoinProps>(function PlayerJoin({ event, hue }: PlayerJoinProps, ref) {
+export function PlayerJoin({ event, hue }: PlayerJoinProps) {
     const game = React.useContext(Game.Ctx);
 
     const name = <Text.Player hue={hue}>{event.source.name}</Text.Player>;
     return (
-        <UI.FlexColumn ref={ref}>
+        <UI.FlexColumn>
             <UI.FlexRow>
                 <span style={{ lineHeight: '1.2' }}>
                     {name}{' joined '}
@@ -32,7 +31,7 @@ export const PlayerJoin = React.memo(React.forwardRef<HTMLDivElement, PlayerJoin
             </UI.FlexRow>
         </UI.FlexColumn>
     );
-}), (prev, next) => prev.event.id === next.event.id);
+}
 
 const LoadingPadding = styled.div({
     display: "flex",
@@ -41,27 +40,22 @@ const LoadingPadding = styled.div({
 });
 
 const LOADING_FLAVOR: string[] = [
-    "Looking for the rolls...",
-    "Locating the rolls...",
-
     "Fabricating some rolls...",
 
-    "Where are those rolls agian?...",
-    "Where did those rolls go?...",
-    "Wait, are there more rolls?...",
+    "Dude, where're my rolls?...",
 
     "Has anybody seen the rolls?...",
     "Where are those confounded rolls?...",
 ];
 
-export const Loading = React.forwardRef<HTMLDivElement, {}>(function LoadingIndicator(_props, ref) {
+export function Loading() {
     const [flavor] = srutil.useFlavor(LOADING_FLAVOR);
     return (
-        <LoadingPadding ref={ref}>
+        <LoadingPadding>
             &nbsp;
             <Text.Flavor>{flavor}</Text.Flavor>
             &nbsp;
             <Dice.Spinner />
         </LoadingPadding>
     );
-});
+}

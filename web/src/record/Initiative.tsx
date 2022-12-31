@@ -86,8 +86,7 @@ function GameActionsRow({ event, children }: React.PropsWithChildren<ActionProps
 }
 
 
-function InitiativeRecord({ event, playerID, hue, noActions, newDice }: Props, ref: React.Ref<HTMLDivElement>) {
-    console.log("InitiativeRecord:", event, ref);
+function InitiativeRecord({ event, playerID, hue, noActions, newDice }: Props) {
     const theme = React.useContext(ThemeContext);
     const setEdit = React.useContext(SetEditEventCtx);
 
@@ -131,7 +130,7 @@ function InitiativeRecord({ event, playerID, hue, noActions, newDice }: Props, r
     const ActionsRow = event.source === "local" ? LocalActionsRow : GameActionsRow;
 
     return (
-        <UI.FlexColumn ref={ref}>
+        <UI.FlexColumn>
             <UI.FlexRow>
                 <UI.FlexRow flexWrap>
                     {intro}
@@ -174,4 +173,4 @@ function InitiativeRecord({ event, playerID, hue, noActions, newDice }: Props, r
     );
 }
 
-export const Initiative = React.memo<Props>(React.forwardRef(InitiativeRecord));
+export default React.memo<Props>(InitiativeRecord);

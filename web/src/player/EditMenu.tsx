@@ -19,7 +19,7 @@ import type { ResponseStatus } from 'connection';
 import * as routes from 'routes';
 
 import ColorPicker from 'component/ColorPicker';
-import EventRecord from 'record/EventRecord';
+import { Record } from 'record';
 import { ROLL_TITLE_FLAVOR } from 'DiceRollMenu';
 
 type Props = {
@@ -162,7 +162,7 @@ export default function EditPlayerPanel({ hide }: Props) {
                         }
                     </UI.FlexRow>}
                     <UI.FlexRow formRow justifyContent="space-around">
-                        <EventRecord noActions
+                        <Record noActions
                             playerID={player.id} hue={hue} event={exampleEvent} />
                     </UI.FlexRow>
                     <UI.FlexRow flexWrap>

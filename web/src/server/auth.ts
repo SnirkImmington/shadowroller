@@ -52,6 +52,7 @@ export function handleLogin({
         players.set(k, v);
     }
     const gms = response.game.gms ?? [];
+    eventDispatch({ ty: "clearEvents" });
     playerDispatch({
         ty: "join",
         self: response.player

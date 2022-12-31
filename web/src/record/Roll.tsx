@@ -15,7 +15,8 @@ type Props = {
     hue: number|null|undefined,
     noActions?: boolean
 }
-function RollRecordInner({ event, playerID, hue, noActions }: Props, ref: React.Ref<HTMLDivElement>) {
+
+export default function RollRecord({ event, playerID, hue, noActions }: Props) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
@@ -38,7 +39,7 @@ function RollRecordInner({ event, playerID, hue, noActions }: Props, ref: React.
     );
 
     return (
-        <UI.FlexColumn ref={ref}>
+        <UI.FlexColumn>
             <UI.FlexRow>
                 <Roll.Title>
                     {intro} {title}
@@ -60,4 +61,3 @@ function RollRecordInner({ event, playerID, hue, noActions }: Props, ref: React.
         </UI.FlexColumn>
     );
 }
-export const RollRecord = React.memo<Props>(React.forwardRef(RollRecordInner));

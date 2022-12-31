@@ -43,7 +43,6 @@ function handleLocalCommand(cmd: Command, eventDispatch: Event.Dispatch) {
             eventDispatch({ ty: "newEvent", event: initEvent });
             return;
         case "edit":
-            console.log("Dispatching modify event");
             eventDispatch({ ty: "modifyEvent", id: cmd.id, edit: new Date().valueOf(), diff: cmd.diff });
             return;
         case "del":

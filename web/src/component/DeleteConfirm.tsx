@@ -11,7 +11,7 @@ type Props = {
 };
 export default function DeleteConfirm({ id, ready, setReady, onDelete }: Props) {
     return (
-        <UI.FlexRow spaced>
+        <UI.FlexRow formRow spaced>
             <Button.Main id={`${id}-delete-toggle-prompt`} onClick={() => setReady(r => !r)}>
                 delete
             </Button.Main>

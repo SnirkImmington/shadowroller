@@ -9,14 +9,13 @@ import * as Event from 'event';
 import * as Player from 'player';
 import * as srutil from 'srutil';
 
-import { LoadingResultList } from "history/LoadingEventList";
+import LoadingResultList from "history/Log";
 import { EditEventContext } from 'history/EditingState';
 import PlayerList from 'game/PlayerList';
 
 const DO_SOME_ROLLS_FLAVOR = [
-    "You have to press that roll button first, chummer.",
     "You gotta roll those dice first.",
-    "Hit that roll button and we'll show you the glitches."
+    `Hit that "roll dice" button and we'll show you the glitches.`
 ];
 
 const GAME_EMPTY_FLAVOR = [
@@ -33,7 +32,6 @@ const TitleSpace = styled.div({ height: "4px" });
 
 export default function EventHistory() {
     const game = React.useContext(Game.Ctx);
-    const player = React.useContext(Player.Ctx);
     const events = React.useContext(Event.Ctx);
     const theme = React.useContext(ThemeContext);
 
@@ -55,7 +53,8 @@ export default function EventHistory() {
         body = (<HistoryFlavor>{rollFlavor}</HistoryFlavor>);
     }
     else {
-        body = (<LoadingResultList playerID={player?.id ?? null} />);
+        console.log('hasRolls', hasRolls, 'game', game);
+        body = (<LoadingResultList />);
     }
 
     return (

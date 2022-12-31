@@ -16,7 +16,8 @@ type Props = {
     hue: number|null|undefined,
     noActions?: boolean
 }
-function RerollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref<any>) {
+
+export default function RerollRecord({ event, playerID, hue, noActions }: Props) {
     const result = rollStats.results(event);
     const canModify = !noActions && Event.canModify(event, playerID);
 
@@ -41,7 +42,7 @@ function RerollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref
     );
 
     return (
-        <UI.FlexColumn ref={ref}>
+        <UI.FlexColumn>
             <UI.FlexRow alignItems="flex-start">
                 <Roll.Title>
                     {intro} {title}
@@ -65,4 +66,3 @@ function RerollRecord({ event, playerID, hue, noActions }: Props, ref: React.Ref
         </UI.FlexColumn>
     );
 }
-export const Reroll = React.memo<Props>(React.forwardRef(RerollRecord));

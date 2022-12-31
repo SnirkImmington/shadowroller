@@ -7,6 +7,7 @@ import * as icons from 'style/icon';
 
 import type { Connection } from 'connection';
 import * as Event from 'event';
+import { SetEditEventCtx } from "history/EditingState";
 import * as Share from 'share';
 import * as roll from 'roll';
 import * as rollStats from 'roll/stats';
@@ -89,30 +90,28 @@ export function Rounds({ rounds, icon, transform, hue }: RoundsProps) {
     );
 }
 
-function canSecondChance(result: rollStats.HitsResults) {
-    return !result.edged && result.hits < result.dice.length;
-}
-
 type Props = { event: Event.DiceEvent, result: rollStats.HitsResults };
 function LocalActionsRow({ event, result }: Props) {
-    const dispatch = React.useContext(Event.DispatchCtx);
+    const eventDispatch = React.useContext(Event.DispatchCtx);
+    const setEdit = React.useContext(SetEditEventCtx);
 
+    // Not memoized due to `"dice" in event` check
     function onSecondChance() {
         if (!("dice" in event)) { return; }
-        dispatch({
+        eventDispatch({
             ty: "reroll", id: event.id,
             edit: Date.now().valueOf(),
             reroll: roll.secondChance(event.dice)
         });
-    };
-
-    function onEdit() {
-        dispatch({ ty: "selectEdit", event: event });
     }
+
+    const onEdit = React.useCallback(function onEdit() {
+        setEdit(event.id);
+    }, [setEdit, event.id]);
 
     return (
         <UI.FlexRow spaced>
-            {canSecondChance(result) &&
+            {result.actions.canReroll &&
                 <Button.Minor onClick={onSecondChance}>
                     <Button.Icon icon={icons.faRedo} />
                     second chance
@@ -126,23 +125,22 @@ function LocalActionsRow({ event, result }: Props) {
 }
 
 function GameActionsRow({ event, result }: Props) {
-    const dispatch = React.useContext(Event.DispatchCtx);
-
+    const setEdit = React.useContext(SetEditEventCtx);
     const [connection, setConnection] = React.useState<Connection>("offline");
 
-    function onSecondChance() {
+    const onSecondChance = React.useCallback(function onSecondChance() {
         routes.game.reroll({ rollID: event.id, rerollType: "rerollFailures" })
             .onConnection(setConnection);
-    }
+    }, [event.id]);
 
-    function onEdit() {
-        dispatch({ ty: "selectEdit", event });
-    }
+    const onEdit = React.useCallback(function onEdit() {
+        setEdit(event.id);
+    }, [setEdit, event.id]);
 
-    function onReveal() {
+    const onReveal = React.useCallback(function onReveal() {
         routes.game.editShare({ id: event.id, share: Share.Mode.InGame })
             .onConnection(setConnection);
-    }
+    }, [event.id]);
 
     return (
         <UI.FlexRow spaced>
@@ -153,7 +151,7 @@ function GameActionsRow({ event, result }: Props) {
                     {'reveal'}
                 </Button.Minor>
             }
-            {canSecondChance(result) &&
+            {result.actions.canReroll &&
                 <Button.Minor disabled={connection === "connecting"}
                                onClick={onSecondChance}>
                     <Button.Icon icon={icons.faRedo} />

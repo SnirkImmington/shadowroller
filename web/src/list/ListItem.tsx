@@ -23,24 +23,29 @@ const StyledPadding = styled.div({
  *
 */
 export default function ListItem({ setHeight, children, style }: React.PropsWithChildren<Props>) {
-    console.log(`litem(h=${(style as any)?.height}) render`);
-
-    const onRender = React.useCallback((node: HTMLDivElement | null) => {
-        if (node) {
-            console.log(`litem.or(): recorded height ${node.getBoundingClientRect().height}`);
-            setHeight(Math.round(node.getBoundingClientRect().height));
+    const ref = React.useRef<HTMLDivElement>(null!);
+    React.useEffect(() => {
+        const node = ref.current;
+        if (!node) {
+            return;
         }
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const height = Math.round(entry.contentRect.height);
+                if (height === 0) {
+                } else {
+                    setHeight(height + 6);
+                }
+            }
+        });
+        observer.observe(node);
+        return observer.disconnect.bind(observer);
     }, [setHeight]);
 
-    // Initial render is called with height of 0, we need to ignore this
-    // attribute so we can render our "actual" child height, and have our
-    // onRender trigger our own rerender with a better style.height.
-    if (style?.height === 0) {
-        delete style.height;
-    }
+    delete style.height;
 
     return (
-        <StyledPadding ref={onRender} style={style}>
+        <StyledPadding ref={ref} style={style}>
             {children}
         </StyledPadding>
     );

@@ -6,6 +6,7 @@ import ListItem from './ListItem';
 import InfiniteLoader from "react-window-infinite-loader";
 import { VariableSizeList as List, ListOnItemsRenderedProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
+import { roll } from "routes/game";
 
 export type Props<T> = {
     loadedItems: T[],
@@ -30,6 +31,14 @@ type RowRenderProps<T> = {
     style: any,
 };
 
+const ITEM_SIZE = {
+    initiative: 53,
+    initiativeEdit: 127,
+    roll: 93,
+    rollSecondChance: 141,
+    pushSmall: 115,
+}
+
 export function LoadingAutosizeList<T>({ loadedItems, loading, load, loadElem, children, itemKey }: Props<T>) {
     const listRef = React.useRef<InfiniteLoader | null>(null);
     const itemSizes = React.useRef<number[]>([]);
@@ -47,7 +56,7 @@ export function LoadingAutosizeList<T>({ loadedItems, loading, load, loadElem, c
             return itemSizes.current[index];
         }
         return 0;
-    }, [itemSizes]);
+    }, []);
 
     // Consistent between renders - accesses data from refs
     const setHeightAtIndex = React.useCallback(
@@ -59,8 +68,15 @@ export function LoadingAutosizeList<T>({ loadedItems, loading, load, loadElem, c
             // Propagate this height change to the windowing library.
             // For new entries being inserted, this is called with the final index in the list
             if (listRef.current && listRef.current._listRef) {
-                console.log(`! lal.setHeight(ix=${index}, h=${height}): resetAfterIndex(${index})`);
                 listRef.current._listRef.resetAfterIndex(index);
+            } else {
+                setTimeout(function reset() {
+                    if (listRef.current && listRef.current._listRef) {
+                        listRef.current._listRef.resetAfterIndex(index);
+                    } else {
+                        setTimeout(reset, 500);
+                    }
+                }, 120);
             }
         },
         [itemSizes, listRef]

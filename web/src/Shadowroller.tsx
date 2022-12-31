@@ -108,6 +108,8 @@ export default function Shadowroller() {
                 }
                 <RollDiceMenu />
                 <RollInitiativeMenu />
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                </div>
             </AppLeft>
             <AppRight>
                 <EventHistory />

@@ -1,20 +1,20 @@
 import * as React from "react";
-
-import * as UI from 'style';
+import styled from 'styled-components/macro';
+import * as Text from 'component/Text';
 
 import * as Event from 'event';
 import * as Game from 'game';
+import * as Player from 'player';
 import { ConnectionCtx } from 'connection';
 import * as server from 'server';
 import * as routes from 'routes';
 import { EditEventCtx } from './EditingState';
+import * as srutil from 'srutil';
+
 import { LoadingAutosizeList } from "list/LoadingAutosizeList";
+import * as Record from 'record';
 
-function LoadingItem() {
-    console.log("loadingItem render");
-    return <>Loading...</>;
-}
-
+/** Key of an event in the event list - the event ID */
 function itemKey(index: number, data: Event.Event[]) {
     if (!data || !data[index]) {
         return index;
@@ -24,12 +24,13 @@ function itemKey(index: number, data: Event.Event[]) {
 
 function Item({ index, data }: { index: number, data: Event.Event[], }) {
     const game = React.useContext(Game.Ctx);
+    const player = React.useContext(Player.Ctx);
     const editing = React.useContext(EditEventCtx);
     const gamePlayers = game?.players;
 
     if (!data[index]) {
-        console.log(`log.item(ix=${index}, id=${data[index]?.id}): loading`);
-        return <LoadingItem />;
+        console.log(`record render(ix=${index}, id=${data[index]?.id}): loading`);
+        return <Record.Loading />;
     }
     const event = data[index];
     let hue = null;
@@ -42,15 +43,12 @@ function Item({ index, data }: { index: number, data: Event.Event[], }) {
         }
     }
     if (editing === event.id) {
-        console.log(`log.item(ix=${index}, id=${data[index]?.id}): editing`);
-        return <span>Editing #{index + 1} {event.ty} {event.id}</span>;
+        return <Record.Edit event={event} hue={hue} playerID={null} />;
     }
-    console.log(`log.item(ix=${index}, id=${data[index]?.id}): item`);
-    return <span style={{ height: `${index + 1}rem` }}> Non editing item #{index + 1} {event.ty} {event.id}</span >;
+    return <Record.Record event={event} hue={hue} playerID={player?.id ?? null} />;
 };
 
 export default function Log() {
-    console.log(`log() render`);
     const event = React.useContext(Event.Ctx);
 
     const eventDispatch = React.useContext(Event.DispatchCtx);
@@ -89,8 +87,14 @@ export default function Log() {
             });
     }, [event.historyFetch, event.events, eventDispatch, connection,]);
 
+    if (event.events.length === 0) {
+        return <>No events here!</>;
+    }
+
     return (
-        <LoadingAutosizeList loadedItems={event.events} loading={loading} load={handleLoad} itemKey={itemKey} loadElem={LoadingItem}>
+        <LoadingAutosizeList loadedItems={event.events}
+            loading={loading} load={handleLoad}
+            itemKey={itemKey} loadElem={Record.Loading}>
             {Item}
         </LoadingAutosizeList>
     );

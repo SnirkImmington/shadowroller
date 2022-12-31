@@ -63,6 +63,8 @@ export const ROLL_TITLE_FLAVOR: string[] = [
     "hack the cupcake",
     "catch the hacker",
     "look at the vampire",
+    "embrace the Matrix",
+    "identify medical equipment",
 
     "drive through the storm",
     "win the bike race",
