@@ -20,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// SHADOWROLLER ascii art from  http://www.patorjk.com/software/taag/ "Small Slant"
+// SHADOWROLLER ascii art from http://www.patorjk.com/software/taag/ "Small Slant"
 const SHADOWROLLER = `
    ____ __            __                         __ __
   / __// /  ___ _ ___/ /___  _    __ ____ ___   / // /___  ____

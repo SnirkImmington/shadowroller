@@ -8,7 +8,7 @@ import (
 	"sr/log"
 	"sr/session"
 
-	"go.opentelemetry.io/otel/semconv/v1.4.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/go-redis/redis/v8"
