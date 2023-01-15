@@ -97,6 +97,10 @@ func handleReauth(args *srHTTP.Args) {
 		"Reauth request for session %v", reauthSession,
 	)
 	sess, err := session.GetByID(ctx, client, reauthSession)
+	if errors.Is(err, errs.ErrNotFound) {
+		srHTTP.Halt(ctx, errs.BadRequestf("Invalid or expired session"))
+	}
+
 	srHTTP.Halt(ctx, errs.NoAccess(err))
 	log.Printf(ctx, "Found session %v", sess.String())
 
@@ -117,7 +121,7 @@ func handleReauth(args *srHTTP.Args) {
 
 	// Check if game still has the player
 	found := false
-	for id, _ := range gameInfo.Players {
+	for id := range gameInfo.Players {
 		if id == string(sess.PlayerID) {
 			found = true
 			break
