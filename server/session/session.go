@@ -2,17 +2,19 @@ package session
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"sr/config"
+	"sr/errs"
 	"sr/id"
 	srOtel "sr/otel"
 	"sr/player"
 	redisUtil "sr/redis"
 
 	"github.com/go-redis/redis/v8"
+	attr "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Session is a temporary or persistent authentication token for users.
@@ -95,8 +97,8 @@ func Create(ctx context.Context, client redis.Cmdable, sess *Session) error {
 	return nil
 }
 
-var errNilSession = errors.New("Nil sessionID requested")
-var errNoSessionData = errors.New("Session not found")
+var errNilSession = errs.BadRequestf("nil SessionID requested")
+var errNoSessionData = errs.NotFoundf("session not found")
 
 // Exists returns whether the session exists in Redis.
 func Exists(ctx context.Context, client redis.Cmdable, sessionID string) (bool, error) {
@@ -104,33 +106,48 @@ func Exists(ctx context.Context, client redis.Cmdable, sessionID string) (bool, 
 		return false, errNilSession
 	}
 	count, err := client.Exists(ctx, "session:"+sessionID).Result()
-	return count == 1, err
+	return count == 1, errs.Internal(err)
 }
 
 // GetByID retrieves a session from redis.
+//
+// Returns [errs.]
 func GetByID(ctx context.Context, client redis.Cmdable, sessionID string) (*Session, error) {
-	ctx, span := srOtel.Tracer.Start(ctx, "session.GetByID")
+	ctx, span := srOtel.Tracer.Start(ctx, "session.GetByID", trace.WithAttributes(
+		attr.String("sr.sessionID", sessionID),
+	))
 	defer span.End()
+
 	if sessionID == "" {
+		span.AddEvent("Empty session ID provided")
 		return nil, errNilSession
 	}
-	if client == nil {
-		return nil, srOtel.WithSetErrorf(span, "Client was nil!!")
-	}
-	var sess Session
+
 	result := client.HGetAll(ctx, "session:"+sessionID)
 	data, err := result.Result()
 	if err != nil {
-		return nil, srOtel.WithSetErrorf(span, "retrieving data for %v: %w", sessionID, err)
+		err = errs.Internalf("retrieving session %v: %w", sessionID, err)
+		return nil, srOtel.WithSetError(span, err)
 	}
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
+		span.AddEvent("Session not found")
 		return nil, errNoSessionData
 	}
+
+	var sess Session
 	err = result.Scan(&sess)
 	if err != nil {
-		return nil, srOtel.WithSetErrorf(span, "parsing session struct: %w", err)
+		err = errs.Internalf("parsing sesion %v: %w", sessionID, err)
+		return nil, srOtel.WithSetError(span, err)
 	}
 	if sess.GameID == "" || sess.PlayerID == "" {
+		span.AddEvent("Empty session found, removing")
+		_, err = client.Del(ctx, "session:"+sessionID).Result()
+		if err != nil {
+			err = errs.Internalf("nonfatal error removing empty session: %w", err)
+			// Record this error but don't mark span as failed
+			span.RecordError(err)
+		}
 		return nil, errNoSessionData
 	}
 	sess.ID = id.UID(sessionID)
@@ -142,12 +159,17 @@ func GetByID(ctx context.Context, client redis.Cmdable, sessionID string) (*Sess
 func Remove(ctx context.Context, client redis.Cmdable, sess *Session) error {
 	ctx, span := srOtel.Tracer.Start(ctx, "session.Remove")
 	defer span.End()
+
 	result, err := client.Del(ctx, sess.redisKey()).Result()
+
 	if err != nil {
-		return srOtel.WithSetErrorf(span, "sending redis DEL: %w", err)
+		err = errs.Internalf("deleting session %v: %w", sess.ID, err)
+		return srOtel.WithSetError(span, err)
 	}
+
 	if result != 1 {
-		return srOtel.WithSetErrorf(span, "expected 1 key deleted, got %v", result)
+		err = errs.Internalf("deleting session %v: %v keys deleted", sess.ID, result)
+		return srOtel.WithSetError(span, err)
 	}
 	return nil
 }
