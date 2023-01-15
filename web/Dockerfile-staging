@@ -1,0 +1,15 @@
+FROM golang:1.19-alpine AS reflex
+
+RUN go install -v github.com/cespare/reflex@latest
+
+FROM node:current-alpine
+
+WORKDIR /var/code
+
+COPY --from=reflex --chown=node:node /go/bin/reflex /bin/reflex
+
+COPY package*.json ./
+COPY tsconfig* ./
+COPY .env* ./
+
+RUN npm i

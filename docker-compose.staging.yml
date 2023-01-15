@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  server:
+    volumes:
+      - frontend:/go/src/frontend:ro
+    environment:
+      - SR_IS_PRODUCTION=true
+      - SR_REVERSE_PROXIED=true
+      - SR_HOST_FRONTEND=subroute
+      # Host front and backend at :3002
+      - SR_MAIN_LISTEN_HTTP=:3002
+      - SR_BACKEND_ORIGIN=http://localhost:3002
+      - SR_FRONTEND_ORIGIN=http://localhost:3002
+      - SR_FRONTEND_BASE_PATH=/go/src/frontend
+    ports:
+      - "3002:3002"
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile-staging
+    volumes:
+      - frontend:/var/code/build:rw
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:3002/api/
+    entrypoint: reflex -r .*.ts[x?] -d plain npm run build-staging
+
+volumes:
+  frontend:

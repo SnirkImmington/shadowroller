@@ -23,7 +23,7 @@ services:
     volumes:
      - ./data:/data:ro
      - ./server:/go/src/sr:ro
-     - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache # This allows you to share your gopkg cache with the container
+     # - $GOPATH/pkg/mod/cache:/go/pkg/mod/cache # This allows you to share your gopkg cache with the container
      # well, it's supposed to, didn't work for me.
     environment:
       - SR_REDIS_URL=redis://redis:6379

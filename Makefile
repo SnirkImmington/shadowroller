@@ -44,6 +44,9 @@ server-docker:
 docker:
 	docker-compose up
 
+staging:
+	docker-compose -f docker-compose.yml -f docker-compose.staging.yml up
+
 redis-cli-docker:
 	docker-compose exec redis redis-cli
 update-web-docker:
