@@ -59,7 +59,8 @@
         "snapshot": "npx presite",
         "postsnapshot": "npx ts-node script/fix-presite.ts ./build/index.html ./build-presite/index.html",
         "compress": "npx ts-node script/compress-all.ts ./build-presite",
-        "build-full": "npm run build && npm run snapshot && npm run compress"
+        "build-full": "npm run build && npm run snapshot && npm run compress",
+        "build-staging": "react-scripts --openssl-legacy-provider build"
     },
     "presite": {
         "routes": [
