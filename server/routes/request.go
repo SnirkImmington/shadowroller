@@ -25,8 +25,8 @@ func cacheIndefinitely(request srHTTP.Request, response srHTTP.Response) {
 	response.Header().Set("Cache-Control", "max-age=86400")
 }
 
-func logFrontendRequest(request srHTTP.Request) {
-	file, line := log.FileAndLine(1)
+func logFrontendRequest(request srHTTP.Request, name string) {
+	file, line := log.FileAndLine(2)
 	if config.IsProduction {
 		extra := ""
 		if len(config.LogExtraHeaders) != 0 {
@@ -42,16 +42,17 @@ func logFrontendRequest(request srHTTP.Request) {
 			extra = fmt.Sprintf(" %v", grabbed)
 		}
 		log.RawPrint(request.Context(), file, line, fmt.Sprintf(
-			"<* %v%v %v %v %v",
+			"<* %v%v %v %v %v %v",
 			srHTTP.RequestRemoteIP(request),
 			extra,
 			request.Proto,
 			request.Method,
 			request.URL,
+			name,
 		))
 	} else {
 		log.RawPrint(request.Context(), file, line, fmt.Sprintf(
-			"<* %v %v", request.Method, request.URL,
+			"<* %v %v %v", request.Method, request.URL, name,
 		))
 	}
 }

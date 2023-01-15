@@ -34,6 +34,7 @@ func (w *wrappedResponse) Write(input []byte) (int, error) {
 }
 
 func (w *wrappedResponse) WriteHeader(code int) {
+	w.inner.WriteHeader(code)
 	w.status = code
 }
 
