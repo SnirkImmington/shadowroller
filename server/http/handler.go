@@ -51,19 +51,19 @@ type Handler func(args *Args)
 type HandlerFunc func(response Response, request Request, client *redis.Client)
 
 func Handle(router *mux.Router, pathAndMethod string, handler Handler) *mux.Route {
-	file, line := log.FileAndLine(1)
+	file, line := log.FileAndLine(2)
 	line += 2
 	return HandleWith(router, pathAndMethod, handler, file, line, redisUtil.Client)
 }
 
 func HandleGet(router *mux.Router, path string, handler Handler) *mux.Route {
-	file, line := log.FileAndLine(1)
+	file, line := log.FileAndLine(2)
 	line += 2
 	return HandleWith(router, "GET "+path, handler, file, line, redisUtil.Client)
 }
 
 func HandlePost(router *mux.Router, path string, handler Handler) *mux.Route {
-	file, line := log.FileAndLine(1)
+	file, line := log.FileAndLine(2)
 	line += 2
 	return HandleWith(router, "POST "+path, handler, file, line, redisUtil.Client)
 }

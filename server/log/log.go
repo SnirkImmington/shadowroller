@@ -12,18 +12,44 @@ import (
 	"sr/taskCtx"
 
 	attr "go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
+// fileNameLen is the amount of characters of the source filename to write to stdout
 const fileNameLen = 14
+// timeFormat is the format for timestamps in the stdout logs
 const timeFormat = "15:04:05 "
 
+/*
+func Location(depth int) (file string, line int, fn string) {
+	// This is the code that runtime.Caller calls before discarding frame.Function.
+	buf := make([]uintptr, 1)
+	runtime.Callers(depth + 1, buf)
+	frame, _ := runtime.CallersFrames(buf).Next()
+	if frame.PC == 0 {
+		return "??????.go", 0, "unknown"
+	}
+	return frame.File, frame.Line, fn
+
+}*/
+
 func FileAndLine(depth int) (string, int) {
-	_, file, line, ok := runtime.Caller(depth + 1)
-	if !ok {
+	// This is the code that runtime.Caller calls before discarding frame.Function.
+	buf := make([]uintptr, 1)
+	runtime.Callers(depth + 1, buf)
+	frame, _ := runtime.CallersFrames(buf).Next()
+	if frame.PC == 0 {
 		return "??????.go", 0
 	}
-	return file, line
+	return frame.File, frame.Line
+}
+
+func Frame(depth int) runtime.Frame {
+	buf := make([]uintptr, 1)
+	runtime.Callers(depth + 1, buf)
+	frame, _ := runtime.CallersFrames(buf).Next()
+	return frame
 }
 
 func writeStacktrace(builder *strings.Builder) {
@@ -102,9 +128,26 @@ func RawEvent(ctx context.Context, file string, line int, name string, info ...a
 	builder.WriteString(name)
 	writeAttrs(&builder, info)
 	fmt.Println(builder.String())
+	info = append(info, semconv.CodeFilepathKey.String(file), semconv.CodeLineNumberKey.Int(line))
 	if span.IsRecording() {
 		info = append(info, attr.String("log.message", name))
 		span.AddEvent("log", trace.WithAttributes(info...))
+	}
+}
+
+func RawRecord(ctx context.Context, file string, line int, name string, info ...attr.KeyValue) {
+	now := time.Now()
+	span := trace.SpanFromContext(ctx)
+	builder := strings.Builder{}
+	writeTime(&builder, now)
+	writeLocation(&builder, file, line)
+	writeSpanID(&builder, ctx)
+	builder.WriteString(name)
+	writeAttrs(&builder, info)
+	fmt.Println(builder.String())
+	info = append(info, semconv.CodeFilepathKey.String(file), semconv.CodeLineNumberKey.Int(line))
+	if span.IsRecording() {
+		span.AddEvent(name, trace.WithAttributes(info...))
 	}
 }
 
@@ -114,7 +157,7 @@ func CallerEvent(ctx context.Context, name string, info ...attr.KeyValue) {
 }
 
 func Event(ctx context.Context, name string, info ...attr.KeyValue) {
-	file, line := FileAndLine(1)
+	file, line := FileAndLine(2)
 	RawEvent(ctx, file, line, name, info...)
 }
 
@@ -128,7 +171,10 @@ func RawPrint(ctx context.Context, file string, line int, message string) {
 	builder.WriteString(message)
 	fmt.Println(builder.String())
 	if span.IsRecording() {
-		span.AddEvent(message)
+		span.AddEvent(message, trace.WithAttributes(
+			semconv.CodeFilepathKey.String(file),
+			semconv.CodeLineNumberKey.Int(line),
+		))
 	}
 }
 
@@ -138,13 +184,18 @@ func CallerPrint(ctx context.Context, message string) {
 }
 
 func Print(ctx context.Context, message string) {
-	file, line := FileAndLine(1)
+	file, line := FileAndLine(2)
 	RawPrint(ctx, file, line, message)
 }
 
 func Printf(ctx context.Context, message string, args ...interface{}) {
-	file, line := FileAndLine(1)
+	file, line := FileAndLine(2)
 	RawPrint(ctx, file, line, fmt.Sprintf(message, args...))
+}
+
+func Record(ctx context.Context, message string, attrs ...attr.KeyValue) {
+	file, line := FileAndLine(2)
+	RawRecord(ctx, file, line, message, attrs...)
 }
 
 func RawStdout(ctx context.Context, file string, line int, message string) {
@@ -158,16 +209,16 @@ func RawStdout(ctx context.Context, file string, line int, message string) {
 }
 
 func CallerStdout(ctx context.Context, message string) {
-	file, line := FileAndLine(2)
+	file, line := FileAndLine(3)
 	RawStdout(ctx, file, line, message)
 }
 
 func Stdout(ctx context.Context, message string) {
-	file, line := FileAndLine(1)
+	file, line := FileAndLine(2)
 	RawStdout(ctx, file, line, message)
 }
 
 func Stdoutf(ctx context.Context, message string, args ...interface{}) {
-	file, line := FileAndLine(1)
+	file, line := FileAndLine(2)
 	RawStdout(ctx, file, line, fmt.Sprintf(message, args...))
 }

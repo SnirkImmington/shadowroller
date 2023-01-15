@@ -29,7 +29,7 @@ func RunServer(ctx context.Context, name string, server *netHTTP.Server, tls boo
 	server.ErrorLog = logger
 	defer serverSpan.End()
 	shutdownCtx, release := shutdown.Registerf(context.Background(), name)
-	log.Printf(ctx, "Running %v server at %v...", name, server.Addr)
+	log.Printf(ctx, "Running %v at %v...", name, server.Addr)
 
 	go func() {
 		// Wait for interrupt
@@ -39,7 +39,7 @@ func RunServer(ctx context.Context, name string, server *netHTTP.Server, tls boo
 		defer cancel()
 		err := server.Shutdown(ctx)
 		if err != nil {
-			log.Printf(ctx, "%v server closed: %v", name, err)
+			log.Printf(ctx, "%v closed: %v", name, err)
 		}
 	}()
 
@@ -66,14 +66,14 @@ func RunServer(ctx context.Context, name string, server *netHTTP.Server, tls boo
 		}
 
 		if errors.Is(err, netHTTP.ErrServerClosed) {
-			log.Printf(ctx, "%v server has shut down.", name)
+			log.Printf(ctx, "%v has shut down.", name)
 			return
 		}
 
 		if err != nil {
-			log.Printf(ctx, "%v server failed! Restarting in 10s: %v", name, err)
+			log.Printf(ctx, "%v failed! Restarting in 10s: %v", name, err)
 			time.Sleep(time.Duration(10) * time.Second)
-			log.Printf(ctx, "%v server restarting.", name)
+			log.Printf(ctx, "%v restarting.", name)
 		}
 	}
 }
