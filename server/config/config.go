@@ -122,7 +122,8 @@ var (
 	// RedirectListenHTTP is the port which the redirect server listens for HTTP requests
 	RedirectListenHTTP = readString("REDIRECT_LISTEN_HTTP", "")
 	// ReverseProxied must be set to true if an HTTP-only main server is used on
-	// production. It is ignored otherwise.
+	// production. It is also used to control which cache headers are sent for
+	// cacheable (frontend) requests.
 	ReverseProxied = readBool("REVERSE_PROXIED", false)
 
 	// TLS configuration (if PublishHTTPS is set)
@@ -191,7 +192,7 @@ var (
 	MaxHeaderBytes = readInt("MAX_HEADER_BYTES", 1<<20)
 	// MaxRequestsPer10Secs is a per-address rate limit for all endpoints.
 	// For details, see `middleware.go`.
-	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 5)
+	MaxRequestsPer10Secs = readInt("MAX_REQUESTS_PER_10SECS", 20)
 
 	// TempSessionTTLSecs is the amount of time a temporary session is stored
 	// in redis after the subscription disconnects.
