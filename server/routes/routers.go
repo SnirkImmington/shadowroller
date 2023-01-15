@@ -28,7 +28,7 @@ func makeBaseRouter() *mux.Router {
 		srHTTP.UniversalHeadersMiddleware,
 	)
 	if config.SlowResponsesDebug {
-		router.Use(mux.MiddlewareFunc(srHTTP.SlowResponsesMiddleware))
+		router.Use(srHTTP.SlowResponsesMiddleware)
 	}
 	return router
 }
@@ -45,7 +45,7 @@ func makeAPIRouter() *mux.Router {
 
 func makeFrontendRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.Use(mux.MiddlewareFunc(srHTTP.FrontendHeadersMiddleware))
+	router.Use(srHTTP.FrontendHeadersMiddleware)
 	router.PathPrefix("/static").HandlerFunc(handleFrontendStatic).Methods("GET")
 	router.NewRoute().Name("/").HandlerFunc(handleFrontendBase).Methods("GET")
 	return router
