@@ -25,7 +25,7 @@ export function pluralize(count: number, text: string): string {
         return text + "es";
     }
     else {
-        return text + 's';
+        return text + "s";
     }
 }
 

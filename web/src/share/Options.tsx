@@ -5,6 +5,8 @@ import styled from 'styled-components/macro';
 import * as Share from 'share';
 import * as Game from 'game';
 
+import * as srUtil from 'srutil';
+
 type Props = {
     prefix: string,
     state: Share.Mode,
@@ -61,7 +63,7 @@ export default function PublicityOptions({ prefix, state, gmsDisabled, onChange 
             <UI.RadioLink id={`${prefix}-set-to-gm`} name={`${prefix}-location`}
                           type="radio" light disabled={gmsDisabled} value="gms"
                           checked={state === Share.Mode.GMs} onChange={handleChange}>
-                to GM{gms > 1 && 's'}
+                to {srUtil.pluralize(gms, "GM")}
             </UI.RadioLink>
             <UI.RadioLink id={`${prefix}-set-private`} name={`${prefix}-location`}
                           type="radio" light value="private"
