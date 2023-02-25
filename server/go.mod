@@ -17,8 +17,8 @@ require (
 	//go.opentelemetry.io/otel/metric v0.23.0 // indirect
 	//go.opentelemetry.io/otel/sdk/export/metric v0.23.0 // indirect
 	go.opentelemetry.io/otel/trace v1.0.1
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // ACME support in x/crypto/acme
-	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
+	golang.org/x/crypto v0.1.0 // ACME support in x/crypto/acme
+	golang.org/x/net v0.1.0 // indirect
 	google.golang.org/grpc v1.40.0
 )
 
@@ -32,8 +32,8 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.9.0 // indirect
-	golang.org/x/sys v0.0.0-20210921065528-437939a70204 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20210921142501-181ce0d877f6 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
