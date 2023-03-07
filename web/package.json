@@ -31,7 +31,7 @@
         "fast-check": "^2.14.0",
         "gh-pages": "^2.2.0",
         "presite": "^2.1.2",
-        "react-scripts": "4.0.3",
+        "react-scripts": "5.0.1",
         "stylelint": "^13.13.1",
         "stylelint-config-standard": "^22.0.0",
         "ts-node": "^10.2.1",
